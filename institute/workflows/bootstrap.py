@@ -27,7 +27,7 @@ from rich.panel import Panel
 from rich.prompt import Prompt
 from rich.syntax import Syntax
 
-from institute import claude_runner, db, decisions, paths
+from institute import claude_runner, db, decisions, parsing, paths
 from institute import fellow as fellow_mod
 from institute.fellow import Genome
 
@@ -199,26 +199,11 @@ def _design_genomes() -> list[dict]:
         allowed_tools=("Read", "Glob", "Grep"),
     )
 
-    payload_text = _extract_json_object(result.result_text)
-    if payload_text is None:
-        debug_path = paths.ROOT / "bootstrap-failed-output.txt"
-        debug_path.write_text(result.result_text, encoding="utf-8")
-        raise RuntimeError(
-            "Orchestrator did not return a JSON object. The raw response has "
-            f"been saved to {debug_path.relative_to(paths.ROOT)} for inspection. "
-            "Rerun `institute bootstrap --force` to try again."
-        )
-
-    try:
-        payload = json.loads(payload_text)
-    except json.JSONDecodeError as exc:
-        debug_path = paths.ROOT / "bootstrap-failed-output.txt"
-        debug_path.write_text(result.result_text, encoding="utf-8")
-        raise RuntimeError(
-            f"Orchestrator output is not parseable JSON: {exc}. "
-            f"Raw response saved to {debug_path.relative_to(paths.ROOT)}."
-        ) from exc
-
+    payload = parsing.parse_json_or_dump(
+        result.result_text,
+        dump_path=paths.ROOT / "bootstrap-failed-output.txt",
+        context="Orchestrator bootstrap output",
+    )
     fellows = payload.get("fellows", [])
     if not isinstance(fellows, list) or len(fellows) != 4:
         raise RuntimeError(
@@ -226,47 +211,6 @@ def _design_genomes() -> list[dict]:
             f"with {len(fellows) if isinstance(fellows, list) else 'n/a'} items."
         )
     return fellows
-
-
-def _extract_json_object(text: str) -> str | None:
-    """Find the outermost JSON object in `text`, even if surrounded by prose or fences."""
-    s = text.strip()
-    if not s:
-        return None
-    # Strip an opening code fence (```json or ```) and a matching closer.
-    if s.startswith("```"):
-        first_newline = s.find("\n")
-        if first_newline != -1:
-            s = s[first_newline + 1 :]
-        if s.rstrip().endswith("```"):
-            s = s.rstrip()[:-3].rstrip()
-    # Find the first `{` and walk forward to its matching `}`, ignoring
-    # braces inside string literals.
-    start = s.find("{")
-    if start == -1:
-        return None
-    depth = 0
-    in_string = False
-    escape = False
-    for i in range(start, len(s)):
-        ch = s[i]
-        if in_string:
-            if escape:
-                escape = False
-            elif ch == "\\":
-                escape = True
-            elif ch == '"':
-                in_string = False
-        else:
-            if ch == '"':
-                in_string = True
-            elif ch == "{":
-                depth += 1
-            elif ch == "}":
-                depth -= 1
-                if depth == 0:
-                    return s[start : i + 1]
-    return None
 
 
 def _open_in_editor(content: str) -> str:

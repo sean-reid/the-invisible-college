@@ -17,7 +17,6 @@ each subsequent `institute next` call works through them in order.
 
 from __future__ import annotations
 
-import json
 import secrets
 import sqlite3
 from dataclasses import dataclass
@@ -27,7 +26,7 @@ from typing import Literal
 
 from rich.console import Console
 
-from institute import claude_runner, db, decisions, paths
+from institute import claude_runner, db, decisions, parsing, paths
 from institute import fellow as fellow_mod
 from institute.claude_runner import FellowTask
 from institute.fellow import Genome
@@ -134,16 +133,6 @@ def _atomic_write(path: Path, content: str) -> None:
     tmp.replace(path)
 
 
-def _strip_code_fence(text: str) -> str:
-    text = text.strip()
-    if text.startswith("```"):
-        first_newline = text.find("\n")
-        text = text[first_newline + 1 :]
-        if text.rstrip().endswith("```"):
-            text = text.rstrip()[:-3].rstrip()
-    return text
-
-
 def _render_review_markdown(payload: dict, reviewer: Genome, role: Role) -> str:
     """Render a review JSON payload as the markdown stored in the archive."""
     return "\n".join(
@@ -231,17 +220,20 @@ def run(project_id: str) -> None:
         )
     )
 
-    payload_text = _strip_code_fence(result.result_text)
-    try:
-        payload = json.loads(payload_text)
-    except json.JSONDecodeError as exc:
-        raise RuntimeError(
-            f"Reviewer output is not valid JSON. First 500 chars: {payload_text[:500]}"
-        ) from exc
-
+    dump_path = paths.REVIEWS / project_id / f"raw-review-by-{reviewer.id}.txt"
+    payload = parsing.parse_json_or_dump(
+        result.result_text,
+        dump_path=dump_path,
+        context=f"Review output from {reviewer.name} for project {project_id}",
+    )
     for required in ("summary", "strengths", "concerns", "recommendation", "confidence"):
         if required not in payload:
-            raise RuntimeError(f"Review payload missing `{required}`. Got keys: {list(payload)}")
+            dump_path.parent.mkdir(parents=True, exist_ok=True)
+            dump_path.write_text(result.result_text, encoding="utf-8")
+            raise RuntimeError(
+                f"Review payload missing `{required}`. Got keys: {list(payload)}. "
+                f"Raw saved to {dump_path}."
+            )
     if payload["recommendation"] not in {"accept", "minor", "major", "reject"}:
         raise RuntimeError(f"Invalid recommendation: {payload['recommendation']!r}")
     if payload["confidence"] not in {"confident", "moderate", "low"}:

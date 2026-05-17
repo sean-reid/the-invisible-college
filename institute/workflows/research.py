@@ -13,7 +13,6 @@ This keeps the two artifacts cleanly separated.
 
 from __future__ import annotations
 
-import json
 import re
 import sqlite3
 from datetime import UTC, datetime
@@ -21,7 +20,7 @@ from pathlib import Path
 
 from rich.console import Console
 
-from institute import claude_runner, db, decisions, paths
+from institute import claude_runner, db, decisions, parsing, paths
 from institute import fellow as fellow_mod
 from institute.claude_runner import FellowTask
 from institute.fellow import Genome
@@ -108,16 +107,6 @@ def _atomic_write(path: Path, content: str) -> None:
     tmp.replace(path)
 
 
-def _strip_code_fence(text: str) -> str:
-    text = text.strip()
-    if text.startswith("```"):
-        first_newline = text.find("\n")
-        text = text[first_newline + 1 :]
-        if text.rstrip().endswith("```"):
-            text = text.rstrip()[:-3].rstrip()
-    return text
-
-
 def _extract_draft_title(draft_md: str) -> str | None:
     match = re.search(r"^#\s+(.+?)$", draft_md.lstrip(), re.MULTILINE)
     if match:
@@ -174,18 +163,18 @@ def run(project_id: str) -> None:
             extra_dirs=(paths.DOCS, paths.ARCHIVE),
         )
     )
-    payload_text = _strip_code_fence(result.result_text)
-    try:
-        payload = json.loads(payload_text)
-    except json.JSONDecodeError as exc:
-        raise RuntimeError(
-            f"Research output is not valid JSON. First 600 chars: {payload_text[:600]}"
-        ) from exc
-
-    if not isinstance(payload, dict) or "notebook" not in payload or "draft" not in payload:
+    dump_path = paths.LAB_NOTEBOOKS / project_id / "raw-research-output.txt"
+    payload = parsing.parse_json_or_dump(
+        result.result_text,
+        dump_path=dump_path,
+        context=f"Research output from {lead.name} for project {project_id}",
+    )
+    if "notebook" not in payload or "draft" not in payload:
+        dump_path.parent.mkdir(parents=True, exist_ok=True)
+        dump_path.write_text(result.result_text, encoding="utf-8")
         raise RuntimeError(
             "Research output JSON must have `notebook` and `draft` keys. "
-            f"Got keys: {list(payload) if isinstance(payload, dict) else type(payload).__name__}"
+            f"Got keys: {list(payload)}. Raw saved to {dump_path}."
         )
 
     notebook_md = payload["notebook"].strip()
