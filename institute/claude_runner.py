@@ -6,9 +6,12 @@ module turns that into a subprocess call to `claude -p` with the right
 flags, captures the structured JSON result, and writes a copy of the raw
 output to the audit log.
 
-A deterministic session id derived from (fellow_id, project_id, step) lets
-Claude Code resume the same conversation across separate invocations. This
-is how a research session can be paused and continued later.
+Pause/resume across Mac sleep is handled at the orchestrator level: state
+lives in SQLite and in markdown files under archive/. Each `claude -p`
+invocation is one-shot with a fresh session id. Long-running work like
+research happens in multiple separate invocations that read prior
+artifacts (lab notebooks, drafts) from the workspace rather than relying
+on Claude Code session continuity.
 """
 
 from __future__ import annotations
@@ -20,14 +23,10 @@ import uuid
 from dataclasses import dataclass
 from datetime import UTC, datetime
 from pathlib import Path
-from typing import Literal
 
 from institute import charter
 from institute.fellow import Genome, ensure_fellow_dirs, workspace_path
 from institute.paths import AUDIT_LOG
-
-# Stable namespace so session ids are reproducible across machines/runs.
-SESSION_NAMESPACE = uuid.UUID("3d4f0a4e-9f0e-4e8a-9b6a-1e6d5c0c0f30")
 
 
 @dataclass(frozen=True)
@@ -49,11 +48,6 @@ class FellowResult:
     duration_ms: int | None
     cost_usd: float | None
     is_error: bool
-
-
-def session_id_for(fellow_id: str, project_id: str, step: str) -> str:
-    name = f"{fellow_id}|{project_id}|{step}"
-    return str(uuid.uuid5(SESSION_NAMESPACE, name))
 
 
 def _claude_executable() -> str:
@@ -95,7 +89,10 @@ def invoke_orchestrator(
     from institute.paths import ROOT  # local to avoid import cycle
 
     actual_cwd = cwd if cwd is not None else ROOT
-    session_id = session_id_for("orchestrator", "meta", step)
+    # Orchestrator calls are one-shot and not meant to be resumed across
+    # invocations. A fresh UUID per call avoids "session already in use"
+    # errors from prior aborted runs.
+    session_id = str(uuid.uuid4())
 
     system_prompt = (
         charter.header()
@@ -182,12 +179,17 @@ def invoke_orchestrator(
     )
 
 
-def invoke(task: FellowTask, resume: Literal["auto", "never"] = "auto") -> FellowResult:
-    """Run a Fellow task as a `claude -p` subprocess. Blocking."""
+def invoke(task: FellowTask) -> FellowResult:
+    """Run a Fellow task as a `claude -p` subprocess. Blocking.
+
+    Each call uses a fresh session id. Continuity across invocations is
+    achieved via files in the Fellow's workspace and via the lab notebook,
+    not via Claude Code session reuse.
+    """
 
     ensure_fellow_dirs(task.genome.id)
     cwd = workspace_path(task.genome.id)
-    session_id = session_id_for(task.genome.id, task.project_id, task.step)
+    session_id = str(uuid.uuid4())
 
     cmd: list[str] = [
         _claude_executable(),
@@ -206,10 +208,6 @@ def invoke(task: FellowTask, resume: Literal["auto", "never"] = "auto") -> Fello
         "--output-format",
         "json",
     ]
-    if resume == "auto":
-        # If the session already exists, --session-id resumes it transparently.
-        # No additional flag needed; claude treats reuse of an existing id as resume.
-        pass
 
     for extra in task.extra_dirs:
         cmd.extend(["--add-dir", str(extra)])
