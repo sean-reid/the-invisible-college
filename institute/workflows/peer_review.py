@@ -231,7 +231,8 @@ def _existing_reviews_in_round(
     return {
         row["reviewer_id"]
         for row in conn.execute(
-            "SELECT reviewer_id FROM reviews WHERE project_id = ?", (project_id,)
+            "SELECT reviewer_id FROM reviews WHERE project_id = ? AND round = ?",
+            (project_id, review_round),
         )
     }
 
