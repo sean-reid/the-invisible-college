@@ -229,15 +229,77 @@ def propose(lead: str | None, topic: str | None) -> None:
 
 
 # ---------------------------------------------------------------------------
-# next: advance the state machine. Placeholder until workflows land.
+# next: dispatch the next action for the most-stale in-flight project
 # ---------------------------------------------------------------------------
 
 
+_STATE_TO_WORKFLOW: dict[str, str] = {
+    "proposed": "review_proposal",
+    "proposal_reviewed": "research",
+    "researching": "research",
+    "drafted": "peer_review",
+    "peer_reviewing": "peer_review",
+    "editorial": "publish",
+}
+
+
 @main.command("next")
-def next_cmd() -> None:
-    """Advance the most stale in-flight project by one step."""
+@click.option(
+    "--project",
+    type=str,
+    default=None,
+    help="Project id to advance. Defaults to the most-stale non-terminal project.",
+)
+def next_cmd(project: str | None) -> None:
+    """Advance the most-stale in-flight project by one step.
+
+    Looks at the project's current state and dispatches the corresponding
+    workflow. Each call advances by exactly one step (one Claude invocation
+    or one transition). Safe to pause and resume between calls.
+    """
     _check_kill_switch()
+
+    with db.connection() as conn:
+        if project is not None:
+            row = conn.execute("SELECT id, state FROM projects WHERE id = ?", (project,)).fetchone()
+            if row is None:
+                console.print(f"[red]No such project: {project}[/red]")
+                sys.exit(1)
+        else:
+            row = conn.execute(
+                "SELECT id, state FROM projects "
+                "WHERE state NOT IN ('published', 'rejected') "
+                "ORDER BY updated_at ASC LIMIT 1"
+            ).fetchone()
+            if row is None:
+                console.print(
+                    "[dim]No in-flight projects. Start one with `institute propose`.[/dim]"
+                )
+                return
+
+    workflow_name = _STATE_TO_WORKFLOW.get(row["state"])
+    if workflow_name is None:
+        console.print(f"[yellow]No workflow defined for state {row['state']}.[/yellow]")
+        sys.exit(1)
+
     console.print(
-        "[yellow]Workflow dispatch not yet implemented.[/yellow] "
-        "Coming with the remaining workflow modules."
+        f"[dim]Dispatching {workflow_name} for project {row['id']} (state={row['state']})...[/dim]"
     )
+
+    # Import lazily so the CLI loads quickly when not running a workflow.
+    if workflow_name == "review_proposal":
+        from institute.workflows import review_proposal as wf
+
+        wf.run(row["id"])
+    elif workflow_name == "research":
+        from institute.workflows import research as wf
+
+        wf.run(row["id"])
+    elif workflow_name == "peer_review":
+        from institute.workflows import peer_review as wf
+
+        wf.run(row["id"])
+    elif workflow_name == "publish":
+        from institute.workflows import publish as wf
+
+        wf.run(row["id"])
