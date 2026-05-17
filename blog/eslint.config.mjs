@@ -1,8 +1,13 @@
 import eslintPluginAstro from 'eslint-plugin-astro';
+import tseslint from 'typescript-eslint';
 
-export default [
-  ...eslintPluginAstro.configs.recommended,
+export default tseslint.config(
   {
     ignores: ['dist/**', '.astro/**', 'node_modules/**', 'screenshots/**'],
   },
-];
+  ...eslintPluginAstro.configs.recommended,
+  {
+    files: ['**/*.ts', '**/*.tsx'],
+    extends: [...tseslint.configs.recommended],
+  },
+);

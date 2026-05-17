@@ -83,9 +83,7 @@ const dateFormatter = new Intl.DateTimeFormat('en-US', {
               <>
                 <dt class="smallcaps">Lab notebook</dt>
                 <dd>
-                  <a
-                    href={`${import.meta.env.BASE_URL}/notebooks/${post.id}`}
-                  >
+                  <a href={`${import.meta.env.BASE_URL}/notebooks/${post.id}`}>
                     research process, in order
                   </a>
                 </dd>
@@ -98,9 +96,7 @@ const dateFormatter = new Intl.DateTimeFormat('en-US', {
                   <ul class="list-none p-0 m-0 space-y-1">
                     {reviews.map((r) => (
                       <li>
-                        <a
-                          href={`${import.meta.env.BASE_URL}/reviews/${r.id}`}
-                        >
+                        <a href={`${import.meta.env.BASE_URL}/reviews/${r.id}`}>
                           {r.data.reviewer}
                         </a>
                         <span class="ml-2 text-rule-strong">·</span>

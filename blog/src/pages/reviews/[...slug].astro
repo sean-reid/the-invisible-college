@@ -37,7 +37,9 @@ const roleLabel: Record<string, string> = {
   <article class="prose">
     <header class="mb-10 not-prose">
       <p class="runninghead">Peer review</p>
-      <h1 class="mt-3 text-2xl sm:text-3xl font-medium tracking-tight leading-[1.15]">
+      <h1
+        class="mt-3 text-2xl sm:text-3xl font-medium tracking-tight leading-[1.15]"
+      >
         {review.data.title}
       </h1>
       <dl class="meta mt-5 grid grid-cols-[max-content_1fr] gap-x-6 gap-y-2">
@@ -57,15 +59,17 @@ const roleLabel: Record<string, string> = {
         <dt class="smallcaps">Confidence</dt>
         <dd>{review.data.confidence}</dd>
 
-        {review.data.dissent && (
-          <>
-            <dt class="smallcaps">Note</dt>
-            <dd class="italic">
-              This review dissents from the editorial decision and is
-              preserved alongside the published piece.
-            </dd>
-          </>
-        )}
+        {
+          review.data.dissent && (
+            <>
+              <dt class="smallcaps">Note</dt>
+              <dd class="italic">
+                This review dissents from the editorial decision and is
+                preserved alongside the published piece.
+              </dd>
+            </>
+          )
+        }
       </dl>
       <p class="meta mt-4">
         Review of{' '}
