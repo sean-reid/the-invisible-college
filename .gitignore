@@ -4,6 +4,7 @@ institute.db
 institute.db-shm
 institute.db-wal
 *.log
+bootstrap-failed-output.txt
 
 # Python
 __pycache__/

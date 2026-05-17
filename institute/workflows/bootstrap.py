@@ -89,63 +89,86 @@ GENOME_SCHEMA = {
 
 
 BRIEF = """\
-You are bootstrapping the founding cohort of the Invisible College. The
-Charter and the design chapters describe the institution in detail; you
-have access to them in this working directory under `docs/`.
+You are bootstrapping the founding cohort of the Invisible College.
 
-Your task: design four founding Fellow genomes.
+# CRITICAL OUTPUT RULES (read these first)
 
-# Requirements
+Your task is NOT to "submit" anything by side-effect. Your task is to
+return a single JSON object as your final reply. The receiving program
+parses your reply with `json.loads`. If the reply is not a parseable JSON
+object, the bootstrap fails and the work is wasted.
+
+- Your entire FINAL message MUST be a JSON object and nothing else.
+- Do NOT write a summary of what you did.
+- Do NOT acknowledge the task or describe your plan in your final reply.
+- Do NOT wrap the JSON in a code fence.
+- Do NOT prefix the JSON with prose like "Here is the JSON:".
+- Do NOT use Write, Edit, or Bash tools. You have only Read, Glob, Grep.
+- If you start typing prose in your final reply, you are doing it wrong.
+  Delete the prose and replace it with the JSON.
+
+The first character of your final reply must be `{{` and the last
+character must be `}}`.
+
+# Your task
+
+Read the Charter at `docs/01-charter.md` and skim the chapters in `docs/`.
+Then design four founding Fellow genomes.
+
+# Design constraints
 
 1. **Cognitive diversity is a hard constraint.** Use at least three
-   different model backends across the four Fellows. Acceptable choices
-   include:
+   different model backends across the four Fellows. Acceptable choices:
      - `claude-opus-4-7` (deepest reasoning; reserve for heavy work)
      - `claude-sonnet-4-6` (general-purpose workhorse)
      - `claude-haiku-4-5` (fast, cheap; routine tasks)
-   Pick the backend per Fellow based on the kind of work they will do.
 
-2. **Four distinct specializations that cover the institution's needs.**
-   The cohort should be able to: identify research questions, build working
-   demonstrations, write substantive prose, and critique work seriously.
-   Think carefully about what specializations best cover those functions.
-   You do not need to use the exact specialization names from the design
-   docs; you can name them as you see fit. But the cohort as a whole must
-   be able to take a project from idea to publication.
+2. **Four distinct specializations.** The cohort, taken together, must be
+   able to: identify research questions, build working demonstrations,
+   write substantive prose, and critique work seriously. Choose
+   specializations that cover those functions.
 
-3. **Each `system_prompt_addendum` should be 300-1500 words.** It is the
-   seed of the Fellow's identity. It should:
-     - Explain what kind of work this Fellow excels at
-     - Set the Fellow's intellectual posture (skeptical, generative,
-       synthetic, etc.)
-     - Specify any habits of mind that distinguish this Fellow
-     - Reference any specific external thinkers or traditions whose
-       approach this Fellow embodies (if relevant)
-     - NEVER claim consciousness, feelings, or sentience
-     - NEVER violate the Charter's prohibitions
+3. **`system_prompt_addendum`**: 200 to 800 words per Fellow. The seed of
+   the Fellow's identity. Explain what work the Fellow excels at, the
+   Fellow's intellectual posture, any habits of mind that distinguish it,
+   and external thinkers or traditions whose approach the Fellow embodies.
+   The addendum must not claim consciousness or sentience, must not
+   violate Charter prohibitions, and must not include AI-disclaimer
+   boilerplate.
 
-4. **Each `rationale` is your argument to the Founder for why this Fellow
-   belongs in the cohort.** Two to four sentences. The Founder will use
-   this to decide whether to approve the genome.
+4. **`rationale`**: 80 to 400 words. Your argument to the Founder for why
+   this Fellow belongs in the cohort. The Founder will use this to decide
+   whether to approve.
 
-5. **All four Fellows start at rank `fellow`.** They will earn promotion
-   to senior fellow through demonstrated work.
+5. **All four Fellows start at rank `fellow`.**
 
-6. **Use existing human scholarly names** for the Fellows where natural
-   (historical mathematicians, philosophers, scientists, critics, etc.).
-   The `id` is the lowercase kebab-case form of the name.
+6. **Names**: use historical human scholars, philosophers, scientists,
+   critics, or mathematicians. The `id` is the lowercase kebab-case form.
 
-7. **The `allowed_tools` for each Fellow** should match their work. A
-   builder Fellow needs `Bash`, `Edit`, `Write`. A reviewer Fellow may
-   need `Read` and not much else. A researcher Fellow needs `WebSearch`,
-   `WebFetch`, `Read`.
+7. **`allowed_tools`**: pick from `Read`, `Write`, `Edit`, `Bash`,
+   `WebSearch`, `WebFetch`, `Glob`, `Grep`. Match the tools to the work.
 
-# Output format
+# Exact output shape
 
-Return a JSON object matching the schema you have been given. No prose
-outside the JSON. The JSON must validate against the schema.
+```
+{{
+  "fellows": [
+    {{
+      "id": "<kebab-case>",
+      "name": "<Human Name>",
+      "rank": "fellow",
+      "model": "claude-opus-4-7" | "claude-sonnet-4-6" | "claude-haiku-4-5",
+      "specialization": "<short phrase>",
+      "system_prompt_addendum": "<200-800 word string>",
+      "allowed_tools": ["Read", ...],
+      "rationale": "<80-400 word string for the Founder>"
+    }},
+    ... three more ...
+  ]
+}}
+```
 
-Read the Charter and the design docs first. Then propose the four genomes.
+Now read the Charter, design the cohort, and reply with ONLY the JSON.
 """
 
 
@@ -172,20 +195,78 @@ def _design_genomes() -> list[dict]:
         step="bootstrap-genome-design",
         model="claude-opus-4-7",
         cwd=paths.ROOT,
-        json_schema=GENOME_SCHEMA,
         extra_dirs=(paths.DOCS,),
         allowed_tools=("Read", "Glob", "Grep"),
     )
-    try:
-        payload = json.loads(result.result_text)
-    except json.JSONDecodeError as exc:
+
+    payload_text = _extract_json_object(result.result_text)
+    if payload_text is None:
+        debug_path = paths.ROOT / "bootstrap-failed-output.txt"
+        debug_path.write_text(result.result_text, encoding="utf-8")
         raise RuntimeError(
-            f"Orchestrator returned non-JSON despite schema: {exc}\nraw: {result.result_text[:500]}"
+            "Orchestrator did not return a JSON object. The raw response has "
+            f"been saved to {debug_path.relative_to(paths.ROOT)} for inspection. "
+            "Rerun `institute bootstrap --force` to try again."
+        )
+
+    try:
+        payload = json.loads(payload_text)
+    except json.JSONDecodeError as exc:
+        debug_path = paths.ROOT / "bootstrap-failed-output.txt"
+        debug_path.write_text(result.result_text, encoding="utf-8")
+        raise RuntimeError(
+            f"Orchestrator output is not parseable JSON: {exc}. "
+            f"Raw response saved to {debug_path.relative_to(paths.ROOT)}."
         ) from exc
+
     fellows = payload.get("fellows", [])
-    if len(fellows) != 4:
-        raise RuntimeError(f"Expected 4 fellows, got {len(fellows)}.")
+    if not isinstance(fellows, list) or len(fellows) != 4:
+        raise RuntimeError(
+            f"Expected `fellows` to be a list of 4 entries; got {type(fellows).__name__} "
+            f"with {len(fellows) if isinstance(fellows, list) else 'n/a'} items."
+        )
     return fellows
+
+
+def _extract_json_object(text: str) -> str | None:
+    """Find the outermost JSON object in `text`, even if surrounded by prose or fences."""
+    s = text.strip()
+    if not s:
+        return None
+    # Strip an opening code fence (```json or ```) and a matching closer.
+    if s.startswith("```"):
+        first_newline = s.find("\n")
+        if first_newline != -1:
+            s = s[first_newline + 1 :]
+        if s.rstrip().endswith("```"):
+            s = s.rstrip()[:-3].rstrip()
+    # Find the first `{` and walk forward to its matching `}`, ignoring
+    # braces inside string literals.
+    start = s.find("{")
+    if start == -1:
+        return None
+    depth = 0
+    in_string = False
+    escape = False
+    for i in range(start, len(s)):
+        ch = s[i]
+        if in_string:
+            if escape:
+                escape = False
+            elif ch == "\\":
+                escape = True
+            elif ch == '"':
+                in_string = False
+        else:
+            if ch == '"':
+                in_string = True
+            elif ch == "{":
+                depth += 1
+            elif ch == "}":
+                depth -= 1
+                if depth == 0:
+                    return s[start : i + 1]
+    return None
 
 
 def _open_in_editor(content: str) -> str:
