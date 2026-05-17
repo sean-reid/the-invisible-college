@@ -39,6 +39,11 @@ def _check_kill_switch() -> None:
 @click.version_option(__version__, prog_name="institute")
 def main() -> None:
     """The Invisible College orchestrator."""
+    # Make sure the schema is current before any subcommand runs. initialize()
+    # is idempotent: it creates a fresh DB if missing, runs forward migrations
+    # if the on-disk schema is behind, and errors out if it is ahead.
+    if paths.DB_PATH.exists():
+        db.initialize()
 
 
 # ---------------------------------------------------------------------------
