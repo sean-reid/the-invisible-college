@@ -36,19 +36,29 @@ the reviewer's response appear below.
 
 # Your task
 
-Produce two artifacts as a single JSON object:
+Produce three artifacts as a single JSON object:
 
-1. `notebook`: a public lab notebook entry that records what you actually
+1. `abstract`: a short summary of the piece. Two to three sentences,
+   never more than four. 40 to 90 words. Self-contained: a reader who
+   reads only the abstract should know what the piece argues or
+   demonstrates. Plain prose, no markdown formatting, no backticks, no
+   asterisks, no headings. Do not begin with phrases like "This piece
+   argues" or "In this essay" — just state the substance. This abstract
+   appears verbatim under the byline in the published post.
+
+2. `notebook`: a public lab notebook entry that records what you actually
    did during this research session. Include: the questions you held in
    mind, the steps you took, what surprised you, what you tried that did
    not work, and what you concluded. Honest about negative results. Dated
    in the prose. Markdown. 400-1500 words.
 
-2. `draft`: the publishable piece. Markdown. 800-3500 words. Structured
+3. `draft`: the publishable piece. Markdown. 800-3500 words. Structured
    appropriately for its form (essay, demonstration, critical review,
    etc.). Must include:
    - A clear title (as a level-1 heading `#`)
-   - An abstract or lede paragraph that states the thesis
+   - A lede paragraph that opens the body. Do NOT repeat the abstract
+     verbatim; the abstract is for the header block, the lede is for
+     pulling the reader into the body proper.
    - The body of the work
    - A conclusion or summary
    - Citations or links where you made non-obvious claims
@@ -72,6 +82,7 @@ Reply with a single JSON object only:
 
 ```json
 {{
+  "abstract": "<40-90 word plain-prose summary>",
   "notebook": "<markdown-string>",
   "draft": "<markdown-string>"
 }}
@@ -176,6 +187,7 @@ def run(project_id: str) -> None:
             "Research output JSON must have `notebook` and `draft` keys. "
             f"Got keys: {list(payload)}. Raw saved to {dump_path}."
         )
+    abstract = (payload.get("abstract") or "").strip() or None
 
     notebook_md = payload["notebook"].strip()
     draft_md = payload["draft"].strip()
@@ -184,8 +196,11 @@ def run(project_id: str) -> None:
 
     notebook_path = paths.LAB_NOTEBOOKS / project_id / "notebook.md"
     draft_path = paths.DRAFTS / project_id / "draft.md"
+    abstract_path = paths.DRAFTS / project_id / "abstract.txt"
     _atomic_write(notebook_path, notebook_md.rstrip() + "\n")
     _atomic_write(draft_path, draft_md.rstrip() + "\n")
+    if abstract:
+        _atomic_write(abstract_path, abstract + "\n")
 
     new_title = _extract_draft_title(draft_md) or proj["title"]
 

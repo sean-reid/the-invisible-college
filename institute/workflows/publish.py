@@ -51,14 +51,27 @@ def _strip_title_heading(draft_md: str) -> tuple[str, str]:
     return "", draft_md
 
 
-def _extract_abstract(body_md: str) -> str | None:
-    """Pick the first non-empty paragraph as the abstract, if it isn't a heading."""
+def _read_abstract_file(project_id: str) -> str | None:
+    """Return the Fellow-written abstract if it exists."""
+    path = paths.DRAFTS / project_id / "abstract.txt"
+    if not path.is_file():
+        return None
+    text = path.read_text(encoding="utf-8").strip()
+    return text or None
+
+
+def _extract_abstract_fallback(body_md: str) -> str | None:
+    """Fallback for pieces published before abstracts were a separate field.
+
+    Picks the first non-empty body paragraph that is not a heading or
+    blockquote. Returns the full paragraph (no truncation); the styling
+    handles whatever length comes back.
+    """
     for chunk in body_md.split("\n\n"):
         chunk = chunk.strip()
         if not chunk or chunk.startswith("#") or chunk.startswith(">"):
             continue
-        # Cap at ~400 chars to keep frontmatter sane.
-        return chunk[:400].rstrip()
+        return chunk
     return None
 
 
@@ -202,7 +215,7 @@ def run(project_id: str) -> None:
 
     now = datetime.now(UTC)
     started = datetime.fromisoformat(proj["created_at"])
-    abstract = _extract_abstract(body)
+    abstract = _read_abstract_file(project_id) or _extract_abstract_fallback(body)
     slug = project_id  # stable, unique, sortable
     authors = [lead.name]
     reviewer_names = [g.name for g in reviewer_genomes]

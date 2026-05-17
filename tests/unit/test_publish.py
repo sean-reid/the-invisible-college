@@ -19,19 +19,27 @@ def test_strip_title_when_missing_returns_empty() -> None:
     assert body == draft
 
 
-def test_extract_abstract_picks_first_paragraph() -> None:
+def test_extract_abstract_fallback_picks_first_paragraph() -> None:
     body = "First short lede paragraph.\n\nSecond paragraph.\n"
-    assert publish._extract_abstract(body) == "First short lede paragraph."
+    assert publish._extract_abstract_fallback(body) == "First short lede paragraph."
 
 
-def test_extract_abstract_skips_headings_and_blockquotes() -> None:
+def test_extract_abstract_fallback_skips_headings_and_blockquotes() -> None:
     body = "## A heading\n\n> a quote\n\nThe actual lede.\n"
-    assert publish._extract_abstract(body) == "The actual lede."
+    assert publish._extract_abstract_fallback(body) == "The actual lede."
 
 
-def test_extract_abstract_returns_none_when_only_headings() -> None:
+def test_extract_abstract_fallback_returns_none_when_only_headings() -> None:
     body = "## h1\n\n### h2\n"
-    assert publish._extract_abstract(body) is None
+    assert publish._extract_abstract_fallback(body) is None
+
+
+def test_extract_abstract_fallback_does_not_truncate() -> None:
+    long_para = "x " * 500  # 1000 chars
+    body = long_para + "\n\nSecond paragraph.\n"
+    out = publish._extract_abstract_fallback(body)
+    assert out is not None
+    assert len(out) >= 900  # no silent truncation
 
 
 def test_yaml_string_escapes_quotes_and_newlines() -> None:
