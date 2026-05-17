@@ -159,36 +159,42 @@ def kill_switch_off() -> None:
 
 @main.command()
 @click.option(
-    "--from-genomes", is_flag=True, help="Skip the design step and register existing genome files."
+    "--from-genomes",
+    is_flag=True,
+    help="Skip the design step and register genomes already in genomes/.",
 )
-def bootstrap(from_genomes: bool) -> None:
+@click.option(
+    "--force",
+    is_flag=True,
+    help="Allow redrafting even if genomes/ already contains files.",
+)
+def bootstrap(from_genomes: bool, force: bool) -> None:
     """Instantiate the founding cohort.
 
-    In the full implementation (Milestone 3), an orchestrator-side Claude
-    proposes four Fellow genomes from the Charter and the Founder approves
-    them interactively. For now, this command simply registers any genomes
-    already present in genomes/.
+    By default the orchestrator-side Claude reads the Charter and proposes
+    four Fellow genomes, and the Founder reviews each one in the terminal.
+    Use --from-genomes to skip the design step and register whatever JSON
+    files are already in genomes/.
     """
     _check_kill_switch()
-    if not from_genomes:
-        console.print(
-            "[yellow]Interactive bootstrap not yet implemented.[/yellow] "
-            "Use --from-genomes to register any genomes already in genomes/."
-        )
-        sys.exit(1)
 
-    genomes = fellow_mod.load_all_genomes()
-    if not genomes:
-        console.print(f"[red]No genomes found in {paths.GENOMES}.[/red]")
-        sys.exit(1)
-
-    with db.connection() as conn, db.transaction(conn):
+    if from_genomes:
+        genomes = fellow_mod.load_all_genomes()
+        if not genomes:
+            console.print(f"[red]No genomes found in {paths.GENOMES}.[/red]")
+            sys.exit(1)
+        with db.connection() as conn, db.transaction(conn):
+            for g in genomes:
+                fellow_mod.register(conn, g)
+                fellow_mod.ensure_fellow_dirs(g.id)
+        console.print(f"[green]Registered {len(genomes)} Fellow(s):[/green]")
         for g in genomes:
-            fellow_mod.register(conn, g)
-            fellow_mod.ensure_fellow_dirs(g.id)
-    console.print(f"[green]Registered {len(genomes)} Fellow(s):[/green]")
-    for g in genomes:
-        console.print(f"  - {g.id} ({g.name}, {g.specialization})")
+            console.print(f"  - {g.id} ({g.name}, {g.specialization})")
+        return
+
+    from institute.workflows import bootstrap as bootstrap_workflow
+
+    bootstrap_workflow.run(force=force)
 
 
 # ---------------------------------------------------------------------------

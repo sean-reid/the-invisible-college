@@ -18,6 +18,7 @@ import shutil
 import subprocess
 import uuid
 from dataclasses import dataclass
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Literal
 
@@ -71,6 +72,113 @@ def _system_prompt_for(genome: Genome) -> str:
         + f"{genome.rank}, specializing in {genome.specialization}.\n\n"
         + genome.system_prompt_addendum.strip()
         + "\n"
+    )
+
+
+def invoke_orchestrator(
+    *,
+    brief: str,
+    step: str,
+    model: str = "claude-opus-4-7",
+    cwd: Path | None = None,
+    json_schema: dict | None = None,
+    extra_dirs: tuple[Path, ...] = (),
+    allowed_tools: tuple[str, ...] = ("Read", "WebSearch", "WebFetch"),
+) -> FellowResult:
+    """Invoke Claude as the orchestrator itself, not as any Fellow.
+
+    Used for institution-level meta-tasks where no Fellow exists yet or where
+    the work is structural (bootstrap, admissions design, etc.). The Charter
+    is still passed as context. The persona is "the orchestrator," not a
+    Fellow with a genome.
+    """
+    from institute.paths import ROOT  # local to avoid import cycle
+
+    actual_cwd = cwd if cwd is not None else ROOT
+    session_id = session_id_for("orchestrator", "meta", step)
+
+    system_prompt = (
+        charter.header()
+        + charter.load()
+        + "\n\n## YOUR ROLE\n\n"
+        + "You are the orchestrator of the Invisible College, running outside of "
+        + "any Fellow's session. Your job is institution-level work: structural "
+        + "decisions, bootstrap, design of admissions materials, and similar "
+        + "meta-tasks. You are not a Fellow and have no specialization."
+    )
+
+    cmd: list[str] = [
+        _claude_executable(),
+        "-p",
+        brief,
+        "--session-id",
+        session_id,
+        "--append-system-prompt",
+        system_prompt,
+        "--model",
+        model,
+        "--allowed-tools",
+        ",".join(allowed_tools),
+        "--permission-mode",
+        "bypassPermissions",
+        "--output-format",
+        "json",
+    ]
+    if json_schema is not None:
+        cmd.extend(["--json-schema", json.dumps(json_schema)])
+    for extra in extra_dirs:
+        cmd.extend(["--add-dir", str(extra)])
+
+    proc = subprocess.run(
+        cmd,
+        cwd=actual_cwd,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+
+    raw_text = proc.stdout.strip()
+    try:
+        raw = json.loads(raw_text) if raw_text else {}
+    except json.JSONDecodeError as exc:
+        raise RuntimeError(
+            f"claude (orchestrator) returned non-JSON output. stderr: {proc.stderr.strip()[:500]}"
+        ) from exc
+
+    result_text = raw.get("result", "") if isinstance(raw, dict) else ""
+    is_error = bool(raw.get("is_error", False)) if isinstance(raw, dict) else True
+
+    # Reuse the same audit log structure with a synthetic FellowTask-shaped record.
+    entry = {
+        "ts": datetime.now(UTC).isoformat(timespec="seconds"),
+        "fellow_id": "orchestrator",
+        "project_id": "meta",
+        "step": step,
+        "session_id": session_id,
+        "returncode": proc.returncode,
+        "duration_ms": raw.get("duration_ms") if isinstance(raw, dict) else None,
+        "cost_usd": raw.get("total_cost_usd") if isinstance(raw, dict) else None,
+        "is_error": raw.get("is_error") if isinstance(raw, dict) else None,
+        "stderr_excerpt": proc.stderr.strip()[:300] if proc.stderr else "",
+    }
+    AUDIT_LOG.parent.mkdir(parents=True, exist_ok=True)
+    with AUDIT_LOG.open("a", encoding="utf-8") as fh:
+        fh.write(json.dumps(entry) + "\n")
+
+    if proc.returncode != 0 or is_error:
+        raise RuntimeError(
+            f"Orchestrator call failed (step={step}): "
+            f"returncode={proc.returncode}, is_error={is_error}, "
+            f"stderr={proc.stderr.strip()[:500]}"
+        )
+
+    return FellowResult(
+        session_id=session_id,
+        result_text=result_text,
+        raw=raw,
+        duration_ms=raw.get("duration_ms") if isinstance(raw, dict) else None,
+        cost_usd=raw.get("total_cost_usd") if isinstance(raw, dict) else None,
+        is_error=is_error,
     )
 
 
@@ -152,9 +260,7 @@ def _audit(
     stderr: str,
 ) -> None:
     entry = {
-        "ts": __import__("datetime")
-        .datetime.now(__import__("datetime").timezone.utc)
-        .isoformat(timespec="seconds"),
+        "ts": datetime.now(UTC).isoformat(timespec="seconds"),
         "fellow_id": task.genome.id,
         "project_id": task.project_id,
         "step": task.step,

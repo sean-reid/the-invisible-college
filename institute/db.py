@@ -13,7 +13,7 @@ from collections.abc import Iterator
 from contextlib import contextmanager
 from pathlib import Path
 
-from institute.paths import DB_PATH
+from institute.paths import DB_PATH as DB_PATH  # re-exported for tests to patch
 
 SCHEMA_VERSION = 1
 
@@ -110,8 +110,10 @@ def _connect(path: Path) -> sqlite3.Connection:
     return conn
 
 
-def initialize(path: Path = DB_PATH) -> None:
+def initialize(path: Path | None = None) -> None:
     """Create the database file and schema if missing. Idempotent."""
+    if path is None:
+        path = _current_db_path()
     path.parent.mkdir(parents=True, exist_ok=True)
     conn = _connect(path)
     try:
@@ -128,9 +130,18 @@ def initialize(path: Path = DB_PATH) -> None:
         conn.close()
 
 
+def _current_db_path() -> Path:
+    """Read DB_PATH from this module at call time so tests can monkey-patch it."""
+    import institute.db as self_module  # late import to access patched attr
+
+    return self_module.DB_PATH
+
+
 @contextmanager
-def connection(path: Path = DB_PATH) -> Iterator[sqlite3.Connection]:
+def connection(path: Path | None = None) -> Iterator[sqlite3.Connection]:
     """Acquire a database connection. Caller manages transactions explicitly."""
+    if path is None:
+        path = _current_db_path()
     if not path.exists():
         raise RuntimeError(f"Database not initialized at {path}. Run `institute init` first.")
     conn = _connect(path)

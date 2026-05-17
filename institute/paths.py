@@ -35,6 +35,7 @@ LAB_NOTEBOOKS = ARCHIVE / "lab-notebooks"
 REVIEWS = ARCHIVE / "reviews"
 DRAFTS = ARCHIVE / "drafts"
 PUBLICATIONS = ARCHIVE / "publications"
+DECISIONS = ARCHIVE / "decisions"
 
 BLOG = ROOT / "blog"
 BLOG_CONTENT = BLOG / "src" / "content"
@@ -57,6 +58,7 @@ def ensure_runtime_dirs() -> None:
         REVIEWS,
         DRAFTS,
         PUBLICATIONS,
+        DECISIONS,
         BLOG_POSTS,
         BLOG_NOTEBOOKS,
         BLOG_REVIEWS,
