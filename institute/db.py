@@ -165,43 +165,58 @@ def _migrate_1_to_2(conn: sqlite3.Connection) -> None:
     """Add round columns to reviews and projects; relax reviews UNIQUE constraint.
 
     SQLite cannot DROP a UNIQUE constraint in place, so we re-create the
-    reviews table and copy the data.
+    reviews table and copy the data. Idempotent: re-running on a partially
+    migrated database is a no-op for steps that already completed.
+
+    We use individual execute() calls (not executescript) because
+    executescript issues an implicit COMMIT, which would clobber our
+    transaction. Each step here checks for its own preconditions so the
+    migration is restart-safe.
     """
     conn.execute("PRAGMA foreign_keys = OFF")
     try:
         conn.execute("BEGIN IMMEDIATE")
-        conn.executescript(
-            """
-            ALTER TABLE projects ADD COLUMN review_round INTEGER NOT NULL DEFAULT 1;
 
-            CREATE TABLE reviews_new (
-                id              TEXT    PRIMARY KEY,
-                project_id      TEXT    NOT NULL REFERENCES projects(id),
-                reviewer_id     TEXT    NOT NULL REFERENCES fellows(id),
-                role            TEXT    NOT NULL,
-                recommendation  TEXT,
-                confidence      TEXT,
-                content_path    TEXT    NOT NULL,
-                submitted_at    TEXT,
-                dissent         INTEGER NOT NULL DEFAULT 0,
-                round           INTEGER NOT NULL DEFAULT 1,
-                UNIQUE (project_id, reviewer_id, round)
-            );
+        # 1) Add review_round to projects if not already present.
+        existing_project_cols = {row["name"] for row in conn.execute("PRAGMA table_info(projects)")}
+        if "review_round" not in existing_project_cols:
+            conn.execute("ALTER TABLE projects ADD COLUMN review_round INTEGER NOT NULL DEFAULT 1")
 
-            INSERT INTO reviews_new
-                (id, project_id, reviewer_id, role, recommendation, confidence,
-                 content_path, submitted_at, dissent, round)
-            SELECT
-                id, project_id, reviewer_id, role, recommendation, confidence,
-                content_path, submitted_at, dissent, 1
-            FROM reviews;
+        # 2) Recreate the reviews table only if it does not yet have `round`.
+        existing_review_cols = {row["name"] for row in conn.execute("PRAGMA table_info(reviews)")}
+        if "round" not in existing_review_cols:
+            conn.execute(
+                """
+                CREATE TABLE reviews_new (
+                    id              TEXT    PRIMARY KEY,
+                    project_id      TEXT    NOT NULL REFERENCES projects(id),
+                    reviewer_id     TEXT    NOT NULL REFERENCES fellows(id),
+                    role            TEXT    NOT NULL,
+                    recommendation  TEXT,
+                    confidence      TEXT,
+                    content_path    TEXT    NOT NULL,
+                    submitted_at    TEXT,
+                    dissent         INTEGER NOT NULL DEFAULT 0,
+                    round           INTEGER NOT NULL DEFAULT 1,
+                    UNIQUE (project_id, reviewer_id, round)
+                )
+                """
+            )
+            conn.execute(
+                """
+                INSERT INTO reviews_new
+                    (id, project_id, reviewer_id, role, recommendation,
+                     confidence, content_path, submitted_at, dissent, round)
+                SELECT
+                    id, project_id, reviewer_id, role, recommendation,
+                    confidence, content_path, submitted_at, dissent, 1
+                FROM reviews
+                """
+            )
+            conn.execute("DROP TABLE reviews")
+            conn.execute("ALTER TABLE reviews_new RENAME TO reviews")
+            conn.execute("CREATE INDEX IF NOT EXISTS idx_reviews_project ON reviews(project_id)")
 
-            DROP TABLE reviews;
-            ALTER TABLE reviews_new RENAME TO reviews;
-
-            CREATE INDEX IF NOT EXISTS idx_reviews_project ON reviews(project_id);
-            """
-        )
         conn.execute("COMMIT")
     except Exception:
         conn.execute("ROLLBACK")
