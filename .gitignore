@@ -5,6 +5,8 @@ institute.db-shm
 institute.db-wal
 *.log
 bootstrap-failed-output.txt
+archive/lab-notebooks/*/raw-research-output.txt
+archive/reviews/*/raw-review-by-*.txt
 
 # Python
 __pycache__/
