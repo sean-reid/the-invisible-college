@@ -47,6 +47,7 @@ const reviews = defineCollection({
     confidence: z.enum(['confident', 'moderate', 'low']),
     role: z.enum(['primary', 'secondary', 'outside']),
     dissent: z.boolean().default(false),
+    round: z.number().int().min(1).default(1),
   }),
 });
 

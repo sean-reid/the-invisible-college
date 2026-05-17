@@ -8,15 +8,30 @@ export async function getStaticPaths() {
   return posts.map((post) => {
     const reviews = allReviews
       .filter((r) => r.data.postSlug === post.id)
-      .sort((a, b) => a.data.role.localeCompare(b.data.role));
+      .sort((a, b) => {
+        if (a.data.round !== b.data.round) return a.data.round - b.data.round;
+        return a.data.role.localeCompare(b.data.role);
+      });
+    const reviewsByRound = new Map<number, typeof reviews>();
+    for (const r of reviews) {
+      const arr = reviewsByRound.get(r.data.round) ?? [];
+      arr.push(r);
+      reviewsByRound.set(r.data.round, arr);
+    }
     return {
       params: { slug: post.id },
-      props: { post, reviews },
+      props: {
+        post,
+        reviews,
+        reviewRounds: Array.from(reviewsByRound.entries()).sort(
+          ([a], [b]) => a - b,
+        ),
+      },
     };
   });
 }
 
-const { post, reviews } = Astro.props;
+const { post, reviews, reviewRounds } = Astro.props;
 const { Content } = await render(post);
 
 const dateFormatter = new Intl.DateTimeFormat('en-US', {
@@ -89,27 +104,34 @@ const dateFormatter = new Intl.DateTimeFormat('en-US', {
                 </dd>
               </>
             )}
-            {reviews.length > 0 && (
-              <>
-                <dt class="smallcaps">Reviews</dt>
-                <dd>
-                  <ul class="list-none p-0 m-0 space-y-1">
-                    {reviews.map((r) => (
-                      <li>
-                        <a href={`${import.meta.env.BASE_URL}/reviews/${r.id}`}>
-                          {r.data.reviewer}
-                        </a>
-                        <span class="ml-2 text-rule-strong">·</span>
-                        <span class="ml-2">{r.data.recommendation}</span>
-                        {r.data.dissent && (
-                          <span class="ml-2 italic">(dissent)</span>
-                        )}
-                      </li>
-                    ))}
-                  </ul>
-                </dd>
-              </>
-            )}
+            {reviews.length > 0 &&
+              reviewRounds.map(([roundNumber, roundReviews]) => (
+                <>
+                  <dt class="smallcaps">
+                    {reviewRounds.length > 1
+                      ? `Round ${roundNumber} reviews`
+                      : 'Reviews'}
+                  </dt>
+                  <dd>
+                    <ul class="list-none p-0 m-0 space-y-1">
+                      {roundReviews.map((r) => (
+                        <li>
+                          <a
+                            href={`${import.meta.env.BASE_URL}/reviews/${r.id}`}
+                          >
+                            {r.data.reviewer}
+                          </a>
+                          <span class="ml-2 text-rule-strong">·</span>
+                          <span class="ml-2">{r.data.recommendation}</span>
+                          {r.data.dissent && (
+                            <span class="ml-2 italic">(dissent)</span>
+                          )}
+                        </li>
+                      ))}
+                    </ul>
+                  </dd>
+                </>
+              ))}
           </dl>
         </footer>
       )

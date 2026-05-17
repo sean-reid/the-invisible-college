@@ -44,7 +44,7 @@ class ReviewSlot:
     role: Role
 
 
-BRIEF = """\
+BRIEF_ROUND_1 = """\
 You are a peer reviewer for the Invisible College. You have been assigned
 as the {role} reviewer of the draft below. You are {reviewer_name}, rank
 {reviewer_rank}, specializing in {reviewer_specialization}.
@@ -53,9 +53,13 @@ as the {role} reviewer of the draft below. You are {reviewer_name}, rank
 
 Read the draft carefully. Then write a structured review.
 
-# Required output
+# CRITICAL OUTPUT RULES
 
-Reply with a single JSON object only:
+Your entire final reply MUST be a single JSON object. No prose preface,
+no summary, no code fence. The first character is `{{` and the last is
+`}}`.
+
+# Required output
 
 ```json
 {{
@@ -83,8 +87,92 @@ Reply with a single JSON object only:
 """
 
 
-def _pick_review_slots(conn: sqlite3.Connection, project_id: str, lead_id: str) -> list[ReviewSlot]:
-    """Pick 2-3 reviewers, excluding the lead and prior collaborators."""
+BRIEF_ROUND_2 = """\
+You are filing a SECOND-round peer review for the Invisible College. You
+previously reviewed an earlier version of this piece. The lead Fellow has
+revised the draft based on your concerns and the other reviewers'. You
+are now reviewing the REVISED draft.
+
+You are {reviewer_name}, rank {reviewer_rank}, specializing in
+{reviewer_specialization}, serving as the {role} reviewer for both rounds.
+
+# CRITICAL OUTPUT RULES
+
+Your entire final reply MUST be a single JSON object. No prose preface,
+no summary, no code fence. The first character is `{{` and the last is
+`}}`.
+
+# Your task
+
+Judge whether your earlier concerns were addressed, or appropriately
+rejected with sound reasoning. Then form a fresh recommendation on the
+revised draft.
+
+You may:
+- Be satisfied that your concerns were addressed → recommend `accept`
+- Be partially satisfied → recommend `minor` or `major` again, naming
+  the remaining problems
+- Find new problems introduced by the revision → call them out
+- Defend your original concerns if the response unconvincingly dismissed
+  them. If you do this, set `dissent_intent` to true.
+
+After this round the project goes directly to editorial. There is no
+third round. Whatever you recommend here will appear alongside the
+publication regardless of editorial outcome.
+
+# Required output
+
+Same shape as round 1:
+
+```json
+{{
+  "summary": "<2-4 sentences on the revised draft, not the original>",
+  "strengths": "<markdown; what got better, what stayed strong>",
+  "concerns": "<markdown; remaining or new concerns, each as a numbered item>",
+  "recommendation": "<one of: accept, minor, major, reject>",
+  "confidence": "<one of: confident, moderate, low>",
+  "dissent_intent": "<true if you intend this review to be published as a dissent>"
+}}
+```
+
+# Your previous (round 1) review
+
+{prior_review_md}
+
+# The lead's response to your concerns and the others'
+
+{response_md}
+
+# The revised draft
+
+{draft_md}
+"""
+
+
+def _pick_review_slots(
+    conn: sqlite3.Connection, project_id: str, lead_id: str, review_round: int
+) -> list[ReviewSlot]:
+    """Pick reviewer slots for the requested round.
+
+    Round 1: fresh selection. Three reviewers (or as many as the College
+    has minus the lead), with at least one Fellow whose specialization
+    differs from the lead's serving as the `outside` reviewer.
+
+    Round 2: re-use the round-1 reviewers in the same roles. The same
+    Fellows judge whether their concerns were addressed.
+    """
+    if review_round > 1:
+        prior = list(
+            conn.execute(
+                "SELECT reviewer_id, role FROM reviews "
+                "WHERE project_id = ? AND round = 1 ORDER BY role",
+                (project_id,),
+            )
+        )
+        if not prior:
+            raise SystemExit(f"Cannot start round {review_round}: no round-1 reviews found.")
+        return [ReviewSlot(reviewer_id=r["reviewer_id"], role=r["role"]) for r in prior]
+
     rows = list(
         conn.execute(
             "SELECT id, specialization FROM fellows "
@@ -102,7 +190,6 @@ def _pick_review_slots(conn: sqlite3.Connection, project_id: str, lead_id: str) 
     ).fetchone()
     lead_spec = lead_row["specialization"] if lead_row else ""
 
-    # Outside reviewer: prefer a Fellow with a different specialization.
     outside = next(
         (r for r in rows if r["specialization"] != lead_spec),
         rows[-1],
@@ -117,7 +204,30 @@ def _pick_review_slots(conn: sqlite3.Connection, project_id: str, lead_id: str) 
     return [s for s in slots if s is not None]
 
 
-def _existing_reviews(conn: sqlite3.Connection, project_id: str) -> set[str]:
+def _load_round_1_review(conn: sqlite3.Connection, project_id: str, reviewer_id: str) -> str | None:
+    row = conn.execute(
+        "SELECT content_path FROM reviews WHERE project_id = ? AND reviewer_id = ? AND round = 1",
+        (project_id, reviewer_id),
+    ).fetchone()
+    if row is None:
+        return None
+    path = paths.ROOT / row["content_path"]
+    return path.read_text(encoding="utf-8") if path.exists() else None
+
+
+def _load_latest_response_to_reviewers(project_id: str) -> str | None:
+    draft_dir = paths.DRAFTS / project_id
+    if not draft_dir.is_dir():
+        return None
+    candidates = sorted(draft_dir.glob("response-to-reviewers.v*.md"))
+    if not candidates:
+        return None
+    return candidates[-1].read_text(encoding="utf-8")
+
+
+def _existing_reviews_in_round(
+    conn: sqlite3.Connection, project_id: str, review_round: int
+) -> set[str]:
     return {
         row["reviewer_id"]
         for row in conn.execute(
@@ -167,7 +277,8 @@ def run(project_id: str) -> None:
     """
     with db.connection() as conn:
         proj = conn.execute(
-            "SELECT id, title, state, draft_path, lead_fellow_id FROM projects WHERE id = ?",
+            "SELECT id, title, state, draft_path, lead_fellow_id, review_round "
+            "FROM projects WHERE id = ?",
             (project_id,),
         ).fetchone()
         if proj is None:
@@ -177,23 +288,31 @@ def run(project_id: str) -> None:
                 f"Project {project_id} is in state {proj['state']}, "
                 "expected drafted or peer_reviewing."
             )
+        review_round = int(proj["review_round"])
         draft_md = (paths.ROOT / proj["draft_path"]).read_text(encoding="utf-8")
-        slots = _pick_review_slots(conn, project_id, proj["lead_fellow_id"])
-        done = _existing_reviews(conn, project_id)
+        slots = _pick_review_slots(conn, project_id, proj["lead_fellow_id"], review_round)
+        done = _existing_reviews_in_round(conn, project_id, review_round)
 
     remaining = [s for s in slots if s.reviewer_id not in done]
     if not remaining:
-        # All reviews submitted; route based on recommendations.
-        _transition_after_all_reviews(project_id, proj["title"])
+        # All reviews submitted for this round; route based on recommendations.
+        _transition_after_all_reviews(project_id, proj["title"], review_round)
         return
 
     slot = remaining[0]
     with db.connection() as conn:
         reviewer = fellow_mod.load_genome(conn, slot.reviewer_id)
+        prior_review_md = (
+            _load_round_1_review(conn, project_id, reviewer.id) if review_round > 1 else None
+        )
+    response_md = _load_latest_response_to_reviewers(project_id) if review_round > 1 else None
 
-    console.print(f"[dim]Asking {reviewer.name} ({reviewer.id}) for a {slot.role} review...[/dim]")
+    round_label = f" (round {review_round})" if review_round > 1 else ""
+    console.print(
+        f"[dim]Asking {reviewer.name} ({reviewer.id}) for a {slot.role} review{round_label}...[/dim]"
+    )
 
-    # Transition the project state if we're starting peer review.
+    # Transition into PEER_REVIEWING the first time work starts for a round.
     if proj["state"] == State.DRAFTED.value:
         now = datetime.now(UTC).isoformat(timespec="seconds")
         with db.connection() as conn, db.transaction(conn):
@@ -202,13 +321,24 @@ def run(project_id: str) -> None:
                 (State.PEER_REVIEWING.value, now, project_id),
             )
 
-    brief = BRIEF.format(
-        role=slot.role,
-        reviewer_name=reviewer.name,
-        reviewer_rank=reviewer.rank,
-        reviewer_specialization=reviewer.specialization,
-        draft_md=draft_md,
-    )
+    if review_round == 1:
+        brief = BRIEF_ROUND_1.format(
+            role=slot.role,
+            reviewer_name=reviewer.name,
+            reviewer_rank=reviewer.rank,
+            reviewer_specialization=reviewer.specialization,
+            draft_md=draft_md,
+        )
+    else:
+        brief = BRIEF_ROUND_2.format(
+            role=slot.role,
+            reviewer_name=reviewer.name,
+            reviewer_rank=reviewer.rank,
+            reviewer_specialization=reviewer.specialization,
+            prior_review_md=prior_review_md or "(prior review not found)",
+            response_md=response_md or "(no response on file)",
+            draft_md=draft_md,
+        )
 
     result = claude_runner.invoke(
         FellowTask(
@@ -220,7 +350,8 @@ def run(project_id: str) -> None:
         )
     )
 
-    dump_path = paths.REVIEWS / project_id / f"raw-review-by-{reviewer.id}.txt"
+    round_suffix = f"-r{review_round}" if review_round > 1 else ""
+    dump_path = paths.REVIEWS / project_id / f"raw-review-by-{reviewer.id}{round_suffix}.txt"
     payload = parsing.parse_json_or_dump(
         result.result_text,
         dump_path=dump_path,
@@ -240,17 +371,18 @@ def run(project_id: str) -> None:
         raise RuntimeError(f"Invalid confidence: {payload['confidence']!r}")
 
     review_md = _render_review_markdown(payload, reviewer, slot.role)
-    review_path = paths.REVIEWS / project_id / f"review-by-{reviewer.id}.md"
+    review_path = paths.REVIEWS / project_id / f"review-by-{reviewer.id}{round_suffix}.md"
     _atomic_write(review_path, review_md)
 
     now = datetime.now(UTC).isoformat(timespec="seconds")
-    review_db_id = f"{project_id}-{reviewer.id}-{secrets.token_hex(3)}"
+    review_db_id = f"{project_id}-{reviewer.id}-r{review_round}-{secrets.token_hex(3)}"
 
     decision = decisions.Decision(
         kind="peer_review",
-        title=f"Peer review by {reviewer.name}: {proj['title']}",
+        title=f"Peer review by {reviewer.name} (round {review_round}): {proj['title']}",
         body=(
             f"**Reviewer:** {reviewer.name} (`{reviewer.id}`, {slot.role})\n\n"
+            f"**Round:** {review_round}\n\n"
             f"**Recommendation:** `{payload['recommendation']}`\n\n"
             f"**Confidence:** {payload['confidence']}\n\n"
             f"**Review:** [{review_path.relative_to(paths.ROOT)}]"
@@ -264,8 +396,8 @@ def run(project_id: str) -> None:
         conn.execute(
             "INSERT INTO reviews "
             "(id, project_id, reviewer_id, role, recommendation, confidence, "
-            " content_path, submitted_at, dissent) "
-            "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+            " content_path, submitted_at, dissent, round) "
+            "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
             (
                 review_db_id,
                 project_id,
@@ -276,6 +408,7 @@ def run(project_id: str) -> None:
                 str(review_path.relative_to(paths.ROOT)),
                 now,
                 int(bool(payload.get("dissent_intent", False))),
+                review_round,
             ),
         )
         conn.execute(
@@ -287,47 +420,72 @@ def run(project_id: str) -> None:
     remaining_after = len(remaining) - 1
     console.print()
     console.print(
-        f"[green]Review filed.[/green]  Recommendation: [bold]{payload['recommendation']}[/bold]"
+        f"[green]Review filed.[/green]  Recommendation: "
+        f"[bold]{payload['recommendation']}[/bold]  (round {review_round})"
     )
     console.print(f"[green]Review file:[/green]    {review_path.relative_to(paths.ROOT)}")
     if remaining_after > 0:
-        console.print(
-            f"[dim]{remaining_after} more reviewer(s) to go. Run `institute next` again.[/dim]"
-        )
+        console.print(f"[dim]{remaining_after} more reviewer(s) to go in this round.[/dim]")
     else:
-        _transition_after_all_reviews(project_id, proj["title"])
+        _transition_after_all_reviews(project_id, proj["title"], review_round)
 
 
-def _transition_after_all_reviews(project_id: str, title: str) -> None:
-    """All reviews are in. If any reviewer asked for revisions, transition
-    to REVISING so the lead can rewrite. Otherwise go directly to EDITORIAL.
+def _transition_after_all_reviews(project_id: str, title: str, review_round: int) -> None:
+    """All reviews in this round are in. Route based on round and outcomes.
+
+    Round 1:
+      - any non-accept => REVISING (lead Fellow rewrites, then round 2 starts)
+      - all accept     => EDITORIAL (skip revision)
+
+    Round 2:
+      - any non-accept => REVISING (final polish, then editorial; revise
+        itself enforces no further rounds)
+      - all accept     => EDITORIAL
     """
     with db.connection() as conn:
         recommendations = [
             row["recommendation"]
             for row in conn.execute(
-                "SELECT recommendation FROM reviews WHERE project_id = ?",
-                (project_id,),
+                "SELECT recommendation FROM reviews WHERE project_id = ? AND round = ?",
+                (project_id, review_round),
             )
         ]
     needs_revision = any(r != "accept" for r in recommendations)
     target_state = State.REVISING if needs_revision else State.EDITORIAL
 
-    now = datetime.now(UTC).isoformat(timespec="seconds")
-    if needs_revision:
+    if needs_revision and review_round == 1:
         kind = "revision_required"
         body = (
-            "All peer reviews have been filed. At least one reviewer requested "
-            "revisions. The lead Fellow will receive every review and rewrite "
-            "the draft before editorial.\n\n"
-            f"Recommendations: {', '.join(recommendations)}"
+            "Round-1 peer reviews filed. At least one reviewer requested "
+            "revisions. The lead Fellow will rewrite the draft and respond to "
+            "each review. After that the same reviewers will see the revised "
+            "draft and file round-2 reviews.\n\n"
+            f"Round 1 recommendations: {', '.join(recommendations)}"
         )
         title_prefix = "Revisions requested"
+    elif needs_revision and review_round >= 2:
+        kind = "final_revision_required"
+        body = (
+            "Round-2 peer reviews filed. At least one reviewer still requested "
+            "revisions. The lead Fellow will do one final polishing pass to "
+            "address the remaining concerns, then the piece goes to editorial. "
+            "There is no third round.\n\n"
+            f"Round 2 recommendations: {', '.join(recommendations)}"
+        )
+        title_prefix = "Final revision requested"
+    elif review_round >= 2:
+        kind = "editorial"
+        body = (
+            "Round-2 peer reviews filed and unanimously recommended `accept`. "
+            "The piece proceeds directly to editorial without a final revision.\n\n"
+            f"Round 2 recommendations: {', '.join(recommendations)}"
+        )
+        title_prefix = "Editorial decision pending"
     else:
         kind = "editorial"
         body = (
-            "All peer reviews have been filed and unanimously recommended "
-            "`accept`. The piece proceeds to editorial without a revision pass."
+            "Round-1 peer reviews filed and unanimously recommended `accept`. "
+            "The piece proceeds to editorial without a revision pass."
         )
         title_prefix = "Editorial decision pending"
 
@@ -338,13 +496,17 @@ def _transition_after_all_reviews(project_id: str, title: str) -> None:
         actors=["editorial-board"],
         related_project=project_id,
     )
+    now = datetime.now(UTC).isoformat(timespec="seconds")
     with db.connection() as conn, db.transaction(conn):
         conn.execute(
             "UPDATE projects SET state = ?, updated_at = ? WHERE id = ?",
             (target_state.value, now, project_id),
         )
         decisions.record(conn, decision)
-    console.print(f"[bold green]All reviews filed.[/bold green] State -> {target_state.value}")
+    console.print(
+        f"[bold green]All round-{review_round} reviews filed.[/bold green] "
+        f"State -> {target_state.value}"
+    )
 
 
 # (Re-exported because tests want to look at this without dragging the

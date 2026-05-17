@@ -152,10 +152,16 @@ def _review_markdown(
     post_slug: str,
     submitted_at: datetime,
     dissent: bool,
+    round_number: int,
 ) -> str:
+    round_title = (
+        f"Round-{round_number} review by {reviewer}"
+        if round_number > 1
+        else f"Review by {reviewer}"
+    )
     frontmatter = [
         "---",
-        f"title: {_yaml_string('Review by ' + reviewer)}",
+        f"title: {_yaml_string(round_title)}",
         f"postSlug: {_yaml_string(post_slug)}",
         f"reviewer: {_yaml_string(reviewer)}",
         f"role: {role}",
@@ -163,10 +169,10 @@ def _review_markdown(
         f"confidence: {confidence}",
         f"submittedAt: {submitted_at.date().isoformat()}",
         f"dissent: {'true' if dissent else 'false'}",
+        f"round: {round_number}",
         "---",
         "",
     ]
-    # Body already includes the review heading and structure; we keep it.
     return "\n".join(frontmatter) + body.rstrip() + "\n"
 
 
@@ -175,7 +181,8 @@ def _gather_reviews(conn: sqlite3.Connection, project_id: str) -> list[dict[str,
         dict(row)
         for row in conn.execute(
             "SELECT reviewer_id, role, recommendation, confidence, content_path, "
-            "submitted_at, dissent FROM reviews WHERE project_id = ? ORDER BY role",
+            "submitted_at, dissent, round FROM reviews WHERE project_id = ? "
+            "ORDER BY round, role",
             (project_id,),
         )
     ]
@@ -252,6 +259,7 @@ def run(project_id: str) -> None:
 
     for review, genome in zip(reviews_data, reviewer_genomes, strict=False):
         review_body = (paths.ROOT / review["content_path"]).read_text(encoding="utf-8")
+        review_round = int(review.get("round") or 1)
         review_text = _review_markdown(
             title=title,
             body=review_body,
@@ -262,8 +270,10 @@ def run(project_id: str) -> None:
             post_slug=slug,
             submitted_at=datetime.fromisoformat(review["submitted_at"]),
             dissent=bool(review["dissent"]),
+            round_number=review_round,
         )
-        _atomic_write(paths.BLOG_REVIEWS / f"{slug}--{genome.id}.md", review_text)
+        suffix = f"--r{review_round}" if review_round > 1 else ""
+        _atomic_write(paths.BLOG_REVIEWS / f"{slug}--{genome.id}{suffix}.md", review_text)
 
     has_dissent = any(r["recommendation"] == "reject" for r in reviews_data)
     decision_body_lines = [

@@ -33,8 +33,11 @@ console = Console()
 
 BRIEF = """\
 You are revising your own research piece for the Invisible College after
-peer review. You are the lead author. You have the draft, your lab
-notebook so far, and three (or more) signed peer reviews.
+{round_label} peer review. You are the lead author. You have the current
+draft, your lab notebook so far, and the signed peer reviews you are
+responding to.
+
+{round_context}
 
 # Your task
 
@@ -92,13 +95,13 @@ no summary, no code fence. The first character is `{{` and the last is
 """
 
 
-def _format_reviews_for_brief(conn: sqlite3.Connection, project_id: str) -> str:
-    """Concatenate every filed review with reviewer attribution."""
+def _format_reviews_for_brief(conn: sqlite3.Connection, project_id: str, review_round: int) -> str:
+    """Concatenate filed reviews for the given round with reviewer attribution."""
     rows = list(
         conn.execute(
             "SELECT reviewer_id, role, recommendation, confidence, content_path "
-            "FROM reviews WHERE project_id = ? ORDER BY role",
-            (project_id,),
+            "FROM reviews WHERE project_id = ? AND round = ? ORDER BY role",
+            (project_id, review_round),
         )
     )
     if not rows:
@@ -150,8 +153,8 @@ def run(project_id: str) -> None:
     """Top-level revise entry point. Called when state is REVISING."""
     with db.connection() as conn:
         proj = conn.execute(
-            "SELECT id, title, state, draft_path, notebook_path, lead_fellow_id "
-            "FROM projects WHERE id = ?",
+            "SELECT id, title, state, draft_path, notebook_path, lead_fellow_id, "
+            "review_round FROM projects WHERE id = ?",
             (project_id,),
         ).fetchone()
         if proj is None:
@@ -160,17 +163,36 @@ def run(project_id: str) -> None:
             raise SystemExit(
                 f"Project {project_id} is in state {proj['state']}, expected revising."
             )
+        current_round = int(proj["review_round"])
         lead = fellow_mod.load_genome(conn, proj["lead_fellow_id"])
         draft_md = (paths.ROOT / proj["draft_path"]).read_text(encoding="utf-8")
         notebook_md = (paths.ROOT / proj["notebook_path"]).read_text(encoding="utf-8")
-        reviews_md = _format_reviews_for_brief(conn, project_id)
+        reviews_md = _format_reviews_for_brief(conn, project_id, current_round)
 
     console.print(
         f"[dim]Asking {lead.name} ({lead.id}) to revise their draft in light of "
         "the peer reviews. This will likely take several minutes...[/dim]"
     )
 
+    if current_round == 1:
+        round_label = "round-1"
+        round_context = (
+            "After this revision the same reviewers will see the revised draft "
+            "and file a second round of reviews. So this is a substantive "
+            "rewrite responding to specific concerns, not the final polish."
+        )
+    else:
+        round_label = "round-2"
+        round_context = (
+            "This is the FINAL polishing pass. After this revision the project "
+            "goes directly to editorial; there is no third round. Address any "
+            "remaining concerns as best you can, or defend the prior version "
+            "explicitly in the response document. The previous draft already "
+            "incorporated round-1 feedback; do not undo those changes."
+        )
     brief = BRIEF.format(
+        round_label=round_label,
+        round_context=round_context,
         draft_md=draft_md,
         notebook_md=notebook_md,
         reviews_md=reviews_md,
@@ -230,18 +252,42 @@ def run(project_id: str) -> None:
 
     new_title = _extract_draft_title(new_draft_md) or proj["title"]
 
+    # Where this revision goes depends on which round triggered it.
+    #
+    #   current_round == 1 (just addressed round-1 reviews)
+    #     -> back to peer_reviewing for round 2; same reviewers see the
+    #        revised draft and the response.
+    #   current_round == 2 (just addressed round-2 reviews)
+    #     -> final polishing pass; project moves directly to editorial.
+    #        There is no third round.
+    if current_round == 1:
+        target_state = State.PEER_REVIEWING
+        next_round = 2
+        next_description = (
+            f"Project transitions to `peer_reviewing` for round {next_round}. "
+            "The same reviewers will see the revised draft and the response."
+        )
+    else:
+        target_state = State.EDITORIAL
+        next_round = current_round  # do not advance; this is the final polish
+        next_description = (
+            "Final polishing pass after round-2 feedback. Project transitions "
+            "directly to `editorial` for publication. No further review rounds."
+        )
+
     decision = decisions.Decision(
         kind="revision",
-        title=f"Revision pass: {new_title}",
+        title=f"Revision pass (round {current_round} feedback): {new_title}",
         body=(
             f"**Lead Fellow:** {lead.name} (`{lead.id}`)\n\n"
+            f"**Addressing:** round-{current_round} reviews\n\n"
             f"**Prior draft preserved:** [{prior_draft_path.relative_to(paths.ROOT)}]"
             f"({prior_draft_path.relative_to(paths.ROOT)})\n\n"
             f"**Revised draft:** [archive/drafts/{project_id}/draft.md]"
             f"(archive/drafts/{project_id}/draft.md)\n\n"
             f"**Response to reviewers:** [{response_path.relative_to(paths.ROOT)}]"
             f"({response_path.relative_to(paths.ROOT)})\n\n"
-            "Project transitions to `editorial` for publication."
+            f"{next_description}"
         ),
         actors=[lead.id],
         related_project=project_id,
@@ -250,8 +296,10 @@ def run(project_id: str) -> None:
     now = datetime.now(UTC).isoformat(timespec="seconds")
     with db.connection() as conn, db.transaction(conn):
         conn.execute(
-            "UPDATE projects SET state = ?, title = ?, updated_at = ? WHERE id = ?",
-            (State.EDITORIAL.value, new_title, now, project_id),
+            "UPDATE projects "
+            "SET state = ?, title = ?, review_round = ?, updated_at = ? "
+            "WHERE id = ?",
+            (target_state.value, new_title, next_round, now, project_id),
         )
         decisions.record(conn, decision)
 
@@ -260,4 +308,5 @@ def run(project_id: str) -> None:
         f"[green]Revision filed.[/green]   Prior draft: {prior_draft_path.relative_to(paths.ROOT)}"
     )
     console.print(f"[green]Response:[/green]         {response_path.relative_to(paths.ROOT)}")
-    console.print(f"[green]New state:[/green]       {State.EDITORIAL.value}")
+    round_label = f" (round {next_round})" if target_state == State.PEER_REVIEWING else ""
+    console.print(f"[green]New state:[/green]       {target_state.value}{round_label}")

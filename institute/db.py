@@ -15,7 +15,7 @@ from pathlib import Path
 
 from institute.paths import DB_PATH as DB_PATH  # re-exported for tests to patch
 
-SCHEMA_VERSION = 1
+SCHEMA_VERSION = 2
 
 SCHEMA = """
 CREATE TABLE IF NOT EXISTS schema_version (
@@ -43,6 +43,7 @@ CREATE TABLE IF NOT EXISTS projects (
     notebook_path    TEXT,
     draft_path       TEXT,
     publication_slug TEXT     UNIQUE,
+    review_round     INTEGER  NOT NULL DEFAULT 1,
     created_at       TEXT     NOT NULL,
     updated_at       TEXT     NOT NULL
 );
@@ -64,7 +65,8 @@ CREATE TABLE IF NOT EXISTS reviews (
     content_path    TEXT    NOT NULL,
     submitted_at    TEXT,
     dissent         INTEGER NOT NULL DEFAULT 0,
-    UNIQUE (project_id, reviewer_id)
+    round           INTEGER NOT NULL DEFAULT 1,
+    UNIQUE (project_id, reviewer_id, round)
 );
 
 CREATE TABLE IF NOT EXISTS sessions (
@@ -111,23 +113,101 @@ def _connect(path: Path) -> sqlite3.Connection:
 
 
 def initialize(path: Path | None = None) -> None:
-    """Create the database file and schema if missing. Idempotent."""
+    """Create the database file and schema if missing. Idempotent.
+
+    If an older schema is present, runs the appropriate forward migration.
+    """
     if path is None:
         path = _current_db_path()
     path.parent.mkdir(parents=True, exist_ok=True)
     conn = _connect(path)
     try:
-        conn.executescript(SCHEMA)
-        cur = conn.execute("SELECT version FROM schema_version LIMIT 1")
-        row = cur.fetchone()
-        if row is None:
+        # Detect existing schema version BEFORE applying CREATE IF NOT EXISTS,
+        # because that would silently leave old tables in place.
+        existing = _detect_schema_version(conn)
+        if existing is None:
+            # Fresh database.
+            conn.executescript(SCHEMA)
             conn.execute("INSERT INTO schema_version (version) VALUES (?)", (SCHEMA_VERSION,))
-        elif row["version"] != SCHEMA_VERSION:
+        elif existing < SCHEMA_VERSION:
+            _run_migrations(conn, existing, SCHEMA_VERSION)
+        elif existing > SCHEMA_VERSION:
             raise RuntimeError(
-                f"Schema version mismatch: db has {row['version']}, code expects {SCHEMA_VERSION}"
+                f"Schema version mismatch: db has {existing}, code expects {SCHEMA_VERSION}."
             )
     finally:
         conn.close()
+
+
+def _detect_schema_version(conn: sqlite3.Connection) -> int | None:
+    """Return the integer schema version on disk, or None if uninitialized."""
+    row = conn.execute(
+        "SELECT name FROM sqlite_master WHERE type='table' AND name='schema_version'"
+    ).fetchone()
+    if row is None:
+        return None
+    row = conn.execute("SELECT version FROM schema_version LIMIT 1").fetchone()
+    return int(row["version"]) if row else None
+
+
+def _run_migrations(conn: sqlite3.Connection, from_version: int, to_version: int) -> None:
+    version = from_version
+    while version < to_version:
+        if version == 1:
+            _migrate_1_to_2(conn)
+            version = 2
+        else:
+            raise RuntimeError(f"No migration path from version {version}.")
+    conn.execute("UPDATE schema_version SET version = ?", (to_version,))
+
+
+def _migrate_1_to_2(conn: sqlite3.Connection) -> None:
+    """Add round columns to reviews and projects; relax reviews UNIQUE constraint.
+
+    SQLite cannot DROP a UNIQUE constraint in place, so we re-create the
+    reviews table and copy the data.
+    """
+    conn.execute("PRAGMA foreign_keys = OFF")
+    try:
+        conn.execute("BEGIN IMMEDIATE")
+        conn.executescript(
+            """
+            ALTER TABLE projects ADD COLUMN review_round INTEGER NOT NULL DEFAULT 1;
+
+            CREATE TABLE reviews_new (
+                id              TEXT    PRIMARY KEY,
+                project_id      TEXT    NOT NULL REFERENCES projects(id),
+                reviewer_id     TEXT    NOT NULL REFERENCES fellows(id),
+                role            TEXT    NOT NULL,
+                recommendation  TEXT,
+                confidence      TEXT,
+                content_path    TEXT    NOT NULL,
+                submitted_at    TEXT,
+                dissent         INTEGER NOT NULL DEFAULT 0,
+                round           INTEGER NOT NULL DEFAULT 1,
+                UNIQUE (project_id, reviewer_id, round)
+            );
+
+            INSERT INTO reviews_new
+                (id, project_id, reviewer_id, role, recommendation, confidence,
+                 content_path, submitted_at, dissent, round)
+            SELECT
+                id, project_id, reviewer_id, role, recommendation, confidence,
+                content_path, submitted_at, dissent, 1
+            FROM reviews;
+
+            DROP TABLE reviews;
+            ALTER TABLE reviews_new RENAME TO reviews;
+
+            CREATE INDEX IF NOT EXISTS idx_reviews_project ON reviews(project_id);
+            """
+        )
+        conn.execute("COMMIT")
+    except Exception:
+        conn.execute("ROLLBACK")
+        raise
+    finally:
+        conn.execute("PRAGMA foreign_keys = ON")
 
 
 def _current_db_path() -> Path:
