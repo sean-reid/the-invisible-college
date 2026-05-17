@@ -198,6 +198,37 @@ def bootstrap(from_genomes: bool, force: bool) -> None:
 
 
 # ---------------------------------------------------------------------------
+# propose: start a new project. A Fellow drafts a research proposal.
+# ---------------------------------------------------------------------------
+
+
+@main.command()
+@click.option(
+    "--lead",
+    type=str,
+    default=None,
+    help="Fellow id to draft the proposal. If omitted, a sensible default is chosen.",
+)
+@click.option(
+    "--topic",
+    type=str,
+    default=None,
+    help="Optional topic guidance. The Fellow may sharpen, narrow, or push back.",
+)
+def propose(lead: str | None, topic: str | None) -> None:
+    """A Fellow drafts a new research proposal.
+
+    The lead Fellow is invoked once and asked for a structured proposal.
+    The result is written to archive/proposals/ and a new project enters
+    state PROPOSED.
+    """
+    _check_kill_switch()
+    from institute.workflows import propose as propose_workflow
+
+    propose_workflow.run(lead=lead, topic=topic)
+
+
+# ---------------------------------------------------------------------------
 # next: advance the state machine. Placeholder until workflows land.
 # ---------------------------------------------------------------------------
 
@@ -206,4 +237,7 @@ def bootstrap(from_genomes: bool, force: bool) -> None:
 def next_cmd() -> None:
     """Advance the most stale in-flight project by one step."""
     _check_kill_switch()
-    console.print("[yellow]Workflow dispatch not yet implemented.[/yellow] Coming in Milestone 4.")
+    console.print(
+        "[yellow]Workflow dispatch not yet implemented.[/yellow] "
+        "Coming with the remaining workflow modules."
+    )
