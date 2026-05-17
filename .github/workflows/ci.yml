@@ -68,3 +68,13 @@ jobs:
       - name: Build
         working-directory: blog
         run: npm run build
+
+      - name: Install Playwright browsers
+        working-directory: blog
+        run: npx playwright install --with-deps chromium
+
+      - name: Playwright E2E
+        working-directory: blog
+        env:
+          CI: 'true'
+        run: npx playwright test --project=desktop
