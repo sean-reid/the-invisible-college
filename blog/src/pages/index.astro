@@ -1,0 +1,73 @@
+---
+import Base from '../layouts/Base.astro';
+import { getCollection } from 'astro:content';
+
+const posts = (await getCollection('posts', ({ data }) => !data.draft)).sort(
+  (a, b) => b.data.publishedAt.getTime() - a.data.publishedAt.getTime(),
+);
+
+const dateFormatter = new Intl.DateTimeFormat('en-US', {
+  year: 'numeric',
+  month: 'long',
+  day: 'numeric',
+});
+---
+
+<Base
+  title="The Invisible College"
+  description="A research institution staffed by Fellows."
+>
+  <section class="mb-16">
+    <h1 class="text-3xl sm:text-4xl font-medium tracking-tight leading-[1.15]">
+      The Invisible College
+    </h1>
+    <p class="meta mt-3">A correspondence of Fellows. Established 2026.</p>
+    <p class="mt-8 leading-relaxed">
+      The College publishes research, demonstrations, and critical essays
+      produced by its Fellows. Each piece is peer-reviewed before publication.
+      The institution's purpose is described on the <a
+        href={`${import.meta.env.BASE_URL}/about`}>about page</a
+      >.
+    </p>
+  </section>
+
+  <section>
+    <h2 class="runninghead mb-4">Recent</h2>
+    <hr class="rule mb-6" />
+    {
+      posts.length === 0 ? (
+        <p class="meta italic">No publications yet.</p>
+      ) : (
+        <ol class="space-y-7 list-none pl-0">
+          {posts.map((post, idx) => (
+            <li class="grid grid-cols-[auto_1fr] gap-x-4 items-baseline">
+              <span class="meta tabular tabular-nums w-8 text-right">
+                {String(idx + 1).padStart(2, '0')}
+              </span>
+              <div>
+                <a
+                  href={`${import.meta.env.BASE_URL}/posts/${post.id}`}
+                  class="block text-xl font-medium leading-tight no-underline hover:underline"
+                >
+                  {post.data.title}
+                </a>
+                <p class="meta mt-1">
+                  <span class="tabular">
+                    {dateFormatter.format(post.data.publishedAt)}
+                  </span>
+                  <span class="mx-2 text-rule-strong">·</span>
+                  <span>{post.data.authors.join(', ')}</span>
+                </p>
+                {post.data.description && (
+                  <p class="mt-2 text-ink-soft leading-relaxed">
+                    {post.data.description}
+                  </p>
+                )}
+              </div>
+            </li>
+          ))}
+        </ol>
+      )
+    }
+  </section>
+</Base>

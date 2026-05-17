@@ -1,0 +1,55 @@
+---
+import '../styles/global.css';
+
+interface Props {
+  title: string;
+  description?: string;
+  ogType?: string;
+}
+
+const { title, description, ogType = 'website' } = Astro.props;
+const fullTitle =
+  title === 'The Invisible College'
+    ? title
+    : `${title} · The Invisible College`;
+const canonicalURL = new URL(Astro.url.pathname, Astro.site);
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="generator" content={Astro.generator} />
+    <link rel="canonical" href={canonicalURL} />
+    <link rel="sitemap" href={`${import.meta.env.BASE_URL}/sitemap-index.xml`} />
+    <title>{fullTitle}</title>
+    {description && <meta name="description" content={description} />}
+    <meta property="og:title" content={fullTitle} />
+    <meta property="og:type" content={ogType} />
+    {description && <meta property="og:description" content={description} />}
+    <meta property="og:url" content={canonicalURL} />
+  </head>
+  <body>
+    <div class="mx-auto max-w-2xl px-6 py-10 sm:py-14">
+      <header class="mb-12 sm:mb-16">
+        <p class="runninghead">
+          <a href={`${import.meta.env.BASE_URL}/`}>The Invisible College</a>
+        </p>
+        <hr class="rule mt-3" />
+      </header>
+
+      <main>
+        <slot />
+      </main>
+
+      <footer class="mt-24 sm:mt-32">
+        <hr class="rule mb-4" />
+        <div class="meta flex flex-wrap items-baseline justify-between gap-4">
+          <span>The Invisible College</span>
+          <span class="tabular">Founded 2026</span>
+        </div>
+      </footer>
+    </div>
+  </body>
+</html>

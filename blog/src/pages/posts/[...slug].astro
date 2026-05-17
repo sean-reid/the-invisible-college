@@ -1,0 +1,122 @@
+---
+import Base from '../../layouts/Base.astro';
+import { getCollection, render } from 'astro:content';
+
+export async function getStaticPaths() {
+  const posts = await getCollection('posts', ({ data }) => !data.draft);
+  const allReviews = await getCollection('reviews');
+  return posts.map((post) => {
+    const reviews = allReviews
+      .filter((r) => r.data.postSlug === post.id)
+      .sort((a, b) => a.data.role.localeCompare(b.data.role));
+    return {
+      params: { slug: post.id },
+      props: { post, reviews },
+    };
+  });
+}
+
+const { post, reviews } = Astro.props;
+const { Content } = await render(post);
+
+const dateFormatter = new Intl.DateTimeFormat('en-US', {
+  year: 'numeric',
+  month: 'long',
+  day: 'numeric',
+});
+---
+
+<Base
+  title={post.data.title}
+  description={post.data.description}
+  ogType="article"
+>
+  <article class="prose">
+    <header class="mb-12 not-prose">
+      <p class="runninghead">Publication</p>
+      <h1
+        class="mt-3 text-3xl sm:text-[2.4rem] font-medium tracking-tight leading-[1.1]"
+      >
+        {post.data.title}
+      </h1>
+      <div class="meta mt-5 flex flex-wrap gap-x-4 gap-y-1 items-baseline">
+        <span>{post.data.authors.join(', ')}</span>
+        <span class="text-rule-strong">·</span>
+        <span class="tabular">
+          <time datetime={post.data.publishedAt.toISOString()}>
+            {dateFormatter.format(post.data.publishedAt)}
+          </time>
+        </span>
+        {
+          post.data.revisedAt && (
+            <>
+              <span class="text-rule-strong">·</span>
+              <span class="tabular italic">
+                revised{' '}
+                <time datetime={post.data.revisedAt.toISOString()}>
+                  {dateFormatter.format(post.data.revisedAt)}
+                </time>
+              </span>
+            </>
+          )
+        }
+      </div>
+      {
+        post.data.abstract && (
+          <p class="mt-6 text-ink-soft italic leading-relaxed border-l-2 border-rule-strong pl-4">
+            {post.data.abstract}
+          </p>
+        )
+      }
+      <hr class="rule mt-8" />
+    </header>
+
+    <Content />
+
+    {
+      (post.data.hasNotebook || reviews.length > 0) && (
+        <footer class="not-prose mt-16">
+          <hr class="rule mb-6" />
+          <p class="runninghead mb-3">Apparatus</p>
+          <dl class="meta grid grid-cols-[max-content_1fr] gap-x-6 gap-y-2">
+            {post.data.hasNotebook && (
+              <>
+                <dt class="smallcaps">Lab notebook</dt>
+                <dd>
+                  <a
+                    href={`${import.meta.env.BASE_URL}/notebooks/${post.id}`}
+                  >
+                    research process, in order
+                  </a>
+                </dd>
+              </>
+            )}
+            {reviews.length > 0 && (
+              <>
+                <dt class="smallcaps">Reviews</dt>
+                <dd>
+                  <ul class="list-none p-0 m-0 space-y-1">
+                    {reviews.map((r) => (
+                      <li>
+                        <a
+                          href={`${import.meta.env.BASE_URL}/reviews/${r.id}`}
+                        >
+                          {r.data.reviewer}
+                        </a>
+                        <span class="ml-2 text-rule-strong">·</span>
+                        <span class="ml-2">{r.data.recommendation}</span>
+                        {r.data.dissent && (
+                          <span class="ml-2 italic">(dissent)</span>
+                        )}
+                      </li>
+                    ))}
+                  </ul>
+                </dd>
+              </>
+            )}
+          </dl>
+        </footer>
+      )
+    }
+  </article>
+</Base>

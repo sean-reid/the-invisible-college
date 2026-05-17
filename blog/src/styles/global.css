@@ -1,0 +1,239 @@
+@import 'tailwindcss';
+
+@plugin '@tailwindcss/typography';
+
+@theme {
+  /* Type stack: high-quality serifs that come for free on most systems.
+     Charter is excellent on macOS; Iowan Old Style ships on iOS; Source Serif
+     Pro is a common open-source fallback. */
+  --font-serif:
+    'Charter', 'Iowan Old Style', 'Source Serif Pro', 'Source Serif 4',
+    'Cambria', 'Georgia', 'Times New Roman', serif;
+  --font-sans:
+    'Inter', 'Helvetica Neue', 'Arial', system-ui, -apple-system, sans-serif;
+  --font-mono:
+    'JetBrains Mono', 'SF Mono', 'Menlo', 'Monaco', 'Consolas', monospace;
+
+  /* Warm paper, warm ink, restrained accent. No pure black, no pure white. */
+  --color-paper: oklch(0.985 0.008 80);
+  --color-paper-deep: oklch(0.96 0.01 80);
+  --color-ink: oklch(0.2 0.012 60);
+  --color-ink-soft: oklch(0.38 0.015 60);
+  --color-rule: oklch(0.82 0.012 60);
+  --color-rule-strong: oklch(0.62 0.014 60);
+  --color-muted: oklch(0.5 0.012 60);
+  --color-accent: oklch(0.38 0.09 260);
+  --color-accent-soft: oklch(0.55 0.08 260);
+}
+
+html {
+  color-scheme: light;
+}
+
+body {
+  background: var(--color-paper);
+  color: var(--color-ink);
+  font-family: var(--font-serif);
+  font-feature-settings:
+    'kern' 1,
+    'liga' 1,
+    'onum' 1,
+    'pnum' 1;
+  font-size: 19px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+@media (max-width: 640px) {
+  body {
+    font-size: 17px;
+  }
+}
+
+a {
+  color: var(--color-accent);
+  text-decoration: underline;
+  text-decoration-thickness: 0.04em;
+  text-underline-offset: 0.18em;
+  transition: color 100ms ease;
+}
+
+a:hover {
+  color: var(--color-ink);
+}
+
+/* Institutional running head: small caps, letter-spaced. */
+.runninghead {
+  font-family: var(--font-sans);
+  font-weight: 500;
+  font-size: 0.72rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--color-ink-soft);
+}
+
+.runninghead a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.runninghead a:hover {
+  color: var(--color-ink);
+}
+
+/* Metadata: byline, dates, section numbers. */
+.meta {
+  font-family: var(--font-sans);
+  font-size: 0.82rem;
+  letter-spacing: 0.04em;
+  color: var(--color-muted);
+}
+
+/* Numerals on dates: lining figures for tabular alignment. */
+.tabular {
+  font-feature-settings:
+    'tnum' 1,
+    'lnum' 1;
+}
+
+/* Section numbers in article body. */
+.section-number {
+  font-family: var(--font-sans);
+  font-weight: 500;
+  font-size: 0.72rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--color-ink-soft);
+  display: block;
+  margin-bottom: 0.5rem;
+}
+
+/* Hairline rule used to separate masthead, footers, etc. */
+hr.rule {
+  border: 0;
+  border-top: 1px solid var(--color-rule);
+  margin: 0;
+}
+
+hr.rule-strong {
+  border: 0;
+  border-top: 1px solid var(--color-rule-strong);
+  margin: 0;
+}
+
+/* Drop cap for the first paragraph of a published piece. Used sparingly. */
+article.with-dropcap > .prose > p:first-of-type::first-letter {
+  font-family: var(--font-serif);
+  font-size: 3.4em;
+  line-height: 0.86;
+  float: left;
+  padding: 0.04em 0.1em 0 0;
+  font-weight: 500;
+  color: var(--color-ink);
+}
+
+/* Typography refinements inside articles. */
+article.prose,
+.prose {
+  --tw-prose-body: var(--color-ink);
+  --tw-prose-headings: var(--color-ink);
+  --tw-prose-links: var(--color-accent);
+  --tw-prose-bold: var(--color-ink);
+  --tw-prose-counters: var(--color-muted);
+  --tw-prose-bullets: var(--color-rule-strong);
+  --tw-prose-hr: var(--color-rule);
+  --tw-prose-quotes: var(--color-ink);
+  --tw-prose-quote-borders: var(--color-rule-strong);
+  --tw-prose-captions: var(--color-muted);
+  --tw-prose-code: var(--color-ink);
+  --tw-prose-pre-code: var(--color-ink);
+  --tw-prose-pre-bg: var(--color-paper-deep);
+  --tw-prose-th-borders: var(--color-rule-strong);
+  --tw-prose-td-borders: var(--color-rule);
+  max-width: 65ch;
+}
+
+.prose h2 {
+  margin-top: 2.6em;
+  margin-bottom: 0.6em;
+  font-weight: 600;
+  font-size: 1.35em;
+  line-height: 1.25;
+}
+
+.prose h3 {
+  margin-top: 2em;
+  margin-bottom: 0.4em;
+  font-weight: 600;
+  font-size: 1.1em;
+}
+
+.prose blockquote {
+  font-style: normal;
+  font-size: 0.98em;
+  border-left-width: 2px;
+  padding-left: 1.2em;
+  color: var(--color-ink-soft);
+}
+
+.prose code {
+  font-family: var(--font-mono);
+  font-size: 0.88em;
+  background: var(--color-paper-deep);
+  padding: 0.1em 0.35em;
+  border-radius: 2px;
+  font-weight: 400;
+}
+
+.prose code::before,
+.prose code::after {
+  content: '';
+}
+
+.prose pre {
+  border: 1px solid var(--color-rule);
+  background: var(--color-paper-deep);
+  padding: 1em 1.2em;
+  font-size: 0.88em;
+  line-height: 1.55;
+  overflow-x: auto;
+}
+
+.prose pre code {
+  background: transparent;
+  padding: 0;
+  border-radius: 0;
+}
+
+/* Footnotes look like footnotes. */
+.prose .footnote-ref,
+.prose sup a {
+  text-decoration: none;
+  font-size: 0.75em;
+  font-feature-settings: 'sups' 1;
+}
+
+.footnotes {
+  margin-top: 4rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--color-rule);
+  font-size: 0.88em;
+  color: var(--color-ink-soft);
+}
+
+.footnotes ol {
+  padding-left: 1.5rem;
+}
+
+/* Smallcaps utility for institutional terms. */
+.smallcaps {
+  font-variant-caps: all-small-caps;
+  letter-spacing: 0.04em;
+}
+
+/* Quiet selection. */
+::selection {
+  background: oklch(0.9 0.04 80);
+  color: var(--color-ink);
+}
