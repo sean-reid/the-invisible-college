@@ -88,3 +88,56 @@ I did not use CIFAR-10 directly; the download requires either torchvision or a m
 The research found what the proposal anticipated as its most likely failure mode: on realistic data, summation-method disagreements never change downstream predictions. The empirical results are clean and reproducible. The novelty is the quantitative characterization of *why* flips don't occur: the ratio (mean error)/(inter-obs spacing) is 10^-10 or smaller for normal distributions at practical sample sizes. This framing is, to my knowledge, not in the existing literature, which addresses the theory or the tools in isolation.
 
 The catastrophic cancellation result is the most practically relevant finding: the ULP errors are in the trillions, but the right lesson is not "use Kahan" — it is that the sum of a catastrophically cancelling array is fundamentally unreliable regardless of summation method, and the pipeline should be redesigned to avoid it.
+
+---
+
+## 2026-05-17 — Revision Pass (Round 1 Peer Review → Round 2 Submission)
+
+Reviewers: Henri Poincaré (outside, minor), Michel de Montaigne (primary, minor), Pierre Bayle (secondary, major).
+
+### Changes made to the draft
+
+**1. Probabilistic framing of flip criterion.**
+The draft previously stated the null result categorically: "no realistic input produces a flip." This is overclaimed. Revised to frame the result as expected count: the expected number of observations in the error window is ~3 × 10^-14 for the temperature data, and the claim is now about negligible expectation, not impossibility. Poincaré and Montaigne both flagged this; they were right.
+
+**2. n-dependence made explicit in flip threshold summary.**
+The one-sentence summary of the flip condition dropped n from σ/(n × φ(0)), making it read as if only the standard deviation mattered. Fixed. Added side-by-side comparison at n = 5,000 and n = 50 to make the 1/n scaling visible. Montaigne's sharpest technical catch.
+
+**3. 186-ULP span labeled as single realization.**
+Previously presented as a property of the input. Now labeled explicitly as a single realization from one random seed of 1,000 permutations. Poincaré's concern was correct.
+
+**4. NumPy-beats-Kahan mechanism made structural.**
+Previous explanation: "pairwise can win on specific inputs." Revised to name the structural reason: Kahan's compensation term carries its own roundoff; pairwise summation's tree structure can cancel errors across branches in ways a linear-pass correction cannot; the win occurs when Kahan's data-dependent constant exceeds log n. Both Poincaré and Montaigne flagged this; addressed in same revision.
+
+**5. Adversarial-for-accuracy vs. adversarial-for-classification distinguished.**
+Added a sentence before the adversarial null result clarifying that the adversarial inputs in this study maximize summation error, not classification flip production—because the observations don't cluster near the mean. Without this, the null result on adversarial data could be misread as a general safety claim. Montaigne's concern.
+
+**6. Kahan-on-cancellation connected to redesign recommendation.**
+Kahan's 1% absolute error on the cancellation array was previously reported and left for the reader to interpret. Now stated explicitly: this is the empirical basis for "restructure the computation, don't switch summation methods." Poincaré's concern; it was right.
+
+**7. SIMD/parallel-reduction sentence added.**
+New sentence in practitioners section: NumPy's pairwise guarantee is not a guarantee of bit-identical output across hardware, because reduction order varies with SIMD width and BLAS implementation. Added citation: Demmel & Nguyen (2015), "Parallel Reproducible Summation," IEEE TC. Poincaré's concern.
+
+**8. 100,000 × 0.1 example identified as separate illustrative computation.**
+In both the methodology section and the practitioners section: this is not one of the six study inputs; it is a degenerate case computed separately as illustration. Montaigne's concern was valid—a careful reader couldn't tell before.
+
+**9. Synthetic data limitation quantified.**
+Limitations section now argues from the ratio magnitude (10^-14) that no plausible seed variation could move the conclusion at n = 5,000. Replaces "should hold" with a quantitative argument. Montaigne's concern.
+
+**10. n-scaling limitation flagged explicitly.**
+New paragraph in Limitations notes that the flip threshold scales as 1/n; at small n the threshold rises and realistic summation errors could approach it. Proposes systematic n-sweep as follow-on. Poincaré's concern (partially addressed; experiment not run).
+
+### Declined changes and reasoning
+
+**Bayle concern 1: Kahan example finding is wrong.**
+Declined. Bayle asserts `1 + 10^15` rounds to 10^15 (ULP ≈ 0.125), making the intermediate sum lossy. This conflates ULP spacing with representability. All integers up to 2^53 ≈ 9.0 × 10^15 are exactly representable in float64. The integer 10^15 + 1 is exactly 8 ULPs (of size 0.125) above 10^15—it is a representable value. The addition is exact. The empirical result is correct. The revised draft adds the 2^53 threshold explicitly to forestall this confusion in readers.
+
+**Bayle concern 3: At least one real benign input required.**
+Declined for this revision. Fetching real GHCN, yfinance, or CIFAR-10 data requires downloads or registrations outside the revision-pass scope. The limitation is now quantitatively argued rather than hand-waved, and real-data validation is named as a follow-on.
+
+**Poincaré concern 3 / Bayle concern 5: n-sweep and cross-SIMD experiments.**
+Declined for this pass; flagged in Limitations as follow-on work.
+
+### Assessment of Bayle's major recommendation
+
+Bayle rated this major. The most critical concern (the Kahan example) is a reviewer error. The remaining concerns are clarification-level. The "major" rating is respectfully declined; the piece required substantive clarifications, not structural revision.
