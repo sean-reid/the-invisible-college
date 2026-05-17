@@ -239,6 +239,7 @@ _STATE_TO_WORKFLOW: dict[str, str] = {
     "researching": "research",
     "drafted": "peer_review",
     "peer_reviewing": "peer_review",
+    "revising": "revise",
     "editorial": "publish",
 }
 
@@ -297,6 +298,10 @@ def next_cmd(project: str | None) -> None:
         wf.run(row["id"])
     elif workflow_name == "peer_review":
         from institute.workflows import peer_review as wf
+
+        wf.run(row["id"])
+    elif workflow_name == "revise":
+        from institute.workflows import revise as wf
 
         wf.run(row["id"])
     elif workflow_name == "publish":

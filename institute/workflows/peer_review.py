@@ -183,8 +183,8 @@ def run(project_id: str) -> None:
 
     remaining = [s for s in slots if s.reviewer_id not in done]
     if not remaining:
-        # All reviews submitted; move to editorial.
-        _transition_to_editorial(project_id, proj["title"])
+        # All reviews submitted; route based on recommendations.
+        _transition_after_all_reviews(project_id, proj["title"])
         return
 
     slot = remaining[0]
@@ -295,30 +295,56 @@ def run(project_id: str) -> None:
             f"[dim]{remaining_after} more reviewer(s) to go. Run `institute next` again.[/dim]"
         )
     else:
-        _transition_to_editorial(project_id, proj["title"])
+        _transition_after_all_reviews(project_id, proj["title"])
 
 
-def _transition_to_editorial(project_id: str, title: str) -> None:
-    """All reviews are in; move the project to EDITORIAL state."""
+def _transition_after_all_reviews(project_id: str, title: str) -> None:
+    """All reviews are in. If any reviewer asked for revisions, transition
+    to REVISING so the lead can rewrite. Otherwise go directly to EDITORIAL.
+    """
+    with db.connection() as conn:
+        recommendations = [
+            row["recommendation"]
+            for row in conn.execute(
+                "SELECT recommendation FROM reviews WHERE project_id = ?",
+                (project_id,),
+            )
+        ]
+    needs_revision = any(r != "accept" for r in recommendations)
+    target_state = State.REVISING if needs_revision else State.EDITORIAL
+
     now = datetime.now(UTC).isoformat(timespec="seconds")
+    if needs_revision:
+        kind = "revision_required"
+        body = (
+            "All peer reviews have been filed. At least one reviewer requested "
+            "revisions. The lead Fellow will receive every review and rewrite "
+            "the draft before editorial.\n\n"
+            f"Recommendations: {', '.join(recommendations)}"
+        )
+        title_prefix = "Revisions requested"
+    else:
+        kind = "editorial"
+        body = (
+            "All peer reviews have been filed and unanimously recommended "
+            "`accept`. The piece proceeds to editorial without a revision pass."
+        )
+        title_prefix = "Editorial decision pending"
+
     decision = decisions.Decision(
-        kind="editorial",
-        title=f"Editorial decision pending: {title}",
-        body=(
-            "All peer reviews have been filed. The Editorial Board (or, in "
-            "v1, the next `institute next` invocation) will render the "
-            "publication decision."
-        ),
+        kind=kind,
+        title=f"{title_prefix}: {title}",
+        body=body,
         actors=["editorial-board"],
         related_project=project_id,
     )
     with db.connection() as conn, db.transaction(conn):
         conn.execute(
             "UPDATE projects SET state = ?, updated_at = ? WHERE id = ?",
-            (State.EDITORIAL.value, now, project_id),
+            (target_state.value, now, project_id),
         )
         decisions.record(conn, decision)
-    console.print(f"[bold green]All reviews filed.[/bold green] State -> {State.EDITORIAL.value}")
+    console.print(f"[bold green]All reviews filed.[/bold green] State -> {target_state.value}")
 
 
 # (Re-exported because tests want to look at this without dragging the
