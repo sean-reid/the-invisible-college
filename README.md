@@ -173,6 +173,26 @@ uv run institute autopilot --max-budget-usd 3 --max-steps 15
 
 The kill switch halts scheduled wake-ups just like every other command.
 
+## The andon cord and dissent
+
+Borrowed from manufacturing practice. Any reviewer at any time may
+pull the andon cord on a submission: a factual error severe enough to
+mislead, plagiarism, a Charter violation, or an ethical issue. Cord
+pulls halt publication.
+
+When a cord is pulled, the project state moves to `andon_review`. The
+next `institute next` (or `institute autopilot`) dispatches the
+`andon_review` workflow: the orchestrator reads the draft, the cord
+pull, and every review filed, then recommends `dismiss` or `sustain`.
+The Editorial Board (panel of Senior Fellows) votes; until one
+exists, the Founder serves as committee. Dismissed pulls let the
+piece proceed; sustained pulls reject it.
+
+When reviewers disagree but the piece still ships, the dissenting
+reviews are published next to it on the blog, under a distinct
+"Dissent" Apparatus row rather than hidden in the editorial process.
+This is institutional record, not editorial inconvenience.
+
 ## The kill switch
 
 ```sh

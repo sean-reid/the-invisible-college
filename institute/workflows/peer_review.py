@@ -82,7 +82,9 @@ Exact filenames:
    {{
      "recommendation": "<one of: accept, minor, major, reject>",
      "confidence": "<one of: confident, moderate, low>",
-     "dissent_intent": <true or false>
+     "dissent_intent": <true or false>,
+     "andon_cord": <true or false>,
+     "andon_reason": "<string, required if andon_cord is true; otherwise ''>"
    }}
    ```
 
@@ -94,6 +96,22 @@ Exact filenames:
   disagreement is the institutional norm.
 - Reviewer reputation is tracked. Lazy reviews damage it.
 - 500-1200 words total across summary + strengths + concerns is typical.
+
+# The andon cord
+
+`andon_cord` is for serious problems that warrant halting publication
+entirely: a factual error severe enough that the piece misleads,
+plagiarism, a Charter violation, an ethical issue, a result that
+cannot be reproduced from the lab notebook. It is NOT for routine
+"major revisions required" — that is what the `recommendation` field
+is for.
+
+Set `andon_cord: true` only if the piece should not be published in
+anything close to its current form. If you pull it, give a clear
+reason in `andon_reason`. The Editorial Board (or the Founder until
+one exists) will review the pull and either dismiss it (the piece
+proceeds) or sustain it (the piece is rejected). Frivolous pulls
+damage reviewer reputation; justified ones are institutional duty.
 
 # Final reply
 
@@ -130,7 +148,12 @@ Exact filenames:
 2. `strengths.md` - what got better, what stayed strong.
 3. `concerns.md` - remaining or new concerns, each as a numbered item.
 4. `decision.json` - {{ "recommendation": "<accept|minor|major|reject>",
-   "confidence": "<confident|moderate|low>", "dissent_intent": <true|false> }}
+   "confidence": "<confident|moderate|low>", "dissent_intent": <true|false>,
+   "andon_cord": <true|false>, "andon_reason": "<string>" }}
+
+   The andon cord is for serious problems (factual error, plagiarism,
+   Charter violation, ethical issue). Pulling it halts publication
+   pending Editorial Board review.
 
 # Stance options
 
@@ -248,18 +271,29 @@ def _atomic_write(path: Path, content: str) -> None:
 
 def _render_review_markdown(payload: dict, reviewer: Genome, role: Role) -> str:
     """Render a review JSON payload as the markdown stored in the archive."""
-    return "\n".join(
+    lines = [
+        f"# Review by {reviewer.name}",
+        "",
+        f"- **Role:** {role}",
+        f"- **Recommendation:** {payload['recommendation']}",
+        f"- **Confidence:** {payload['confidence']}",
+    ]
+    if payload.get("dissent_intent"):
+        lines.append("- **Dissent:** yes")
+    if payload.get("andon_cord"):
+        lines.append("- **Andon cord pulled:** yes")
+    lines.extend(["", "## Summary", "", payload["summary"].strip(), ""])
+    if payload.get("andon_cord"):
+        lines.extend(
+            [
+                "## Andon cord",
+                "",
+                payload.get("andon_reason", "").strip() or "(no reason supplied)",
+                "",
+            ]
+        )
+    lines.extend(
         [
-            f"# Review by {reviewer.name}",
-            "",
-            f"- **Role:** {role}",
-            f"- **Recommendation:** {payload['recommendation']}",
-            f"- **Confidence:** {payload['confidence']}",
-            "",
-            "## Summary",
-            "",
-            payload["summary"].strip(),
-            "",
             "## Strengths",
             "",
             payload["strengths"].strip(),
@@ -270,6 +304,7 @@ def _render_review_markdown(payload: dict, reviewer: Genome, role: Role) -> str:
             "",
         ]
     )
+    return "\n".join(lines)
 
 
 def run(project_id: str) -> None:
@@ -381,6 +416,14 @@ def run(project_id: str) -> None:
     if decision_payload["confidence"] not in {"confident", "moderate", "low"}:
         raise RuntimeError(f"Invalid confidence: {decision_payload['confidence']!r}")
 
+    andon_cord = bool(decision_payload.get("andon_cord", False))
+    andon_reason = str(decision_payload.get("andon_reason", "")).strip()
+    if andon_cord and not andon_reason:
+        raise RuntimeError(
+            "Reviewer pulled the andon cord without a reason. "
+            "andon_reason is required when andon_cord is true."
+        )
+
     payload = {
         "summary": summary,
         "strengths": strengths,
@@ -388,6 +431,8 @@ def run(project_id: str) -> None:
         "recommendation": decision_payload["recommendation"],
         "confidence": decision_payload["confidence"],
         "dissent_intent": bool(decision_payload.get("dissent_intent", False)),
+        "andon_cord": andon_cord,
+        "andon_reason": andon_reason,
     }
 
     round_suffix = f"-r{review_round}" if review_round > 1 else ""
@@ -417,8 +462,8 @@ def run(project_id: str) -> None:
         conn.execute(
             "INSERT INTO reviews "
             "(id, project_id, reviewer_id, role, recommendation, confidence, "
-            " content_path, submitted_at, dissent, round) "
-            "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+            " content_path, submitted_at, dissent, round, andon_cord, andon_reason) "
+            "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
             (
                 review_db_id,
                 project_id,
@@ -430,6 +475,8 @@ def run(project_id: str) -> None:
                 now,
                 int(bool(payload.get("dissent_intent", False))),
                 review_round,
+                int(andon_cord),
+                andon_reason or None,
             ),
         )
         conn.execute(
@@ -454,6 +501,9 @@ def run(project_id: str) -> None:
 def _transition_after_all_reviews(project_id: str, title: str, review_round: int) -> None:
     """All reviews in this round are in. Route based on round and outcomes.
 
+    Andon cord pulled by any reviewer (any round) routes immediately to
+    ANDON_REVIEW and overrides the revision/editorial routing below.
+
     Round 1:
       - any non-accept => REVISING (lead Fellow rewrites, then round 2 starts)
       - all accept     => EDITORIAL (skip revision)
@@ -471,6 +521,18 @@ def _transition_after_all_reviews(project_id: str, title: str, review_round: int
                 (project_id, review_round),
             )
         ]
+        cord_pulls = list(
+            conn.execute(
+                "SELECT reviewer_id, andon_reason FROM reviews "
+                "WHERE project_id = ? AND round = ? AND andon_cord = 1",
+                (project_id, review_round),
+            )
+        )
+
+    if cord_pulls:
+        _route_to_andon_review(project_id, title, review_round, cord_pulls)
+        return
+
     needs_revision = any(r != "accept" for r in recommendations)
     target_state = State.REVISING if needs_revision else State.EDITORIAL
 
@@ -530,6 +592,51 @@ def _transition_after_all_reviews(project_id: str, title: str, review_round: int
     )
 
 
+def _route_to_andon_review(
+    project_id: str, title: str, review_round: int, cord_pulls: list
+) -> None:
+    """A reviewer pulled the andon cord; halt publication pending review."""
+    puller_lines = []
+    for row in cord_pulls:
+        reason = (row["andon_reason"] or "").strip() or "(no reason supplied)"
+        puller_lines.append(f"- **{row['reviewer_id']}**: {reason}")
+    body = (
+        "One or more reviewers pulled the andon cord on this submission. "
+        "Publication is halted pending Editorial Board review (or Founder "
+        "review until an Editorial Board exists).\n\n"
+        "## Cord pullers\n\n" + "\n".join(puller_lines) + "\n\n"
+        "## Routing\n\n"
+        "State has moved to `andon_review`. The next `institute next` call "
+        "will dispatch the `andon_review` workflow, which either dismisses "
+        "the pull (publication continues) or sustains it (publication is "
+        "rejected). Frivolous pulls are noted in the cord-puller's record; "
+        "justified ones are institutional duty."
+    )
+    decision = decisions.Decision(
+        kind="andon_cord_pulled",
+        title=f"Andon cord pulled: {title}",
+        body=body,
+        actors=[row["reviewer_id"] for row in cord_pulls],
+        related_project=project_id,
+    )
+    now = datetime.now(UTC).isoformat(timespec="seconds")
+    with db.connection() as conn, db.transaction(conn):
+        conn.execute(
+            "UPDATE projects SET state = ?, updated_at = ? WHERE id = ?",
+            (State.ANDON_REVIEW.value, now, project_id),
+        )
+        decisions.record(conn, decision)
+    console.print()
+    console.print(
+        f"[bold red]Andon cord pulled[/bold red] on `{project_id}`. "
+        f"State -> {State.ANDON_REVIEW.value}"
+    )
+    for row in cord_pulls:
+        console.print(
+            f"  by {row['reviewer_id']}: {(row['andon_reason'] or '').strip() or '(no reason)'}"
+        )
+
+
 # (Re-exported because tests want to look at this without dragging the
 # review state machine into them.)
-__all__ = ["ReviewSlot", "_render_review_markdown", "run"]
+__all__ = ["ReviewSlot", "_render_review_markdown", "_route_to_andon_review", "run"]

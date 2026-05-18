@@ -15,7 +15,7 @@ from pathlib import Path
 
 from institute.paths import DB_PATH as DB_PATH  # re-exported for tests to patch
 
-SCHEMA_VERSION = 2
+SCHEMA_VERSION = 3
 
 SCHEMA = """
 CREATE TABLE IF NOT EXISTS schema_version (
@@ -66,6 +66,8 @@ CREATE TABLE IF NOT EXISTS reviews (
     submitted_at    TEXT,
     dissent         INTEGER NOT NULL DEFAULT 0,
     round           INTEGER NOT NULL DEFAULT 1,
+    andon_cord      INTEGER NOT NULL DEFAULT 0,
+    andon_reason    TEXT,
     UNIQUE (project_id, reviewer_id, round)
 );
 
@@ -156,6 +158,9 @@ def _run_migrations(conn: sqlite3.Connection, from_version: int, to_version: int
         if version == 1:
             _migrate_1_to_2(conn)
             version = 2
+        elif version == 2:
+            _migrate_2_to_3(conn)
+            version = 3
         else:
             raise RuntimeError(f"No migration path from version {version}.")
     conn.execute("UPDATE schema_version SET version = ?", (to_version,))
@@ -223,6 +228,28 @@ def _migrate_1_to_2(conn: sqlite3.Connection) -> None:
         raise
     finally:
         conn.execute("PRAGMA foreign_keys = ON")
+
+
+def _migrate_2_to_3(conn: sqlite3.Connection) -> None:
+    """Add andon_cord + andon_reason columns to reviews.
+
+    A reviewer can pull the andon cord (Chapter 7) to halt publication
+    pending Editorial Board review. The cord pull is recorded on the
+    review itself so the audit trail stays whole.
+
+    Idempotent: checks for column presence before adding.
+    """
+    conn.execute("BEGIN IMMEDIATE")
+    try:
+        existing = {row["name"] for row in conn.execute("PRAGMA table_info(reviews)")}
+        if "andon_cord" not in existing:
+            conn.execute("ALTER TABLE reviews ADD COLUMN andon_cord INTEGER NOT NULL DEFAULT 0")
+        if "andon_reason" not in existing:
+            conn.execute("ALTER TABLE reviews ADD COLUMN andon_reason TEXT")
+        conn.execute("COMMIT")
+    except Exception:
+        conn.execute("ROLLBACK")
+        raise
 
 
 def _current_db_path() -> Path:

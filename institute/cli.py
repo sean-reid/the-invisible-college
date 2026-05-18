@@ -336,6 +336,7 @@ _STATE_TO_WORKFLOW: dict[str, str] = {
     "drafted": "peer_review",
     "peer_reviewing": "peer_review",
     "revising": "revise",
+    "andon_review": "andon_review",
     "editorial": "publish",
 }
 
@@ -399,6 +400,8 @@ def _dispatch_step(project_id: str, state: str) -> None:
         from institute.workflows import peer_review as wf
     elif workflow_name == "revise":
         from institute.workflows import revise as wf
+    elif workflow_name == "andon_review":
+        from institute.workflows import andon_review as wf
     elif workflow_name == "publish":
         from institute.workflows import publish as wf
     else:

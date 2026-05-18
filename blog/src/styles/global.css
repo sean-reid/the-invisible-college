@@ -24,6 +24,9 @@
   --color-muted: oklch(0.5 0.012 60);
   --color-accent: oklch(0.38 0.09 260);
   --color-accent-soft: oklch(0.55 0.08 260);
+  /* The andon-cord red: muted enough to fit the page, distinct enough that
+     a dissent or a halted publication does not read as routine. */
+  --color-andon: oklch(0.48 0.12 25);
 }
 
 html {

@@ -21,6 +21,7 @@ class State(StrEnum):
     DRAFTED = "drafted"
     PEER_REVIEWING = "peer_reviewing"
     REVISING = "revising"
+    ANDON_REVIEW = "andon_review"
     EDITORIAL = "editorial"
     PUBLISHED = "published"
     REJECTED = "rejected"
@@ -34,6 +35,7 @@ NEXT_ACTION: dict[State, str | None] = {
     State.DRAFTED: "peer_review",
     State.PEER_REVIEWING: "peer_review",
     State.REVISING: "revise",
+    State.ANDON_REVIEW: "andon_review",
     State.EDITORIAL: "publish",
     State.PUBLISHED: None,
     State.REJECTED: None,
@@ -46,8 +48,15 @@ ALLOWED_TRANSITIONS: dict[State, set[State]] = {
     State.PROPOSAL_REVIEWED: {State.RESEARCHING},
     State.RESEARCHING: {State.RESEARCHING, State.DRAFTED},
     State.DRAFTED: {State.PEER_REVIEWING},
-    State.PEER_REVIEWING: {State.PEER_REVIEWING, State.REVISING, State.EDITORIAL, State.REJECTED},
+    State.PEER_REVIEWING: {
+        State.PEER_REVIEWING,
+        State.REVISING,
+        State.ANDON_REVIEW,
+        State.EDITORIAL,
+        State.REJECTED,
+    },
     State.REVISING: {State.PEER_REVIEWING, State.EDITORIAL},
+    State.ANDON_REVIEW: {State.EDITORIAL, State.REJECTED},
     State.EDITORIAL: {State.PUBLISHED, State.REJECTED},
     State.PUBLISHED: set(),
     State.REJECTED: set(),

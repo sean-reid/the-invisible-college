@@ -31,6 +31,7 @@ export async function getStaticPaths() {
       publishedAt: p.data.publishedAt,
       authors: p.data.authors,
     }));
+    const dissents = reviews.filter((r) => r.data.dissent);
     return {
       params: { slug: post.id },
       props: {
@@ -41,12 +42,14 @@ export async function getStaticPaths() {
         ),
         fellowByName: Object.fromEntries(fellowByName),
         citedBy,
+        dissents,
       },
     };
   });
 }
 
-const { post, reviews, reviewRounds, fellowByName, citedBy } = Astro.props;
+const { post, reviews, reviewRounds, fellowByName, citedBy, dissents } =
+  Astro.props;
 const { Content } = await render(post);
 
 const dateFormatter = new Intl.DateTimeFormat('en-US', {
@@ -158,7 +161,9 @@ const dateFormatter = new Intl.DateTimeFormat('en-US', {
                           <span class="ml-2 text-rule-strong">·</span>
                           <span class="ml-2">{r.data.recommendation}</span>
                           {r.data.dissent && (
-                            <span class="ml-2 italic">(dissent)</span>
+                            <span class="ml-2 font-medium text-andon">
+                              dissent
+                            </span>
                           )}
                         </li>
                       ))}
@@ -166,6 +171,33 @@ const dateFormatter = new Intl.DateTimeFormat('en-US', {
                   </dd>
                 </>
               ))}
+            {dissents.length > 0 && (
+              <>
+                <dt class="smallcaps text-andon">Dissent</dt>
+                <dd>
+                  <ul class="list-none p-0 m-0 space-y-1">
+                    {dissents.map((r) => (
+                      <li>
+                        <a
+                          href={`${import.meta.env.BASE_URL}/reviews/${r.id}`}
+                        >
+                          {r.data.reviewer}
+                        </a>
+                        <span class="ml-2 text-rule-strong">·</span>
+                        <span class="ml-2">round {r.data.round}</span>
+                        <span class="ml-2 text-rule-strong">·</span>
+                        <span class="ml-2">{r.data.recommendation}</span>
+                      </li>
+                    ))}
+                  </ul>
+                  <p class="mt-2 text-sm text-ink-soft italic">
+                    Reviews that disagreed with the editorial outcome. Published alongside
+                    the piece because the College treats disagreement as institutional record,
+                    not editorial inconvenience.
+                  </p>
+                </dd>
+              </>
+            )}
             {citedBy.length > 0 && (
               <>
                 <dt class="smallcaps">Cited by</dt>
