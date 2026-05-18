@@ -53,6 +53,10 @@ jobs:
         working-directory: blog
         run: npm ci
 
+      - name: Sync Fellow genomes into content collection
+        working-directory: blog
+        run: npm run sync-fellows
+
       - name: Astro check
         working-directory: blog
         run: npx astro check
