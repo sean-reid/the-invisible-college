@@ -22,7 +22,7 @@ from pathlib import Path
 
 from rich.console import Console
 
-from institute import claude_runner, db, decisions, paths
+from institute import claude_runner, db, decisions, paths, workspaces
 from institute import fellow as fellow_mod
 from institute.claude_runner import FellowTask
 from institute.fellow import Genome
@@ -69,8 +69,14 @@ in this exact order, each as a level-2 heading:
 
 # Output
 
-Reply with the proposal markdown only. No prose before or after the
-proposal. Do not write to any files; your reply IS the proposal.
+Use the Write tool to create `proposal.md` in your current working
+directory containing the proposal markdown described above. Then
+reply with the single word `Done.` Nothing else.
+
+Writing to a file rather than returning the proposal in your reply
+matters: long prose replies risk being truncated by the output-token
+limit, while a Write-tool file is unbounded. Verify the file exists
+and is complete before saying Done.
 """
 
 
@@ -177,12 +183,38 @@ def _extract_title(markdown: str) -> str:
 
 
 def _validate_sections(markdown: str) -> list[str]:
-    """Return list of missing required sections."""
+    """Return list of missing required sections.
+
+    Matches case-insensitively and accepts small idiomatic variants so a
+    Fellow that writes `## Expected Outputs` or `## Failure modes`
+    doesn't lose its draft over a heading-style difference.
+    """
     missing = []
     for section in REQUIRED_SECTIONS:
-        if not re.search(rf"^##\s+{re.escape(section)}\s*$", markdown, re.MULTILINE):
+        if not _section_present(markdown, section):
             missing.append(section)
     return missing
+
+
+def _section_present(markdown: str, section: str) -> bool:
+    variants = [section, *_SECTION_VARIANTS.get(section, [])]
+    for variant in variants:
+        if re.search(
+            rf"^##\s+{re.escape(variant)}\s*$",
+            markdown,
+            re.MULTILINE | re.IGNORECASE,
+        ):
+            return True
+    return False
+
+
+# Reasonable synonyms the Fellow may emit instead of the canonical heading.
+_SECTION_VARIANTS: dict[str, list[str]] = {
+    "Expected output": ["Expected outputs", "Output", "Outputs", "Deliverable", "Deliverables"],
+    "Resource estimate": ["Resources", "Resource estimates"],
+    "Anticipated failure modes": ["Failure modes", "Risks", "Anticipated risks"],
+    "Collaborators needed": ["Collaborators", "Collaboration", "Required collaborators"],
+}
 
 
 def _atomic_write(path: Path, content: str) -> None:
@@ -207,19 +239,25 @@ def run(*, lead: str | None = None, topic: str | None = None) -> None:
         "This will take a few minutes...[/dim]"
     )
 
-    result = claude_runner.invoke(
+    workspace = workspaces.workspace_for(lead_genome.id, "propose")
+    # Clear any stale proposal.md from a prior aborted attempt; otherwise the
+    # Fellow's response of "Done." could refer to old content on disk.
+    stale = workspace / "proposal.md"
+    if stale.exists():
+        stale.unlink()
+
+    claude_runner.invoke(
         FellowTask(
             genome=lead_genome,
             project_id="pre-init",  # used only for the session id
             step="propose",
             brief=brief,
+            workspace=workspace,
             extra_dirs=(paths.DOCS, paths.ARCHIVE),
         )
     )
 
-    proposal_md = result.result_text.strip()
-    if not proposal_md:
-        raise RuntimeError("Fellow returned empty proposal.")
+    proposal_md = workspaces.require_output(workspace, "proposal.md", min_chars=300).strip()
 
     # Strip surrounding code fences if the Fellow wrapped its output.
     if proposal_md.startswith("```"):
@@ -231,7 +269,10 @@ def run(*, lead: str | None = None, topic: str | None = None) -> None:
     missing = _validate_sections(proposal_md)
     if missing:
         raise RuntimeError(
-            f"Proposal is missing required sections: {missing}. Got:\n{proposal_md[:800]}"
+            f"Proposal is missing required sections: {missing}. "
+            f"Full draft preserved at {workspace / 'proposal.md'} "
+            f"({len(proposal_md)} chars). "
+            f"First 800 chars:\n{proposal_md[:800]}"
         )
 
     title = _extract_title(proposal_md)
