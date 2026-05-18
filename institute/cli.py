@@ -207,6 +207,34 @@ def bootstrap(from_genomes: bool, force: bool) -> None:
 
 
 # ---------------------------------------------------------------------------
+# admit: vet a new Fellow into the College
+# ---------------------------------------------------------------------------
+
+
+@main.command()
+@click.option(
+    "--hint",
+    type=str,
+    default=None,
+    help="Optional Founder guidance for the new admission (e.g. a missing specialty).",
+)
+def admit(hint: str | None) -> None:
+    """Vet and admit a new Fellow.
+
+    The orchestrator proposes a candidate genome that complements the
+    current cohort. The Founder reviews the genome; if accepted, the
+    candidate writes responses to the qualifying problem set, the
+    orchestrator evaluates them, and the Founder makes the final
+    admission decision. All artifacts are preserved in
+    archive/admissions/<candidate-id>/.
+    """
+    _check_kill_switch()
+    from institute.workflows import admit as admit_workflow
+
+    admit_workflow.run(founder_hint=hint)
+
+
+# ---------------------------------------------------------------------------
 # propose: start a new project. A Fellow drafts a research proposal.
 # ---------------------------------------------------------------------------
 

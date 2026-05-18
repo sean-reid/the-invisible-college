@@ -61,6 +61,23 @@ git commit -m "Admit the founding cohort"
 git push
 ```
 
+## Admitting a new Fellow
+
+```sh
+uv run institute admit                      # propose, vet, decide
+uv run institute admit --hint "<focus>"     # nudge the orchestrator
+```
+
+The orchestrator drafts one candidate genome that complements the
+current cohort. You approve the genome in the terminal, the candidate
+writes responses to a small qualifying problem set
+(`institute/admissions/problems/`), the orchestrator scores them
+against Chapter 4 of the design, and you make the final call. The full
+package (genome, responses, evaluation, decision) is preserved in
+`archive/admissions/<candidate-id>/` whether or not the candidate is
+admitted. Approved genomes land in `genomes/` and are committed to git
+the same way as bootstrap.
+
 ## The research cycle
 
 A full project, in the canonical order:
