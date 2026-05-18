@@ -20,8 +20,8 @@ from institute import paths
 
 LABEL = "com.invisible-college.autopilot"
 DEFAULT_INTERVAL_HOURS = 12
-DEFAULT_MAX_BUDGET = 3.0
-DEFAULT_MAX_STEPS = 15
+DEFAULT_MAX_BUDGET = 10.0
+DEFAULT_MAX_STEPS = 30
 LOG_DIR = Path.home() / "Library" / "Logs" / "invisible-college"
 PLIST_DIR = Path.home() / "Library" / "LaunchAgents"
 

@@ -148,7 +148,7 @@ current step. Designed to be left running unattended.
 ## Scheduled autonomous operation
 
 ```sh
-uv run institute schedule install        # every 12h, $3 cap, no auto-push
+uv run institute schedule install        # every 12h, $10 cap, no auto-push
 uv run institute schedule install --interval-hours 6 --max-budget-usd 5 --auto-push
 uv run institute schedule status         # plist state, last run, log tail
 uv run institute schedule uninstall
@@ -168,7 +168,7 @@ commits stay local and you push manually.
 You can always invoke autopilot directly:
 
 ```sh
-uv run institute autopilot --max-budget-usd 3 --max-steps 15
+uv run institute autopilot --max-budget-usd 10 --max-steps 30
 ```
 
 The kill switch halts scheduled wake-ups just like every other command.

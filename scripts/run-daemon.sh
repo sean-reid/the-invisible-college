@@ -8,16 +8,16 @@
 #
 # Environment variables consumed:
 #   IC_REPO          absolute path to the repo (required)
-#   IC_MAX_BUDGET    USD cap per wake-up. Default: 3
-#   IC_MAX_STEPS     step cap per wake-up. Default: 15
+#   IC_MAX_BUDGET    USD cap per wake-up. Default: 10
+#   IC_MAX_STEPS     step cap per wake-up. Default: 30
 #   IC_AUTO_PUSH     "1" to enable git commit + push of artifacts. Default: 0
 #   IC_LOG_DIR       where to write log files. Default: ~/Library/Logs/invisible-college
 
 set -euo pipefail
 
 : "${IC_REPO:?IC_REPO must be set to the repository path}"
-IC_MAX_BUDGET="${IC_MAX_BUDGET:-3}"
-IC_MAX_STEPS="${IC_MAX_STEPS:-15}"
+IC_MAX_BUDGET="${IC_MAX_BUDGET:-10}"
+IC_MAX_STEPS="${IC_MAX_STEPS:-30}"
 IC_AUTO_PUSH="${IC_AUTO_PUSH:-0}"
 IC_LOG_DIR="${IC_LOG_DIR:-$HOME/Library/Logs/invisible-college}"
 

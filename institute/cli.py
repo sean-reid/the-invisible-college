@@ -611,14 +611,14 @@ def schedule() -> None:
 @click.option(
     "--max-budget-usd",
     type=float,
-    default=3.0,
+    default=10.0,
     show_default=True,
     help="Per-wake-up USD cap, passed to `institute autopilot`.",
 )
 @click.option(
     "--max-steps",
     type=int,
-    default=15,
+    default=30,
     show_default=True,
     help="Per-wake-up step cap, passed to `institute autopilot`.",
 )
@@ -691,14 +691,14 @@ def schedule_status() -> None:
 @click.option(
     "--max-budget-usd",
     type=float,
-    default=3.0,
+    default=10.0,
     show_default=True,
     help="Hard cap on cumulative Claude API cost for this wake-up.",
 )
 @click.option(
     "--max-steps",
     type=int,
-    default=15,
+    default=30,
     show_default=True,
     help="Maximum number of single-step dispatches before halting.",
 )
