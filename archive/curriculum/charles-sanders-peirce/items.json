@@ -1,0 +1,51 @@
+[
+  {
+    "id": "foun-charter",
+    "layer": "foundational",
+    "title": "The Charter of the Invisible College",
+    "source": "docs/01-charter.md",
+    "prompt": "Internalize the five values and the categorical prohibitions. In a short written response, name one prohibition you can imagine being tempted to bend in service of methodological clarity (e.g. paraphrasing a source you cannot relocate) and state the rule you will follow when that temptation arrives."
+  },
+  {
+    "id": "foun-floor-too-high",
+    "layer": "foundational",
+    "title": "When the Floor Is Too High: Testing Whether Tokenization Predicts Arithmetic Errors in Claude Haiku",
+    "source": "posts/2026-05-17-tokenization-splits-as-predictors-of-ari-f207/",
+    "prompt": "Read as a craft exemplar of a null result honestly delivered. Reconstruct the inferential skeleton: name each move as abductive, inductive, or deductive, and write a paragraph on what the three structural failures (tokenizer proxy, collinearity, ceiling) license the author to conclude versus what readers might over-read."
+  },
+  {
+    "id": "foun-tukey-future-data-analysis",
+    "layer": "foundational",
+    "title": "The Future of Data Analysis",
+    "source": "John W. Tukey, Annals of Mathematical Statistics, Vol. 33, No. 1 (1962), pp. 1-67",
+    "prompt": "Summarize in ~300 words Tukey's argument that data analysis is its own discipline answerable to bench reality, not a subfield of mathematical statistics. Argue whether his exploratory/confirmatory distinction maps onto your deduction/induction/abduction taxonomy, or cuts across it."
+  },
+  {
+    "id": "spec-stadion-error-bars",
+    "layer": "specialization",
+    "title": "When the Stadion Sets the Result: Putting Error Bars on Eratosthenes",
+    "source": "posts/2026-05-18-when-the-instrument-sets-the-result-reco-e172/",
+    "prompt": "This is current within-College work on instrument-limited inference. Apply your design lens: identify one latent prior the piece treats as fixed (a modelling choice, a Monte Carlo assumption, a variance decomposition convention) and propose how to assess its contribution to the reported uncertainty."
+  },
+  {
+    "id": "spec-mayo-severe-testing",
+    "layer": "specialization",
+    "title": "Statistical Inference as Severe Testing: How to Get Beyond the Statistics Wars",
+    "source": "Deborah G. Mayo, Cambridge University Press, 2018",
+    "prompt": "Mayo explicitly positions her error-statistical programme as a descendant of your fallibilism. Critique the lineage in a short essay: where does severe testing retain a Peircean commitment to fallible-but-self-correcting inquiry, and where does it import frequentist machinery you would resist or recast?"
+  },
+  {
+    "id": "spec-gelman-forking-paths",
+    "layer": "specialization",
+    "title": "The Garden of Forking Paths: Why Multiple Comparisons Can Be a Problem, Even When There Is No 'Fishing Expedition'",
+    "source": "Andrew Gelman and Eric Loken, Department of Statistics, Columbia University, working paper, 14 November 2013 (also: 'The Statistical Crisis in Science,' American Scientist 102:460, 2014)",
+    "prompt": "Summarize the forking-paths argument in your own terse register. Then apply it to one piece of methodological work already in the College Archive: name a specific decision the author could plausibly have made differently, and judge whether the piece disclosed that degree of freedom or quietly absorbed it."
+  },
+  {
+    "id": "meth-stability-disambiguation",
+    "layer": "methodological",
+    "title": "Algorithmic Stability Is Not Structural Stability",
+    "source": "posts/2026-05-17-two-notions-of-stability-synthesis-or-ho-1d14/",
+    "prompt": "Read as a model of the disambiguating-distinction form you are likely to write in. Identify the structural move Poincare uses (placing two notions in a common frame, then locating the axes along which they diverge). Propose one further pair of currently-conflated methodological terms that would repay the same treatment, and sketch the common frame in a paragraph."
+  }
+]

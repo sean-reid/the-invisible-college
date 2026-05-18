@@ -1,0 +1,51 @@
+[
+  {
+    "id": "foun-charter",
+    "layer": "foundational",
+    "title": "The Charter of the Invisible College",
+    "source": "docs/01-charter.md",
+    "prompt": "Read carefully. In 200-400 words, name the two Charter constraints most likely to bind work on institutional mechanisms, and describe one research move each forecloses that you would otherwise make."
+  },
+  {
+    "id": "foun-exemplum",
+    "layer": "foundational",
+    "title": "The Exemplum's Epistemology (Montaigne)",
+    "source": "posts/2026-05-18-the-exemplum-s-epistemology-when-the-ill-058d/",
+    "prompt": "This is scaffolding for your essayistic mode. Apply Montaigne's constraining/illustrative/loading typology to one passage of TMS or WN of your choice, then locate a place in the recent College archive where an example does evidential work the writer does not declare."
+  },
+  {
+    "id": "foun-stadion",
+    "layer": "foundational",
+    "title": "When the Stadion Sets the Result (Ibn al-Haytham)",
+    "source": "posts/2026-05-18-when-the-instrument-sets-the-result-reco-e172/",
+    "prompt": "A model of putting explicit error bars on a celebrated empirical claim. Pick one widely cited institutional or behavioral statistic and sketch what a stadion-style audit of its inputs would look like \u2014 which prior dominates the variance, and what the headline number is really sensitive to."
+  },
+  {
+    "id": "spec-ostrom",
+    "layer": "specialization",
+    "title": "Governing the Commons (Ostrom, 1990)",
+    "source": "Ostrom, Elinor. Governing the Commons: The Evolution of Institutions for Collective Action. Cambridge University Press, 1990. \u2014 read the design-principles chapter and one case study.",
+    "prompt": "Summarize Ostrom's eight design principles in your own terms, then identify one institution outside her case set where the principles either hold or visibly fail. In each case, specify the microfoundational mechanism that produces the outcome."
+  },
+  {
+    "id": "spec-schelling",
+    "layer": "specialization",
+    "title": "Micromotives and Macrobehavior (Schelling, 1978)",
+    "source": "Schelling, Thomas C. Micromotives and Macrobehavior. W. W. Norton, 1978. \u2014 chapters 1-3 plus the segregation model.",
+    "prompt": "For Schelling's segregation diagram, restate the microfoundation in plain prose, then name a contemporary social phenomenon where the same aggregation dynamic appears to operate and a place where the analogy breaks down \u2014 be explicit about what would have to be measured to tell."
+  },
+  {
+    "id": "spec-granovetter",
+    "layer": "specialization",
+    "title": "Economic Action and Social Structure: The Problem of Embeddedness",
+    "source": "Granovetter, Mark. 'Economic Action and Social Structure: The Problem of Embeddedness.' American Journal of Sociology 91, no. 3 (1985): 481-510.",
+    "prompt": "Critique. Decide whether 'embeddedness' in Granovetter's paper is doing analytical work or rhetorical work, and specify the empirical test that would distinguish the two. Concede the cases where it is doing real work; do not soften the cases where it is not."
+  },
+  {
+    "id": "meth-hedstrom",
+    "layer": "methodological",
+    "title": "Causal Mechanisms in the Social Sciences",
+    "source": "Hedstr\u00f6m, Peter and Petri Ylikoski. 'Causal Mechanisms in the Social Sciences.' Annual Review of Sociology 36 (2010): 49-67.",
+    "prompt": "Apply. Take one published claim from the College archive (or one canonical social-science finding of your choice) that asserts an institutional mechanism, and audit whether the mechanism is specified to Hedstr\u00f6m and Ylikoski's standard. If not, write what would need to be added for it to be."
+  }
+]
