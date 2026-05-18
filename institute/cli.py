@@ -520,13 +520,17 @@ def run_cmd(max_budget_usd: float, max_steps: int, project: str | None) -> None:
     transitions between iterations.
     """
     _check_kill_switch()
+    _advance_loop(max_budget_usd=max_budget_usd, max_steps=max_steps, project=project)
+
+
+def _advance_loop(*, max_budget_usd: float, max_steps: int, project: str | None) -> None:
+    """The actual step loop. Shared by `institute run` and `institute autopilot`."""
     baseline_cost = _audit_cost_total()
 
     stop_requested = {"flag": False}
 
     def _on_sigint(_signum: int, _frame: object) -> None:
         if stop_requested["flag"]:
-            # Second Ctrl-C: hard exit. The first set the flag.
             console.print("\n[red]Hard stop. Mid-step state may need recovery.[/red]")
             sys.exit(130)
         stop_requested["flag"] = True
@@ -581,3 +585,149 @@ def run_cmd(max_budget_usd: float, max_steps: int, project: str | None) -> None:
         )
     finally:
         signal.signal(signal.SIGINT, previous_handler)
+
+
+# ---------------------------------------------------------------------------
+# schedule: manage the launchd plist that wakes autopilot on a cadence
+# ---------------------------------------------------------------------------
+
+
+@main.group()
+def schedule() -> None:
+    """Schedule autopilot via launchd (macOS)."""
+
+
+@schedule.command("install")
+@click.option(
+    "--interval-hours",
+    type=int,
+    default=12,
+    show_default=True,
+    help="Hours between wake-ups.",
+)
+@click.option(
+    "--max-budget-usd",
+    type=float,
+    default=3.0,
+    show_default=True,
+    help="Per-wake-up USD cap, passed to `institute autopilot`.",
+)
+@click.option(
+    "--max-steps",
+    type=int,
+    default=15,
+    show_default=True,
+    help="Per-wake-up step cap, passed to `institute autopilot`.",
+)
+@click.option(
+    "--auto-push/--no-auto-push",
+    default=False,
+    show_default=True,
+    help="If a new publication was produced, commit + push to origin/main.",
+)
+def schedule_install(
+    interval_hours: int, max_budget_usd: float, max_steps: int, auto_push: bool
+) -> None:
+    """Install and load the launchd agent."""
+    from institute import schedule as schedule_mod
+
+    path = schedule_mod.install(
+        interval_hours=interval_hours,
+        max_budget_usd=max_budget_usd,
+        max_steps=max_steps,
+        auto_push=auto_push,
+    )
+    console.print(f"[green]Installed:[/green] {path}")
+    console.print(
+        f"  every {interval_hours}h, budget ${max_budget_usd:.2f}, "
+        f"max-steps {max_steps}, auto-push={'on' if auto_push else 'off'}"
+    )
+    console.print(f"  logs: {schedule_mod.LOG_DIR}")
+
+
+@schedule.command("uninstall")
+def schedule_uninstall() -> None:
+    """Unload and remove the launchd agent."""
+    from institute import schedule as schedule_mod
+
+    removed = schedule_mod.uninstall()
+    if removed:
+        console.print("[green]Uninstalled.[/green]")
+    else:
+        console.print("[dim]Nothing to uninstall.[/dim]")
+
+
+@schedule.command("status")
+def schedule_status() -> None:
+    """Show whether the agent is installed and loaded, plus recent log tail."""
+    from institute import schedule as schedule_mod
+
+    info = schedule_mod.status()
+    state = "[green]loaded[/green]" if info["loaded"] else "[yellow]not loaded[/yellow]"
+    installed = "[green]installed[/green]" if info["installed"] else "[dim]not installed[/dim]"
+    console.print(f"Label:    {info['label']}")
+    console.print(f"State:    {installed}, {state}")
+    if info["interval_hours"] is not None:
+        console.print(f"Interval: every {info['interval_hours']}h")
+    console.print(f"Plist:    {info['plist_path']}")
+    console.print(f"Log:      {info['log_path']}")
+    if info["last_log_mtime"]:
+        console.print(f"Last:     {info['last_log_mtime']}")
+    if info["log_tail"]:
+        console.print()
+        console.rule("recent log", align="left", style="dim")
+        console.print(info["log_tail"])
+
+
+# ---------------------------------------------------------------------------
+# autopilot: self-driving wake-up. Propose if idle, else advance.
+# ---------------------------------------------------------------------------
+
+
+@main.command()
+@click.option(
+    "--max-budget-usd",
+    type=float,
+    default=3.0,
+    show_default=True,
+    help="Hard cap on cumulative Claude API cost for this wake-up.",
+)
+@click.option(
+    "--max-steps",
+    type=int,
+    default=15,
+    show_default=True,
+    help="Maximum number of single-step dispatches before halting.",
+)
+@click.option(
+    "--start-new-if-idle/--no-start-new-if-idle",
+    default=True,
+    show_default=True,
+    help="If there is nothing in-flight, propose a new project.",
+)
+def autopilot(max_budget_usd: float, max_steps: int, start_new_if_idle: bool) -> None:
+    """Self-driving wake-up. Designed to be invoked by `launchd` or cron.
+
+    Behavior:
+      1. If a project is in-flight: advance the most-stale one until
+         budget or step cap is hit (same as `institute run`).
+      2. If nothing is in-flight and `--start-new-if-idle` is set: ask
+         a Fellow to propose a new project, then advance one step.
+
+    Honors the kill switch like every other command, and the cost cap
+    and step cap apply to the entire wake-up (propose + advance).
+    """
+    _check_kill_switch()
+
+    if start_new_if_idle:
+        with db.connection() as conn:
+            in_flight = conn.execute(
+                "SELECT COUNT(*) FROM projects WHERE state NOT IN ('published', 'rejected')"
+            ).fetchone()[0]
+        if in_flight == 0:
+            console.print("[dim]Idle. Proposing a new project...[/dim]")
+            from institute.workflows import propose as propose_workflow
+
+            propose_workflow.run(lead=None, topic=None)
+
+    _advance_loop(max_budget_usd=max_budget_usd, max_steps=max_steps, project=None)

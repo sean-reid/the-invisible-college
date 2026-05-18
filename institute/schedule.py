@@ -1,0 +1,164 @@
+"""Manage the launchd plist that wakes the institution up on a schedule.
+
+The plist invokes `scripts/run-daemon.sh` every `IC_INTERVAL_HOURS` hours.
+The daemon script handles the lockfile, runs `institute autopilot`, and
+optionally commits + pushes new artifacts.
+
+This module is macOS-specific. Linux / Windows users would need cron or
+systemd; left as future work.
+"""
+
+from __future__ import annotations
+
+import plistlib
+import shutil
+import subprocess
+from datetime import UTC, datetime
+from pathlib import Path
+
+from institute import paths
+
+LABEL = "com.invisible-college.autopilot"
+DEFAULT_INTERVAL_HOURS = 12
+DEFAULT_MAX_BUDGET = 3.0
+DEFAULT_MAX_STEPS = 15
+LOG_DIR = Path.home() / "Library" / "Logs" / "invisible-college"
+PLIST_DIR = Path.home() / "Library" / "LaunchAgents"
+
+
+def plist_path() -> Path:
+    return PLIST_DIR / f"{LABEL}.plist"
+
+
+def daemon_script() -> Path:
+    return paths.ROOT / "scripts" / "run-daemon.sh"
+
+
+def render_plist(
+    *,
+    interval_hours: int,
+    max_budget_usd: float,
+    max_steps: int,
+    auto_push: bool,
+) -> bytes:
+    """Render the launchd plist as bytes ready to write to disk."""
+    env = {
+        "IC_REPO": str(paths.ROOT),
+        "IC_MAX_BUDGET": str(max_budget_usd),
+        "IC_MAX_STEPS": str(max_steps),
+        "IC_AUTO_PUSH": "1" if auto_push else "0",
+        "IC_LOG_DIR": str(LOG_DIR),
+        "HOME": str(Path.home()),
+        # PATH is sourced inside the daemon script from ~/.zprofile and
+        # ~/.zshrc; launchd's PATH is too minimal to be useful.
+        "PATH": "/usr/local/bin:/opt/homebrew/bin:/usr/bin:/bin",
+    }
+    plist: dict[str, object] = {
+        "Label": LABEL,
+        "ProgramArguments": ["/bin/bash", str(daemon_script())],
+        "StartInterval": int(interval_hours) * 3600,
+        "RunAtLoad": False,
+        "WorkingDirectory": str(paths.ROOT),
+        "StandardOutPath": str(LOG_DIR / "stdout.log"),
+        "StandardErrorPath": str(LOG_DIR / "stderr.log"),
+        "EnvironmentVariables": env,
+        "ProcessType": "Background",
+        # ThrottleInterval prevents a fast-failing run from looping at
+        # the high end of launchd's scheduling rate.
+        "ThrottleInterval": 60,
+    }
+    return plistlib.dumps(plist, fmt=plistlib.FMT_XML)
+
+
+def is_loaded() -> bool:
+    """True if launchctl reports the agent loaded."""
+    if shutil.which("launchctl") is None:
+        return False
+    result = subprocess.run(
+        ["launchctl", "list", LABEL],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    return result.returncode == 0
+
+
+def install(
+    *,
+    interval_hours: int = DEFAULT_INTERVAL_HOURS,
+    max_budget_usd: float = DEFAULT_MAX_BUDGET,
+    max_steps: int = DEFAULT_MAX_STEPS,
+    auto_push: bool = False,
+) -> Path:
+    """Write the plist and load it via launchctl. Returns the plist path."""
+    if shutil.which("launchctl") is None:
+        raise RuntimeError("`launchctl` not on PATH. macOS-only feature.")
+    PLIST_DIR.mkdir(parents=True, exist_ok=True)
+    LOG_DIR.mkdir(parents=True, exist_ok=True)
+
+    body = render_plist(
+        interval_hours=interval_hours,
+        max_budget_usd=max_budget_usd,
+        max_steps=max_steps,
+        auto_push=auto_push,
+    )
+    path = plist_path()
+    tmp = path.with_suffix(path.suffix + ".tmp")
+    tmp.write_bytes(body)
+    tmp.replace(path)
+
+    # Unload first in case it was already loaded; ignore errors.
+    subprocess.run(
+        ["launchctl", "unload", str(path)],
+        capture_output=True,
+        check=False,
+    )
+    subprocess.run(["launchctl", "load", str(path)], check=True)
+    return path
+
+
+def uninstall() -> bool:
+    """Unload and remove the plist. Returns True if anything was removed."""
+    path = plist_path()
+    if not path.exists():
+        return False
+    if shutil.which("launchctl") is not None:
+        subprocess.run(
+            ["launchctl", "unload", str(path)],
+            capture_output=True,
+            check=False,
+        )
+    path.unlink()
+    return True
+
+
+def status() -> dict[str, object]:
+    """Return a structured status snapshot for the CLI to render."""
+    path = plist_path()
+    info: dict[str, object] = {
+        "installed": path.exists(),
+        "plist_path": str(path),
+        "loaded": False,
+        "label": LABEL,
+        "interval_hours": None,
+        "last_log_mtime": None,
+        "log_tail": "",
+        "log_path": str(LOG_DIR / "autopilot.log"),
+    }
+    if path.exists():
+        try:
+            data = plistlib.loads(path.read_bytes())
+            interval = data.get("StartInterval")
+            if isinstance(interval, int):
+                info["interval_hours"] = round(interval / 3600, 2)
+        except Exception:
+            pass
+    info["loaded"] = is_loaded()
+    log = LOG_DIR / "autopilot.log"
+    if log.exists():
+        info["last_log_mtime"] = datetime.fromtimestamp(log.stat().st_mtime, UTC).isoformat(
+            timespec="seconds"
+        )
+        text = log.read_text(encoding="utf-8", errors="replace").splitlines()
+        info["log_tail"] = "\n".join(text[-40:])
+    return info

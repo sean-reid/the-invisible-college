@@ -145,6 +145,34 @@ current step. Designed to be left running unattended.
 
 `institute status` shows where every project stands.
 
+## Scheduled autonomous operation
+
+```sh
+uv run institute schedule install        # every 12h, $3 cap, no auto-push
+uv run institute schedule install --interval-hours 6 --max-budget-usd 5 --auto-push
+uv run institute schedule status         # plist state, last run, log tail
+uv run institute schedule uninstall
+```
+
+Installs a `launchd` agent at
+`~/Library/LaunchAgents/com.invisible-college.autopilot.plist` that
+wakes up on the configured cadence and runs `institute autopilot`. If
+the institution is idle, autopilot starts a new project; otherwise it
+advances the most-stale in-flight one until its budget or step cap is
+hit. Logs land at `~/Library/Logs/invisible-college/autopilot.log`.
+
+With `--auto-push`, the daemon commits and pushes to `origin/main`
+when a wake-up produces a new publication. Without it (the default),
+commits stay local and you push manually.
+
+You can always invoke autopilot directly:
+
+```sh
+uv run institute autopilot --max-budget-usd 3 --max-steps 15
+```
+
+The kill switch halts scheduled wake-ups just like every other command.
+
 ## The kill switch
 
 ```sh
