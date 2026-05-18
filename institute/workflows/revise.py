@@ -6,12 +6,16 @@ current draft, the lab notebook, and every signed review verbatim. The
 Fellow produces a revised draft, a response-to-reviewers document, an
 updated abstract, and a lab-notebook addendum recording what changed.
 
+File-based output. No JSON for prose. The orchestrator stages every
+input file the Fellow needs in the workspace and reads typed output
+files back out.
+
 The prior draft is preserved as draft.v1.md (or .v2, .v3, ...) for
 provenance. The lab notebook is appended-to, never overwritten.
 
-For v1.1 we do one revision pass and then go straight to EDITORIAL. A
-later iteration can send the revised draft back through peer review for
-a second round.
+Two passes are supported:
+  - current_round == 1 -> revise pass 1, then peer_review round 2
+  - current_round == 2 -> final polish, then editorial (hard cap)
 """
 
 from __future__ import annotations
@@ -23,7 +27,7 @@ from pathlib import Path
 
 from rich.console import Console
 
-from institute import claude_runner, db, decisions, parsing, paths
+from institute import claude_runner, db, decisions, paths, workspaces
 from institute import fellow as fellow_mod
 from institute.claude_runner import FellowTask
 from institute.state import State
@@ -33,11 +37,20 @@ console = Console()
 
 BRIEF = """\
 You are revising your own research piece for the Invisible College after
-{round_label} peer review. You are the lead author. You have the current
-draft, your lab notebook so far, and the signed peer reviews you are
-responding to.
+{round_label} peer review. You are the lead author.
 
 {round_context}
+
+# Inputs
+
+In your current working directory:
+- `current-draft.md`     the draft you are revising
+- `current-notebook.md`  your lab notebook so far
+- `reviews.md`           every signed peer review from this round,
+                         concatenated, with the reviewer's name and
+                         recommendation in each section header
+
+Read all three with the Read tool before doing the work.
 
 # Your task
 
@@ -45,53 +58,34 @@ Read every review carefully. For each concern raised, decide one of:
 
 1. **Address it**: change the draft to fix the problem.
 2. **Decline it with reasoning**: keep the draft as-is and explain why in
-   the response-to-reviewers document.
+   the response document.
 
 Sycophantic capitulation is not the goal. If a reviewer is wrong, say so
 in the response and defend the original choice. If a reviewer is right,
 fix the draft and acknowledge the correction.
 
-# CRITICAL OUTPUT RULES
+# Outputs
 
-Your entire final reply MUST be a single JSON object. No prose preface,
-no summary, no code fence. The first character is `{{` and the last is
-`}}`. The receiving program parses your reply with `json.loads`.
+Use the Write tool to create FOUR files in your current working directory:
 
-# Output shape
+1. `abstract.txt` - updated 40-90 word plain-prose abstract. May be
+   identical to the previous one if the piece's substance did not change.
 
-```json
-{{
-  "abstract": "<updated 40-90 word abstract reflecting any changes>",
-  "draft": "<the revised draft, full markdown>",
-  "response_to_reviewers": "<markdown; address each reviewer's concerns by name>",
-  "notebook_addendum": "<markdown; a new dated lab-notebook entry recording the revision pass>"
-}}
-```
+2. `draft.md` - the full revised draft. This replaces the previous draft
+   as the publishable artifact. Markdown. Include References as a list
+   under a `## References` heading if you cite external work.
 
-# Constraints
+3. `response.md` - response to reviewers. Markdown. Address each named
+   reviewer's concerns explicitly. Use level-3 headings:
+       ### Response to <reviewer name>
 
-- The revised `draft` is a full markdown document, not a diff. It
-  replaces the previous draft as the publishable artifact.
-- The `response_to_reviewers` must address each named reviewer's
-  recommendation explicitly. Use level-3 headings (`### Response to
-  <reviewer name>`) for each.
-- The `notebook_addendum` will be APPENDED to your existing notebook,
-  not replacing it. Date it. Be specific about what changed and why.
-- The `abstract` may be identical to the previous one if the piece's
-  substance did not change. But if you addressed substantive concerns,
-  update it accordingly.
+4. `notebook-addendum.md` - a new dated lab-notebook entry recording the
+   revision pass. This will be APPENDED to the existing notebook, not
+   replacing it. Be specific about what changed and why.
 
-# Your previous draft
+# Final reply
 
-{draft_md}
-
-# Your lab notebook so far
-
-{notebook_md}
-
-# The peer reviews
-
-{reviews_md}
+When all four files exist, reply with the single word `Done.` Nothing else.
 """
 
 
@@ -135,7 +129,6 @@ def _atomic_write(path: Path, content: str) -> None:
 
 
 def _next_draft_version(draft_dir: Path) -> int:
-    """Inspect existing draft.v*.md files and return the next version number."""
     versions = [
         int(m.group(1))
         for p in draft_dir.glob("draft.v*.md")
@@ -169,11 +162,6 @@ def run(project_id: str) -> None:
         notebook_md = (paths.ROOT / proj["notebook_path"]).read_text(encoding="utf-8")
         reviews_md = _format_reviews_for_brief(conn, project_id, current_round)
 
-    console.print(
-        f"[dim]Asking {lead.name} ({lead.id}) to revise their draft in light of "
-        "the peer reviews. This will likely take several minutes...[/dim]"
-    )
-
     if current_round == 1:
         round_label = "round-1"
         round_context = (
@@ -190,44 +178,33 @@ def run(project_id: str) -> None:
             "explicitly in the response document. The previous draft already "
             "incorporated round-1 feedback; do not undo those changes."
         )
-    brief = BRIEF.format(
-        round_label=round_label,
-        round_context=round_context,
-        draft_md=draft_md,
-        notebook_md=notebook_md,
-        reviews_md=reviews_md,
+
+    workspace = workspaces.workspace_for(lead.id, f"{project_id}-revise-r{current_round}")
+    workspaces.stage_input(workspace, "current-draft.md", draft_md)
+    workspaces.stage_input(workspace, "current-notebook.md", notebook_md)
+    workspaces.stage_input(workspace, "reviews.md", reviews_md)
+
+    console.print(
+        f"[dim]Asking {lead.name} ({lead.id}) to revise their draft in light of "
+        f"the {round_label} peer reviews. This will likely take several minutes...[/dim]"
     )
-    result = claude_runner.invoke(
+
+    brief = BRIEF.format(round_label=round_label, round_context=round_context)
+    claude_runner.invoke(
         FellowTask(
             genome=lead,
             project_id=project_id,
-            step="revise",
+            step=f"revise:r{current_round}",
             brief=brief,
+            workspace=workspace,
             extra_dirs=(paths.DOCS, paths.ARCHIVE),
         )
     )
 
-    dump_path = paths.DRAFTS / project_id / "raw-revise-output.txt"
-    payload = parsing.parse_json_or_dump(
-        result.result_text,
-        dump_path=dump_path,
-        context=f"Revise output from {lead.name} for project {project_id}",
-    )
-    for required in ("draft", "response_to_reviewers"):
-        if required not in payload:
-            dump_path.parent.mkdir(parents=True, exist_ok=True)
-            dump_path.write_text(result.result_text, encoding="utf-8")
-            raise RuntimeError(
-                f"Revise payload missing `{required}`. Got keys: {list(payload)}. "
-                f"Raw saved to {dump_path}."
-            )
-
-    new_abstract = (payload.get("abstract") or "").strip() or None
-    new_draft_md = payload["draft"].strip()
-    response_md = payload["response_to_reviewers"].strip()
-    addendum = (payload.get("notebook_addendum") or "").strip()
-    if not new_draft_md or not response_md:
-        raise RuntimeError("Revised draft or response_to_reviewers is empty.")
+    new_abstract = workspaces.optional_output(workspace, "abstract.txt")
+    new_draft_md = workspaces.require_output(workspace, "draft.md", min_chars=400)
+    response_md = workspaces.require_output(workspace, "response.md", min_chars=100)
+    addendum = workspaces.optional_output(workspace, "notebook-addendum.md")
 
     # Preserve the prior draft as draft.vN.md before overwriting.
     draft_dir = paths.DRAFTS / project_id
@@ -252,14 +229,6 @@ def run(project_id: str) -> None:
 
     new_title = _extract_draft_title(new_draft_md) or proj["title"]
 
-    # Where this revision goes depends on which round triggered it.
-    #
-    #   current_round == 1 (just addressed round-1 reviews)
-    #     -> back to peer_reviewing for round 2; same reviewers see the
-    #        revised draft and the response.
-    #   current_round == 2 (just addressed round-2 reviews)
-    #     -> final polishing pass; project moves directly to editorial.
-    #        There is no third round.
     if current_round == 1:
         target_state = State.PEER_REVIEWING
         next_round = 2
@@ -269,7 +238,7 @@ def run(project_id: str) -> None:
         )
     else:
         target_state = State.EDITORIAL
-        next_round = current_round  # do not advance; this is the final polish
+        next_round = current_round
         next_description = (
             "Final polishing pass after round-2 feedback. Project transitions "
             "directly to `editorial` for publication. No further review rounds."
@@ -308,5 +277,5 @@ def run(project_id: str) -> None:
         f"[green]Revision filed.[/green]   Prior draft: {prior_draft_path.relative_to(paths.ROOT)}"
     )
     console.print(f"[green]Response:[/green]         {response_path.relative_to(paths.ROOT)}")
-    round_label = f" (round {next_round})" if target_state == State.PEER_REVIEWING else ""
-    console.print(f"[green]New state:[/green]       {target_state.value}{round_label}")
+    round_label_print = f" (round {next_round})" if target_state == State.PEER_REVIEWING else ""
+    console.print(f"[green]New state:[/green]       {target_state.value}{round_label_print}")

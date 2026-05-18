@@ -38,6 +38,10 @@ class FellowTask:
     step: str  # e.g. "propose", "research", "peer_review:primary"
     brief: str  # the actual task prompt the Fellow sees
     extra_dirs: tuple[Path, ...] = ()
+    # If set, overrides the default workspace (fellows/<id>/workspace).
+    # Workflows that produce file-based output set this to a project- and
+    # step-scoped directory they have already staged with any input files.
+    workspace: Path | None = None
 
 
 @dataclass(frozen=True)
@@ -188,7 +192,8 @@ def invoke(task: FellowTask) -> FellowResult:
     """
 
     ensure_fellow_dirs(task.genome.id)
-    cwd = workspace_path(task.genome.id)
+    cwd = task.workspace if task.workspace is not None else workspace_path(task.genome.id)
+    cwd.mkdir(parents=True, exist_ok=True)
     session_id = str(uuid.uuid4())
 
     cmd: list[str] = [

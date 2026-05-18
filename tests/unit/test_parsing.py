@@ -50,9 +50,7 @@ def test_parse_json_or_dump_repairs_unescaped_quote_in_string(tmp_path) -> None:
   "recommendation": "minor"
 }
 ```"""
-    out = bootstrap.parse_json_or_dump(
-        bad, dump_path=tmp_path / "raw.txt", context="test"
-    )
+    out = bootstrap.parse_json_or_dump(bad, dump_path=tmp_path / "raw.txt", context="test")
     assert out["summary"] == "Good piece."
     assert out["recommendation"] == "minor"
     assert "partial example" in out["concerns"]

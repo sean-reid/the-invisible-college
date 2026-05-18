@@ -17,6 +17,7 @@ each subsequent `institute next` call works through them in order.
 
 from __future__ import annotations
 
+import json
 import secrets
 import sqlite3
 from dataclasses import dataclass
@@ -26,7 +27,7 @@ from typing import Literal
 
 from rich.console import Console
 
-from institute import claude_runner, db, decisions, parsing, paths
+from institute import claude_runner, db, decisions, paths, workspaces
 from institute import fellow as fellow_mod
 from institute.claude_runner import FellowTask
 from institute.fellow import Genome
@@ -45,32 +46,41 @@ class ReviewSlot:
 
 
 BRIEF_ROUND_1 = """\
-You are a peer reviewer for the Invisible College. You have been assigned
-as the {role} reviewer of the draft below. You are {reviewer_name}, rank
-{reviewer_rank}, specializing in {reviewer_specialization}.
+You are a peer reviewer for the Invisible College, serving as the {role}
+reviewer. You are {reviewer_name}, rank {reviewer_rank}, specializing in
+{reviewer_specialization}.
 
-# Your task
+# Inputs
 
-Read the draft carefully. Then write a structured review.
+In your current working directory you will find:
+- `draft.md`  the draft you are reviewing
 
-# CRITICAL OUTPUT RULES
+Read it with the Read tool before doing anything else.
 
-Your entire final reply MUST be a single JSON object. No prose preface,
-no summary, no code fence. The first character is `{{` and the last is
-`}}`.
+# Outputs
 
-# Required output
+Use the Write tool to create FOUR files in your current working directory.
+Exact filenames:
 
-```json
-{{
-  "summary": "<2-4 sentences stating, in your own words, what the work claims and demonstrates>",
-  "strengths": "<markdown; specific, not generic>",
-  "concerns": "<markdown; specific concerns the author can act on; each as a numbered item>",
-  "recommendation": "<one of: accept, minor, major, reject>",
-  "confidence": "<one of: confident, moderate, low>",
-  "dissent_intent": "<true if you intend this review to be published as a dissent regardless of editorial outcome, false otherwise>"
-}}
-```
+1. `summary.md` - 2 to 4 sentences stating, in your own words, what the
+   work claims and demonstrates. Plain markdown, no headings.
+
+2. `strengths.md` - what the work does well. Specific, not generic.
+   Markdown.
+
+3. `concerns.md` - specific concerns the author can act on. Each as a
+   numbered item starting with `1.`, `2.`, etc. Markdown is fine.
+   Quote freely; you are writing into a markdown file so backticks,
+   blockquotes, and embedded double-quotes all work without escaping.
+
+4. `decision.json` - a small JSON object with exactly these fields:
+   ```
+   {{
+     "recommendation": "<one of: accept, minor, major, reject>",
+     "confidence": "<one of: confident, moderate, low>",
+     "dissent_intent": <true or false>
+   }}
+   ```
 
 # Constraints
 
@@ -79,11 +89,12 @@ no summary, no code fence. The first character is `{{` and the last is
 - A reviewer who agrees with everything signals nothing. Productive
   disagreement is the institutional norm.
 - Reviewer reputation is tracked. Lazy reviews damage it.
-- 500-1200 words total across the four fields is typical.
+- 500-1200 words total across summary + strengths + concerns is typical.
 
-# Draft
+# Final reply
 
-{draft_md}
+When all four files exist, reply with the single word `Done.` Nothing
+else. Do NOT paste the file contents into your reply.
 """
 
 
@@ -96,56 +107,42 @@ are now reviewing the REVISED draft.
 You are {reviewer_name}, rank {reviewer_rank}, specializing in
 {reviewer_specialization}, serving as the {role} reviewer for both rounds.
 
-# CRITICAL OUTPUT RULES
+# Inputs
 
-Your entire final reply MUST be a single JSON object. No prose preface,
-no summary, no code fence. The first character is `{{` and the last is
-`}}`.
+In your current working directory you will find:
+- `draft.md`        the revised draft you are reviewing
+- `prior-review.md` your own round-1 review
+- `response.md`     the lead's response to all the round-1 reviewers
 
-# Your task
+Read all three with the Read tool before doing anything else.
 
-Judge whether your earlier concerns were addressed, or appropriately
-rejected with sound reasoning. Then form a fresh recommendation on the
-revised draft.
+# Outputs
 
-You may:
-- Be satisfied that your concerns were addressed → recommend `accept`
-- Be partially satisfied → recommend `minor` or `major` again, naming
-  the remaining problems
-- Find new problems introduced by the revision → call them out
-- Defend your original concerns if the response unconvincingly dismissed
-  them. If you do this, set `dissent_intent` to true.
+Use the Write tool to create FOUR files in your current working directory.
+Exact filenames:
+
+1. `summary.md` - 2 to 4 sentences on the REVISED draft, not the original.
+2. `strengths.md` - what got better, what stayed strong.
+3. `concerns.md` - remaining or new concerns, each as a numbered item.
+4. `decision.json` - {{ "recommendation": "<accept|minor|major|reject>",
+   "confidence": "<confident|moderate|low>", "dissent_intent": <true|false> }}
+
+# Stance options
+
+- Concerns addressed → recommend `accept`
+- Concerns partially addressed → recommend `minor` or `major` again,
+  naming the remaining problems
+- New problems introduced by the revision → call them out in concerns.md
+- Original concerns unconvincingly dismissed → defend them. Set
+  `dissent_intent` to true. This review will appear as a dissent
+  alongside the publication regardless of editorial outcome.
 
 After this round the project goes directly to editorial. There is no
-third round. Whatever you recommend here will appear alongside the
-publication regardless of editorial outcome.
+third round.
 
-# Required output
+# Final reply
 
-Same shape as round 1:
-
-```json
-{{
-  "summary": "<2-4 sentences on the revised draft, not the original>",
-  "strengths": "<markdown; what got better, what stayed strong>",
-  "concerns": "<markdown; remaining or new concerns, each as a numbered item>",
-  "recommendation": "<one of: accept, minor, major, reject>",
-  "confidence": "<one of: confident, moderate, low>",
-  "dissent_intent": "<true if you intend this review to be published as a dissent>"
-}}
-```
-
-# Your previous (round 1) review
-
-{prior_review_md}
-
-# The lead's response to your concerns and the others'
-
-{response_md}
-
-# The revised draft
-
-{draft_md}
+When all four files exist, reply with the single word `Done.` Nothing else.
 """
 
 
@@ -322,13 +319,20 @@ def run(project_id: str) -> None:
                 (State.PEER_REVIEWING.value, now, project_id),
             )
 
+    workspace = workspaces.workspace_for(reviewer.id, f"{project_id}-review-r{review_round}")
+    workspaces.stage_input(workspace, "draft.md", draft_md)
+    if review_round > 1:
+        workspaces.stage_input(
+            workspace, "prior-review.md", prior_review_md or "(prior review not found)"
+        )
+        workspaces.stage_input(workspace, "response.md", response_md or "(no response on file)")
+
     if review_round == 1:
         brief = BRIEF_ROUND_1.format(
             role=slot.role,
             reviewer_name=reviewer.name,
             reviewer_rank=reviewer.rank,
             reviewer_specialization=reviewer.specialization,
-            draft_md=draft_md,
         )
     else:
         brief = BRIEF_ROUND_2.format(
@@ -336,41 +340,51 @@ def run(project_id: str) -> None:
             reviewer_name=reviewer.name,
             reviewer_rank=reviewer.rank,
             reviewer_specialization=reviewer.specialization,
-            prior_review_md=prior_review_md or "(prior review not found)",
-            response_md=response_md or "(no response on file)",
-            draft_md=draft_md,
         )
 
-    result = claude_runner.invoke(
+    claude_runner.invoke(
         FellowTask(
             genome=reviewer,
             project_id=project_id,
             step=f"peer_review:{slot.role}",
             brief=brief,
+            workspace=workspace,
             extra_dirs=(paths.DOCS, paths.ARCHIVE),
         )
     )
 
-    round_suffix = f"-r{review_round}" if review_round > 1 else ""
-    dump_path = paths.REVIEWS / project_id / f"raw-review-by-{reviewer.id}{round_suffix}.txt"
-    payload = parsing.parse_json_or_dump(
-        result.result_text,
-        dump_path=dump_path,
-        context=f"Review output from {reviewer.name} for project {project_id}",
-    )
-    for required in ("summary", "strengths", "concerns", "recommendation", "confidence"):
-        if required not in payload:
-            dump_path.parent.mkdir(parents=True, exist_ok=True)
-            dump_path.write_text(result.result_text, encoding="utf-8")
-            raise RuntimeError(
-                f"Review payload missing `{required}`. Got keys: {list(payload)}. "
-                f"Raw saved to {dump_path}."
-            )
-    if payload["recommendation"] not in {"accept", "minor", "major", "reject"}:
-        raise RuntimeError(f"Invalid recommendation: {payload['recommendation']!r}")
-    if payload["confidence"] not in {"confident", "moderate", "low"}:
-        raise RuntimeError(f"Invalid confidence: {payload['confidence']!r}")
+    summary = workspaces.require_output(workspace, "summary.md", min_chars=30)
+    strengths = workspaces.require_output(workspace, "strengths.md", min_chars=30)
+    concerns = workspaces.require_output(workspace, "concerns.md", min_chars=30)
+    decision_text = workspaces.require_output(workspace, "decision.json", min_chars=10)
+    try:
+        decision_payload = json.loads(decision_text)
+    except json.JSONDecodeError as exc:
+        raise RuntimeError(
+            f"decision.json is not valid JSON. The file is short and structured, "
+            f"so a parse failure here is a real problem. Text: {decision_text!r}"
+        ) from exc
 
+    for required in ("recommendation", "confidence"):
+        if required not in decision_payload:
+            raise RuntimeError(
+                f"decision.json missing `{required}`. Got keys: {list(decision_payload)}."
+            )
+    if decision_payload["recommendation"] not in {"accept", "minor", "major", "reject"}:
+        raise RuntimeError(f"Invalid recommendation: {decision_payload['recommendation']!r}")
+    if decision_payload["confidence"] not in {"confident", "moderate", "low"}:
+        raise RuntimeError(f"Invalid confidence: {decision_payload['confidence']!r}")
+
+    payload = {
+        "summary": summary,
+        "strengths": strengths,
+        "concerns": concerns,
+        "recommendation": decision_payload["recommendation"],
+        "confidence": decision_payload["confidence"],
+        "dissent_intent": bool(decision_payload.get("dissent_intent", False)),
+    }
+
+    round_suffix = f"-r{review_round}" if review_round > 1 else ""
     review_md = _render_review_markdown(payload, reviewer, slot.role)
     review_path = paths.REVIEWS / project_id / f"review-by-{reviewer.id}{round_suffix}.md"
     _atomic_write(review_path, review_md)
