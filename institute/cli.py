@@ -423,6 +423,15 @@ def _maybe_trigger_promotion_review(project_id: str, prev_state: str) -> None:
     invoked with `auto=True` so it never blocks waiting on stdin: if
     no Senior Fellow panel exists yet, the call just records a
     deferred-review note and returns.
+
+    Candidate selection alternates between two modes by the parity of
+    past reviews:
+      - even count (including 0): pick the strongest candidate
+        (publications + reviewing service). This surfaces Fellows ready
+        for promotion.
+      - odd count: pick the most-overdue candidate (oldest last review,
+        ties broken by lowest activity score). This surfaces Fellows
+        who might warrant demotion or release.
     """
     if prev_state == "published":
         return
@@ -437,6 +446,10 @@ def _maybe_trigger_promotion_review(project_id: str, prev_state: str) -> None:
             "SELECT COUNT(*) FROM projects WHERE state = 'published' AND updated_at > ?",
             (last_review or "",),
         ).fetchone()[0]
+        past_reviews = conn.execute(
+            "SELECT COUNT(*) FROM audit_log "
+            "WHERE action IN ('promotion', 'promotion_review', 'release')"
+        ).fetchone()[0]
     if pubs_since < _PROMOTION_REVIEW_CADENCE_PUBLICATIONS:
         return
 
@@ -446,19 +459,49 @@ def _maybe_trigger_promotion_review(project_id: str, prev_state: str) -> None:
     cohort = reputation.load_cohort()
     if not cohort:
         return
-    # Heuristic: pick the Fellow most in need of review. Publications count
-    # heavily; reviews count moderately; sticky majors count strongly (they
-    # are the clearest signal of substantive reviewer judgment).
-    candidate = max(
-        cohort,
-        key=lambda r: (
-            r.author.publications * 2
-            + r.reviewer.reviews_given * 0.5
-            + r.reviewer.sticky_majors * 3
-        ),
+
+    mode = "overdue" if past_reviews % 2 == 1 else "strong"
+    candidate = _pick_review_candidate(cohort, mode)
+    console.rule(
+        f"[bold]Tenure review ({mode}): {candidate.name}[/bold]",
+        align="left",
+        style="dim",
     )
-    console.rule(f"[bold]Tenure review: {candidate.name}[/bold]", align="left", style="dim")
     promote_workflow.run(candidate.fellow_id, auto=True)
+
+
+def _activity_score(rep: object) -> float:
+    """Promotion-leaning heuristic. Higher = more likely promotion candidate."""
+    return (
+        rep.author.publications * 2  # type: ignore[attr-defined]
+        + rep.reviewer.reviews_given * 0.5  # type: ignore[attr-defined]
+        + rep.reviewer.sticky_majors * 3  # type: ignore[attr-defined]
+    )
+
+
+def _pick_review_candidate(cohort: list, mode: str) -> object:
+    """Pick a Fellow to review under the requested selection mode."""
+    if mode == "strong":
+        return max(cohort, key=_activity_score)
+
+    # "overdue": pick the Fellow whose last review (promotion or hold) is
+    # furthest in the past. Never-reviewed Fellows sort first. Tie-break
+    # by lowest activity score so stagnation is preferred over mere
+    # quiet competence.
+    with db.connection() as conn:
+
+        def last_reviewed(fellow_id: str) -> str:
+            row = conn.execute(
+                "SELECT MAX(at) AS last FROM audit_log "
+                "WHERE actor LIKE ? "
+                "AND action IN ('promotion', 'promotion_review', 'release')",
+                (f"%{fellow_id}%",),
+            ).fetchone()
+            return row["last"] or "" if row else ""
+
+        scored = [(last_reviewed(r.fellow_id), _activity_score(r), r) for r in cohort]
+    scored.sort(key=lambda t: (t[0], t[1]))  # oldest review first; ties by lowest score
+    return scored[0][2]
 
 
 def _audit_cost_total() -> float:
