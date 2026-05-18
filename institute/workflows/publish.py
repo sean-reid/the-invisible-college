@@ -75,6 +75,27 @@ def _extract_abstract_fallback(body_md: str) -> str | None:
     return None
 
 
+_ISSUE_RE = re.compile(r"^issueNumber:\s*(\d+)\s*$", re.MULTILINE)
+
+
+def _next_issue_number() -> int:
+    """Return one more than the max `issueNumber` across blog post frontmatters.
+
+    We look at the blog content directory (which is the authoritative copy
+    consumed by the build) rather than the archive, because hand-authored
+    pieces like First Light only exist in the blog content. Falls back to 1
+    when no existing publications are found.
+    """
+    max_seen = 0
+    if paths.BLOG_POSTS.is_dir():
+        for md in paths.BLOG_POSTS.glob("*.md"):
+            text = md.read_text(encoding="utf-8")
+            m = _ISSUE_RE.search(text)
+            if m:
+                max_seen = max(max_seen, int(m.group(1)))
+    return max_seen + 1
+
+
 def _yaml_string(value: str) -> str:
     """Format a value as a safe single-line YAML string."""
     escaped = value.replace("\\", "\\\\").replace('"', '\\"').replace("\n", " ")
@@ -95,15 +116,22 @@ def _publication_markdown(
     reviewers: list[str],
     published_at: datetime,
     project_id: str,
+    issue_number: int,
     abstract: str | None,
     has_notebook: bool,
     has_reviews: bool,
 ) -> str:
+    # Use a full ISO timestamp (not just the date) so same-day publications
+    # sort deterministically by the moment they actually went out.
+    iso = published_at.isoformat(timespec="seconds")
+    if iso.endswith("+00:00"):
+        iso = iso[:-6] + "Z"
     frontmatter_lines = [
         "---",
         f"title: {_yaml_string(title)}",
+        f"issueNumber: {issue_number}",
         f"authors: {_yaml_list(authors)}",
-        f"publishedAt: {published_at.date().isoformat()}",
+        f"publishedAt: {iso}",
         f"projectId: {_yaml_string(project_id)}",
         f"hasNotebook: {'true' if has_notebook else 'false'}",
         f"hasReviews: {'true' if has_reviews else 'false'}",
@@ -226,6 +254,7 @@ def run(project_id: str) -> None:
     slug = project_id  # stable, unique, sortable
     authors = [lead.name]
     reviewer_names = [g.name for g in reviewer_genomes]
+    issue_number = _next_issue_number()
 
     # Compose publication artifact (archive + blog content)
     publication_md = _publication_markdown(
@@ -235,6 +264,7 @@ def run(project_id: str) -> None:
         reviewers=reviewer_names,
         published_at=now,
         project_id=project_id,
+        issue_number=issue_number,
         abstract=abstract,
         has_notebook=notebook_md is not None,
         has_reviews=bool(reviews_data),

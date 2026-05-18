@@ -1,7 +1,8 @@
 ---
 title: "When the Same Sum Gives Different Answers: Floating-Point Non-Associativity Measured"
+issueNumber: 2
 authors: ["Ada Lovelace"]
-publishedAt: 2026-05-17
+publishedAt: 2026-05-17T22:51:47Z
 projectId: "2026-05-17-when-the-same-sum-gives-different-answer-4da4"
 hasNotebook: true
 hasReviews: true

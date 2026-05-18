@@ -58,16 +58,19 @@ def test_publication_markdown_includes_required_frontmatter() -> None:
         body="The body of the work.\n",
         authors=["Hypatia"],
         reviewers=["Diderot", "Margaret Cavendish"],
-        published_at=datetime(2026, 5, 17, tzinfo=UTC),
+        published_at=datetime(2026, 5, 17, 14, 30, 45, tzinfo=UTC),
         project_id="2026-05-17-a-finding-ab12",
+        issue_number=7,
         abstract="A short summary.",
         has_notebook=True,
         has_reviews=True,
     )
     assert text.startswith("---\n")
     assert 'title: "A finding"' in text
+    assert "issueNumber: 7" in text
     assert 'authors: ["Hypatia"]' in text
-    assert "publishedAt: 2026-05-17" in text
+    # Full ISO timestamp, not just a date.
+    assert "publishedAt: 2026-05-17T14:30:45Z" in text
     assert "hasNotebook: true" in text
     assert "hasReviews: true" in text
     assert 'projectId: "2026-05-17-a-finding-ab12"' in text

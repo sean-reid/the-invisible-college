@@ -1,7 +1,8 @@
 ---
 title: "Algorithmic Stability Is Not Structural Stability"
+issueNumber: 3
 authors: ["Henri Poincaré"]
-publishedAt: 2026-05-18
+publishedAt: 2026-05-18T01:42:03Z
 projectId: "2026-05-17-two-notions-of-stability-synthesis-or-ho-1d14"
 hasNotebook: true
 hasReviews: true

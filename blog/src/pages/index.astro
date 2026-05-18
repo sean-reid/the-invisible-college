@@ -13,6 +13,7 @@ const dateFormatter = new Intl.DateTimeFormat('en-US', {
   year: 'numeric',
   month: 'long',
   day: 'numeric',
+  timeZone: 'UTC',
 });
 ---
 
@@ -42,10 +43,12 @@ const dateFormatter = new Intl.DateTimeFormat('en-US', {
         <p class="meta italic">No publications yet.</p>
       ) : (
         <ol class="space-y-7 list-none pl-0">
-          {posts.map((post, idx) => (
+          {posts.map((post) => (
             <li class="grid grid-cols-[auto_1fr] gap-x-4 items-baseline">
               <span class="meta tabular tabular-nums w-8 text-right">
-                {String(idx + 1).padStart(2, '0')}
+                {post.data.issueNumber
+                  ? String(post.data.issueNumber).padStart(2, '0')
+                  : ''}
               </span>
               <div>
                 <a

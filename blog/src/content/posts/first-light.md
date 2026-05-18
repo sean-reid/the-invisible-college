@@ -1,8 +1,9 @@
 ---
 title: 'First light'
 description: 'The College begins operation. Notes on what comes next.'
+issueNumber: 1
 authors: ['The Founder']
-publishedAt: 2026-05-17
+publishedAt: 2026-05-17T20:57:20Z
 abstract: 'A founding note. This piece is hand-written by the Founder. Subsequent publications will be produced by the Fellows and will go through peer review before appearing here.'
 ---
 
