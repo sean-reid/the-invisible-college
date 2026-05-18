@@ -882,6 +882,12 @@ def _autopilot_locked(max_budget_usd: float, max_steps: int, start_new_if_idle: 
     # one item per wake-up.
     _advance_one_curriculum_item()
 
+    # Once curriculum is complete, the qualifying project is the next
+    # apprenticeship step. Auto-start one for any Postulant who has
+    # finished reading and does not yet have a qualifying project in
+    # flight. The project then advances through the normal pipeline.
+    _maybe_start_qualifying_project()
+
     if start_new_if_idle:
         with db.connection() as conn:
             in_flight = conn.execute(
@@ -927,3 +933,42 @@ def _advance_one_curriculum_item() -> None:
         if result == "completed":
             return  # advanced one item this wake-up; stop.
         # "all-done" or "skipped": try the next Postulant.
+
+
+def _maybe_start_qualifying_project() -> None:
+    """If any Postulant has finished curriculum but has no qualifying project, start one.
+
+    Walks postulants in the order they completed curriculum. At most
+    one qualifying project is started per wake-up.
+    """
+    with db.connection() as conn:
+        rows = list(
+            conn.execute(
+                "SELECT f.id FROM fellows f "
+                "WHERE f.rank = 'postulant' "
+                "AND f.retired_at IS NULL "
+                "AND f.curriculum_completed_at IS NOT NULL "
+                "AND NOT EXISTS ("
+                "  SELECT 1 FROM projects p "
+                "  WHERE p.lead_fellow_id = f.id AND p.kind = 'qualifying'"
+                ") "
+                "ORDER BY f.curriculum_completed_at ASC LIMIT 1"
+            )
+        )
+    if not rows:
+        return
+
+    fellow_id = rows[0]["id"]
+    console.print(
+        f"[dim]Postulant `{fellow_id}` has completed curriculum and "
+        "no qualifying project yet. Starting one...[/dim]"
+    )
+    from institute.workflows import qualify as qualify_workflow
+
+    try:
+        qualify_workflow.run(fellow_id)
+    except SystemExit as exc:
+        # qualify.run raises SystemExit for preconditions that should
+        # only fail in race conditions (e.g., manual concurrent run).
+        # Log and continue; the main loop is unaffected.
+        console.print(f"[yellow]qualify failed for {fellow_id}: {exc}[/yellow]")

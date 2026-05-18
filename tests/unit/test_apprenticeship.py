@@ -331,3 +331,91 @@ def test_auto_promote_skips_non_postulant(isolated: Path) -> None:
     with db.connection() as conn:
         row = conn.execute("SELECT rank FROM fellows WHERE id = 'ada'").fetchone()
     assert row["rank"] == "fellow", "Non-postulant must not be touched"
+
+
+# ---------------------------------------------------------------------------
+# Autopilot's curriculum → qualifying picker
+# ---------------------------------------------------------------------------
+
+
+def test_qualifying_picker_finds_postulant_done_with_curriculum(isolated: Path) -> None:
+    """A Postulant with curriculum_completed_at and no qualifying project is selected."""
+    now = datetime.now(UTC).isoformat(timespec="seconds")
+    with db.connection() as conn, db.transaction(conn):
+        _seed(conn, _genome("advisor", "Adv", "fellow"))
+        _seed(conn, _genome("ready", "Ready Pat", "postulant"), advisor_id="advisor")
+        # Completed curriculum, no qualifying project yet.
+        conn.execute(
+            "UPDATE fellows SET curriculum_completed_at = ? WHERE id = 'ready'",
+            (now,),
+        )
+        rows = list(
+            conn.execute(
+                "SELECT f.id FROM fellows f "
+                "WHERE f.rank = 'postulant' "
+                "AND f.retired_at IS NULL "
+                "AND f.curriculum_completed_at IS NOT NULL "
+                "AND NOT EXISTS ("
+                "  SELECT 1 FROM projects p "
+                "  WHERE p.lead_fellow_id = f.id AND p.kind = 'qualifying'"
+                ") "
+                "ORDER BY f.curriculum_completed_at ASC LIMIT 1"
+            )
+        )
+    assert [r["id"] for r in rows] == ["ready"]
+
+
+def test_qualifying_picker_skips_postulant_with_existing_qualifying(isolated: Path) -> None:
+    """A Postulant who already has a qualifying project (any state) is not picked again."""
+    now = datetime.now(UTC).isoformat(timespec="seconds")
+    with db.connection() as conn, db.transaction(conn):
+        _seed(conn, _genome("advisor", "Adv", "fellow"))
+        _seed(conn, _genome("inflight", "In Flight", "postulant"), advisor_id="advisor")
+        conn.execute(
+            "UPDATE fellows SET curriculum_completed_at = ? WHERE id = 'inflight'",
+            (now,),
+        )
+        # Existing qualifying project in mid-pipeline.
+        conn.execute(
+            "INSERT INTO projects "
+            "(id, title, state, lead_fellow_id, review_round, kind, "
+            " created_at, updated_at) "
+            "VALUES (?, ?, ?, ?, 1, 'qualifying', ?, ?)",
+            ("proj-existing", "x", "researching", "inflight", now, now),
+        )
+        rows = list(
+            conn.execute(
+                "SELECT f.id FROM fellows f "
+                "WHERE f.rank = 'postulant' "
+                "AND f.retired_at IS NULL "
+                "AND f.curriculum_completed_at IS NOT NULL "
+                "AND NOT EXISTS ("
+                "  SELECT 1 FROM projects p "
+                "  WHERE p.lead_fellow_id = f.id AND p.kind = 'qualifying'"
+                ") "
+                "ORDER BY f.curriculum_completed_at ASC LIMIT 1"
+            )
+        )
+    assert rows == [], "Postulant with existing qualifying project should not be picked"
+
+
+def test_qualifying_picker_skips_postulant_with_unfinished_curriculum(isolated: Path) -> None:
+    """A Postulant who hasn't finished curriculum is not picked for qualifying."""
+    with db.connection() as conn, db.transaction(conn):
+        _seed(conn, _genome("advisor", "Adv", "fellow"))
+        _seed(conn, _genome("midway", "Midway", "postulant"), advisor_id="advisor")
+        # curriculum_completed_at stays NULL.
+        rows = list(
+            conn.execute(
+                "SELECT f.id FROM fellows f "
+                "WHERE f.rank = 'postulant' "
+                "AND f.retired_at IS NULL "
+                "AND f.curriculum_completed_at IS NOT NULL "
+                "AND NOT EXISTS ("
+                "  SELECT 1 FROM projects p "
+                "  WHERE p.lead_fellow_id = f.id AND p.kind = 'qualifying'"
+                ") "
+                "ORDER BY f.curriculum_completed_at ASC LIMIT 1"
+            )
+        )
+    assert rows == [], "Postulant still reading should not be picked for qualifying"
