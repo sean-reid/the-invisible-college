@@ -11,6 +11,8 @@ import json
 from pathlib import Path
 from typing import Any
 
+import json_repair
+
 
 def extract_json_object(text: str) -> str | None:
     """Find the outermost JSON object in `text`, ignoring surrounding prose.
@@ -59,6 +61,13 @@ def extract_json_object(text: str) -> str | None:
 def parse_json_or_dump(text: str, dump_path: Path, context: str) -> dict[str, Any]:
     """Salvage a JSON object from `text`. On failure, save the raw text to
     `dump_path` and raise with a helpful message.
+
+    Three escalating attempts:
+      1. Strict json.loads on the extracted object.
+      2. json_repair, which heals common LLM-JSON mistakes (one unescaped
+         double-quote inside a string, a trailing comma, smart quotes).
+      3. json_repair on the original text without extraction, in case the
+         extractor itself trimmed too much.
     """
     extracted = extract_json_object(text)
     if extracted is not None:
@@ -68,8 +77,21 @@ def parse_json_or_dump(text: str, dump_path: Path, context: str) -> dict[str, An
                 return payload
         except json.JSONDecodeError:
             pass
+        try:
+            payload = json_repair.loads(extracted)
+            if isinstance(payload, dict) and payload:
+                return payload
+        except Exception:
+            pass
 
-    # Fallback: save raw and complain.
+    try:
+        payload = json_repair.loads(text)
+        if isinstance(payload, dict) and payload:
+            return payload
+    except Exception:
+        pass
+
+    # All three attempts failed: save raw and complain.
     dump_path.parent.mkdir(parents=True, exist_ok=True)
     dump_path.write_text(text, encoding="utf-8")
     raise RuntimeError(

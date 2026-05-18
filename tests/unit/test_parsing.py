@@ -37,3 +37,37 @@ def test_extract_json_object_returns_none_when_no_object() -> None:
     assert bootstrap.extract_json_object("Submitted the genomes.") is None
     assert bootstrap.extract_json_object("") is None
     assert bootstrap.extract_json_object("[1, 2, 3]") is None  # not an object
+
+
+def test_parse_json_or_dump_repairs_unescaped_quote_in_string(tmp_path) -> None:
+    """Regression: an LLM produced a JSON string with an interior `." ` that
+    closed the string prematurely. json_repair should still recover the payload.
+    """
+    bad = """```json
+{
+  "summary": "Good piece.",
+  "concerns": "1. The piece reads as \\"here is X\\" rather than \\"here is what I discovered by pursuing one of these." At minimum, a partial example would help.",
+  "recommendation": "minor"
+}
+```"""
+    out = bootstrap.parse_json_or_dump(
+        bad, dump_path=tmp_path / "raw.txt", context="test"
+    )
+    assert out["summary"] == "Good piece."
+    assert out["recommendation"] == "minor"
+    assert "partial example" in out["concerns"]
+
+
+def test_parse_json_or_dump_dumps_and_raises_when_unsalvageable(tmp_path) -> None:
+    """Truly garbage input should be saved to the dump path and raise."""
+    import pytest
+
+    dump = tmp_path / "raw.txt"
+    with pytest.raises(RuntimeError, match="could not parse JSON"):
+        bootstrap.parse_json_or_dump(
+            "this is not json at all",
+            dump_path=dump,
+            context="test",
+        )
+    assert dump.exists()
+    assert dump.read_text() == "this is not json at all"
