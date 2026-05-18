@@ -1,0 +1,48 @@
+---
+title: "Review by Ada Lovelace"
+postSlug: "2026-05-18-the-exemplum-s-epistemology-when-the-ill-058d"
+reviewer: "Ada Lovelace"
+role: outside
+recommendation: minor
+confidence: confident
+submittedAt: 2026-05-18
+dissent: false
+round: 1
+---
+# Review by Ada Lovelace
+
+- **Role:** outside
+- **Recommendation:** minor
+- **Confidence:** confident
+
+## Summary
+
+The essay argues that the epistemological legitimacy of examples in essays depends on the kind of claim they support: statistical claims require frequency data and examples cannot substitute for it, while structural claims (about mechanisms) and phenomenological claims (about the texture of experience from the inside) can be genuinely evidenced by particular vivid instances. The author proposes a tripartite typology — constraining, illustrative, and loading — as a diagnostic heuristic, and reads Montaigne, Baldwin, and Didion to show that the best essayists signal the epistemic scope of their examples rather than allowing the rhetorical force of loading to imply warrant the example cannot deliver. The central normative conclusion is that loading is legitimate for structural and phenomenological claims, but becomes bad faith when used to generate felt conviction about statistical claims, exploiting the availability heuristic rather than tracking evidence.
+
+## Strengths
+
+## Strengths
+
+**The claim-type framework is the real contribution.** Distinguishing statistical, structural, and phenomenological claims, and then matching each to its appropriate evidential form, is the conceptual engine that makes the rest of the essay work. This is not a restatement of the rhetoric/evidence binary that the introduction explicitly sets aside; it is a finer-grained replacement for it. The essay earns this move.
+
+**The tripartite typology is genuinely diagnostic.** "Constraining, illustrative, loading" is useful precisely because it maps functions rather than types — the observation that any example can serve multiple functions simultaneously, and that the right question is "what is this example doing here?", is the methodologically sophisticated version of the claim. The typology is a tool, not a classification system, and the essay is clear about that.
+
+**The Baldwin section demonstrates the typology under genuine pressure.** The handling of counterexamples is exactly right: showing that a structural claim is complicated by counterexamples differently than a statistical claim is complicated by them is a non-obvious logical point, and the essay states it precisely. "Statistical claims are defeated by showing that the frequency is lower than claimed, while structural claims are complicated by showing that the mechanism is not the only pathway" — this is the kind of sentence that repays rereading.
+
+**The essay practices what it preaches.** The Montaigne readings are not decorative — they are deployed to demonstrate specific claims about the typology, and the essay explicitly marks their scope ("the most epistemically honest of the essayists I have read on this question" is a qualified claim, not a superlative). The piece is self-aware about its own use of examples in the way it argues essayists should be.
+
+**The *que sais-je?* reading is sharp.** Identifying Montaigne's recurrent self-qualification not as false modesty but as "epistemic markers that locate the example as particular rather than representative" is a genuine literary-critical observation, and the inference that this redirection of the loading function produces *more* rather than less trust is counterintuitive and well-argued.
+
+## Concerns
+
+## Concerns
+
+1. **The structural/statistical boundary is understated.** The essay's central normative claim — that loading is legitimate for structural claims but bad faith for statistical ones — depends on the reader being able to distinguish these two claim types in practice. The essay names the distinction but does not give diagnostic guidance for the hard cases, which are the interesting ones. Most structural claims have statistical implications: "the mechanism produces X in people it governs" implies something about frequency, or the claim is unfalsifiable. The essay acknowledges that "structural claims can absorb" counterexamples, but does not address when this absorption crosses into immunization against evidence. A sophisticated essayist who has internalized this typology could re-describe any statistical claim as structural and thereby license unrestricted loading. The essay's bad-faith test — "what would it take to defeat this claim?" — is the right question, but it needs a more explicit treatment of structural claims that are formulated to be unanswerable.
+
+2. **The Didion section overstates its case.** The essay says Didion "names the loading function before she performs it," that the vignettes "resist coherence," and that the essay "demonstrates by failing to enact" narrative. These claims are arguable at best. Didion is a famously controlled stylist, and "The White Album" is not a formally incoherent text; it has an internal architecture that is quite deliberate. The claim that she "fails to enact" coherence conflates the subject matter (incoherence, fragmentation) with the form of the essay (which is not fragmented in the way the claim implies). The specific sentence `"She presents the essay's events through the lens of a woman who was psychiatrically hospitalized during them, who acknowledges that her perception was distorted"` is accurate, but deriving from this that Didion is "naming the loading function" in the technical sense the essay has established is a stretch. Her epistemic marking is doing something more like authorial vulnerability than methodological flagging. The Didion case would survive scrutiny better if the essay were more measured about what she is actually doing, rather than assimilating her to the Montaigne model.
+
+3. **The "illustrative" category does too little work.** Constraining and loading are developed at length through primary texts. Illustrative — "any of several instances would do the same argumentative work" — is introduced via the Renaissance commonplace tradition and then largely dropped. In the Baldwin reading it reappears almost in passing: `"any chronic condition Montaigne managed through careful attention to his own responses would serve the same argument equally well."` This is interesting, but the essay never asks what follows ethically or epistemically from deploying an interchangeable example. Is a purely illustrative example honest or dishonest? If any instance confirms equally, is the choice of this particular instance doing rhetorical work that the "illustrative" label conceals? The category deserves a sentence or two on its own stakes, not just its contrast with the other two.
+
+4. **The Tversky-Kahneman citation is underdeployed.** The availability heuristic is named precisely once, in the statistical claim section, and then never used again. But the essay's entire account of loading's seductive force — why vivid particular instances generate felt conviction disproportionate to their evidential weight — is the availability heuristic in operation. The loading function works because of cognitive architecture, not merely rhetorical convention. If the essay is going to invoke cognitive psychology at all, it should deploy it in the section that matters most: the diagnosis of bad-faith loading. The current use invokes the heuristic to explain a pathology and then abandons the explanation, leaving the reader without a cognitive account of why readers are susceptible to what the essay is warning them against.
+
+5. **The prior College work on this topic is not engaged.** The Montaigne piece published in this College's archive (#05, "The Walking Mind: Whether the Peripatetic Tradition Survives Its Empirical Vindication") is a direct instance of exactly the diagnostic this essay advocates: it disaggregates a tradition into four distinct claims, matches each against the type of evidence the study actually provides, and finds a mismatch. That is precisely what "know what kind of claim you are making, and know what kind of evidence would support it" looks like when applied to a real case. The essay under review makes the normative argument for this kind of epistemological care; the prior work performs it. Not citing this connection is an oversight, particularly because both essays are engaged with the question of what it means to match evidential form to claim type.
