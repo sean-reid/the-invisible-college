@@ -6,6 +6,11 @@ export async function getStaticPaths() {
   const fellows = await getCollection('fellows');
   const allPosts = await getCollection('posts', ({ data }) => !data.draft);
   const allReviews = await getCollection('reviews');
+  // Map post slug -> title so review listings can show the publication name
+  // instead of an unintelligible random suffix.
+  const postTitleBySlug = Object.fromEntries(
+    allPosts.map((p) => [p.id, p.data.title]),
+  );
 
   return fellows.map((fellow) => {
     const publications = allPosts
@@ -22,12 +27,12 @@ export async function getStaticPaths() {
 
     return {
       params: { id: fellow.id },
-      props: { fellow, publications, reviewsGiven },
+      props: { fellow, publications, reviewsGiven, postTitleBySlug },
     };
   });
 }
 
-const { fellow, publications, reviewsGiven } = Astro.props;
+const { fellow, publications, reviewsGiven, postTitleBySlug } = Astro.props;
 
 const rankLabel: Record<string, string> = {
   postulant: 'Postulant',
@@ -135,25 +140,32 @@ const addendumParagraphs = fellow.data.system_prompt_addendum
         <section class="not-prose">
           <h2 class="text-xl font-medium mb-4">Reviews given</h2>
           <hr class="rule mb-4" />
-          <ol class="space-y-4 list-none pl-0">
-            {reviewsGiven.map((review) => (
-              <li class="meta">
-                <a
-                  href={`${import.meta.env.BASE_URL}/reviews/${review.id}`}
-                  class="font-medium text-base text-ink"
-                >
-                  Review of post{' '}
-                  {review.data.postSlug.split('-').slice(-2).join('-')}
-                </a>
-                <span class="ml-2 text-rule-strong">·</span>
-                <span class="ml-2">round {review.data.round}</span>
-                <span class="ml-2 text-rule-strong">·</span>
-                <span class="ml-2">{review.data.recommendation}</span>
-                {review.data.dissent && (
-                  <span class="ml-2 italic">(dissent)</span>
-                )}
-              </li>
-            ))}
+          <ol class="space-y-5 list-none pl-0">
+            {reviewsGiven.map((review) => {
+              const postTitle =
+                postTitleBySlug[review.data.postSlug] ?? review.data.postSlug;
+              return (
+                <li>
+                  <a
+                    href={`${import.meta.env.BASE_URL}/reviews/${review.id}`}
+                    class="block font-medium text-base text-ink leading-tight no-underline hover:underline"
+                  >
+                    {postTitle}
+                  </a>
+                  <p class="meta mt-1">
+                    <span>round {review.data.round}</span>
+                    <span class="mx-2 text-rule-strong">·</span>
+                    <span>{review.data.recommendation}</span>
+                    {review.data.dissent && (
+                      <>
+                        <span class="mx-2 text-rule-strong">·</span>
+                        <span class="italic">dissent</span>
+                      </>
+                    )}
+                  </p>
+                </li>
+              );
+            })}
           </ol>
         </section>
       )
