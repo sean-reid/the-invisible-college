@@ -24,7 +24,7 @@ import json
 from collections import Counter
 from datetime import UTC, datetime
 from pathlib import Path
-from typing import cast
+from typing import Literal, cast
 
 from rich.console import Console
 from rich.panel import Panel
@@ -34,6 +34,12 @@ from institute import archive_index, claude_runner, db, decisions, parsing, path
 from institute import fellow as fellow_mod
 from institute.claude_runner import FellowTask
 from institute.fellow import Genome, Rank
+
+# A promotion review can end in one of three ways:
+#   - a Rank string  → the Fellow's rank changes
+#   - "release"      → the Fellow is retired from the College
+#   - None           → no change ("hold")
+PromoteOutcome = Rank | Literal["release"] | None
 
 console = Console()
 
@@ -65,10 +71,36 @@ the rank criteria.
 
 # Your job
 
-Recommend one of: `postulant`, `novice`, `junior_fellow`, `fellow`,
-`senior_fellow`, `emeritus`, or `hold` (no change). Recommending a
-demotion is allowed but should be rare and the rationale must be
-strong.
+Recommend one of:
+
+- A rank: `postulant`, `novice`, `junior_fellow`, `fellow`,
+  `senior_fellow`, `emeritus`. Use this for promotions and (rarely)
+  demotions.
+- `hold`: no change. Default when evidence is mixed or insufficient.
+- `release`: the Fellow is retired from active duty. Genome and
+  published work are preserved in the Archive, but the Fellow no
+  longer participates in the College. Reserved for sustained
+  non-engagement (see below).
+
+Recommending a demotion is allowed but should be rare and the
+rationale must be strong. Senior Fellows cannot be demoted to a lower
+rank other than `emeritus` (Chapter 3); they can, however, be
+released for Charter violations or persistent disengagement.
+
+# When to recommend release
+
+Per Chapter 3: "After two consecutive failed promotion reviews, the
+Tenure Committee may recommend release."
+
+Use the dossier's `consecutive promotion reviews held` count. If it
+is two or more AND the Fellow has produced no new publications and
+filed no substantive reviews since the first hold, release is the
+honest call. A Fellow who is being held over and over while producing
+nothing is failing the institution's purpose.
+
+Do NOT recommend release on a first review, or for a Fellow whose
+record shows active reviewing or in-flight projects, even if their
+authorship is thin.
 
 The Fellow's current rank is `{current_rank}`. The ladder has six
 ranks. Entry criteria, summarized from Chapter 3 and Chapter 5:
@@ -120,7 +152,7 @@ fence. First character `{{`, last `}}`.
 
 ```
 {{
-  "recommended_rank": "<one of: postulant | novice | junior_fellow | fellow | senior_fellow | emeritus | hold>",
+  "recommended_rank": "<postulant | novice | junior_fellow | fellow | senior_fellow | emeritus | hold | release>",
   "rationale": "<150-600 words of reasoning the committee will read>",
   "key_evidence": ["<short fact 1>", "<short fact 2>", ...],
   "concerns": "<markdown text, or '' if none>"
@@ -148,10 +180,19 @@ Read these with the Read tool. The rank ladder is defined in
 
 # Your job
 
-Cast a vote on the candidate's rank. The candidate's current rank is
-`{current_rank}`. Choose one of: `postulant`, `novice`,
-`junior_fellow`, `fellow`, `senior_fellow`, `emeritus`, or `hold` (no
-change).
+Cast a vote on the candidate. The candidate's current rank is
+`{current_rank}`. Choose one of:
+
+- A rank: `postulant`, `novice`, `junior_fellow`, `fellow`,
+  `senior_fellow`, `emeritus`.
+- `hold`: no change.
+- `release`: retire the Fellow from active duty. Reserved for
+  candidates whose dossier shows two or more consecutive held reviews
+  with no new authorship and no substantive reviewing in between.
+
+Senior Fellows cannot be demoted to a lower rank other than emeritus;
+they can be released for Charter violations or persistent
+disengagement.
 
 A serious vote engages the actual evidence. State what you read in the
 dossier, what evidence convinced you, and any concern that gives you
@@ -166,7 +207,7 @@ fence. First character `{{`, last `}}`.
 
 ```
 {{
-  "vote": "<one of: postulant | novice | junior_fellow | fellow | senior_fellow | emeritus | hold>",
+  "vote": "<postulant | novice | junior_fellow | fellow | senior_fellow | emeritus | hold | release>",
   "rationale": "<150-400 words of your reasoning>",
   "concerns": "<markdown text, or '' if none>"
 }}
@@ -175,6 +216,7 @@ fence. First character `{{`, last `}}`.
 
 
 VALID_RANKS: set[str] = set(RANK_ORDER) | {"hold"}
+VALID_VOTES: set[str] = VALID_RANKS | {"release"}
 
 
 # ---------------------------------------------------------------------------
@@ -241,10 +283,11 @@ def _panel_vote(
     rep: reputation.FellowReputation,
     recommendation: dict,
     panel: list[Genome],
-) -> tuple[Rank | None, list[dict]]:
-    """Each panelist casts a vote; aggregate by majority. Returns (rank, votes).
+) -> tuple[PromoteOutcome, list[dict]]:
+    """Each panelist casts a vote; aggregate by majority. Returns (outcome, votes).
 
-    Returns rank=None when the panel chose 'hold' or split.
+    Outcome is a Rank, the literal "release", or None when the panel
+    chose 'hold' or split.
     """
     base = paths.ARCHIVE / "promotions" / rep.fellow_id
     base.mkdir(parents=True, exist_ok=True)
@@ -281,23 +324,28 @@ def _panel_vote(
         votes.append(vote_payload)
         _stage(base / f"vote-{panelist.id}.json", json.dumps(vote_payload, indent=2))
 
-    rank = _tally(votes, rep.rank)
-    return rank, votes
+    outcome = _tally(votes, rep.rank)
+    return outcome, votes
 
 
-def _tally(votes: list[dict], current_rank: str) -> Rank | None:
-    """Pick the rank with strict majority; otherwise None (hold)."""
+def _tally(votes: list[dict], current_rank: str) -> PromoteOutcome:
+    """Pick the outcome with strict majority; otherwise None (hold).
+
+    A vote for "release" is treated as a distinct outcome from any rank.
+    """
     raw = [str(v.get("vote", "hold")).strip().lower() for v in votes]
-    cleaned = [r for r in raw if r in VALID_RANKS]
+    cleaned = [r for r in raw if r in VALID_VOTES]
     if not cleaned:
         return None
     counts = Counter(cleaned)
-    top_rank, top_count = counts.most_common(1)[0]
+    top, top_count = counts.most_common(1)[0]
     if top_count * 2 <= len(cleaned):
         return None  # no strict majority
-    if top_rank == "hold" or top_rank == current_rank:
+    if top == "hold" or top == current_rank:
         return None
-    return cast(Rank, top_rank)
+    if top == "release":
+        return "release"
+    return cast(Rank, top)
 
 
 def _render_recommendation_markdown(payload: dict) -> str:
@@ -327,8 +375,12 @@ def _render_recommendation_markdown(payload: dict) -> str:
 # ---------------------------------------------------------------------------
 
 
-def _founder_decide(rep: reputation.FellowReputation, payload: dict) -> Rank | None:
-    """Present the recommendation to the Founder. Returns the chosen rank, or None to abort."""
+def _founder_decide(rep: reputation.FellowReputation, payload: dict) -> PromoteOutcome:
+    """Present the recommendation to the Founder. Returns the chosen outcome.
+
+    The Founder may pick a rank, 'hold', 'release' (retire the Fellow),
+    or 'abort'. Hold and abort both return None.
+    """
     recommended = str(payload.get("recommended_rank", "hold")).strip().lower()
     rationale = str(payload.get("rationale", "")).strip()
     evidence = payload.get("key_evidence", [])
@@ -352,10 +404,10 @@ def _founder_decide(rep: reputation.FellowReputation, payload: dict) -> Rank | N
     if concerns:
         console.print(Panel(concerns, title="Concerns", border_style="yellow"))
 
-    valid: list[str] = [*RANK_ORDER, "hold"]
+    valid: list[str] = [*RANK_ORDER, "hold", "release"]
     default = recommended if recommended in valid else "hold"
     choice = Prompt.ask(
-        "[bold]Final rank decision[/bold]",
+        "[bold]Final decision[/bold]",
         choices=[*valid, "abort"],
         default=default,
     )
@@ -365,6 +417,8 @@ def _founder_decide(rep: reputation.FellowReputation, payload: dict) -> Rank | N
     if choice == "hold":
         console.print(f"[dim]Rank unchanged: {rep.rank}.[/dim]")
         return None
+    if choice == "release":
+        return "release"
     return cast(Rank, choice)
 
 
@@ -402,6 +456,66 @@ def _apply_rank_change(
         )
         path = decisions.record(conn, decision)
     return path
+
+
+def _apply_release(
+    rep: reputation.FellowReputation,
+    payload: dict,
+    actors: list[str],
+    panel_votes: list[dict] | None,
+) -> Path:
+    """Retire the Fellow: set retired_at, keep the genome and the record."""
+    now = datetime.now(UTC).isoformat(timespec="seconds")
+
+    body_lines = [
+        f"**Fellow:** {rep.name} (`{rep.fellow_id}`)",
+        "",
+        "**Outcome:** released (retired from active duty)",
+        "",
+        f"**Rank at release:** {rep.rank}",
+        "",
+        f"**Recorded:** {now}",
+        "",
+        "**Reputation snapshot at time of decision:**",
+        f"- publications: {rep.author.publications}",
+        f"- reviews given: {rep.reviewer.reviews_given}",
+        f"- sticky round-1 majors: {rep.reviewer.sticky_majors}",
+        "",
+        "The Fellow's genome stays in `genomes/` and the published work "
+        "stays in the Archive. Future workflows will no longer pick this "
+        "Fellow as a lead author, reviewer, advisor, or panelist; the "
+        "row is preserved with `retired_at` set so historical context is "
+        "not lost.",
+    ]
+    rationale = str(payload.get("rationale", "")).strip()
+    if rationale:
+        body_lines.extend(["", "## Orchestrator rationale", "", rationale])
+    concerns = str(payload.get("concerns", "")).strip()
+    if concerns:
+        body_lines.extend(["", "## Concerns", "", concerns])
+    if panel_votes:
+        body_lines.extend(["", "## Panel votes", ""])
+        for v in panel_votes:
+            body_lines.append(
+                f"### {v.get('panelist_name', v.get('panelist_id', '?'))}: `{v.get('vote', '?')}`"
+            )
+            rat = str(v.get("rationale", "")).strip()
+            if rat:
+                body_lines.extend(["", rat])
+            body_lines.append("")
+
+    decision = decisions.Decision(
+        kind="release",
+        title=f"Released: {rep.name} ({rep.rank})",
+        body="\n".join(body_lines),
+        actors=actors,
+    )
+    with db.connection() as conn, db.transaction(conn):
+        conn.execute(
+            "UPDATE fellows SET retired_at = ? WHERE id = ?",
+            (now, rep.fellow_id),
+        )
+        return decisions.record(conn, decision)
 
 
 def _log_review_attempt(
@@ -513,7 +627,7 @@ def run(fellow_id: str, *, auto: bool = False) -> str:
     exits without prompting (used by the autonomous run loop).
     Otherwise the Founder serves as committee.
 
-    Returns one of: "promoted", "demoted", "held", "skipped".
+    Returns one of: "promoted", "demoted", "released", "held", "skipped".
     """
     rep = reputation.load_fellow(fellow_id)
     if rep is None:
@@ -528,15 +642,9 @@ def run(fellow_id: str, *, auto: bool = False) -> str:
             f"[dim]Convening Tenure Committee ({len(panel)} Senior Fellow"
             f"{'s' if len(panel) != 1 else ''})...[/dim]"
         )
-        new_rank, votes = _panel_vote(rep, payload, panel)
+        outcome, votes = _panel_vote(rep, payload, panel)
         actors = ["orchestrator", *[p.id for p in panel], rep.fellow_id]
-        if new_rank is None or new_rank == rep.rank:
-            _log_review_attempt(rep, payload, "panel held", actors, votes)
-            console.print(f"[dim]Panel held: rank unchanged at {rep.rank}.[/dim]")
-            return "held"
-        decision_path = _apply_rank_change(rep, new_rank, payload, actors, votes)
-        _print_summary(rep, new_rank, decision_path)
-        return "promoted" if _is_promotion(rep.rank, new_rank) else "demoted"
+        return _finalize(rep, payload, outcome, actors, votes)
 
     if auto:
         # No panel and we cannot block on stdin. Log the review attempt
@@ -555,12 +663,41 @@ def run(fellow_id: str, *, auto: bool = False) -> str:
         )
         return "skipped"
 
-    new_rank = _founder_decide(rep, payload)
+    outcome = _founder_decide(rep, payload)
     actors = ["founder", "orchestrator", rep.fellow_id]
-    if new_rank is None or new_rank == rep.rank:
-        _log_review_attempt(rep, payload, "founder held", actors, None)
+    return _finalize(rep, payload, outcome, actors, None)
+
+
+def _finalize(
+    rep: reputation.FellowReputation,
+    payload: dict,
+    outcome: PromoteOutcome,
+    actors: list[str],
+    panel_votes: list[dict] | None,
+) -> str:
+    """Dispatch the chosen outcome to the right side effect."""
+    label = "panel" if panel_votes is not None else "founder"
+
+    if outcome == "release":
+        decision_path = _apply_release(rep, payload, actors, panel_votes)
+        console.print()
+        console.print(
+            f"[bold red]{rep.name} released[/bold red] (was {rep.rank}). retired_at recorded."
+        )
+        console.print(f"  Decision: {decision_path.relative_to(paths.ROOT)}")
+        console.print(
+            "[dim]Genome stays in `genomes/`. The Fellow no longer appears in "
+            "active workflows.[/dim]"
+        )
+        return "released"
+
+    if outcome is None or outcome == rep.rank:
+        _log_review_attempt(rep, payload, f"{label} held", actors, panel_votes)
+        console.print(f"[dim]{label.capitalize()} held: rank unchanged at {rep.rank}.[/dim]")
         return "held"
-    decision_path = _apply_rank_change(rep, new_rank, payload, actors, None)
+
+    new_rank = cast(Rank, outcome)
+    decision_path = _apply_rank_change(rep, new_rank, payload, actors, panel_votes)
     _print_summary(rep, new_rank, decision_path)
     return "promoted" if _is_promotion(rep.rank, new_rank) else "demoted"
 

@@ -207,6 +207,9 @@ def render_cohort_brief(cohort: list[FellowReputation]) -> str:
 
 def render_fellow_dossier(rep: FellowReputation) -> str:
     """Detailed single-Fellow markdown brief for the orchestrator's promotion call."""
+    with db.connection() as conn:
+        held_streak = consecutive_holds(conn, rep.fellow_id)
+
     lines = [
         f"# Dossier for {rep.name}",
         "",
@@ -214,6 +217,7 @@ def render_fellow_dossier(rep: FellowReputation) -> str:
         f"- **current rank:** {rep.rank}",
         f"- **model backend:** `{rep.model}`",
         f"- **specialization:** {rep.specialization}",
+        f"- **consecutive promotion reviews held (no rank change):** {held_streak}",
         "",
         "## Authorship signals",
         "",
@@ -245,6 +249,35 @@ def load_cohort() -> list[FellowReputation]:
     """Convenience helper for the CLI: open a DB connection and compute."""
     with db.connection() as conn:
         return cohort_reputation(conn)
+
+
+def consecutive_holds(conn: sqlite3.Connection, fellow_id: str) -> int:
+    """Count the streak of recent promotion reviews that produced no rank change.
+
+    Walks the audit log in reverse chronological order. Each
+    `promotion_review` event (orchestrator/Founder/panel decided to
+    hold) extends the streak; a `promotion` event (rank actually
+    changed) resets it.
+
+    Chapter 3 calls for the Tenure Committee to consider release after
+    two consecutive failed promotion reviews; this helper surfaces the
+    count so the orchestrator's recommendation can engage that rule.
+    """
+    rows = list(
+        conn.execute(
+            "SELECT action FROM audit_log "
+            "WHERE actor LIKE ? AND action IN ('promotion', 'promotion_review') "
+            "ORDER BY at DESC",
+            (f"%{fellow_id}%",),
+        )
+    )
+    streak = 0
+    for r in rows:
+        if r["action"] == "promotion_review":
+            streak += 1
+        else:
+            break
+    return streak
 
 
 def load_fellow(fellow_id: str) -> FellowReputation | None:

@@ -107,6 +107,14 @@ exists, the autonomous loop handles promotion end-to-end; until then
 the auto-trigger records a deferred-review note and waits for a manual
 `institute promote --fellow <id>`.
 
+A promotion review can also end in **release**. Chapter 3 says the
+Tenure Committee may recommend release after two consecutive failed
+promotion reviews; the orchestrator's recommendation includes that as
+a valid option, and the panel or Founder can vote it. A released
+Fellow's `retired_at` is set; the genome and published work stay in
+the Archive but the Fellow no longer appears in propose, peer review,
+admit-advisor, or panel-vote pools.
+
 ## The research cycle
 
 A full project, in the canonical order:
