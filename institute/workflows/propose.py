@@ -119,26 +119,46 @@ REQUIRED_SECTIONS = [
 
 
 def _pick_lead(conn: sqlite3.Connection, requested: str | None) -> Genome:
+    """Pick the Fellow who should lead the next proposal.
+
+    Rotation by least-recent authorship: the Fellow who has not led a
+    project most recently goes next. Fellows who have never led a
+    project are at the front. Critic specializations are filtered out
+    because their function is to review others' work, not propose
+    their own.
+    """
     if requested is not None:
         return fellow_mod.load_genome(conn, requested)
-    # Heuristic: pick the highest-rank, non-builder, non-critic Fellow.
-    # If none qualifies, pick the first active fellow.
+
+    # MAX(updated_at) per Fellow over projects they have led. NULL means
+    # they have never led one, which sorts first under ASC NULLS FIRST
+    # (SQLite default for ASC).
     rows = list(
         conn.execute(
-            "SELECT id, specialization FROM fellows WHERE retired_at IS NULL ORDER BY rank DESC, name"
+            """
+            SELECT f.id, f.specialization, MAX(p.updated_at) AS last_authored
+            FROM fellows f
+            LEFT JOIN projects p ON p.lead_fellow_id = f.id
+            WHERE f.retired_at IS NULL
+            GROUP BY f.id
+            ORDER BY last_authored ASC, f.name ASC
+            """
         )
     )
     if not rows:
         raise SystemExit("No active Fellows. Run `institute bootstrap` first.")
 
-    preferred = [
-        r
-        for r in rows
-        if "build" not in r["specialization"].lower()
-        and "critic" not in r["specialization"].lower()
-    ]
+    preferred = [r for r in rows if not _is_critic_specialization(r["specialization"])]
     chosen = preferred[0] if preferred else rows[0]
     return fellow_mod.load_genome(conn, chosen["id"])
+
+
+_CRITIC_MARKERS = ("critic", "critique", "skeptical")
+
+
+def _is_critic_specialization(specialization: str) -> bool:
+    s = specialization.lower()
+    return any(marker in s for marker in _CRITIC_MARKERS)
 
 
 def _slugify(text: str) -> str:
