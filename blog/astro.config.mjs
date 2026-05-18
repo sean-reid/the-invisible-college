@@ -2,10 +2,13 @@ import { defineConfig } from 'astro/config';
 import mdx from '@astrojs/mdx';
 import sitemap from '@astrojs/sitemap';
 import tailwindcss from '@tailwindcss/vite';
+import { remarkNormalizePostLinks } from './src/remark/normalize-post-links.mjs';
+
+const BASE = '/the-invisible-college';
 
 export default defineConfig({
   site: 'https://sean-reid.github.io',
-  base: '/the-invisible-college',
+  base: BASE,
   trailingSlash: 'never',
   integrations: [mdx(), sitemap()],
   vite: {
@@ -16,5 +19,6 @@ export default defineConfig({
       theme: 'github-light',
       wrap: true,
     },
+    remarkPlugins: [[remarkNormalizePostLinks, { base: BASE }]],
   },
 });
