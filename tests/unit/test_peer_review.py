@@ -132,3 +132,110 @@ def test_round_2_has_work_to_do_before_any_round_2_reviews(seeded: str) -> None:
         done = _existing_reviews_in_round(conn, project_id, 2)
     remaining = [s for s in slots if s.reviewer_id not in done]
     assert len(remaining) == 3, "Round 2 must start with all 3 reviewers pending"
+
+
+def test_round_1_primary_is_closest_discipline(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Round-1 primary should be the candidate most similar to the lead's specialization."""
+    monkeypatch.setattr(fellow_mod, "GENOMES", tmp_path / "genomes")
+    monkeypatch.setattr(fellow_mod, "FELLOWS", tmp_path / "fellows")
+    db_path = tmp_path / "institute.db"
+    monkeypatch.setattr(db, "DB_PATH", db_path)
+    db.initialize(db_path)
+    (tmp_path / "genomes").mkdir(exist_ok=True)
+
+    lead = _genome("Ada Builder", "computational demonstration and reproducible artifacts")
+    twin = _genome("Tina Twin", "computational demonstration of reproducible code")
+    cousin = _genome("Cassie Cousin", "computational analysis and reproducible methods")
+    stranger = _genome("Sam Stranger", "long-form essayistic prose")
+    for g in (lead, twin, cousin, stranger):
+        g.write(tmp_path / "genomes" / f"{g.id}.json")
+    now = datetime.now(UTC).isoformat(timespec="seconds")
+    with db.connection() as conn, db.transaction(conn):
+        for g in (lead, twin, cousin, stranger):
+            fellow_mod.register(conn, g)
+        conn.execute(
+            "INSERT INTO projects "
+            "(id, title, state, lead_fellow_id, draft_path, review_round, "
+            " created_at, updated_at) "
+            "VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+            ("proj-disc", "x", "drafted", lead.id, "draft.md", 1, now, now),
+        )
+
+    with db.connection() as conn:
+        slots = _pick_review_slots(conn, "proj-disc", lead.id, 1)
+    by_role = {s.role: s.reviewer_id for s in slots}
+    assert by_role["primary"] == twin.id, "primary should be the closest-discipline Fellow"
+    assert by_role["outside"] == stranger.id, "outside should be the most-distant Fellow"
+    # secondary is whatever's left in the middle
+    assert by_role["secondary"] == cousin.id
+
+
+def test_round_1_rotates_among_equally_distant_reviewers(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """When multiple candidates score the same, the least-recent reviewer wins."""
+    monkeypatch.setattr(fellow_mod, "GENOMES", tmp_path / "genomes")
+    monkeypatch.setattr(fellow_mod, "FELLOWS", tmp_path / "fellows")
+    db_path = tmp_path / "institute.db"
+    monkeypatch.setattr(db, "DB_PATH", db_path)
+    db.initialize(db_path)
+    (tmp_path / "genomes").mkdir(exist_ok=True)
+
+    # Lead has a single-word specialization; the three candidates share no
+    # tokens with it, so similarity = 0 for all three. Rotation breaks ties.
+    lead = _genome("Lead", "alpha")
+    busy = _genome("Busy", "beta")  # has a very recent review
+    medium = _genome("Medium", "gamma")  # has an older review
+    fresh = _genome("Fresh", "delta")  # has never reviewed
+    for g in (lead, busy, medium, fresh):
+        g.write(tmp_path / "genomes" / f"{g.id}.json")
+    now = datetime.now(UTC).isoformat(timespec="seconds")
+    with db.connection() as conn, db.transaction(conn):
+        for g in (lead, busy, medium, fresh):
+            fellow_mod.register(conn, g)
+        conn.execute(
+            "INSERT INTO projects "
+            "(id, title, state, lead_fellow_id, draft_path, review_round, "
+            " created_at, updated_at) "
+            "VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+            ("proj-rot", "x", "drafted", lead.id, "draft.md", 1, now, now),
+        )
+        # Add a dummy project so reviews have something to FK to.
+        conn.execute(
+            "INSERT INTO projects "
+            "(id, title, state, lead_fellow_id, draft_path, review_round, "
+            " created_at, updated_at) "
+            "VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+            ("proj-history", "h", "published", lead.id, "draft.md", 1, now, now),
+        )
+        conn.execute(
+            "INSERT INTO reviews "
+            "(id, project_id, reviewer_id, role, recommendation, confidence, "
+            " content_path, submitted_at, dissent, round) "
+            "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+            ("r-busy", "proj-history", busy.id, "primary", "minor",
+             "confident", "x", "2026-05-18T20:00:00+00:00", 0, 1),
+        )
+        conn.execute(
+            "INSERT INTO reviews "
+            "(id, project_id, reviewer_id, role, recommendation, confidence, "
+            " content_path, submitted_at, dissent, round) "
+            "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+            ("r-medium", "proj-history", medium.id, "primary", "minor",
+             "confident", "x", "2026-05-01T10:00:00+00:00", 0, 1),
+        )
+
+    with db.connection() as conn:
+        slots = _pick_review_slots(conn, "proj-rot", lead.id, 1)
+    by_role = {s.role: s.reviewer_id for s in slots}
+    # All three score 0 similarity. Rotation order should be: fresh
+    # (never reviewed) first, medium (older review) second, busy
+    # (recent review) last.
+    # Outside is picked first (lowest similarity, oldest reviewer) so
+    # `fresh` becomes outside; primary then takes the most-recent oldest
+    # among remaining = `medium`.
+    assert by_role["outside"] == fresh.id
+    assert by_role["primary"] == medium.id
+    assert by_role["secondary"] == busy.id

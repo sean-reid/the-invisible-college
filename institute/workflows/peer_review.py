@@ -174,14 +174,44 @@ When all four files exist, reply with the single word `Done.` Nothing else.
 """
 
 
+_STOPWORDS = frozenset(
+    {
+        "a", "an", "the", "and", "or", "of", "in", "on", "for", "with", "to",
+        "from", "by", "as", "at", "is", "are", "be", "this", "that",
+    }
+)
+
+
+def _spec_tokens(specialization: str) -> set[str]:
+    """Content-bearing word tokens from a specialization string."""
+    cleaned = "".join(ch.lower() if ch.isalnum() else " " for ch in specialization)
+    return {tok for tok in cleaned.split() if tok and tok not in _STOPWORDS}
+
+
+def _similarity(lead_spec: str, candidate_spec: str) -> int:
+    """Token-overlap similarity. Bigger = more disciplinary kinship."""
+    return len(_spec_tokens(lead_spec) & _spec_tokens(candidate_spec))
+
+
+def _last_review_at(conn: sqlite3.Connection, reviewer_id: str) -> str:
+    """ISO timestamp of the reviewer's most recent review, or '' if never."""
+    row = conn.execute(
+        "SELECT MAX(submitted_at) AS last FROM reviews WHERE reviewer_id = ?",
+        (reviewer_id,),
+    ).fetchone()
+    return row["last"] or "" if row else ""
+
+
 def _pick_review_slots(
     conn: sqlite3.Connection, project_id: str, lead_id: str, review_round: int
 ) -> list[ReviewSlot]:
     """Pick reviewer slots for the requested round.
 
-    Round 1: fresh selection. Three reviewers (or as many as the College
-    has minus the lead), with at least one Fellow whose specialization
-    differs from the lead's serving as the `outside` reviewer.
+    Round 1: primary and secondary go to Fellows whose specialization
+    is closest to the lead's (most relevant expertise). Outside goes
+    to the Fellow whose specialization is furthest. Within each tier
+    the least-recent reviewer wins, so review duty rotates across the
+    cohort instead of always landing on the same Fellows.
 
     Round 2: re-use the round-1 reviewers in the same roles. The same
     Fellows judge whether their concerns were addressed.
@@ -198,16 +228,16 @@ def _pick_review_slots(
             raise SystemExit(f"Cannot start round {review_round}: no round-1 reviews found.")
         return [ReviewSlot(reviewer_id=r["reviewer_id"], role=r["role"]) for r in prior]
 
-    rows = list(
+    candidates = list(
         conn.execute(
             "SELECT id, specialization FROM fellows "
-            "WHERE retired_at IS NULL AND id != ? ORDER BY name",
+            "WHERE retired_at IS NULL AND id != ?",
             (lead_id,),
         )
     )
-    if len(rows) < 2:
+    if len(candidates) < 2:
         raise SystemExit(
-            f"Need at least 2 Fellows other than the lead for peer review. Found {len(rows)}."
+            f"Need at least 2 Fellows other than the lead for peer review. Found {len(candidates)}."
         )
 
     lead_row = conn.execute(
@@ -215,18 +245,32 @@ def _pick_review_slots(
     ).fetchone()
     lead_spec = lead_row["specialization"] if lead_row else ""
 
-    outside = next(
-        (r for r in rows if r["specialization"] != lead_spec),
-        rows[-1],
-    )
-    rest = [r for r in rows if r["id"] != outside["id"]]
+    # Score each candidate: similarity to the lead's discipline, plus a
+    # rotation key (least-recent reviewer first). Sort once descending
+    # by similarity, ascending by last-review timestamp.
+    scored = []
+    for r in candidates:
+        sim = _similarity(lead_spec, r["specialization"])
+        last = _last_review_at(conn, r["id"])
+        scored.append((sim, last, r["id"]))
 
-    slots = [
-        ReviewSlot(reviewer_id=rest[0]["id"], role="primary"),
-        ReviewSlot(reviewer_id=rest[1]["id"], role="secondary") if len(rest) > 1 else None,
-        ReviewSlot(reviewer_id=outside["id"], role="outside"),
-    ]
-    return [s for s in slots if s is not None]
+    # Outside reviewer: the candidate with the LOWEST similarity to the
+    # lead, breaking ties by least-recent reviewer. Pull them out first
+    # so the most-related Fellows are reserved for primary/secondary.
+    scored.sort(key=lambda t: (t[0], t[1]))  # lowest similarity, oldest review
+    outside_id = scored[0][2]
+    rest = [t for t in scored if t[2] != outside_id]
+
+    # Primary and secondary: highest similarity first, then least-recent.
+    rest.sort(key=lambda t: (-t[0], t[1]))
+    primary_id = rest[0][2]
+    secondary_id = rest[1][2] if len(rest) > 1 else None
+
+    slots = [ReviewSlot(reviewer_id=primary_id, role="primary")]
+    if secondary_id is not None:
+        slots.append(ReviewSlot(reviewer_id=secondary_id, role="secondary"))
+    slots.append(ReviewSlot(reviewer_id=outside_id, role="outside"))
+    return slots
 
 
 def _load_round_1_review(conn: sqlite3.Connection, project_id: str, reviewer_id: str) -> str | None:
