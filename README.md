@@ -135,7 +135,7 @@ back up later with another `institute next`.
 **Autonomous:**
 
 ```sh
-uv run institute run --max-budget-usd 5 --max-steps 30
+uv run institute run --max-steps 30
 ```
 
 Loops `next` until the project reaches a terminal state, the kill
@@ -148,8 +148,8 @@ current step. Designed to be left running unattended.
 ## Scheduled autonomous operation
 
 ```sh
-uv run institute schedule install        # every 12h, $10 cap, no auto-push
-uv run institute schedule install --interval-hours 6 --max-budget-usd 5 --auto-push
+uv run institute schedule install        # every 12h, no auto-push
+uv run institute schedule install --interval-hours 6 --auto-push
 uv run institute schedule status         # plist state, last run, log tail
 uv run institute schedule uninstall
 ```
@@ -168,7 +168,7 @@ commits stay local and you push manually.
 You can always invoke autopilot directly:
 
 ```sh
-uv run institute autopilot --max-budget-usd 10 --max-steps 30
+uv run institute autopilot --max-steps 30
 ```
 
 The kill switch halts scheduled wake-ups just like every other command.
@@ -201,13 +201,6 @@ uv run institute kill-switch off
 ```
 
 When on, every `institute` command exits without dispatching work.
-
-## Operating costs
-
-The Founder pays the API bills. A full cycle (proposal through
-two-round peer review through publication) typically costs $2-4
-depending on the cohort's model mix. See [docs/09-resources.md](docs/09-resources.md)
-for the resource model and the three operating tiers.
 
 ## Local development
 

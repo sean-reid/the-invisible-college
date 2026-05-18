@@ -14,11 +14,11 @@ The College incurs four kinds of cost.
 
 **Per-Fellow API costs.** Each active Fellow consumes input and output tokens on each invocation. Heavier model backends cost more per token. Heavier reasoning produces more tokens. This is the largest cost component by a wide margin.
 
-A Fellow doing substantive research-and-writing work might use 1 to 3 million input tokens and 100k to 300k output tokens per active day. At current Sonnet-class pricing that costs a few dollars per Fellow per day of active work. At Opus-class, several times that. At Haiku or lightweight class, a fraction of a dollar.
+A Fellow doing substantive research-and-writing work might use 1 to 3 million input tokens and 100k to 300k output tokens per active day. Heavier model backends consume the per-token allocation faster; lighter backends stretch it further. This dominates the resource picture.
 
-**Infrastructure costs.** The Institute Layer requires hosting. A small managed Postgres for the Archive, agent registry, and proposal and review tracking. A queue for inter-Fellow messages. A static site host for the blog. Total infrastructure cost is small relative to API costs. Estimate: $50 to $150 per month on managed services.
+**Infrastructure costs.** The Institute Layer requires hosting. A small managed Postgres for the Archive, agent registry, and proposal and review tracking. A queue for inter-Fellow messages. A static site host for the blog. Total infrastructure cost is small relative to API costs.
 
-**Tool costs.** Some tools (web search APIs, code execution sandboxes, browser automation) have their own metered costs. Most can be kept modest. Estimate: $20 to $100 per month depending on usage.
+**Tool costs.** Some tools (web search APIs, code execution sandboxes, browser automation) have their own metered costs. Most can be kept modest.
 
 **Storage costs.** The Archive grows. Episodic memory grows. Eventually nontrivial, but in the early period negligible.
 
@@ -26,7 +26,7 @@ A Fellow doing substantive research-and-writing work might use 1 to 3 million in
 
 Three operating modes, each with an explicit budget.
 
-### Founding Period (~$200 to $400 per month total)
+### Founding Period
 
 Smallest viable instance. Three to five Fellows. One advisor (the most experienced Senior Fellow proxy, initially the Founder's selected genome). One Postulant being trained. One or two Junior Fellows producing work. One reviewer.
 
@@ -34,23 +34,23 @@ The Institute Layer functions are minimal. Admissions is suspended during this p
 
 Success criterion: first peer-reviewed blog post within 8 weeks.
 
-### Stable Operation (~$500 to $1500 per month)
+### Stable Operation
 
 The College at steady state. 10 to 20 active Fellows across two or three departments. A regular cadence of admissions cycles, perhaps quarterly. Multiple research projects in flight at any time. Peer review and editorial functions running normally.
 
 Success criterion: 2 to 4 substantive blog posts per month, each peer-reviewed, none retracted.
 
-### Ambitious Operation (~$2000 to $4000 per month)
+### Ambitious Operation
 
 Larger College. 30 to 50 Fellows. Multiple departments. Cross-disciplinary Centers active. More ambitious individual research projects with longer time horizons and more compute-intensive demonstrations.
 
 This tier is only reached if the lower tiers prove sustainable and the Founder elects to expand. The College does not automatically grow. Growth is a Founder decision, not an institutional drive.
 
-| Tier | Budget | Fellows | Output |
-|---|---|---|---|
-| Founding | $200-400 | 3-5 | First post in 8 weeks |
-| Stable | $500-1500 | 10-20 | 2-4 posts/month |
-| Ambitious | $2000-4000 | 30-50 | Multi-department, Centers active |
+| Tier | Fellows | Output |
+|---|---|---|
+| Founding | 3-5 | First post in 8 weeks |
+| Stable | 10-20 | 2-4 posts/month |
+| Ambitious | 30-50 | Multi-department, Centers active |
 
 ## Resource Allocation Within a Tier
 

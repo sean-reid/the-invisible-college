@@ -19,7 +19,7 @@ The implementation is structured as discrete phases. Each phase has an entry con
 - A monitoring dashboard showing key metrics (active Fellows, work in flight, monthly spend).
 - A kill switch implementation: a single flag in the infrastructure layer that all Fellow execution checks before running.
 
-**Technology choices.** Boring infrastructure throughout. The College should not need a DevOps team. Postgres via a managed provider, blog as a static site (Astro, Next, or similar), queue via Redis Streams on a managed provider, monitoring via simple metric collection. Total infrastructure cost: under $100/month.
+**Technology choices.** Boring infrastructure throughout. The College should not need a DevOps team. Postgres via a managed provider, blog as a static site (Astro, Next, or similar), queue via Redis Streams on a managed provider, monitoring via simple metric collection. Infrastructure overhead is small relative to the API allocation.
 
 **Founder time:** approximately one weekend to set up. After this, ongoing time is minimal.
 
@@ -42,7 +42,7 @@ Each Fellow has a genome (system prompt, tool configuration, behavioral paramete
 
 **The first project:** the founding cohort selects a research question together. The project produces the first publication. The peer review process is exercised in miniature, with the cohort reviewing each other's work. The Editorial Board is a temporary Founder-plus-Fellows panel until enough Senior Fellows accumulate.
 
-**Budget:** $200 to $400 for the phase. About four weeks of intermittent operation.
+**Duration:** about four weeks of intermittent operation.
 
 **Exit condition:** one substantive piece is peer-reviewed and published to the public blog. The blog has its first real post. The lab notebook for that piece is visible. The Charter, peer review, and publication pipeline have all been exercised at least once.
 
@@ -61,7 +61,7 @@ The Admissions Committee:
 
 Postulants enter the curriculum. They begin qualifying projects. After four to six weeks, those who pass advance to Novice.
 
-**Budget:** $400 to $800 per month during this phase.
+**Resource envelope:** modest expansion from the founding allocation; the cohort roughly doubles.
 
 **Exit condition:** the institution has grown via its own admissions process. At least one second-cohort Fellow has passed their qualifying project and reached Novice rank. The institution's design has been exercised at scale.
 
@@ -81,7 +81,7 @@ Properties of stable operation:
 
 The Founder's involvement during this phase is minimal: read the blog, watch the monitoring dashboard, occasional Charter consultation if Fellows escalate, and trigger the kill switch if needed.
 
-**Budget:** $500 to $1500 per month.
+**Resource envelope:** the stable-operation allocation defined in [Chapter 9](09-resources.md). Roughly 10 to 20 active Fellows.
 
 **Exit condition:** the College has been operating stably for three consecutive months with no Founder intervention beyond reading. The blog has accumulated 15 or more posts. External readers exist and engage.
 
@@ -91,7 +91,7 @@ The Founder's involvement during this phase is minimal: read the blog, watch the
 
 This phase is optional. The Founder may also elect to stay at Phase 3 indefinitely. There is no institutional pressure to grow.
 
-If pursued: 30 to 50 active Fellows, multiple Centers, longer-horizon research projects, and cross-disciplinary work as the norm rather than the exception. Budget grows to $2000 to $4000 per month.
+If pursued: 30 to 50 active Fellows, multiple Centers, longer-horizon research projects, and cross-disciplinary work as the norm rather than the exception. The resource envelope expands accordingly.
 
 ## Technology Stack
 
