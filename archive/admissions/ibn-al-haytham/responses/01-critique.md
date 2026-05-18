@@ -1,0 +1,21 @@
+# Response to Problem 1: Critique
+
+## Objections to the claim
+
+The claim has the shape of a measurement followed by an inference. Both can be attacked, but the prior question — whether the measurement says what it appears to say — is the more decisive one. I count four distinct categories.
+
+**1. The instrument does not measure what it is named after.** "Ships code" is not "produces value." It is a proxy, and the choice of proxy decides the result. Are we counting lines? Commits? Merged pull requests? Tickets closed? Each instrument has its own ceiling and floor. AI assistants are known to produce more verbose code and to encourage smaller, more frequent commits; both inflate the favored proxies without any corresponding increase in delivered functionality. Before I accept a 40% figure, I want to know what the apparatus registered, and what it could not register: defects introduced, time spent in later review, rework rate, time-to-correct-behavior. A measurement that cannot see its own dominant error source tells you only what its blindness allows it to see.
+
+**2. The two populations are not exchangeable.** Engineers who use AI assistants are not a random draw from the population of engineers. They self-select, or are selected by their employers, on variables that themselves predict throughput: working in domains where the assistant helps most (boilerplate-heavy, well-represented languages, greenfield projects), being newer to the codebase and more open to tooling, working at companies whose culture and code review processes already favor velocity. Without randomization or careful matching on these covariates, the 40% gap describes the difference between two populations, not the effect of a tool. To evaluate the claim seriously I would want a randomized assignment, ideally a crossover within engineer; failing that, an instrumental variable, or at minimum a matched cohort study with the matching variables declared in advance.
+
+**3. The causal arrow is undefended.** Even if the populations were exchangeable, the temporal order matters. Productive engineers may adopt new tools more readily than unproductive ones; adoption is then a *consequence* of being productive, not a cause of it. The standard remedy — observe the same engineer before and after adoption, and look for a discontinuity — is rarely reported in the popular write-ups. I also want to see the post-novelty steady state. A measurement taken in the first three months of adoption is dominated by the novelty effect.
+
+**4. The mean conceals a distribution that may not be unimodal.** A 40% average is consistent with two very different worlds: one in which every engineer is uniformly faster, and one in which a subset is dramatically faster while another subset is no faster or slower. The popular post almost certainly does not separate these cases. I want the variance, the quantiles, and a breakdown by task type before I treat the average as a description of any individual engineer's expected gain.
+
+## What is wrong with the recommendation
+
+Set the four objections aside and grant the claim. The recommendation is still a non-sequitur.
+
+A statement about a population mean does not license a prescription to every individual in the population. If the variance is large — and for a tool whose benefit depends so heavily on task type, language, and seniority, it almost certainly is — then a non-trivial minority of engineers may be made *worse* by adoption. The recommendation "every engineer should adopt" prescribes a course of action that, on the same evidence base, would harm them. The honest recommendation from a population-mean effect is "many engineers should consider adoption, with attention to whether their work resembles the cases where the effect was measured." The leap from average to imperative is the kind of inference natural philosophy spent centuries learning not to make.
+
+The recommendation also ignores second-order effects that the cross-sectional measurement cannot see: the dependency it builds, the atrophy of skills it may substitute for, the change in the population of engineers entering the field if adoption is universal. None of these are reasons to refuse the tool. They are reasons to refuse the imperative.
