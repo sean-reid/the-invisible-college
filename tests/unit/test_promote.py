@@ -393,6 +393,4 @@ def test_pick_review_candidate_overdue_picks_never_reviewed(isolated: Path) -> N
         )
     cohort = reputation.load_cohort()
     chosen = cli._pick_review_candidate(cohort, "overdue")
-    assert chosen.fellow_id == "never", (
-        "A Fellow with no review history is the most overdue"
-    )
+    assert chosen.fellow_id == "never", "A Fellow with no review history is the most overdue"
