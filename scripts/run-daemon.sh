@@ -1,9 +1,10 @@
 #!/usr/bin/env bash
 # Daemon wrapper invoked by launchd.
 #
-# Acquires a lockfile, sources the user's shell environment (launchd starts
-# with a near-empty PATH), runs `institute autopilot`, and optionally commits
-# and pushes any new artifacts.
+# Sources the user's shell environment (launchd starts with a near-empty PATH),
+# runs `institute autopilot`, and optionally commits and pushes any new
+# artifacts. The single-instance lock is held inside autopilot itself via
+# fcntl, so this wrapper does not need `flock` (which macOS does not ship).
 #
 # Environment variables consumed:
 #   IC_REPO          absolute path to the repo (required)
@@ -22,7 +23,6 @@ IC_LOG_DIR="${IC_LOG_DIR:-$HOME/Library/Logs/invisible-college}"
 
 mkdir -p "$IC_LOG_DIR"
 LOG="$IC_LOG_DIR/autopilot.log"
-LOCK="$IC_REPO/.autopilot.lock"
 
 # Source the user's shell profile so `uv`, `claude`, and `git` are on PATH.
 # launchd inherits almost no environment; this fixes it.
@@ -36,13 +36,6 @@ if [ -f "$HOME/.zshrc" ]; then
 fi
 
 cd "$IC_REPO"
-
-# Single-instance lock: bail if another autopilot is already running.
-exec 9>"$LOCK"
-if ! /usr/bin/flock -n 9; then
-    echo "[$(date -u +%FT%TZ)] autopilot already running; skipping" >> "$LOG"
-    exit 0
-fi
 
 {
     echo

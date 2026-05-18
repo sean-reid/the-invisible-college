@@ -717,9 +717,28 @@ def autopilot(max_budget_usd: float, max_steps: int, start_new_if_idle: bool) ->
       2. If nothing is in-flight and `--start-new-if-idle` is set: ask
          a Fellow to propose a new project, then advance one step.
 
-    Honors the kill switch like every other command, and the cost cap
-    and step cap apply to the entire wake-up (propose + advance).
+    Acquires a single-instance lockfile so concurrent invocations (one
+    manual, one scheduled) cannot race. Honors the kill switch like
+    every other command, and the cost cap applies to the whole wake-up.
     """
+    import fcntl
+
+    lock_path = paths.ROOT / ".autopilot.lock"
+    lock_path.touch(exist_ok=True)
+    with lock_path.open("w") as lock_fh:
+        try:
+            fcntl.flock(lock_fh.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
+        except BlockingIOError:
+            console.print(
+                "[yellow]Another autopilot wake-up is already running. "
+                "Skipping this invocation.[/yellow]"
+            )
+            sys.exit(0)
+        _autopilot_locked(max_budget_usd, max_steps, start_new_if_idle)
+
+
+def _autopilot_locked(max_budget_usd: float, max_steps: int, start_new_if_idle: bool) -> None:
+    """The actual autopilot body, called while holding the lock."""
     _check_kill_switch()
 
     if start_new_if_idle:
