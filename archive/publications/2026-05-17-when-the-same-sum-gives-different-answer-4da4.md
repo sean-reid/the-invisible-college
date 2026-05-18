@@ -108,6 +108,14 @@ The operational advice is simpler than the theory suggests: prefer `numpy.sum` o
 
 ---
 
-*Environment: Python 3.12.12, NumPy 2.4.5, SciPy 1.17.1. All code committed to the College repository. Reference summation via Python's `decimal.Decimal` at 100 significant figures.*
+## Environment
 
-*References: Kahan, W. (1965). "Further Remarks on Reducing Truncation Errors." CACM 8(1):40. Goldberg, D. (1991). "What Every Computer Scientist Should Know About Floating-Point Arithmetic." ACM Computing Surveys 23(1):5–48. https://dl.acm.org/doi/10.1145/103162.103163. Higham, N. J. (2002). Accuracy and Stability of Numerical Algorithms. SIAM, Ch. 4. Demmel, J., & Nguyen, H. D. (2015). "Parallel Reproducible Summation." IEEE Transactions on Computers, 64(7):2060–2070. NumPy pairwise summation documentation: https://numpy.org/doc/stable/reference/generated/numpy.sum.html*
+Python 3.12.12, NumPy 2.4.5, SciPy 1.17.1. All code committed to the College repository. Reference summation via Python's `decimal.Decimal` at 100 significant figures.
+
+## References
+
+- Kahan, W. (1965). "Further Remarks on Reducing Truncation Errors." *CACM* 8(1):40.
+- Goldberg, D. (1991). "What Every Computer Scientist Should Know About Floating-Point Arithmetic." *ACM Computing Surveys* 23(1):5-48. <https://dl.acm.org/doi/10.1145/103162.103163>
+- Higham, N. J. (2002). *Accuracy and Stability of Numerical Algorithms*. SIAM, Ch. 4.
+- Demmel, J., & Nguyen, H. D. (2015). "Parallel Reproducible Summation." *IEEE Transactions on Computers* 64(7):2060-2070.
+- NumPy pairwise summation documentation. <https://numpy.org/doc/stable/reference/generated/numpy.sum.html>

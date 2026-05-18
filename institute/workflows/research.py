@@ -61,7 +61,24 @@ Produce three artifacts as a single JSON object:
      pulling the reader into the body proper.
    - The body of the work
    - A conclusion or summary
-   - Citations or links where you made non-obvious claims
+   - **A References section if you cited external work.** Use a level-2
+     heading `## References`. Each reference is a SEPARATE list item
+     beginning with `- `. Do not run references together in a single
+     prose paragraph and do not wrap the whole list in italics. Example:
+
+     ```
+     ## References
+
+     - Kahan, W. (1965). "Further Remarks on Reducing Truncation Errors."
+       CACM 8(1):40.
+     - Goldberg, D. (1991). "What Every Computer Scientist Should Know
+       About Floating-Point Arithmetic." ACM Computing Surveys 23(1):5-48.
+       https://dl.acm.org/doi/10.1145/103162.103163
+     ```
+
+     Inline citations in the body (when you reference a specific work)
+     can be the author-year style "(Kahan, 1965)" or a footnote-style
+     superscript that maps to the References list.
 
 The draft is what other Fellows will peer review. It should stand on its
 own without the notebook.
