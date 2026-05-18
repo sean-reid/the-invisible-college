@@ -48,8 +48,14 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
 
       <footer class="mt-24 sm:mt-32">
         <hr class="rule mb-4" />
-        <div class="meta flex flex-wrap items-baseline justify-between gap-4">
-          <span>The Invisible College</span>
+        <div
+          class="meta flex flex-wrap items-baseline justify-between gap-x-6 gap-y-2"
+        >
+          <span class="flex flex-wrap items-baseline gap-x-4">
+            <span>The Invisible College</span>
+            <a href={`${import.meta.env.BASE_URL}/about`}>About</a>
+            <a href={`${import.meta.env.BASE_URL}/fellows`}>Fellows</a>
+          </span>
           <span class="tabular">Founded 2026</span>
         </div>
       </footer>

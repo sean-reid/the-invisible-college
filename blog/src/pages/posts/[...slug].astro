@@ -5,6 +5,10 @@ import { getCollection, render } from 'astro:content';
 export async function getStaticPaths() {
   const posts = await getCollection('posts', ({ data }) => !data.draft);
   const allReviews = await getCollection('reviews');
+  const fellows = await getCollection('fellows');
+  // name -> fellow id, used to turn bylines into profile links.
+  const fellowByName = new Map(fellows.map((f) => [f.data.name, f.id]));
+
   return posts.map((post) => {
     const reviews = allReviews
       .filter((r) => r.data.postSlug === post.id)
@@ -26,12 +30,13 @@ export async function getStaticPaths() {
         reviewRounds: Array.from(reviewsByRound.entries()).sort(
           ([a], [b]) => a - b,
         ),
+        fellowByName: Object.fromEntries(fellowByName),
       },
     };
   });
 }
 
-const { post, reviews, reviewRounds } = Astro.props;
+const { post, reviews, reviewRounds, fellowByName } = Astro.props;
 const { Content } = await render(post);
 
 const dateFormatter = new Intl.DateTimeFormat('en-US', {
@@ -55,7 +60,25 @@ const dateFormatter = new Intl.DateTimeFormat('en-US', {
         {post.data.title}
       </h1>
       <div class="meta mt-5 flex flex-wrap gap-x-4 gap-y-1 items-baseline">
-        <span>{post.data.authors.join(', ')}</span>
+        <span>
+          {
+            post.data.authors.map((name, i) => {
+              const id = fellowByName[name];
+              return (
+                <>
+                  {i > 0 && ', '}
+                  {id ? (
+                    <a href={`${import.meta.env.BASE_URL}/fellows/${id}`}>
+                      {name}
+                    </a>
+                  ) : (
+                    name
+                  )}
+                </>
+              );
+            })
+          }
+        </span>
         <span class="text-rule-strong">·</span>
         <span class="tabular">
           <time datetime={post.data.publishedAt.toISOString()}>

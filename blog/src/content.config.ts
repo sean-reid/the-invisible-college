@@ -51,4 +51,28 @@ const reviews = defineCollection({
   }),
 });
 
-export const collections = { posts, notebooks, reviews };
+// Fellows are loaded from the genomes/ directory at the repo root, which
+// is committed alongside the blog and updated only at bootstrap or
+// admissions time. Each genome.json describes one Fellow's identity.
+const fellows = defineCollection({
+  loader: glob({ pattern: '**/*.json', base: '../genomes' }),
+  schema: z.object({
+    id: z.string(),
+    name: z.string(),
+    rank: z.enum([
+      'postulant',
+      'novice',
+      'junior_fellow',
+      'fellow',
+      'senior_fellow',
+      'emeritus',
+    ]),
+    model: z.string(),
+    specialization: z.string(),
+    system_prompt_addendum: z.string(),
+    allowed_tools: z.array(z.string()).default([]),
+    behavioral_notes: z.record(z.string(), z.string()).default({}),
+  }),
+});
+
+export const collections = { posts, notebooks, reviews, fellows };
