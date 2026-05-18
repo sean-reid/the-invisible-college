@@ -27,7 +27,7 @@ from typing import Literal
 
 from rich.console import Console
 
-from institute import claude_runner, db, decisions, paths, workspaces
+from institute import archive_index, claude_runner, db, decisions, paths, workspaces
 from institute import fellow as fellow_mod
 from institute.claude_runner import FellowTask
 from institute.fellow import Genome
@@ -53,9 +53,13 @@ reviewer. You are {reviewer_name}, rank {reviewer_rank}, specializing in
 # Inputs
 
 In your current working directory you will find:
-- `draft.md`  the draft you are reviewing
+- `draft.md`         the draft you are reviewing
+- `archive-index.md` every piece the College has published so far. Use it
+                     to check whether the draft duplicates, contradicts,
+                     or could engage with prior work that the author
+                     should have cited.
 
-Read it with the Read tool before doing anything else.
+Read both with the Read tool before doing anything else.
 
 # Outputs
 
@@ -110,11 +114,12 @@ You are {reviewer_name}, rank {reviewer_rank}, specializing in
 # Inputs
 
 In your current working directory you will find:
-- `draft.md`        the revised draft you are reviewing
-- `prior-review.md` your own round-1 review
-- `response.md`     the lead's response to all the round-1 reviewers
+- `draft.md`         the revised draft you are reviewing
+- `prior-review.md`  your own round-1 review
+- `response.md`      the lead's response to all the round-1 reviewers
+- `archive-index.md` every piece the College has published so far
 
-Read all three with the Read tool before doing anything else.
+Read all four with the Read tool before doing anything else.
 
 # Outputs
 
@@ -321,6 +326,7 @@ def run(project_id: str) -> None:
 
     workspace = workspaces.workspace_for(reviewer.id, f"{project_id}-review-r{review_round}")
     workspaces.stage_input(workspace, "draft.md", draft_md)
+    workspaces.stage_input(workspace, "archive-index.md", archive_index.render())
     if review_round > 1:
         workspaces.stage_input(
             workspace, "prior-review.md", prior_review_md or "(prior review not found)"

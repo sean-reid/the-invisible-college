@@ -27,7 +27,7 @@ from pathlib import Path
 
 from rich.console import Console
 
-from institute import claude_runner, db, decisions, paths, workspaces
+from institute import archive_index, claude_runner, db, decisions, paths, workspaces
 from institute import fellow as fellow_mod
 from institute.claude_runner import FellowTask
 from institute.state import State
@@ -49,8 +49,11 @@ In your current working directory:
 - `reviews.md`           every signed peer review from this round,
                          concatenated, with the reviewer's name and
                          recommendation in each section header
+- `archive-index.md`     every piece the College has published so far.
+                         If a reviewer suggested engaging with prior
+                         work, this is where to find it.
 
-Read all three with the Read tool before doing the work.
+Read all four with the Read tool before doing the work.
 
 # Your task
 
@@ -183,6 +186,7 @@ def run(project_id: str) -> None:
     workspaces.stage_input(workspace, "current-draft.md", draft_md)
     workspaces.stage_input(workspace, "current-notebook.md", notebook_md)
     workspaces.stage_input(workspace, "reviews.md", reviews_md)
+    workspaces.stage_input(workspace, "archive-index.md", archive_index.render())
 
     console.print(
         f"[dim]Asking {lead.name} ({lead.id}) to revise their draft in light of "

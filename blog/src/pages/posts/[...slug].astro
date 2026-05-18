@@ -1,6 +1,7 @@
 ---
 import Base from '../../layouts/Base.astro';
 import { getCollection, render } from 'astro:content';
+import { buildBacklinkMap } from '../../lib/citations';
 
 export async function getStaticPaths() {
   const posts = await getCollection('posts', ({ data }) => !data.draft);
@@ -8,6 +9,8 @@ export async function getStaticPaths() {
   const fellows = await getCollection('fellows');
   // name -> fellow id, used to turn bylines into profile links.
   const fellowByName = new Map(fellows.map((f) => [f.data.name, f.id]));
+
+  const backlinks = buildBacklinkMap(posts);
 
   return posts.map((post) => {
     const reviews = allReviews
@@ -22,6 +25,12 @@ export async function getStaticPaths() {
       arr.push(r);
       reviewsByRound.set(r.data.round, arr);
     }
+    const citedBy = (backlinks.get(post.id) ?? []).map((p) => ({
+      id: p.id,
+      title: p.data.title,
+      publishedAt: p.data.publishedAt,
+      authors: p.data.authors,
+    }));
     return {
       params: { slug: post.id },
       props: {
@@ -31,12 +40,13 @@ export async function getStaticPaths() {
           ([a], [b]) => a - b,
         ),
         fellowByName: Object.fromEntries(fellowByName),
+        citedBy,
       },
     };
   });
 }
 
-const { post, reviews, reviewRounds, fellowByName } = Astro.props;
+const { post, reviews, reviewRounds, fellowByName, citedBy } = Astro.props;
 const { Content } = await render(post);
 
 const dateFormatter = new Intl.DateTimeFormat('en-US', {
@@ -113,7 +123,7 @@ const dateFormatter = new Intl.DateTimeFormat('en-US', {
     <Content />
 
     {
-      (post.data.hasNotebook || reviews.length > 0) && (
+      (post.data.hasNotebook || reviews.length > 0 || citedBy.length > 0) && (
         <footer class="not-prose mt-16">
           <hr class="rule mb-6" />
           <p class="runninghead mb-3">Apparatus</p>
@@ -156,6 +166,27 @@ const dateFormatter = new Intl.DateTimeFormat('en-US', {
                   </dd>
                 </>
               ))}
+            {citedBy.length > 0 && (
+              <>
+                <dt class="smallcaps">Cited by</dt>
+                <dd>
+                  <ul class="list-none p-0 m-0 space-y-1">
+                    {citedBy.map((c) => (
+                      <li>
+                        <a
+                          href={`${import.meta.env.BASE_URL}/posts/${c.id}`}
+                          class="text-ink"
+                        >
+                          {c.title}
+                        </a>
+                        <span class="ml-2 text-rule-strong">·</span>
+                        <span class="ml-2">{c.authors.join(', ')}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </dd>
+              </>
+            )}
           </dl>
         </footer>
       )

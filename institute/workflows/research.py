@@ -19,7 +19,7 @@ from pathlib import Path
 
 from rich.console import Console
 
-from institute import claude_runner, db, decisions, paths, workspaces
+from institute import archive_index, claude_runner, db, decisions, paths, workspaces
 from institute import fellow as fellow_mod
 from institute.claude_runner import FellowTask
 from institute.fellow import Genome
@@ -37,6 +37,13 @@ lead Fellow on this project.
 In your current working directory you will find:
 - `proposal.md`        the approved research proposal
 - `proposal-review.md` the reviewer's response (or "(no review on file)")
+- `archive-index.md`   every piece the College has published so far, with
+                       slugs and abstracts. Consult it before you write,
+                       so that you can build on (or contradict) prior
+                       Fellows' work rather than re-discover it. Cite any
+                       prior publication you draw on as a markdown link
+                       to its slug, e.g.
+                       `[Ada's piece on floating-point](posts/2026-05-17-when-the-same-sum-gives-different-answer-4da4/)`.
 
 Read them with the Read tool before doing the work.
 
@@ -138,6 +145,7 @@ def run(project_id: str) -> None:
     workspace = workspaces.workspace_for(lead.id, project_id)
     workspaces.stage_input(workspace, "proposal.md", proposal_md)
     workspaces.stage_input(workspace, "proposal-review.md", review_md)
+    workspaces.stage_input(workspace, "archive-index.md", archive_index.render())
 
     console.print(
         f"[dim]Asking {lead.name} ({lead.id}) to execute the research. "
