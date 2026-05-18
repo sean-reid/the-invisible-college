@@ -27,7 +27,7 @@ from typing import Literal
 
 from rich.console import Console
 
-from institute import archive_index, claude_runner, db, decisions, paths, workspaces
+from institute import archive_index, claude_runner, db, decisions, episodic, paths, workspaces
 from institute import fellow as fellow_mod
 from institute.claude_runner import FellowTask
 from institute.fellow import Genome
@@ -58,8 +58,13 @@ In your current working directory you will find:
                      to check whether the draft duplicates, contradicts,
                      or could engage with prior work that the author
                      should have cited.
+- `memory.md`        if present, the most relevant entries from your own
+                     episodic memory (prior reviews you have given, work
+                     by this author you have read, related drafts). Let
+                     your past reviewing inform — but not constrain —
+                     this one.
 
-Read both with the Read tool before doing anything else.
+Read them with the Read tool before doing anything else.
 
 # Outputs
 
@@ -136,8 +141,10 @@ In your current working directory you will find:
 - `prior-review.md`  your own round-1 review
 - `response.md`      the lead's response to all the round-1 reviewers
 - `archive-index.md` every piece the College has published so far
+- `memory.md`        if present, additional context from your episodic
+                     memory beyond this project
 
-Read all four with the Read tool before doing anything else.
+Read all of them with the Read tool before doing anything else.
 
 # Outputs
 
@@ -609,6 +616,41 @@ def run(project_id: str) -> None:
             (now, project_id),
         )
         decisions.record(conn, decision)
+
+    # Both sides of the review go into episodic memory.
+    review_title = (
+        f"Round {review_round} review of {proj['title']} ({slot.role}, "
+        f"recommended {payload['recommendation']})"
+    )
+    episodic.safe_ingest(
+        fellow_id=reviewer.id,
+        kind="review_given",
+        title=review_title,
+        content=review_md,
+        source_path=str(review_path.relative_to(paths.ROOT)),
+        project_id=project_id,
+        metadata={
+            "role": slot.role,
+            "round": review_round,
+            "recommendation": payload["recommendation"],
+            "confidence": payload["confidence"],
+            "dissent": bool(payload.get("dissent_intent", False)),
+            "andon_cord": andon_cord,
+        },
+    )
+    episodic.safe_ingest(
+        fellow_id=proj["lead_fellow_id"],
+        kind="review_received",
+        title=f"Review from {reviewer.name} on {proj['title']} (round {review_round})",
+        content=review_md,
+        source_path=str(review_path.relative_to(paths.ROOT)),
+        project_id=project_id,
+        metadata={
+            "reviewer": reviewer.id,
+            "round": review_round,
+            "recommendation": payload["recommendation"],
+        },
+    )
 
     remaining_after = len(remaining) - 1
     console.print()

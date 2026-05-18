@@ -189,12 +189,23 @@ def invoke(task: FellowTask) -> FellowResult:
     Each call uses a fresh session id. Continuity across invocations is
     achieved via files in the Fellow's workspace and via the lab notebook,
     not via Claude Code session reuse.
+
+    Before invocation, the Fellow's episodic memory is queried for entries
+    relevant to the brief and the top-K results are staged into the
+    workspace as `memory.md`. This is the closest approximation of
+    persistence available without fine-tuning: the Fellow does not
+    remember between sessions, but their own past work is present in
+    every workspace via Read tool.
     """
 
     ensure_fellow_dirs(task.genome.id)
     cwd = task.workspace if task.workspace is not None else workspace_path(task.genome.id)
     cwd.mkdir(parents=True, exist_ok=True)
     session_id = str(uuid.uuid4())
+
+    # Stage episodic memory if any exists for this Fellow. Best-effort:
+    # failure here never blocks the invocation.
+    _stage_memory_for_task(task, cwd)
 
     cmd: list[str] = [
         _claude_executable(),
@@ -252,6 +263,37 @@ def invoke(task: FellowTask) -> FellowResult:
         duration_ms=raw.get("duration_ms") if isinstance(raw, dict) else None,
         cost_usd=raw.get("total_cost_usd") if isinstance(raw, dict) else None,
         is_error=is_error,
+    )
+
+
+def _stage_memory_for_task(task: FellowTask, cwd: Path) -> None:
+    """Retrieve episodic memory relevant to this task and stage memory.md."""
+    # Local import to avoid pulling fastembed at module load for paths
+    # that never need it (CLI startup, status, etc.).
+    try:
+        from institute import episodic
+    except Exception:  # pragma: no cover - import-time failure path
+        return
+
+    # Skip if the DB hasn't been initialized yet (e.g., first-time setup
+    # before institute init has run).
+    from institute import paths
+
+    if not paths.DB_PATH.exists():
+        return
+
+    # Don't echo the Fellow's in-flight project work back at them in the
+    # same project: skip same-project entries during retrieval.
+    project_id = task.project_id
+    exclude = project_id if project_id and project_id != "pre-init" else None
+
+    episodic.stage_memory_for(
+        cwd,
+        fellow_id=task.genome.id,
+        fellow_name=task.genome.name,
+        query=task.brief,
+        top_k=5,
+        exclude_project_id=exclude,
     )
 
 

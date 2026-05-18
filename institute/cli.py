@@ -287,6 +287,90 @@ def curriculum(fellow: str, design: bool) -> None:
 
 
 # ---------------------------------------------------------------------------
+# memory: inspect or backfill a Fellow's episodic memory
+# ---------------------------------------------------------------------------
+
+
+@main.group()
+def memory() -> None:
+    """Inspect or backfill the per-Fellow episodic memory store."""
+
+
+@memory.command("list")
+@click.option("--fellow", type=str, required=True, help="Fellow id.")
+@click.option("--limit", type=int, default=50, show_default=True)
+def memory_list(fellow: str, limit: int) -> None:
+    """List the Fellow's recent memory entries (most recent first)."""
+    from institute import episodic
+
+    with db.connection() as conn:
+        rows = episodic.list_entries(conn, fellow_id=fellow, limit=limit)
+        total = episodic.count_entries(conn, fellow)
+    if not rows:
+        console.print(f"[dim]No episodic memory yet for `{fellow}`.[/dim]")
+        return
+    t = Table(title=f"Episodic memory: {fellow} ({total} total)", title_style="bold")
+    t.add_column("created")
+    t.add_column("kind")
+    t.add_column("title")
+    t.add_column("project")
+    for r in rows:
+        t.add_row(
+            r["created_at"],
+            r["kind"],
+            (r["title"] or "")[:60],
+            (r["project_id"] or "")[:40],
+        )
+    console.print(t)
+
+
+@memory.command("query")
+@click.option("--fellow", type=str, required=True, help="Fellow id.")
+@click.option("--query", type=str, required=True, help="Free-text query.")
+@click.option("--top", type=int, default=5, show_default=True)
+def memory_query(fellow: str, query: str, top: int) -> None:
+    """Retrieve the most relevant entries for a query, then render them."""
+    from institute import episodic
+
+    with db.connection() as conn:
+        entries = episodic.retrieve(conn, fellow_id=fellow, query=query, top_k=top)
+    if not entries:
+        console.print(f"[dim]No matches for `{query}` in {fellow}'s memory.[/dim]")
+        return
+    for e in entries:
+        console.rule(f"[bold]{e.title}[/bold]  ({e.kind})", align="left", style="dim")
+        if e.project_id:
+            console.print(f"[dim]project: {e.project_id}[/dim]")
+        if e.source_path:
+            console.print(f"[dim]source:  {e.source_path}[/dim]")
+        console.print()
+        excerpt = e.content.strip()
+        if len(excerpt) > 1200:
+            excerpt = excerpt[:1200].rstrip() + "..."
+        console.print(excerpt)
+        console.print()
+
+
+@memory.command("backfill")
+@click.option(
+    "--fellow",
+    type=str,
+    default=None,
+    help="Backfill one Fellow's memory. Default: every active Fellow.",
+)
+def memory_backfill(fellow: str | None) -> None:
+    """Ingest existing archive artifacts into episodic memory for Fellow(s).
+
+    Useful after a fresh `git pull` of the repo, or after the episodic
+    memory feature lands when archive content already exists.
+    """
+    _check_kill_switch()
+    from institute import memory_backfill as backfill_mod
+
+    backfill_mod.run(fellow_id=fellow)
+
+
+# ---------------------------------------------------------------------------
 # qualify: start a Postulant's qualifying project under advisor sponsorship
 # ---------------------------------------------------------------------------
 

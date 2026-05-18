@@ -27,7 +27,7 @@ from pathlib import Path
 
 from rich.console import Console
 
-from institute import archive_index, claude_runner, db, decisions, paths, workspaces
+from institute import archive_index, claude_runner, db, decisions, episodic, paths, workspaces
 from institute import fellow as fellow_mod
 from institute.claude_runner import FellowTask
 from institute.state import State
@@ -52,8 +52,10 @@ In your current working directory:
 - `archive-index.md`     every piece the College has published so far.
                          If a reviewer suggested engaging with prior
                          work, this is where to find it.
+- `memory.md`            if present, the most relevant entries from your
+                         episodic memory beyond this project
 
-Read all four with the Read tool before doing the work.
+Read all of them with the Read tool before doing the work.
 
 # Your task
 
@@ -275,6 +277,16 @@ def run(project_id: str) -> None:
             (target_state.value, new_title, next_round, now, project_id),
         )
         decisions.record(conn, decision)
+
+    episodic.safe_ingest(
+        fellow_id=lead.id,
+        kind="revision",
+        title=f"Revision (v{next_round}): {new_title}",
+        content=new_draft_md,
+        source_path=str((draft_dir / "draft.md").relative_to(paths.ROOT)),
+        project_id=project_id,
+        metadata={"round": next_round, "response_path": str(response_path.relative_to(paths.ROOT))},
+    )
 
     console.print()
     console.print(

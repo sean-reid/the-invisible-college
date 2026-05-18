@@ -36,6 +36,7 @@ from institute import (
     curriculum,
     db,
     decisions,
+    episodic,
     paths,
     workspaces,
 )
@@ -65,8 +66,12 @@ Novice.
                      what you have engaged with, not orbit elsewhere.
 - `archive-index.md` every piece the College has published. The bar
                      to clear; do not duplicate prior work.
+- `memory.md`        if present, your own past writings on the
+                     curriculum and other artifacts. The qualifying
+                     project should grow out of what you have already
+                     thought through, not start over.
 
-Read all three with the Read tool. Also read `docs/05-curriculum.md`
+Read all of them with the Read tool. Also read `docs/05-curriculum.md`
 for the qualifying-project criteria.
 
 # What you must produce
@@ -226,6 +231,16 @@ def run(postulant_id: str) -> None:
             ),
         )
         decisions.record(conn, decision)
+
+    episodic.safe_ingest(
+        fellow_id=postulant_id,
+        kind="proposal",
+        title=f"Qualifying proposal: {title}",
+        content=proposal_md,
+        source_path=str(proposal_path.relative_to(paths.ROOT)),
+        project_id=project_id,
+        metadata={"kind": "qualifying", "advisor": advisor_row["id"]},
+    )
 
     console.print()
     console.print(f"[bold green]Qualifying project created:[/bold green] `{project_id}`")

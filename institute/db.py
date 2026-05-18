@@ -15,7 +15,7 @@ from pathlib import Path
 
 from institute.paths import DB_PATH as DB_PATH  # re-exported for tests to patch
 
-SCHEMA_VERSION = 4
+SCHEMA_VERSION = 5
 
 SCHEMA = """
 CREATE TABLE IF NOT EXISTS schema_version (
@@ -58,6 +58,21 @@ CREATE TABLE IF NOT EXISTS curriculum_responses (
     submitted_at TEXT NOT NULL,
     PRIMARY KEY (fellow_id, item_id)
 );
+
+CREATE TABLE IF NOT EXISTS episodic_memory (
+    id           INTEGER PRIMARY KEY AUTOINCREMENT,
+    fellow_id    TEXT    NOT NULL REFERENCES fellows(id),
+    kind         TEXT    NOT NULL,
+    title        TEXT    NOT NULL,
+    content      TEXT    NOT NULL,
+    source_path  TEXT,
+    project_id   TEXT,
+    metadata     TEXT,
+    embedding    BLOB    NOT NULL,
+    created_at   TEXT    NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_episodic_fellow ON episodic_memory(fellow_id);
+CREATE INDEX IF NOT EXISTS idx_episodic_fellow_kind ON episodic_memory(fellow_id, kind);
 
 CREATE TABLE IF NOT EXISTS project_collaborators (
     project_id  TEXT NOT NULL REFERENCES projects(id),
@@ -175,6 +190,9 @@ def _run_migrations(conn: sqlite3.Connection, from_version: int, to_version: int
         elif version == 3:
             _migrate_3_to_4(conn)
             version = 4
+        elif version == 4:
+            _migrate_4_to_5(conn)
+            version = 5
         else:
             raise RuntimeError(f"No migration path from version {version}.")
     conn.execute("UPDATE schema_version SET version = ?", (to_version,))
@@ -293,6 +311,40 @@ def _migrate_3_to_4(conn: sqlite3.Connection) -> None:
                 PRIMARY KEY (fellow_id, item_id)
             )
             """
+        )
+        conn.execute("COMMIT")
+    except Exception:
+        conn.execute("ROLLBACK")
+        raise
+
+
+def _migrate_4_to_5(conn: sqlite3.Connection) -> None:
+    """Episodic memory: per-Fellow long-term store with vector retrieval.
+
+    Idempotent: creates the table and indexes if absent, no-op otherwise.
+    """
+    conn.execute("BEGIN IMMEDIATE")
+    try:
+        conn.execute(
+            """
+            CREATE TABLE IF NOT EXISTS episodic_memory (
+                id           INTEGER PRIMARY KEY AUTOINCREMENT,
+                fellow_id    TEXT    NOT NULL REFERENCES fellows(id),
+                kind         TEXT    NOT NULL,
+                title        TEXT    NOT NULL,
+                content      TEXT    NOT NULL,
+                source_path  TEXT,
+                project_id   TEXT,
+                metadata     TEXT,
+                embedding    BLOB    NOT NULL,
+                created_at   TEXT    NOT NULL
+            )
+            """
+        )
+        conn.execute("CREATE INDEX IF NOT EXISTS idx_episodic_fellow ON episodic_memory(fellow_id)")
+        conn.execute(
+            "CREATE INDEX IF NOT EXISTS idx_episodic_fellow_kind "
+            "ON episodic_memory(fellow_id, kind)"
         )
         conn.execute("COMMIT")
     except Exception:

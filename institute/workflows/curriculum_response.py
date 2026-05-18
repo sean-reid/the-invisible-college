@@ -16,7 +16,7 @@ from datetime import UTC, datetime
 
 from rich.console import Console
 
-from institute import claude_runner, curriculum, db, decisions, paths, workspaces
+from institute import claude_runner, curriculum, db, decisions, episodic, paths, workspaces
 from institute import fellow as fellow_mod
 from institute.claude_runner import FellowTask
 from institute.fellow import Genome
@@ -36,8 +36,11 @@ staged in your workspace right now; write your response to it.
                     expected (critique, summarize, apply, or extend).
 - `curriculum.md`   your full curriculum, for context on how this
                     item fits the larger arc.
+- `memory.md`       if present, your prior curriculum responses and
+                    any other relevant work you have produced. Build on
+                    what you have already thought through.
 
-Read both with the Read tool, then read the source if it is locatable
+Read them with the Read tool, then read the source if it is locatable
 (a file in `docs/`, in `archive/`, or a URL).
 
 # What you must produce
@@ -157,6 +160,17 @@ def run(fellow_id: str) -> str:
             ),
         )
         decisions.record(conn, decision)
+
+    # Ingest into the Postulant's episodic memory so their reading
+    # carries forward into future invocations.
+    episodic.safe_ingest(
+        fellow_id=fellow_id,
+        kind="curriculum_response",
+        title=f"{item.title} ({item.layer})",
+        content=response_md,
+        source_path=str(final_path.relative_to(paths.ROOT)),
+        metadata={"item_id": item.id, "layer": item.layer, "source": item.source},
+    )
 
     console.print()
     console.print(

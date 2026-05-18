@@ -22,7 +22,7 @@ from pathlib import Path
 
 from rich.console import Console
 
-from institute import claude_runner, db, decisions, paths, workspaces
+from institute import claude_runner, db, decisions, episodic, paths, workspaces
 from institute import fellow as fellow_mod
 from institute.claude_runner import FellowTask
 from institute.fellow import Genome
@@ -68,6 +68,15 @@ A research proposal in markdown. The structure:
   engagement-bait. Stay clear of those.
 - Topics about AI safety, AI consciousness, or AI sentience are off-limits
   unless the topic guidance above explicitly requests them.
+
+# Your memory
+
+If a file called `memory.md` is present in your working directory,
+read it first with the Read tool. It contains the most relevant
+entries from your own episodic memory — past proposals, drafts,
+reviews you gave or received, curriculum responses if any. Your
+proposal should grow out of what you have already thought through,
+not orbit elsewhere. Reference your past work where it's load-bearing.
 
 # Output
 
@@ -360,6 +369,15 @@ def run(*, lead: str | None = None, topic: str | None = None) -> None:
             ),
         )
         decisions.record(conn, decision)
+
+    episodic.safe_ingest(
+        fellow_id=lead_genome.id,
+        kind="proposal",
+        title=title,
+        content=proposal_md,
+        source_path=str(proposal_path.relative_to(paths.ROOT)),
+        project_id=project_id,
+    )
 
     console.print()
     console.print(f"[green]Proposal written:[/green] {proposal_path.relative_to(paths.ROOT)}")

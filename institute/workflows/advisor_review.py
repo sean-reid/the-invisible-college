@@ -21,7 +21,7 @@ from pathlib import Path
 
 from rich.console import Console
 
-from institute import claude_runner, db, decisions, paths, workspaces
+from institute import claude_runner, db, decisions, episodic, paths, workspaces
 from institute import fellow as fellow_mod
 from institute.claude_runner import FellowTask
 from institute.fellow import Genome
@@ -42,8 +42,11 @@ of a colleague, but the kind of read that actually shapes the work.
 - `proposal.md`      their original proposal, for reference on scope.
 - `postulant.md`     identity card for the Postulant: id, model,
                      specialization.
+- `memory.md`        if present, your own prior reviews and feedback —
+                     useful context on how you have engaged with similar
+                     work before.
 
-Read all three with the Read tool before responding. Also read
+Read all of them with the Read tool before responding. Also read
 `docs/05-curriculum.md` for the advisor's role.
 
 # What you must produce
@@ -199,6 +202,28 @@ def run(project_id: str) -> None:
             (target.value, now, project_id),
         )
         decisions.record(conn, decision)
+
+    feedback_full = _render_feedback_markdown(
+        advisor, postulant_row["name"], outcome, summary, feedback_md
+    )
+    episodic.safe_ingest(
+        fellow_id=advisor.id,
+        kind="advisor_feedback_given",
+        title=f"Advisor feedback on {proj['title']} ({outcome})",
+        content=feedback_full,
+        source_path=str(feedback_path.relative_to(paths.ROOT)),
+        project_id=project_id,
+        metadata={"advisee": postulant_row["id"], "outcome": outcome},
+    )
+    episodic.safe_ingest(
+        fellow_id=postulant_row["id"],
+        kind="advisor_feedback_received",
+        title=f"Advisor feedback from {advisor.name} on {proj['title']} ({outcome})",
+        content=feedback_full,
+        source_path=str(feedback_path.relative_to(paths.ROOT)),
+        project_id=project_id,
+        metadata={"advisor": advisor.id, "outcome": outcome},
+    )
 
     console.print()
     console.print(

@@ -19,7 +19,7 @@ from pathlib import Path
 
 from rich.console import Console
 
-from institute import archive_index, claude_runner, db, decisions, paths, workspaces
+from institute import archive_index, claude_runner, db, decisions, episodic, paths, workspaces
 from institute import fellow as fellow_mod
 from institute.claude_runner import FellowTask
 from institute.fellow import Genome
@@ -44,6 +44,13 @@ In your current working directory you will find:
                        prior publication you draw on as a markdown link
                        to its slug, e.g.
                        `[Ada's piece on floating-point](posts/2026-05-17-when-the-same-sum-gives-different-answer-4da4/)`.
+- `memory.md`          if present, the most relevant entries from your
+                       own episodic memory (past curriculum responses,
+                       prior proposals, drafts, peer reviews you have
+                       given or received, advisor feedback). Read it as
+                       your own — it is. Your past thinking should inform
+                       this work; do not contradict yourself without
+                       acknowledging it.
 
 Read them with the Read tool before doing the work.
 
@@ -217,6 +224,23 @@ def run(project_id: str) -> None:
             ),
         )
         decisions.record(conn, decision)
+
+    episodic.safe_ingest(
+        fellow_id=lead.id,
+        kind="lab_notebook",
+        title=f"Lab notebook: {new_title}",
+        content=notebook_md,
+        source_path=str(notebook_path.relative_to(paths.ROOT)),
+        project_id=project_id,
+    )
+    episodic.safe_ingest(
+        fellow_id=lead.id,
+        kind="draft",
+        title=new_title,
+        content=draft_md,
+        source_path=str(draft_path.relative_to(paths.ROOT)),
+        project_id=project_id,
+    )
 
     console.print()
     console.print(f"[green]Notebook:[/green]  {notebook_path.relative_to(paths.ROOT)}")
