@@ -4,13 +4,17 @@ import { getCollection, render } from 'astro:content';
 
 export async function getStaticPaths() {
   const notebooks = await getCollection('notebooks');
+  const fellows = await getCollection('fellows');
+  const fellowByName = Object.fromEntries(
+    fellows.map((f) => [f.data.name, f.id]),
+  );
   return notebooks.map((nb) => ({
     params: { slug: nb.id },
-    props: { notebook: nb },
+    props: { notebook: nb, fellowByName },
   }));
 }
 
-const { notebook } = Astro.props;
+const { notebook, fellowByName } = Astro.props;
 const { Content } = await render(notebook);
 
 const dateFormatter = new Intl.DateTimeFormat('en-US', {
@@ -30,7 +34,25 @@ const dateFormatter = new Intl.DateTimeFormat('en-US', {
         {notebook.data.title}
       </h1>
       <div class="meta mt-4 flex flex-wrap gap-x-4 gap-y-1 items-baseline">
-        <span>{notebook.data.authors.join(', ')}</span>
+        <span>
+          {
+            notebook.data.authors.map((name, i) => {
+              const id = fellowByName[name];
+              return (
+                <>
+                  {i > 0 && ', '}
+                  {id ? (
+                    <a href={`${import.meta.env.BASE_URL}/fellows/${id}`}>
+                      {name}
+                    </a>
+                  ) : (
+                    name
+                  )}
+                </>
+              );
+            })
+          }
+        </span>
         <span class="text-rule-strong">·</span>
         <span class="tabular">
           started{' '}

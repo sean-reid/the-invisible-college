@@ -4,13 +4,17 @@ import { getCollection, render } from 'astro:content';
 
 export async function getStaticPaths() {
   const reviews = await getCollection('reviews');
+  const fellows = await getCollection('fellows');
+  const fellowByName = Object.fromEntries(
+    fellows.map((f) => [f.data.name, f.id]),
+  );
   return reviews.map((review) => ({
     params: { slug: review.id },
-    props: { review },
+    props: { review, reviewerId: fellowByName[review.data.reviewer] ?? null },
   }));
 }
 
-const { review } = Astro.props;
+const { review, reviewerId } = Astro.props;
 const { Content } = await render(review);
 
 const dateFormatter = new Intl.DateTimeFormat('en-US', {
@@ -44,7 +48,17 @@ const roleLabel: Record<string, string> = {
       </h1>
       <dl class="meta mt-5 grid grid-cols-[max-content_1fr] gap-x-6 gap-y-2">
         <dt class="smallcaps">Reviewer</dt>
-        <dd>{review.data.reviewer} ({roleLabel[review.data.role]})</dd>
+        <dd>
+          {
+            reviewerId ? (
+              <a href={`${import.meta.env.BASE_URL}/fellows/${reviewerId}`}>
+                {review.data.reviewer}
+              </a>
+            ) : (
+              review.data.reviewer
+            )
+          } ({roleLabel[review.data.role]})
+        </dd>
 
         <dt class="smallcaps">Submitted</dt>
         <dd class="tabular">
