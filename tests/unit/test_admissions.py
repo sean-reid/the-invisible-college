@@ -163,10 +163,86 @@ def test_persist_candidate_package_writes_full_record(isolated: Path) -> None:
 
 def test_register_fellow_persists_to_db_and_genome_dir(isolated: Path) -> None:
     g = _make_genome(5)
-    admit._register_fellow(g)
+    admit._register_fellow(g, advisor_id=None)
     assert fellow_mod.genome_path(g.id).is_file()
     with db.connection() as conn:
-        row = conn.execute("SELECT id, name, rank FROM fellows WHERE id = ?", (g.id,)).fetchone()
+        row = conn.execute(
+            "SELECT id, name, rank, advisor_id FROM fellows WHERE id = ?", (g.id,)
+        ).fetchone()
     assert row is not None
     assert row["name"] == g.name
     assert row["rank"] == "fellow"
+    assert row["advisor_id"] is None
+
+
+def test_pick_advisor_prefers_senior_fellow(isolated: Path) -> None:
+    senior = _make_genome(1, model="claude-opus-4-7")
+    senior_g = senior.model_copy(update={"rank": "senior_fellow"})
+    senior_g.write(fellow_mod.genome_path(senior_g.id))
+    junior = _make_genome(2)
+    junior.write(fellow_mod.genome_path(junior.id))
+    postulant = _make_genome(3).model_copy(update={"rank": "postulant"})
+    postulant.write(fellow_mod.genome_path(postulant.id))
+    with db.connection() as conn, db.transaction(conn):
+        fellow_mod.register(conn, senior_g)
+        fellow_mod.register(conn, junior)
+        fellow_mod.register(conn, postulant)
+
+    advisor_id = admit._pick_advisor("anything")
+    assert advisor_id == senior_g.id, "Senior fellow should outrank Fellow as advisor"
+
+
+def test_pick_advisor_excludes_postulants(isolated: Path) -> None:
+    only_postulant = _make_genome(1).model_copy(update={"rank": "postulant"})
+    only_postulant.write(fellow_mod.genome_path(only_postulant.id))
+    with db.connection() as conn, db.transaction(conn):
+        fellow_mod.register(conn, only_postulant)
+    assert admit._pick_advisor("anything") is None, (
+        "A cohort of only postulants cannot supply an advisor"
+    )
+
+
+def test_pick_advisor_prefers_similar_specialization(isolated: Path) -> None:
+    twin = _make_genome(1)
+    twin = twin.model_copy(update={"specialization": "computational demonstration"})
+    twin.write(fellow_mod.genome_path(twin.id))
+    stranger = _make_genome(2)
+    stranger = stranger.model_copy(update={"specialization": "long-form essayistic prose"})
+    stranger.write(fellow_mod.genome_path(stranger.id))
+    with db.connection() as conn, db.transaction(conn):
+        fellow_mod.register(conn, twin)
+        fellow_mod.register(conn, stranger)
+
+    chosen = admit._pick_advisor("computational demonstration of reproducible code")
+    assert chosen == twin.id
+
+
+def test_pick_advisor_prefers_least_burdened_on_tie(isolated: Path) -> None:
+    busy = _make_genome(1)
+    busy.write(fellow_mod.genome_path(busy.id))
+    free = _make_genome(2)
+    free.write(fellow_mod.genome_path(free.id))
+    advisee = _make_genome(3).model_copy(update={"rank": "postulant"})
+    advisee.write(fellow_mod.genome_path(advisee.id))
+    with db.connection() as conn, db.transaction(conn):
+        fellow_mod.register(conn, busy)
+        fellow_mod.register(conn, free)
+        fellow_mod.register(conn, advisee, advisor_id=busy.id)
+
+    chosen = admit._pick_advisor("totally unrelated topic that overlaps neither")
+    assert chosen == free.id, "Tie-break should pick the Fellow with no current advisees"
+
+
+def test_register_fellow_records_advisor(isolated: Path) -> None:
+    advisor = _make_genome(8, model="claude-opus-4-7")
+    candidate = _make_genome(9)
+    advisor.write(fellow_mod.genome_path(advisor.id))
+    candidate.write(fellow_mod.genome_path(candidate.id))
+    with db.connection() as conn, db.transaction(conn):
+        fellow_mod.register(conn, advisor)
+    admit._register_fellow(candidate, advisor_id=advisor.id)
+    with db.connection() as conn:
+        row = conn.execute(
+            "SELECT advisor_id FROM fellows WHERE id = ?", (candidate.id,)
+        ).fetchone()
+    assert row["advisor_id"] == advisor.id

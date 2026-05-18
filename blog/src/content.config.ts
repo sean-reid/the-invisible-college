@@ -74,6 +74,7 @@ const fellows = defineCollection({
     system_prompt_addendum: z.string(),
     allowed_tools: z.array(z.string()).default([]),
     behavioral_notes: z.record(z.string(), z.string()).default({}),
+    advisor_id: z.string().nullable().optional(),
   }),
 });
 

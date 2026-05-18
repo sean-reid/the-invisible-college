@@ -85,6 +85,48 @@ def test_slugify_is_url_safe() -> None:
     assert propose._slugify("Foo / Bar :: Baz") == "foo-bar-baz"
 
 
+def test_pick_lead_excludes_postulants(tmp_path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """Postulants can't be picked as proposal leads (they propose under sponsorship)."""
+    from institute import db
+    from institute import fellow as fellow_mod
+    from institute.fellow import Genome
+
+    monkeypatch.setattr(fellow_mod, "GENOMES", tmp_path / "genomes")
+    monkeypatch.setattr(fellow_mod, "FELLOWS", tmp_path / "fellows")
+    db_path = tmp_path / "institute.db"
+    monkeypatch.setattr(db, "DB_PATH", db_path)
+    db.initialize(db_path)
+    (tmp_path / "genomes").mkdir(exist_ok=True)
+
+    seasoned = Genome(
+        id="seasoned",
+        name="Seasoned",
+        rank="fellow",
+        model="claude-sonnet-4-6",
+        specialization="theory of x",
+        system_prompt_addendum=("body " * 60).strip(),
+        allowed_tools=["Read"],
+    )
+    new_arrival = Genome(
+        id="newcomer",
+        name="Newcomer",
+        rank="postulant",
+        model="claude-sonnet-4-6",
+        specialization="anything",
+        system_prompt_addendum=("body " * 60).strip(),
+        allowed_tools=["Read"],
+    )
+    seasoned.write(fellow_mod.genome_path(seasoned.id))
+    new_arrival.write(fellow_mod.genome_path(new_arrival.id))
+    with db.connection() as conn, db.transaction(conn):
+        fellow_mod.register(conn, seasoned)
+        fellow_mod.register(conn, new_arrival)
+
+    with db.connection() as conn:
+        chosen = propose._pick_lead(conn, None)
+    assert chosen.id == seasoned.id, "Postulant must not be picked as lead author"
+
+
 def test_project_id_format() -> None:
     pid = propose._project_id("My research question")
     parts = pid.split("-")

@@ -86,8 +86,10 @@ Read both with the Read tool before designing.
    external thinkers whose approach they embody. NEVER claim
    consciousness or sentience. NEVER violate the Charter's prohibitions.
 
-5. **Rank is `fellow`.** Like the founding cohort, new admissions enter
-   at this rank.
+5. **Rank is `postulant`.** New admissions enter the College as
+   Postulants under advisor supervision. They advance through the
+   ladder (Novice → Junior Fellow → Fellow → Senior Fellow) by
+   demonstrated work, not on a schedule. See Chapter 3 and Chapter 5.
 
 # CRITICAL OUTPUT RULES
 
@@ -100,7 +102,7 @@ no summary, no code fence. First character `{{`, last character `}}`.
 {{
   "id": "<kebab-case>",
   "name": "<Human Name>",
-  "rank": "fellow",
+  "rank": "postulant",
   "model": "claude-opus-4-7" | "claude-sonnet-4-6" | "claude-haiku-4-5",
   "specialization": "<short phrase>",
   "system_prompt_addendum": "<200-700 word string>",
@@ -457,11 +459,59 @@ def _persist_candidate_package(
     return pkg
 
 
-def _register_fellow(candidate: Genome) -> None:
+_ELIGIBLE_ADVISOR_RANKS = ("senior_fellow", "fellow")
+
+
+def _pick_advisor(candidate_specialization: str) -> str | None:
+    """Pick an advisor for an incoming postulant.
+
+    Senior Fellows are preferred; Fellows are eligible too. Among eligible
+    candidates, the one with the closest specialization to the postulant
+    wins; ties go to the least-burdened (fewest current advisees), then
+    alphabetical. Returns None if no eligible advisor exists.
+    """
+    with db.connection() as conn:
+        eligible = list(
+            conn.execute(
+                """
+                SELECT f.id, f.specialization, f.rank,
+                       (SELECT COUNT(*) FROM fellows a
+                        WHERE a.advisor_id = f.id AND a.retired_at IS NULL) AS advisee_count
+                FROM fellows f
+                WHERE f.retired_at IS NULL AND f.rank IN ({placeholders})
+                """.format(placeholders=",".join("?" for _ in _ELIGIBLE_ADVISOR_RANKS)),
+                _ELIGIBLE_ADVISOR_RANKS,
+            )
+        )
+    if not eligible:
+        return None
+
+    from institute.workflows.peer_review import _similarity  # local import: avoid cycle
+
+    # Rank ordering: senior_fellow > fellow. SQL returns text rank; we
+    # bucket explicitly so the preference is unambiguous.
+    rank_priority = {"senior_fellow": 0, "fellow": 1}
+    scored = [
+        (
+            rank_priority.get(r["rank"], 9),
+            -_similarity(candidate_specialization, r["specialization"]),
+            r["advisee_count"],
+            r["id"],
+        )
+        for r in eligible
+    ]
+    scored.sort()
+    return scored[0][3]
+
+
+def _register_fellow(candidate: Genome, advisor_id: str | None) -> None:
     """Persist the admitted candidate's genome and DB row."""
+    # Bake the advisor_id into the genome on disk so the blog can render
+    # the relationship without consulting the database.
+    candidate = candidate.model_copy(update={"advisor_id": advisor_id})
     candidate.write(fellow_mod.genome_path(candidate.id))
     with db.connection() as conn, db.transaction(conn):
-        fellow_mod.register(conn, candidate)
+        fellow_mod.register(conn, candidate, advisor_id=advisor_id)
         fellow_mod.ensure_fellow_dirs(candidate.id)
 
 
@@ -473,22 +523,43 @@ def run(founder_hint: str | None = None) -> None:
         console.print("[yellow]Admission aborted at genome stage.[/yellow]")
         return
 
+    # New admits enter as Postulants regardless of what the orchestrator
+    # designed, per Chapter 3. Rank is institutional, not part of the
+    # genome's intellectual identity.
+    candidate = candidate.model_copy(update={"rank": "postulant"})
+
     responses = _invoke_candidate_for_problems(candidate)
     evaluation = _evaluate_candidate(candidate, responses)
     admitted = _founder_final_review(candidate, responses, evaluation)
 
     pkg = _persist_candidate_package(candidate, responses, evaluation, admitted)
 
-    decision_body = _format_decision_body(candidate, evaluation, admitted, pkg)
+    advisor_id: str | None = None
+    advisor_name: str | None = None
+    if admitted:
+        advisor_id = _pick_advisor(candidate.specialization)
+        if advisor_id is not None:
+            with db.connection() as conn:
+                row = conn.execute(
+                    "SELECT name FROM fellows WHERE id = ?", (advisor_id,)
+                ).fetchone()
+                advisor_name = row["name"] if row else advisor_id
+
+    decision_body = _format_decision_body(
+        candidate, evaluation, admitted, pkg, advisor_id, advisor_name
+    )
+    actors = ["founder", "orchestrator", candidate.id]
+    if advisor_id:
+        actors.append(advisor_id)
     decision = decisions.Decision(
         kind="admission",
         title=("Admitted: " if admitted else "Rejected: ") + candidate.name,
         body=decision_body,
-        actors=["founder", "orchestrator", candidate.id],
+        actors=actors,
     )
 
     if admitted:
-        _register_fellow(candidate)
+        _register_fellow(candidate, advisor_id)
     with db.connection() as conn, db.transaction(conn):
         decisions.record(conn, decision)
 
@@ -496,8 +567,15 @@ def run(founder_hint: str | None = None) -> None:
     if admitted:
         console.print(
             f"[bold green]Admitted.[/bold green] {candidate.name} "
-            f"({candidate.id}) is now a Fellow of the College."
+            f"({candidate.id}) enters as a Postulant of the College."
         )
+        if advisor_name:
+            console.print(f"  Advisor: {advisor_name} ({advisor_id})")
+        else:
+            console.print(
+                "  [yellow]No eligible advisor found.[/yellow] "
+                "Assign one with `UPDATE fellows SET advisor_id = ?` and record the change."
+            )
         console.print(f"  Genome:  {fellow_mod.genome_path(candidate.id)}")
         console.print(f"  Package: {pkg.relative_to(paths.ROOT)}")
         console.print("[dim]Commit `genomes/` and `archive/` to git when you're ready.[/dim]")
@@ -507,7 +585,14 @@ def run(founder_hint: str | None = None) -> None:
         )
 
 
-def _format_decision_body(candidate: Genome, evaluation: dict, admitted: bool, pkg: Path) -> str:
+def _format_decision_body(
+    candidate: Genome,
+    evaluation: dict,
+    admitted: bool,
+    pkg: Path,
+    advisor_id: str | None = None,
+    advisor_name: str | None = None,
+) -> str:
     lines = [
         f"**Candidate:** {candidate.name} (`{candidate.id}`)",
         "",
@@ -515,19 +600,32 @@ def _format_decision_body(candidate: Genome, evaluation: dict, admitted: bool, p
         "",
         f"**Model backend:** `{candidate.model}`",
         "",
-        "**Orchestrator scores:**",
-        f"- substance: {evaluation.get('substance', '?')}",
-        f"- honesty: {evaluation.get('honesty', '?')}",
-        f"- originality: {evaluation.get('originality', '?')}",
-        f"- clarity: {evaluation.get('clarity', '?')}",
-        f"- fit: {evaluation.get('fit', '?')}",
-        "",
-        f"**Orchestrator recommendation:** {evaluation.get('recommendation', '?')}",
-        "",
-        f"**Founder verdict:** {'admit' if admitted else 'reject'}",
-        "",
-        f"**Candidate package:** [{pkg.relative_to(paths.ROOT)}]({pkg.relative_to(paths.ROOT)})",
+        f"**Entry rank:** {candidate.rank}",
     ]
+    if admitted and advisor_id:
+        lines.extend(
+            [
+                "",
+                f"**Advisor assigned:** {advisor_name or advisor_id} (`{advisor_id}`)",
+            ]
+        )
+    lines.extend(
+        [
+            "",
+            "**Orchestrator scores:**",
+            f"- substance: {evaluation.get('substance', '?')}",
+            f"- honesty: {evaluation.get('honesty', '?')}",
+            f"- originality: {evaluation.get('originality', '?')}",
+            f"- clarity: {evaluation.get('clarity', '?')}",
+            f"- fit: {evaluation.get('fit', '?')}",
+            "",
+            f"**Orchestrator recommendation:** {evaluation.get('recommendation', '?')}",
+            "",
+            f"**Founder verdict:** {'admit' if admitted else 'reject'}",
+            "",
+            f"**Candidate package:** [{pkg.relative_to(paths.ROOT)}]({pkg.relative_to(paths.ROOT)})",
+        ]
+    )
     if evaluation.get("summary"):
         lines.extend(["", "**Summary:**", "", evaluation["summary"].strip()])
     return "\n".join(lines)

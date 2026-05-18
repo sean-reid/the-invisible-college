@@ -78,6 +78,15 @@ package (genome, responses, evaluation, decision) is preserved in
 admitted. Approved genomes land in `genomes/` and are committed to git
 the same way as bootstrap.
 
+New admits enter as **Postulants** and get an advisor assigned
+automatically — the most-similar-specialization Senior Fellow (or
+Fellow, if none), least-burdened among ties. Postulants cannot lead
+proposals or serve as reviewers. They advance through the rank
+ladder (Novice → Junior Fellow → Fellow → Senior Fellow) via
+`institute promote --fellow <id>`, same workflow used for any other
+promotion. The advisor relationship is shown on the Fellow's profile
+page on the blog.
+
 ## The tenure ladder
 
 ```sh

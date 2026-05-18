@@ -172,6 +172,49 @@ def test_round_1_primary_is_closest_discipline(
     assert by_role["secondary"] == cousin.id
 
 
+def test_round_1_excludes_postulants_from_reviewer_pool(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Chapter 7: Junior Fellow is the minimum reviewer rank; postulants must not be picked."""
+    monkeypatch.setattr(fellow_mod, "GENOMES", tmp_path / "genomes")
+    monkeypatch.setattr(fellow_mod, "FELLOWS", tmp_path / "fellows")
+    db_path = tmp_path / "institute.db"
+    monkeypatch.setattr(db, "DB_PATH", db_path)
+    db.initialize(db_path)
+    (tmp_path / "genomes").mkdir(exist_ok=True)
+
+    lead = _genome("Lead", "spec a")
+    eligible_1 = _genome("Eligible One", "spec b")
+    eligible_2 = _genome("Eligible Two", "spec c")
+    postulant = Genome(
+        id="newcomer",
+        name="Newcomer",
+        rank="postulant",
+        model="claude-sonnet-4-6",
+        specialization="spec a",
+        system_prompt_addendum=("Short addendum. " * 10).strip(),
+        allowed_tools=["Read"],
+    )
+    for g in (lead, eligible_1, eligible_2, postulant):
+        g.write(tmp_path / "genomes" / f"{g.id}.json")
+    now = datetime.now(UTC).isoformat(timespec="seconds")
+    with db.connection() as conn, db.transaction(conn):
+        for g in (lead, eligible_1, eligible_2, postulant):
+            fellow_mod.register(conn, g)
+        conn.execute(
+            "INSERT INTO projects "
+            "(id, title, state, lead_fellow_id, draft_path, review_round, "
+            " created_at, updated_at) "
+            "VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+            ("proj-gate", "x", "drafted", lead.id, "draft.md", 1, now, now),
+        )
+
+    with db.connection() as conn:
+        slots = _pick_review_slots(conn, "proj-gate", lead.id, 1)
+    reviewer_ids = {s.reviewer_id for s in slots}
+    assert postulant.id not in reviewer_ids, "Postulant must not be in the reviewer pool"
+
+
 def test_round_1_rotates_among_equally_distant_reviewers(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
@@ -215,16 +258,36 @@ def test_round_1_rotates_among_equally_distant_reviewers(
             "(id, project_id, reviewer_id, role, recommendation, confidence, "
             " content_path, submitted_at, dissent, round) "
             "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
-            ("r-busy", "proj-history", busy.id, "primary", "minor",
-             "confident", "x", "2026-05-18T20:00:00+00:00", 0, 1),
+            (
+                "r-busy",
+                "proj-history",
+                busy.id,
+                "primary",
+                "minor",
+                "confident",
+                "x",
+                "2026-05-18T20:00:00+00:00",
+                0,
+                1,
+            ),
         )
         conn.execute(
             "INSERT INTO reviews "
             "(id, project_id, reviewer_id, role, recommendation, confidence, "
             " content_path, submitted_at, dissent, round) "
             "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
-            ("r-medium", "proj-history", medium.id, "primary", "minor",
-             "confident", "x", "2026-05-01T10:00:00+00:00", 0, 1),
+            (
+                "r-medium",
+                "proj-history",
+                medium.id,
+                "primary",
+                "minor",
+                "confident",
+                "x",
+                "2026-05-01T10:00:00+00:00",
+                0,
+                1,
+            ),
         )
 
     with db.connection() as conn:

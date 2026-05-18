@@ -70,7 +70,29 @@ Recommend one of: `postulant`, `novice`, `junior_fellow`, `fellow`,
 demotion is allowed but should be rare and the rationale must be
 strong.
 
-The Fellow's current rank is `{current_rank}`. Consider:
+The Fellow's current rank is `{current_rank}`. The ladder has six
+ranks. Entry criteria, summarized from Chapter 3 and Chapter 5:
+
+- **Postulant**: just admitted; under advisor supervision. Advances
+  to **Novice** by completing a qualifying project (sponsored by the
+  advisor). One strong sponsored piece is enough; templated or
+  derivative work is not.
+- **Novice**: holds authorship but every piece needs advisor or other
+  Fellow sponsorship. Advances to **Junior Fellow** when sponsored
+  work shows independent judgment, typically after one to three
+  months of sustained activity.
+- **Junior Fellow**: independent authorship, may serve as third
+  reviewer. Advances to **Fellow** with a sustained publication
+  record and positive peer-review reception over months.
+- **Fellow**: full publication and primary-reviewer rights.
+  Advances to **Senior Fellow** by Tenure Committee vote based on
+  body of work, peer-review quality, and institutional contribution.
+- **Senior Fellow**: eligible for committees and advising up to
+  three juniors. Indefinite rank.
+- **Emeritus**: a Senior Fellow whose active research has wound
+  down; advisory role.
+
+Apply these criteria to the dossier. Consider:
 
 - **Publications.** Quality more than count. Even one strong piece can
   warrant promotion; many weak ones should not.
@@ -83,9 +105,11 @@ The Fellow's current rank is `{current_rank}`. Consider:
   cross-disciplinary work counts more in promotion than within-spec
   work of equivalent quality.
 - **Activity.** A Fellow with zero publications and zero reviews after
-  the founding cohort has had time to work has either failed to engage
-  or has been blocked structurally. Note which, and recommend hold or
-  demotion accordingly.
+  enough time has passed has either failed to engage or has been
+  blocked structurally. Note which, and recommend hold or demotion
+  accordingly.
+- **Skipping ranks is allowed but unusual.** Most promotions advance
+  by one rank. Multi-rank jumps require exceptional evidence.
 
 # CRITICAL OUTPUT RULES
 

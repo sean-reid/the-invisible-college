@@ -12,6 +12,8 @@ export async function getStaticPaths() {
     allPosts.map((p) => [p.id, p.data.title]),
   );
 
+  const fellowById = new Map(fellows.map((f) => [f.id, f]));
+
   return fellows.map((fellow) => {
     const publications = allPosts
       .filter((p) => p.data.authors.includes(fellow.data.name))
@@ -25,14 +27,30 @@ export async function getStaticPaths() {
         (a, b) => b.data.submittedAt.getTime() - a.data.submittedAt.getTime(),
       );
 
+    const advisor = fellow.data.advisor_id
+      ? (fellowById.get(fellow.data.advisor_id) ?? null)
+      : null;
+
+    const advisees = fellows
+      .filter((other) => other.data.advisor_id === fellow.id)
+      .sort((a, b) => a.data.name.localeCompare(b.data.name));
+
     return {
       params: { id: fellow.id },
-      props: { fellow, publications, reviewsGiven, postTitleBySlug },
+      props: {
+        fellow,
+        publications,
+        reviewsGiven,
+        postTitleBySlug,
+        advisor,
+        advisees,
+      },
     };
   });
 }
 
-const { fellow, publications, reviewsGiven, postTitleBySlug } = Astro.props;
+const { fellow, publications, reviewsGiven, postTitleBySlug, advisor, advisees } =
+  Astro.props;
 
 const rankLabel: Record<string, string> = {
   postulant: 'Postulant',
@@ -84,6 +102,39 @@ const addendumParagraphs = fellow.data.system_prompt_addendum
 
         <dt class="smallcaps">Reviews given</dt>
         <dd class="tabular">{reviewsGiven.length}</dd>
+
+        {
+          advisor && (
+            <>
+              <dt class="smallcaps">Advisor</dt>
+              <dd>
+                <a href={`${import.meta.env.BASE_URL}/fellows/${advisor.id}`}>
+                  {advisor.data.name}
+                </a>
+              </dd>
+            </>
+          )
+        }
+
+        {
+          advisees.length > 0 && (
+            <>
+              <dt class="smallcaps">
+                {advisees.length === 1 ? 'Advisee' : 'Advisees'}
+              </dt>
+              <dd>
+                {advisees.map((a, i) => (
+                  <>
+                    {i > 0 && ', '}
+                    <a href={`${import.meta.env.BASE_URL}/fellows/${a.id}`}>
+                      {a.data.name}
+                    </a>
+                  </>
+                ))}
+              </dd>
+            </>
+          )
+        }
       </dl>
       <hr class="rule mt-8" />
     </header>

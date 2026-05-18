@@ -176,8 +176,26 @@ When all four files exist, reply with the single word `Done.` Nothing else.
 
 _STOPWORDS = frozenset(
     {
-        "a", "an", "the", "and", "or", "of", "in", "on", "for", "with", "to",
-        "from", "by", "as", "at", "is", "are", "be", "this", "that",
+        "a",
+        "an",
+        "the",
+        "and",
+        "or",
+        "of",
+        "in",
+        "on",
+        "for",
+        "with",
+        "to",
+        "from",
+        "by",
+        "as",
+        "at",
+        "is",
+        "are",
+        "be",
+        "this",
+        "that",
     }
 )
 
@@ -228,16 +246,18 @@ def _pick_review_slots(
             raise SystemExit(f"Cannot start round {review_round}: no round-1 reviews found.")
         return [ReviewSlot(reviewer_id=r["reviewer_id"], role=r["role"]) for r in prior]
 
+    # Postulants do not review per Chapter 7 (Junior Fellow is the
+    # minimum reviewer rank). Exclude them from the candidate pool.
     candidates = list(
         conn.execute(
             "SELECT id, specialization FROM fellows "
-            "WHERE retired_at IS NULL AND id != ?",
+            "WHERE retired_at IS NULL AND id != ? AND rank != 'postulant'",
             (lead_id,),
         )
     )
     if len(candidates) < 2:
         raise SystemExit(
-            f"Need at least 2 Fellows other than the lead for peer review. Found {len(candidates)}."
+            f"Need at least 2 reviewing Fellows other than the lead. Found {len(candidates)}."
         )
 
     lead_row = conn.execute(

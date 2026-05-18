@@ -40,6 +40,9 @@ class Genome(BaseModel):
         default_factory=lambda: ["Read", "Write", "Edit", "Bash", "WebFetch", "WebSearch"]
     )
     behavioral_notes: dict[str, str] = Field(default_factory=dict)
+    # Institutional placement. None for founding cohort and for Fellows who
+    # have advanced past needing an advisor. Set during admissions.
+    advisor_id: str | None = None
 
     @classmethod
     def from_file(cls, path: Path) -> Genome:

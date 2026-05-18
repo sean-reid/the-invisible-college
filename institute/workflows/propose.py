@@ -132,14 +132,15 @@ def _pick_lead(conn: sqlite3.Connection, requested: str | None) -> Genome:
 
     # MAX(updated_at) per Fellow over projects they have led. NULL means
     # they have never led one, which sorts first under ASC NULLS FIRST
-    # (SQLite default for ASC).
+    # (SQLite default for ASC). Postulants are excluded: they propose
+    # under advisor sponsorship, not as lead authors, per Chapter 5.
     rows = list(
         conn.execute(
             """
             SELECT f.id, f.specialization, MAX(p.updated_at) AS last_authored
             FROM fellows f
             LEFT JOIN projects p ON p.lead_fellow_id = f.id
-            WHERE f.retired_at IS NULL
+            WHERE f.retired_at IS NULL AND f.rank != 'postulant'
             GROUP BY f.id
             ORDER BY last_authored ASC, f.name ASC
             """
