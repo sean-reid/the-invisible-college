@@ -26,6 +26,8 @@ node_modules/
 blog/dist/
 blog/.astro/
 blog/screenshots/
+# Synced from /genomes at build time by scripts/sync-fellows.mjs.
+blog/src/content/fellows/*.json
 .DS_Store
 
 # Playwright

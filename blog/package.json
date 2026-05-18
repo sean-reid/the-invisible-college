@@ -4,6 +4,10 @@
   "version": "0.0.1",
   "private": true,
   "scripts": {
+    "sync-fellows": "node scripts/sync-fellows.mjs",
+    "predev": "npm run sync-fellows",
+    "prestart": "npm run sync-fellows",
+    "prebuild": "npm run sync-fellows",
     "dev": "astro dev",
     "start": "astro dev",
     "build": "astro build",

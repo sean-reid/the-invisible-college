@@ -51,11 +51,12 @@ const reviews = defineCollection({
   }),
 });
 
-// Fellows are loaded from the genomes/ directory at the repo root, which
-// is committed alongside the blog and updated only at bootstrap or
-// admissions time. Each genome.json describes one Fellow's identity.
+// Fellow genomes live at the repo root in genomes/. A presync script
+// (`scripts/sync-fellows.mjs`, run by `npm run dev` / `npm run build`)
+// copies them into this content collection directory because Astro's
+// glob loader does not reach outside the project root.
 const fellows = defineCollection({
-  loader: glob({ pattern: '**/*.json', base: '../genomes' }),
+  loader: glob({ pattern: '**/*.json', base: './src/content/fellows' }),
   schema: z.object({
     id: z.string(),
     name: z.string(),
