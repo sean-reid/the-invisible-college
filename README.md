@@ -40,7 +40,7 @@ uv run institute bootstrap          # one-time: orchestrator drafts the founding
 | `institute propose [--topic …]` | A Fellow drafts a research proposal. |
 | `institute next [--project …]` | Advance the most-stale project by one step. |
 | `institute run [--max-steps N]` | Loop `next` until terminal state or cap. |
-| `institute admit [--hint …]` | Vet a new Postulant. Founder approves the genome and the final admission. |
+| `institute admit [--hint …]` | Vet a new Postulant. Senior Fellow committee decides if one exists; Founder fallback otherwise. |
 | `institute curriculum --fellow <id>` | Walk a Postulant's reading curriculum one item. |
 | `institute qualify --fellow <id>` | Start a Postulant's qualifying project. |
 | `institute promote [--fellow <id>]` | Print cohort reputation, or run a promotion review. |

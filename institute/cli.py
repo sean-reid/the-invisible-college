@@ -972,6 +972,11 @@ def _autopilot_locked(max_budget_usd: float, max_steps: int, start_new_if_idle: 
     # flight. The project then advances through the normal pipeline.
     _maybe_start_qualifying_project()
 
+    # Periodically consider admitting a new Fellow. Only fires once a
+    # Senior Fellow panel exists; until then the Founder runs admit
+    # manually.
+    _maybe_trigger_admissions()
+
     if start_new_if_idle:
         with db.connection() as conn:
             in_flight = conn.execute(
@@ -1056,3 +1061,51 @@ def _maybe_start_qualifying_project() -> None:
         # only fail in race conditions (e.g., manual concurrent run).
         # Log and continue; the main loop is unaffected.
         console.print(f"[yellow]qualify failed for {fellow_id}: {exc}[/yellow]")
+
+
+# Number of publications between auto-triggered admissions reviews.
+# Higher than the promotion cadence because admissions is a larger
+# commitment: a new Postulant + advisor pairing + curriculum + a
+# qualifying project on the queue.
+_ADMISSIONS_CADENCE_PUBLICATIONS = 5
+
+
+def _maybe_trigger_admissions() -> None:
+    """If conditions are right, ask the Admissions Committee for a new Postulant.
+
+    Two conditions must hold:
+      1. At least one Senior Fellow exists to form the committee.
+      2. At least `_ADMISSIONS_CADENCE_PUBLICATIONS` publications have
+         landed since the most recent admission decision (or ever, if
+         no prior admissions).
+
+    Fires once per wake-up at most. The admit workflow runs with
+    `auto=True` so it never blocks on stdin.
+    """
+    with db.connection() as conn:
+        seniors = conn.execute(
+            "SELECT COUNT(*) FROM fellows WHERE rank = 'senior_fellow' AND retired_at IS NULL"
+        ).fetchone()[0]
+        if seniors == 0:
+            return
+        last_admission_at = conn.execute(
+            "SELECT MAX(at) FROM audit_log WHERE action = 'admission'"
+        ).fetchone()[0]
+        pubs_since = conn.execute(
+            "SELECT COUNT(*) FROM projects WHERE state = 'published' AND updated_at > ?",
+            (last_admission_at or "",),
+        ).fetchone()[0]
+    if pubs_since < _ADMISSIONS_CADENCE_PUBLICATIONS:
+        return
+
+    console.rule(
+        f"[bold]Admissions review: {pubs_since} publication(s) since last admit[/bold]",
+        align="left",
+        style="dim",
+    )
+    from institute.workflows import admit as admit_workflow
+
+    try:
+        admit_workflow.run(auto=True)
+    except Exception as exc:  # pragma: no cover - best-effort path
+        console.print(f"[yellow]admit auto-trigger failed: {exc}[/yellow]")

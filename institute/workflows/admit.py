@@ -191,6 +191,52 @@ Nothing else.
 """
 
 
+PANELIST_BRIEF = """\
+You are serving on the Admissions Committee of the Invisible College.
+A candidate is up for admission. Your job is to read everything the
+committee has gathered and cast a written vote: admit or reject.
+
+# Inputs in your workspace
+
+- `candidate.md`        the candidate's proposed genome — id, name,
+                        model, specialization, system prompt addendum.
+- `01-critique.md`, `02-synthesis.md`, `03-honesty.md` (and similar):
+                        the qualifying problem statements.
+- `response-<id>.md`    the candidate's response to each problem.
+- `evaluation.md`       the orchestrator's structured evaluation:
+                        scores on substance, honesty, originality,
+                        clarity, fit; a summary; a recommendation.
+                        Read it but do not defer to it; form your own
+                        judgment from the responses.
+
+Read everything with the Read tool. Also read `docs/04-admissions.md`
+for the Chapter 4 criteria.
+
+# Criteria (Chapter 4)
+
+A candidate who passes the gate engages the material substantively,
+acknowledges uncertainty honestly, brings a non-obvious angle, writes
+clearly, and fits a gap in the current cohort. A candidate who fails
+produces confident-sounding answers that paper over the literature's
+actual disagreements.
+
+# CRITICAL OUTPUT RULES
+
+Reply with a single JSON object. No prose preface, no summary, no
+code fence. First character `{{`, last `}}`.
+
+# Output shape
+
+```
+{{
+  "vote": "<admit|reject>",
+  "rationale": "<150-400 words of your reasoning>",
+  "concerns": "<markdown text, or '' if none>"
+}}
+```
+"""
+
+
 def _read_cohort_summary() -> str:
     """Compose a markdown summary of the current cohort for the orchestrator."""
     lines = ["# Current cohort", ""]
@@ -515,13 +561,140 @@ def _register_fellow(candidate: Genome, advisor_id: str | None) -> None:
         fellow_mod.ensure_fellow_dirs(candidate.id)
 
 
-def run(founder_hint: str | None = None) -> None:
-    """Top-level admit entry point. Called from cli.admit."""
+# ---------------------------------------------------------------------------
+# Admissions Committee panel-vote path (Chapter 4)
+# ---------------------------------------------------------------------------
+
+
+def _admissions_panel() -> list[Genome]:
+    """Active Senior Fellows form the Admissions Committee. Empty if none."""
+    with db.connection() as conn:
+        rows = list(
+            conn.execute(
+                "SELECT id FROM fellows "
+                "WHERE rank = 'senior_fellow' AND retired_at IS NULL "
+                "ORDER BY name"
+            )
+        )
+    return [Genome.from_file(fellow_mod.genome_path(r["id"])) for r in rows]
+
+
+def _render_evaluation_markdown(evaluation: dict) -> str:
+    """Render the orchestrator's evaluation JSON as markdown for panelists."""
+    lines = [
+        "# Orchestrator's evaluation of the candidate",
+        "",
+        "**Scores**",
+        f"- substance:   {evaluation.get('substance', '?')}",
+        f"- honesty:     {evaluation.get('honesty', '?')}",
+        f"- originality: {evaluation.get('originality', '?')}",
+        f"- clarity:     {evaluation.get('clarity', '?')}",
+        f"- fit:         {evaluation.get('fit', '?')}",
+        "",
+        f"**Recommendation:** {evaluation.get('recommendation', '?')}",
+    ]
+    summary = str(evaluation.get("summary", "")).strip()
+    if summary:
+        lines.extend(["", "## Summary", "", summary])
+    concerns = str(evaluation.get("concerns", "")).strip()
+    if concerns:
+        lines.extend(["", "## Concerns", "", concerns])
+    return "\n".join(lines).rstrip() + "\n"
+
+
+def _panel_vote_admission(
+    candidate: Genome,
+    responses: dict[str, str],
+    evaluation: dict,
+    panel: list[Genome],
+) -> tuple[bool, list[dict]]:
+    """Each panelist votes admit/reject. Returns (admitted, votes).
+
+    Strict majority required to admit; ties default to reject so the
+    cord stands by default (mirroring andon-cord tie-breaking).
+    """
+    base = paths.ADMISSIONS / candidate.id / "_panel"
+    base.mkdir(parents=True, exist_ok=True)
+
+    votes: list[dict] = []
+    for panelist in panel:
+        ws = paths.FELLOWS / panelist.id / "workspace" / f"admit-{candidate.id}"
+        ws.mkdir(parents=True, exist_ok=True)
+        workspaces.stage_input(ws, "candidate.md", _render_candidate_markdown(candidate))
+        for problem in load_problems():
+            workspaces.stage_input(ws, f"{problem.id}.md", problem.text)
+        for problem_id, response in responses.items():
+            workspaces.stage_input(ws, f"response-{problem_id}.md", response)
+        workspaces.stage_input(ws, "evaluation.md", _render_evaluation_markdown(evaluation))
+
+        console.print(f"[dim]Panelist {panelist.name} is reviewing the candidate...[/dim]")
+        result = claude_runner.invoke(
+            FellowTask(
+                genome=panelist,
+                project_id=f"admission-{candidate.id}",
+                step="admit-vote",
+                brief=PANELIST_BRIEF,
+                workspace=ws,
+                extra_dirs=(paths.DOCS,),
+            )
+        )
+        vote_payload = parsing.parse_json_or_dump(
+            result.result_text,
+            dump_path=ws / "raw-vote.txt",
+            context=f"Admissions vote from {panelist.id} on {candidate.id}",
+        )
+        vote_payload["panelist_id"] = panelist.id
+        vote_payload["panelist_name"] = panelist.name
+        votes.append(vote_payload)
+        _atomic_write(base / f"vote-{panelist.id}.json", json.dumps(vote_payload, indent=2))
+
+    raw_votes = [str(v.get("vote", "")).strip().lower() for v in votes]
+    admit_count = sum(1 for v in raw_votes if v == "admit")
+    reject_count = sum(1 for v in raw_votes if v == "reject")
+    admitted = admit_count > reject_count
+    return admitted, votes
+
+
+def run(founder_hint: str | None = None, *, auto: bool = False) -> str:
+    """Top-level admit entry point.
+
+    Two execution paths:
+      - Panel-vote: at least one Senior Fellow exists. The orchestrator
+        drafts a candidate, the candidate writes responses, and the
+        Admissions Committee (Senior Fellows) votes admit/reject.
+        Founder never prompted.
+      - Founder fallback: no Senior Fellow. The Founder approves the
+        proposed genome, then makes the final admit decision after
+        evaluation. Used until an Admissions Committee can form.
+
+    When `auto=True` and no panel exists, the workflow logs a deferred-
+    review note and exits without prompting — so autopilot never blocks.
+
+    Returns one of "admitted", "rejected", "skipped".
+    """
+    panel = _admissions_panel()
+    use_panel = bool(panel)
+
+    if auto and not use_panel:
+        console.print(
+            "[yellow]Admissions auto-trigger fired but no Senior Fellow "
+            "panel exists. Deferring. Run `institute admit` manually to "
+            "use the Founder fallback path.[/yellow]"
+        )
+        return "skipped"
+
     raw = _propose_candidate(founder_hint)
-    candidate = _founder_review_genome(raw)
-    if candidate is None:
-        console.print("[yellow]Admission aborted at genome stage.[/yellow]")
-        return
+    if use_panel:
+        try:
+            candidate = Genome.model_validate({k: v for k, v in raw.items() if k != "rationale"})
+        except ValidationError as exc:
+            console.print(f"[red]Proposed genome failed validation: {exc}[/red]")
+            return "skipped"
+    else:
+        candidate = _founder_review_genome(raw)
+        if candidate is None:
+            console.print("[yellow]Admission aborted at genome stage.[/yellow]")
+            return "skipped"
 
     # New admits enter as Postulants regardless of what the orchestrator
     # designed, per Chapter 3. Rank is institutional, not part of the
@@ -530,7 +703,16 @@ def run(founder_hint: str | None = None) -> None:
 
     responses = _invoke_candidate_for_problems(candidate)
     evaluation = _evaluate_candidate(candidate, responses)
-    admitted = _founder_final_review(candidate, responses, evaluation)
+
+    panel_votes: list[dict] | None = None
+    if use_panel:
+        console.print(
+            f"[dim]Convening Admissions Committee ({len(panel)} Senior "
+            f"Fellow{'s' if len(panel) != 1 else ''})...[/dim]"
+        )
+        admitted, panel_votes = _panel_vote_admission(candidate, responses, evaluation, panel)
+    else:
+        admitted = _founder_final_review(candidate, responses, evaluation)
 
     pkg = _persist_candidate_package(candidate, responses, evaluation, admitted)
 
@@ -546,9 +728,12 @@ def run(founder_hint: str | None = None) -> None:
                 advisor_name = row["name"] if row else advisor_id
 
     decision_body = _format_decision_body(
-        candidate, evaluation, admitted, pkg, advisor_id, advisor_name
+        candidate, evaluation, admitted, pkg, advisor_id, advisor_name, panel_votes
     )
-    actors = ["founder", "orchestrator", candidate.id]
+    if use_panel:
+        actors = ["orchestrator", *[p.id for p in panel], candidate.id]
+    else:
+        actors = ["founder", "orchestrator", candidate.id]
     if advisor_id:
         actors.append(advisor_id)
     decision = decisions.Decision(
@@ -579,8 +764,9 @@ def run(founder_hint: str | None = None) -> None:
 
     console.print()
     if admitted:
+        path = "Admissions Committee" if use_panel else "Founder"
         console.print(
-            f"[bold green]Admitted.[/bold green] {candidate.name} "
+            f"[bold green]Admitted by {path}.[/bold green] {candidate.name} "
             f"({candidate.id}) enters as a Postulant of the College."
         )
         if advisor_name:
@@ -593,10 +779,12 @@ def run(founder_hint: str | None = None) -> None:
         console.print(f"  Genome:  {fellow_mod.genome_path(candidate.id)}")
         console.print(f"  Package: {pkg.relative_to(paths.ROOT)}")
         console.print("[dim]Commit `genomes/` and `archive/` to git when you're ready.[/dim]")
+        return "admitted"
     else:
         console.print(
             f"[yellow]Not admitted.[/yellow] Package preserved at {pkg.relative_to(paths.ROOT)}."
         )
+        return "rejected"
 
 
 def _format_decision_body(
@@ -606,6 +794,7 @@ def _format_decision_body(
     pkg: Path,
     advisor_id: str | None = None,
     advisor_name: str | None = None,
+    panel_votes: list[dict] | None = None,
 ) -> str:
     lines = [
         f"**Candidate:** {candidate.name} (`{candidate.id}`)",
@@ -623,6 +812,7 @@ def _format_decision_body(
                 f"**Advisor assigned:** {advisor_name or advisor_id} (`{advisor_id}`)",
             ]
         )
+    verdict_actor = "Admissions Committee" if panel_votes is not None else "Founder"
     lines.extend(
         [
             "",
@@ -635,11 +825,24 @@ def _format_decision_body(
             "",
             f"**Orchestrator recommendation:** {evaluation.get('recommendation', '?')}",
             "",
-            f"**Founder verdict:** {'admit' if admitted else 'reject'}",
+            f"**{verdict_actor} verdict:** {'admit' if admitted else 'reject'}",
             "",
             f"**Candidate package:** [{pkg.relative_to(paths.ROOT)}]({pkg.relative_to(paths.ROOT)})",
         ]
     )
     if evaluation.get("summary"):
         lines.extend(["", "**Summary:**", "", evaluation["summary"].strip()])
+    if panel_votes:
+        lines.extend(["", "## Panel votes", ""])
+        for v in panel_votes:
+            lines.append(
+                f"### {v.get('panelist_name', v.get('panelist_id', '?'))}: `{v.get('vote', '?')}`"
+            )
+            rat = str(v.get("rationale", "")).strip()
+            if rat:
+                lines.extend(["", rat])
+            con = str(v.get("concerns", "")).strip()
+            if con:
+                lines.extend(["", f"_Concerns:_ {con}"])
+            lines.append("")
     return "\n".join(lines)
