@@ -45,14 +45,25 @@ def test_extract_title_from_valid_proposal() -> None:
 
 def test_extract_title_raises_when_missing() -> None:
     bad = "## Question\n\nWhat happens?\n"
-    with pytest.raises(RuntimeError, match="Title"):
+    with pytest.raises(RuntimeError, match="title"):
         propose._extract_title(bad)
 
 
-def test_extract_title_raises_when_empty() -> None:
+def test_extract_title_raises_when_only_sections_present() -> None:
     bad = "## Title\n\n\n## Question\nx\n"
-    with pytest.raises(RuntimeError, match="empty"):
+    with pytest.raises(RuntimeError, match="title"):
         propose._extract_title(bad)
+
+
+def test_extract_title_from_h1() -> None:
+    md = "# A real H1 title\n\n## Question\nq\n"
+    assert propose._extract_title(md) == "A real H1 title"
+
+
+def test_extract_title_from_leading_h2() -> None:
+    """Fellows sometimes write the title as the first ## heading instead of `## Title`."""
+    md = "## Citation Accuracy in ML Research\n\n## Question\nq\n"
+    assert propose._extract_title(md) == "Citation Accuracy in ML Research"
 
 
 def test_validate_sections_accepts_valid() -> None:

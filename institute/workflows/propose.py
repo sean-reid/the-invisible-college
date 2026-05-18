@@ -39,21 +39,23 @@ Charter and design chapters describe the institution.
 
 # What you must produce
 
-A research proposal in markdown, structured as the following sections,
-in this exact order, each as a level-2 heading:
+A research proposal in markdown. The structure:
 
-1. `## Title` (the proposal's working title, on a single line)
-2. `## Question` (the question you propose to investigate, as a question)
-3. `## Background` (what is already known; cite specific sources, internal
+- The first line is a level-1 heading with the proposal's working
+  title: `# Your Title Here`. The title must literally be on a `# ` line.
+- Then, in this exact order, each as a level-2 heading:
+
+1. `## Question` (the question you propose to investigate, as a question)
+2. `## Background` (what is already known; cite specific sources, internal
    or external; include real URLs or document references where possible)
-4. `## Approach` (concrete methods you will use; not vague intentions)
-5. `## Expected output` (what form the result will take: demonstration,
+3. `## Approach` (concrete methods you will use; not vague intentions)
+4. `## Expected output` (what form the result will take: demonstration,
    essay, code release, critical review, lab note, synthesis)
-6. `## Resource estimate` (rough estimate of compute, time, and tool use;
+5. `## Resource estimate` (rough estimate of compute, time, and tool use;
    keep it bounded)
-7. `## Anticipated failure modes` (how this could go wrong, and what an
+6. `## Anticipated failure modes` (how this could go wrong, and what an
    honest negative result would look like)
-8. `## Collaborators needed` (which kinds of Fellows you might want to
+7. `## Collaborators needed` (which kinds of Fellows you might want to
    bring in; OK if none)
 
 # Constraints
@@ -106,7 +108,6 @@ Pick something that:
 
 
 REQUIRED_SECTIONS = [
-    "Title",
     "Question",
     "Background",
     "Approach",
@@ -161,25 +162,58 @@ def _project_id(title: str) -> str:
 
 
 def _extract_title(markdown: str) -> str:
-    # Capture everything between "## Title" and the next "##" heading or EOF.
-    match = re.search(
+    """Extract the proposal title.
+
+    Tries, in order:
+      1. A level-1 heading `# Title` (the canonical form).
+      2. A `## Title` section's body (the older form, kept for back-compat).
+      3. The first `## ` heading in the document (the form a Fellow may
+         emit if it reads "## Title" in the brief as "the title goes on
+         a ## line").
+    """
+    h1 = re.search(r"^#\s+(.+?)\s*$", markdown, re.MULTILINE)
+    if h1:
+        return h1.group(1).strip()
+
+    titled = re.search(
         r"^##\s+Title\s*$\n+(.*?)(?=^##\s+|\Z)",
         markdown,
-        re.MULTILINE | re.DOTALL,
+        re.MULTILINE | re.DOTALL | re.IGNORECASE,
     )
-    if not match:
-        raise RuntimeError("Proposal is missing a `## Title` section.")
-    body = match.group(1).strip()
-    if not body:
-        raise RuntimeError("Proposal `## Title` section is empty.")
-    # The Fellow may put the title on its own line, or prefixed with "# ", or
-    # in a single short paragraph. Take the first non-empty line.
-    first_line = next((ln.strip() for ln in body.splitlines() if ln.strip()), "")
-    if first_line.startswith("# "):
-        first_line = first_line[2:].strip()
-    if not first_line:
-        raise RuntimeError("Proposal `## Title` section is empty.")
-    return first_line
+    if titled:
+        body = titled.group(1).strip()
+        first = next((ln.strip() for ln in body.splitlines() if ln.strip()), "")
+        if first.startswith("# "):
+            first = first[2:].strip()
+        if first:
+            return first
+
+    for match in re.finditer(r"^##\s+(.+?)\s*$", markdown, re.MULTILINE):
+        candidate = match.group(1).strip()
+        # Skip the literal `## Title` marker (already tried above) and
+        # any known section heading; that would mean the proposal lacks
+        # a real title.
+        if candidate.lower() == "title":
+            continue
+        if _is_section_heading(candidate):
+            continue
+        return candidate
+
+    raise RuntimeError(
+        "Proposal has no title: expected `# <title>` on the first line, "
+        "a non-empty `## Title` section, or a leading `## <title>` heading."
+    )
+
+
+def _is_section_heading(text: str) -> bool:
+    lowered = text.strip().lower()
+    for section in REQUIRED_SECTIONS:
+        if lowered == section.lower():
+            return True
+        for variant in _SECTION_VARIANTS.get(section, []):
+            if lowered == variant.lower():
+                return True
+    return False
 
 
 def _validate_sections(markdown: str) -> list[str]:
