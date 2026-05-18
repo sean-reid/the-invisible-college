@@ -239,6 +239,65 @@ def admit(hint: str | None) -> None:
 # ---------------------------------------------------------------------------
 
 
+# ---------------------------------------------------------------------------
+# promote: review a Fellow's body of work and (maybe) change their rank
+# ---------------------------------------------------------------------------
+
+
+@main.command()
+@click.option(
+    "--fellow",
+    type=str,
+    default=None,
+    help="Fellow id to consider for promotion. If omitted, prints the cohort reputation table and exits.",
+)
+def promote(fellow: str | None) -> None:
+    """Promotion review: orchestrator recommends, Tenure Committee or Founder decides.
+
+    With `--fellow ID`: runs the full review. If at least one Senior
+    Fellow exists, they vote as the Tenure Committee. Otherwise the
+    Founder serves as committee and decides in the terminal.
+
+    Without `--fellow`: prints the cohort reputation table for the
+    Founder to read, then exits.
+    """
+    _check_kill_switch()
+    from institute import reputation
+
+    if fellow is None:
+        cohort = reputation.load_cohort()
+        if not cohort:
+            console.print("[yellow]No Fellows yet. Run `institute bootstrap`.[/yellow]")
+            return
+        t = Table(title="Cohort reputation", title_style="bold")
+        t.add_column("id")
+        t.add_column("name")
+        t.add_column("rank")
+        t.add_column("pubs", justify="right")
+        t.add_column("reviews", justify="right")
+        t.add_column("sticky majors", justify="right")
+        for rep in cohort:
+            t.add_row(
+                rep.fellow_id,
+                rep.name,
+                rep.rank,
+                str(rep.author.publications),
+                str(rep.reviewer.reviews_given),
+                str(rep.reviewer.sticky_majors),
+            )
+        console.print(t)
+        console.print()
+        console.print(
+            "[dim]Run `institute promote --fellow <id>` to convene a "
+            "promotion review for one of them.[/dim]"
+        )
+        return
+
+    from institute.workflows import promote as promote_workflow
+
+    promote_workflow.run(fellow)
+
+
 @main.command()
 @click.option(
     "--lead",
@@ -348,6 +407,57 @@ def _dispatch_step(project_id: str, state: str) -> None:
     wf.run(project_id)
 
 
+# Number of completed publications between auto-triggered promotion reviews.
+# Tuned conservatively: with the cohort producing ~one piece a day, we ask the
+# institution to consider its own ranks roughly every other publication.
+_PROMOTION_REVIEW_CADENCE_PUBLICATIONS = 2
+
+
+def _maybe_trigger_promotion_review(project_id: str, prev_state: str) -> None:
+    """If the step just finished a publication, consider triggering tenure review.
+
+    Runs synchronously inside `institute run`. The promote workflow is
+    invoked with `auto=True` so it never blocks waiting on stdin: if
+    no Senior Fellow panel exists yet, the call just records a
+    deferred-review note and returns.
+    """
+    if prev_state == "published":
+        return
+    with db.connection() as conn:
+        row = conn.execute("SELECT state FROM projects WHERE id = ?", (project_id,)).fetchone()
+        if row is None or row["state"] != "published":
+            return
+        last_review = conn.execute(
+            "SELECT MAX(at) FROM audit_log WHERE action IN ('promotion', 'promotion_review')"
+        ).fetchone()[0]
+        pubs_since = conn.execute(
+            "SELECT COUNT(*) FROM projects WHERE state = 'published' AND updated_at > ?",
+            (last_review or "",),
+        ).fetchone()[0]
+    if pubs_since < _PROMOTION_REVIEW_CADENCE_PUBLICATIONS:
+        return
+
+    from institute import reputation
+    from institute.workflows import promote as promote_workflow
+
+    cohort = reputation.load_cohort()
+    if not cohort:
+        return
+    # Heuristic: pick the Fellow most in need of review. Publications count
+    # heavily; reviews count moderately; sticky majors count strongly (they
+    # are the clearest signal of substantive reviewer judgment).
+    candidate = max(
+        cohort,
+        key=lambda r: (
+            r.author.publications * 2
+            + r.reviewer.reviews_given * 0.5
+            + r.reviewer.sticky_majors * 3
+        ),
+    )
+    console.rule(f"[bold]Tenure review: {candidate.name}[/bold]", align="left", style="dim")
+    promote_workflow.run(candidate.fellow_id, auto=True)
+
+
 def _audit_cost_total() -> float:
     """Sum cost_usd across every entry in the audit log. Best-effort."""
     if not paths.AUDIT_LOG.is_file():
@@ -447,6 +557,7 @@ def run_cmd(max_budget_usd: float, max_steps: int, project: str | None) -> None:
 
             console.rule(f"[bold]Step {step}[/bold]", align="left", style="dim")
             start = time.monotonic()
+            prev_state = row["state"]
             _dispatch_step(row["id"], row["state"])
             elapsed = time.monotonic() - start
             run_cost = _audit_cost_total() - baseline_cost
@@ -454,6 +565,8 @@ def run_cmd(max_budget_usd: float, max_steps: int, project: str | None) -> None:
                 f"  [dim]elapsed: {elapsed:.0f}s  ·  "
                 f"run cost: ${run_cost:.2f} of ${max_budget_usd:.2f}[/dim]"
             )
+
+            _maybe_trigger_promotion_review(row["id"], prev_state)
 
             if run_cost >= max_budget_usd:
                 console.print(

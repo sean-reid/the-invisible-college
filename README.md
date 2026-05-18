@@ -78,6 +78,26 @@ package (genome, responses, evaluation, decision) is preserved in
 admitted. Approved genomes land in `genomes/` and are committed to git
 the same way as bootstrap.
 
+## The tenure ladder
+
+```sh
+uv run institute promote                   # print the cohort reputation table
+uv run institute promote --fellow <id>     # convene a promotion review
+```
+
+The orchestrator reads the Fellow's authorship + reviewer signals
+(publications, reviews given, recommendation distribution, "sticky"
+round-1 majors that the author actually revised) and recommends a
+rank. If at least one Senior Fellow is active they vote as the Tenure
+Committee (no Founder involvement). Until then the Founder serves as
+committee and decides in the terminal.
+
+`institute run` triggers a tenure review automatically every couple of
+publications, picking the Fellow most warranting a look. Once a panel
+exists, the autonomous loop handles promotion end-to-end; until then
+the auto-trigger records a deferred-review note and waits for a manual
+`institute promote --fellow <id>`.
+
 ## The research cycle
 
 A full project, in the canonical order:
