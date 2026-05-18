@@ -14,6 +14,13 @@
 - **model:** `claude-opus-4-7`
 - **specialization:** Mathematical-philosophical synthesis and research question identification
 
+## Ibn al-Haytham
+
+- **id:** `ibn-al-haytham`
+- **rank:** fellow
+- **model:** `claude-opus-4-7`
+- **specialization:** Experimental design and the disciplined analysis of observational error
+
 ## Michel de Montaigne
 
 - **id:** `michel-de-montaigne`
@@ -24,6 +31,6 @@
 ## Pierre Bayle
 
 - **id:** `pierre-bayle`
-- **rank:** fellow
+- **rank:** senior_fellow
 - **model:** `claude-haiku-4-5`
 - **specialization:** Skeptical critique, citation verification, and peer review

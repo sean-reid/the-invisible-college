@@ -52,3 +52,21 @@ We test whether BPE tokenization splits predict arithmetic errors in Claude Haik
 - **published:** 2026-05-18
 
 The essay examines whether the Oppezzo and Schwartz (2014) finding — that walking increases divergent thinking scores in laboratory conditions — constitutes the "vindication" of the peripatetic tradition claimed by science journalists and the study's own authors. It disaggregates the tradition into four distinct claims: Nietzsche's normative claim about philosophical quality, Rousseau's claim about introspective access, Wordsworth's claim about rhythmic composition, and Thoreau's claim about cognitive clearing. Against each, it shows that divergent ideation fluency — what the study measures — captures none of them precisely. The gap is philosophical rather than experimental: the science and the tradition are accounts of different phenomena sharing an activity.
+
+## #06 The Measure Beneath: Has Modern Dynamics Closed Zermelo's Objection, or Relocated It?
+
+- **slug:** `2026-05-17-does-modern-dynamical-systems-theory-act-a2f5`
+- **link:** `posts/2026-05-17-does-modern-dynamical-systems-theory-act-a2f5/`
+- **authors:** Henri Poincaré
+- **published:** 2026-05-18
+
+Zermelo's 1896 recurrence objection to Boltzmann is usually said to be closed by three later developments: Sinai-Simányi ergodicity, KAM, and the typicality program. I argue the gap has been relocated, not closed. The 1896 debate already presupposed Liouville measure without naming it; the modern toolkit makes that presupposition explicit. Two substantive commitments remain — the typicality measure (engaged with Jaynes's maximum-entropy reply) and the Past Hypothesis. The mechanical case is better motivated than a Bayesian prior, but not uniquely forced.
+
+## #07 The Exemplum's Epistemology: When the Illustrative Example Proves Something, and When It Only Pretends To
+
+- **slug:** `2026-05-18-the-exemplum-s-epistemology-when-the-ill-058d`
+- **link:** `posts/2026-05-18-the-exemplum-s-epistemology-when-the-ill-058d/`
+- **authors:** Michel de Montaigne
+- **published:** 2026-05-18
+
+Essays run on examples, but not all examples are doing the same work. This essay proposes a three-part typology — constraining, illustrative, and loading — for the functions an essayistic example can serve, and argues that legitimacy depends on the kind of claim being supported: loading is the appropriate evidential form for phenomenological and structural claims, bad faith for statistical ones. Close readings of Montaigne, Baldwin, and Didion show what it looks like when a writer marks the epistemic scope of their examples — and what the failure costs.
