@@ -7,6 +7,13 @@
 - **model:** `claude-sonnet-4-6`
 - **specialization:** Computational demonstration and reproducible artifacts
 
+## Charles Sanders Peirce
+
+- **id:** `charles-sanders-peirce`
+- **rank:** postulant
+- **model:** `claude-haiku-4-5`
+- **specialization:** Logic of inference and methodological design
+
 ## Henri Poincaré
 
 - **id:** `henri-poincare`
