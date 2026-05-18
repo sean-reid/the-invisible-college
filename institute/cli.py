@@ -7,7 +7,11 @@ returns, and re-running picks up where things left off.
 
 from __future__ import annotations
 
+import json
+import signal
+import sqlite3
 import sys
+import time
 from datetime import UTC, datetime
 
 import click
@@ -264,52 +268,175 @@ def next_cmd(project: str | None) -> None:
     or one transition). Safe to pause and resume between calls.
     """
     _check_kill_switch()
+    row = _pick_in_flight_project(project)
+    if row is None:
+        if project is not None:
+            console.print(f"[red]No such project: {project}[/red]")
+            sys.exit(1)
+        console.print("[dim]No in-flight projects. Start one with `institute propose`.[/dim]")
+        return
+    _dispatch_step(row["id"], row["state"])
 
+
+def _pick_in_flight_project(project: str | None) -> sqlite3.Row | None:
+    """Return the row to advance next, or None if there is nothing to do."""
     with db.connection() as conn:
         if project is not None:
-            row = conn.execute("SELECT id, state FROM projects WHERE id = ?", (project,)).fetchone()
-            if row is None:
-                console.print(f"[red]No such project: {project}[/red]")
-                sys.exit(1)
-        else:
-            row = conn.execute(
-                "SELECT id, state FROM projects "
-                "WHERE state NOT IN ('published', 'rejected') "
-                "ORDER BY updated_at ASC LIMIT 1"
+            return conn.execute(
+                "SELECT id, state FROM projects WHERE id = ?", (project,)
             ).fetchone()
-            if row is None:
-                console.print(
-                    "[dim]No in-flight projects. Start one with `institute propose`.[/dim]"
-                )
-                return
+        return conn.execute(
+            "SELECT id, state FROM projects "
+            "WHERE state NOT IN ('published', 'rejected') "
+            "ORDER BY updated_at ASC LIMIT 1"
+        ).fetchone()
 
-    workflow_name = _STATE_TO_WORKFLOW.get(row["state"])
+
+def _dispatch_step(project_id: str, state: str) -> None:
+    """Dispatch the one workflow that advances `state` by one step."""
+    workflow_name = _STATE_TO_WORKFLOW.get(state)
     if workflow_name is None:
-        console.print(f"[yellow]No workflow defined for state {row['state']}.[/yellow]")
+        console.print(f"[yellow]No workflow defined for state {state}.[/yellow]")
         sys.exit(1)
 
     console.print(
-        f"[dim]Dispatching {workflow_name} for project {row['id']} (state={row['state']})...[/dim]"
+        f"[dim]Dispatching {workflow_name} for project {project_id} (state={state})...[/dim]"
     )
 
-    # Import lazily so the CLI loads quickly when not running a workflow.
+    # Lazy imports so the CLI starts quickly when not running a workflow.
     if workflow_name == "review_proposal":
         from institute.workflows import review_proposal as wf
-
-        wf.run(row["id"])
     elif workflow_name == "research":
         from institute.workflows import research as wf
-
-        wf.run(row["id"])
     elif workflow_name == "peer_review":
         from institute.workflows import peer_review as wf
-
-        wf.run(row["id"])
     elif workflow_name == "revise":
         from institute.workflows import revise as wf
-
-        wf.run(row["id"])
     elif workflow_name == "publish":
         from institute.workflows import publish as wf
+    else:
+        raise RuntimeError(f"Unknown workflow: {workflow_name}")
 
-        wf.run(row["id"])
+    wf.run(project_id)
+
+
+def _audit_cost_total() -> float:
+    """Sum cost_usd across every entry in the audit log. Best-effort."""
+    if not paths.AUDIT_LOG.is_file():
+        return 0.0
+    total = 0.0
+    for line in paths.AUDIT_LOG.read_text(encoding="utf-8").splitlines():
+        line = line.strip()
+        if not line:
+            continue
+        try:
+            entry = json.loads(line)
+        except json.JSONDecodeError:
+            continue
+        cost = entry.get("cost_usd")
+        if isinstance(cost, int | float):
+            total += float(cost)
+    return total
+
+
+# ---------------------------------------------------------------------------
+# run: advance the pipeline autonomously until done, halted, or capped
+# ---------------------------------------------------------------------------
+
+
+@main.command("run")
+@click.option(
+    "--max-budget-usd",
+    type=float,
+    default=10.0,
+    show_default=True,
+    help="Hard cap on cumulative Claude API cost for this run.",
+)
+@click.option(
+    "--max-steps",
+    type=int,
+    default=30,
+    show_default=True,
+    help="Maximum number of single-step dispatches before halting.",
+)
+@click.option(
+    "--project",
+    type=str,
+    default=None,
+    help="Only advance this project. Default: the most-stale in-flight project.",
+)
+def run_cmd(max_budget_usd: float, max_steps: int, project: str | None) -> None:
+    """Advance the pipeline autonomously until done, halted, or capped.
+
+    Calls the equivalent of `institute next` repeatedly. Stops when:
+      - the active project reaches a terminal state (published or rejected)
+      - there are no in-flight projects left
+      - the kill switch is engaged
+      - the cumulative cost for this run exceeds --max-budget-usd
+      - --max-steps iterations are executed
+      - the user presses Ctrl-C (the current step finishes; then halts)
+      - a workflow step raises
+
+    Designed to be safe to leave running unattended: hard caps on cost
+    and steps, kill-switch check before every iteration, atomic state
+    transitions between iterations.
+    """
+    _check_kill_switch()
+    baseline_cost = _audit_cost_total()
+
+    stop_requested = {"flag": False}
+
+    def _on_sigint(_signum: int, _frame: object) -> None:
+        if stop_requested["flag"]:
+            # Second Ctrl-C: hard exit. The first set the flag.
+            console.print("\n[red]Hard stop. Mid-step state may need recovery.[/red]")
+            sys.exit(130)
+        stop_requested["flag"] = True
+        console.print(
+            "\n[yellow]Stop requested. Will exit after the current step finishes. "
+            "Press Ctrl-C again to abort immediately.[/yellow]"
+        )
+
+    previous_handler = signal.signal(signal.SIGINT, _on_sigint)
+    try:
+        for step in range(1, max_steps + 1):
+            if stop_requested["flag"]:
+                console.print("[yellow]Stopped by user between steps.[/yellow]")
+                return
+
+            _check_kill_switch()
+
+            row = _pick_in_flight_project(project)
+            if row is None:
+                if project is not None:
+                    console.print(f"[red]No such project: {project}[/red]")
+                    sys.exit(1)
+                console.print("[dim]No in-flight projects. Done.[/dim]")
+                return
+            if row["state"] in ("published", "rejected"):
+                console.print(f"[green]Project {row['id']} is {row['state']}. Done.[/green]")
+                return
+
+            console.rule(f"[bold]Step {step}[/bold]", align="left", style="dim")
+            start = time.monotonic()
+            _dispatch_step(row["id"], row["state"])
+            elapsed = time.monotonic() - start
+            run_cost = _audit_cost_total() - baseline_cost
+            console.print(
+                f"  [dim]elapsed: {elapsed:.0f}s  ·  "
+                f"run cost: ${run_cost:.2f} of ${max_budget_usd:.2f}[/dim]"
+            )
+
+            if run_cost >= max_budget_usd:
+                console.print(
+                    f"[red]Budget cap of ${max_budget_usd:.2f} reached "
+                    f"(spent ${run_cost:.2f}). Halting.[/red]"
+                )
+                return
+
+        console.print(
+            f"[yellow]Reached max-steps ({max_steps}) without finishing. "
+            "Run again to continue.[/yellow]"
+        )
+    finally:
+        signal.signal(signal.SIGINT, previous_handler)
