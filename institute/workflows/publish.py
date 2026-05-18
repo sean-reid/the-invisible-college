@@ -328,6 +328,13 @@ def run(project_id: str) -> None:
     )
 
     timestamp = now.isoformat(timespec="seconds")
+
+    # Detect qualifying-project publication so we can auto-promote the
+    # Postulant in the same transaction.
+    with db.connection() as conn:
+        kind_row = conn.execute("SELECT kind FROM projects WHERE id = ?", (project_id,)).fetchone()
+    is_qualifying = kind_row is not None and kind_row["kind"] == "qualifying"
+
     with db.connection() as conn, db.transaction(conn):
         conn.execute(
             "UPDATE projects SET state = ?, publication_slug = ?, title = ?, updated_at = ? "
@@ -335,6 +342,8 @@ def run(project_id: str) -> None:
             (State.PUBLISHED.value, slug, title, timestamp, project_id),
         )
         decisions.record(conn, decision)
+        if is_qualifying:
+            _auto_promote_to_novice(conn, lead.id, project_id, timestamp)
 
     console.print()
     console.print(f"[bold green]Published.[/bold green] Title: {title}")
@@ -342,6 +351,43 @@ def run(project_id: str) -> None:
     console.print(f"[green]Blog post:[/green] {publication_blog_path.relative_to(paths.ROOT)}")
     if has_dissent:
         console.print("[yellow]Includes dissenting review(s).[/yellow]")
+    if is_qualifying:
+        console.print(
+            f"[bold green]Postulant {lead.name} → Novice.[/bold green] Qualifying project complete."
+        )
     console.print(
         "[dim]Run `cd blog && npm run build` to preview locally, or push to deploy.[/dim]"
     )
+
+
+def _auto_promote_to_novice(conn, postulant_id: str, project_id: str, timestamp: str) -> None:
+    """Advance a Postulant to Novice on successful qualifying-project publication.
+
+    Per Chapter 5: a successful qualifying project promotes the
+    Postulant. Done inside the publication transaction so the rank
+    change cannot land without the qualifying piece being live.
+    """
+    row = conn.execute("SELECT rank, name FROM fellows WHERE id = ?", (postulant_id,)).fetchone()
+    if row is None or row["rank"] != "postulant":
+        return  # nothing to do (already advanced or not a postulant)
+
+    # Rewrite the genome on disk to reflect the new rank.
+    from institute import fellow as fellow_mod  # local import to avoid cycle
+    from institute.fellow import Genome
+
+    genome = Genome.from_file(fellow_mod.genome_path(postulant_id))
+    genome.model_copy(update={"rank": "novice"}).write(fellow_mod.genome_path(postulant_id))
+    conn.execute("UPDATE fellows SET rank = 'novice' WHERE id = ?", (postulant_id,))
+    decision = decisions.Decision(
+        kind="promotion",
+        title=f"{row['name']}: postulant to novice",
+        body=(
+            f"**Fellow:** {row['name']} (`{postulant_id}`)\n\n"
+            f"**Rank change:** postulant → novice\n\n"
+            f"**Trigger:** qualifying project published as `{project_id}`.\n\n"
+            "Per Chapter 5, a successful qualifying project advances the "
+            "Postulant to Novice. This promotion is automatic on publication."
+        ),
+        actors=["orchestrator", postulant_id],
+    )
+    decisions.record(conn, decision)

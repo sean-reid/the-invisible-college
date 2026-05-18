@@ -287,6 +287,37 @@ def curriculum(fellow: str, design: bool) -> None:
 
 
 # ---------------------------------------------------------------------------
+# qualify: start a Postulant's qualifying project under advisor sponsorship
+# ---------------------------------------------------------------------------
+
+
+@main.command()
+@click.option(
+    "--fellow",
+    type=str,
+    required=True,
+    help="Postulant id who should start their qualifying project.",
+)
+def qualify(fellow: str) -> None:
+    """Start a Postulant's qualifying project.
+
+    The Postulant drafts a proposal under their advisor's guidance, the
+    project enters the normal pipeline with kind='qualifying'. From
+    that point: research → advisor review → peer review (advisor as
+    primary) → editorial → publish. On publish the Postulant is
+    auto-promoted to Novice.
+
+    Chapter 5: the qualifying project is the central event of the
+    Postulant period. One per Postulant; the workflow refuses if one
+    already exists in any state.
+    """
+    _check_kill_switch()
+    from institute.workflows import qualify as qualify_workflow
+
+    qualify_workflow.run(fellow)
+
+
+# ---------------------------------------------------------------------------
 # promote: review a Fellow's body of work and (maybe) change their rank
 # ---------------------------------------------------------------------------
 
@@ -381,6 +412,7 @@ _STATE_TO_WORKFLOW: dict[str, str] = {
     "proposal_reviewed": "research",
     "researching": "research",
     "drafted": "peer_review",
+    "awaiting_advisor_review": "advisor_review",
     "peer_reviewing": "peer_review",
     "revising": "revise",
     "andon_review": "andon_review",
@@ -434,6 +466,17 @@ def _dispatch_step(project_id: str, state: str) -> None:
         console.print(f"[yellow]No workflow defined for state {state}.[/yellow]")
         sys.exit(1)
 
+    # Qualifying projects (kind='qualifying') divert through advisor
+    # review when the draft is ready, before going to peer review. Same
+    # state machine, different routing on DRAFTED.
+    if state == "drafted":
+        with db.connection() as conn:
+            kind_row = conn.execute(
+                "SELECT kind FROM projects WHERE id = ?", (project_id,)
+            ).fetchone()
+        if kind_row is not None and kind_row["kind"] == "qualifying":
+            workflow_name = "advisor_review"
+
     console.print(
         f"[dim]Dispatching {workflow_name} for project {project_id} (state={state})...[/dim]"
     )
@@ -449,6 +492,8 @@ def _dispatch_step(project_id: str, state: str) -> None:
         from institute.workflows import revise as wf
     elif workflow_name == "andon_review":
         from institute.workflows import andon_review as wf
+    elif workflow_name == "advisor_review":
+        from institute.workflows import advisor_review as wf
     elif workflow_name == "publish":
         from institute.workflows import publish as wf
     else:
@@ -831,6 +876,12 @@ def _autopilot_locked(max_budget_usd: float, max_steps: int, start_new_if_idle: 
     """The actual autopilot body, called while holding the lock."""
     _check_kill_switch()
 
+    # Apprenticeship cadence: if any Postulant has incomplete curriculum,
+    # advance one curriculum item before doing anything else. This makes
+    # autopilot pace the Postulant's training without Founder prompting,
+    # one item per wake-up.
+    _advance_one_curriculum_item()
+
     if start_new_if_idle:
         with db.connection() as conn:
             in_flight = conn.execute(
@@ -843,3 +894,36 @@ def _autopilot_locked(max_budget_usd: float, max_steps: int, start_new_if_idle: 
             propose_workflow.run(lead=None, topic=None)
 
     _advance_loop(max_budget_usd=max_budget_usd, max_steps=max_steps, project=None)
+
+
+def _advance_one_curriculum_item() -> None:
+    """If any Postulant has unfinished curriculum, advance one item.
+
+    Walks postulants in oldest-curriculum-first order. The earliest
+    Postulant whose curriculum is staged but not complete gets one item
+    advanced. At most one item per autopilot wake-up so a single
+    Postulant cannot monopolize the institution's compute.
+    """
+    with db.connection() as conn:
+        rows = list(
+            conn.execute(
+                "SELECT id FROM fellows "
+                "WHERE rank = 'postulant' "
+                "AND retired_at IS NULL "
+                "AND curriculum_designed_at IS NOT NULL "
+                "AND curriculum_completed_at IS NULL "
+                "ORDER BY curriculum_designed_at ASC"
+            )
+        )
+    if not rows:
+        return
+
+    from institute.workflows import curriculum_response
+
+    for r in rows:
+        # The response workflow itself checks for the next pending item
+        # and returns "all-done" if every item already has a response.
+        result = curriculum_response.run(r["id"])
+        if result == "completed":
+            return  # advanced one item this wake-up; stop.
+        # "all-done" or "skipped": try the next Postulant.

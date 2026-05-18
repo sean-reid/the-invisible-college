@@ -19,6 +19,7 @@ class State(StrEnum):
     PROPOSAL_REVIEWED = "proposal_reviewed"
     RESEARCHING = "researching"
     DRAFTED = "drafted"
+    AWAITING_ADVISOR_REVIEW = "awaiting_advisor_review"
     PEER_REVIEWING = "peer_reviewing"
     REVISING = "revising"
     ANDON_REVIEW = "andon_review"
@@ -33,6 +34,7 @@ NEXT_ACTION: dict[State, str | None] = {
     State.PROPOSAL_REVIEWED: "research",
     State.RESEARCHING: "research",  # research can take multiple invocations
     State.DRAFTED: "peer_review",
+    State.AWAITING_ADVISOR_REVIEW: "advisor_review",
     State.PEER_REVIEWING: "peer_review",
     State.REVISING: "revise",
     State.ANDON_REVIEW: "andon_review",
@@ -47,7 +49,11 @@ ALLOWED_TRANSITIONS: dict[State, set[State]] = {
     State.PROPOSED: {State.PROPOSAL_REVIEWED, State.REJECTED},
     State.PROPOSAL_REVIEWED: {State.RESEARCHING},
     State.RESEARCHING: {State.RESEARCHING, State.DRAFTED},
-    State.DRAFTED: {State.PEER_REVIEWING},
+    # A qualifying-kind project routes through AWAITING_ADVISOR_REVIEW
+    # before peer review. A research-kind project skips straight to
+    # PEER_REVIEWING. Both transitions are allowed; the workflow chooses.
+    State.DRAFTED: {State.AWAITING_ADVISOR_REVIEW, State.PEER_REVIEWING},
+    State.AWAITING_ADVISOR_REVIEW: {State.REVISING, State.PEER_REVIEWING},
     State.PEER_REVIEWING: {
         State.PEER_REVIEWING,
         State.REVISING,
@@ -55,7 +61,7 @@ ALLOWED_TRANSITIONS: dict[State, set[State]] = {
         State.EDITORIAL,
         State.REJECTED,
     },
-    State.REVISING: {State.PEER_REVIEWING, State.EDITORIAL},
+    State.REVISING: {State.PEER_REVIEWING, State.EDITORIAL, State.AWAITING_ADVISOR_REVIEW},
     State.ANDON_REVIEW: {State.EDITORIAL, State.REJECTED},
     State.EDITORIAL: {State.PUBLISHED, State.REJECTED},
     State.PUBLISHED: set(),

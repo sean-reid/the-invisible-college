@@ -220,6 +220,42 @@ def _last_review_at(conn: sqlite3.Connection, reviewer_id: str) -> str:
     return row["last"] or "" if row else ""
 
 
+def _slots_with_advisor_primary(
+    conn: sqlite3.Connection,
+    advisor_id: str,
+    candidates: list,
+    lead_id: str,
+) -> list[ReviewSlot]:
+    """Build review slots when the advisor is forced into the primary slot."""
+    lead_row = conn.execute(
+        "SELECT specialization FROM fellows WHERE id = ?", (lead_id,)
+    ).fetchone()
+    lead_spec = lead_row["specialization"] if lead_row else ""
+
+    scored = [
+        (
+            _similarity(lead_spec, r["specialization"]),
+            _last_review_at(conn, r["id"]),
+            r["id"],
+        )
+        for r in candidates
+    ]
+
+    # Outside: lowest similarity to lead, oldest reviewer.
+    scored.sort(key=lambda t: (t[0], t[1]))
+    outside_id = scored[0][2]
+
+    slots: list[ReviewSlot] = [ReviewSlot(reviewer_id=advisor_id, role="primary")]
+    if len(scored) > 1:
+        # Pick a secondary by highest similarity to lead, oldest reviewer
+        # tiebreak. Skip the candidate already taking outside.
+        remaining = [t for t in scored if t[2] != outside_id]
+        remaining.sort(key=lambda t: (-t[0], t[1]))
+        slots.append(ReviewSlot(reviewer_id=remaining[0][2], role="secondary"))
+    slots.append(ReviewSlot(reviewer_id=outside_id, role="outside"))
+    return slots
+
+
 def _pick_review_slots(
     conn: sqlite3.Connection, project_id: str, lead_id: str, review_round: int
 ) -> list[ReviewSlot]:
@@ -246,19 +282,44 @@ def _pick_review_slots(
             raise SystemExit(f"Cannot start round {review_round}: no round-1 reviews found.")
         return [ReviewSlot(reviewer_id=r["reviewer_id"], role=r["role"]) for r in prior]
 
+    # For a qualifying-kind project, the advisor is forced as primary
+    # reviewer per Chapter 5. Secondary and outside come from the usual
+    # rotation pool (postulants excluded; the advisor excluded so they
+    # do not double-count).
+    proj_row = conn.execute("SELECT kind FROM projects WHERE id = ?", (project_id,)).fetchone()
+    is_qualifying = proj_row is not None and proj_row["kind"] == "qualifying"
+
+    advisor_id: str | None = None
+    if is_qualifying:
+        adv_row = conn.execute("SELECT advisor_id FROM fellows WHERE id = ?", (lead_id,)).fetchone()
+        if adv_row is not None and adv_row["advisor_id"]:
+            advisor_id = adv_row["advisor_id"]
+
     # Postulants do not review per Chapter 7 (Junior Fellow is the
     # minimum reviewer rank). Exclude them from the candidate pool.
+    # Exclude the advisor too if they're already taking the primary slot.
+    excluded_ids = {lead_id}
+    if advisor_id:
+        excluded_ids.add(advisor_id)
+    placeholders = ",".join("?" for _ in excluded_ids)
     candidates = list(
         conn.execute(
-            "SELECT id, specialization FROM fellows "
-            "WHERE retired_at IS NULL AND id != ? AND rank != 'postulant'",
-            (lead_id,),
+            f"SELECT id, specialization FROM fellows "
+            f"WHERE retired_at IS NULL AND rank != 'postulant' "
+            f"AND id NOT IN ({placeholders})",
+            tuple(excluded_ids),
         )
     )
-    if len(candidates) < 2:
+    min_needed = 1 if advisor_id else 2
+    if len(candidates) < min_needed:
         raise SystemExit(
-            f"Need at least 2 reviewing Fellows other than the lead. Found {len(candidates)}."
+            f"Need at least {min_needed} reviewing Fellow(s) beyond the lead "
+            f"(and advisor, if any). Found {len(candidates)}."
         )
+
+    if advisor_id:
+        # Advisor primary; the candidate pool fills secondary and outside.
+        return _slots_with_advisor_primary(conn, advisor_id, candidates, lead_id)
 
     lead_row = conn.execute(
         "SELECT specialization FROM fellows WHERE id = ?", (lead_id,)
