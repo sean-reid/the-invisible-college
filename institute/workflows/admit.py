@@ -563,6 +563,20 @@ def run(founder_hint: str | None = None) -> None:
     with db.connection() as conn, db.transaction(conn):
         decisions.record(conn, decision)
 
+    if admitted:
+        # Chapter 5: curriculum is staged on entry. Designed once, here,
+        # then worked through one item at a time via `institute curriculum`.
+        try:
+            from institute.workflows import curriculum_design
+
+            curriculum_design.design_for(candidate, advisor_name)
+        except Exception as exc:  # pragma: no cover - best-effort during admission
+            console.print(
+                f"[yellow]Curriculum design failed: {exc}. "
+                f"Run `institute curriculum --fellow {candidate.id} --design` "
+                "to retry.[/yellow]"
+            )
+
     console.print()
     if admitted:
         console.print(

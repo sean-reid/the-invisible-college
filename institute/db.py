@@ -15,7 +15,7 @@ from pathlib import Path
 
 from institute.paths import DB_PATH as DB_PATH  # re-exported for tests to patch
 
-SCHEMA_VERSION = 3
+SCHEMA_VERSION = 4
 
 SCHEMA = """
 CREATE TABLE IF NOT EXISTS schema_version (
@@ -23,15 +23,17 @@ CREATE TABLE IF NOT EXISTS schema_version (
 );
 
 CREATE TABLE IF NOT EXISTS fellows (
-    id              TEXT    PRIMARY KEY,
-    name            TEXT    NOT NULL UNIQUE,
-    rank            TEXT    NOT NULL,
-    model           TEXT    NOT NULL,
-    specialization  TEXT    NOT NULL,
-    genome_path     TEXT    NOT NULL,
-    advisor_id      TEXT    REFERENCES fellows(id),
-    created_at      TEXT    NOT NULL,
-    retired_at      TEXT
+    id                      TEXT    PRIMARY KEY,
+    name                    TEXT    NOT NULL UNIQUE,
+    rank                    TEXT    NOT NULL,
+    model                   TEXT    NOT NULL,
+    specialization          TEXT    NOT NULL,
+    genome_path             TEXT    NOT NULL,
+    advisor_id              TEXT    REFERENCES fellows(id),
+    created_at              TEXT    NOT NULL,
+    retired_at              TEXT,
+    curriculum_designed_at  TEXT,
+    curriculum_completed_at TEXT
 );
 
 CREATE TABLE IF NOT EXISTS projects (
@@ -44,8 +46,17 @@ CREATE TABLE IF NOT EXISTS projects (
     draft_path       TEXT,
     publication_slug TEXT     UNIQUE,
     review_round     INTEGER  NOT NULL DEFAULT 1,
+    kind             TEXT     NOT NULL DEFAULT 'research',
     created_at       TEXT     NOT NULL,
     updated_at       TEXT     NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS curriculum_responses (
+    fellow_id    TEXT NOT NULL REFERENCES fellows(id),
+    item_id      TEXT NOT NULL,
+    response_path TEXT NOT NULL,
+    submitted_at TEXT NOT NULL,
+    PRIMARY KEY (fellow_id, item_id)
 );
 
 CREATE TABLE IF NOT EXISTS project_collaborators (
@@ -161,6 +172,9 @@ def _run_migrations(conn: sqlite3.Connection, from_version: int, to_version: int
         elif version == 2:
             _migrate_2_to_3(conn)
             version = 3
+        elif version == 3:
+            _migrate_3_to_4(conn)
+            version = 4
         else:
             raise RuntimeError(f"No migration path from version {version}.")
     conn.execute("UPDATE schema_version SET version = ?", (to_version,))
@@ -246,6 +260,40 @@ def _migrate_2_to_3(conn: sqlite3.Connection) -> None:
             conn.execute("ALTER TABLE reviews ADD COLUMN andon_cord INTEGER NOT NULL DEFAULT 0")
         if "andon_reason" not in existing:
             conn.execute("ALTER TABLE reviews ADD COLUMN andon_reason TEXT")
+        conn.execute("COMMIT")
+    except Exception:
+        conn.execute("ROLLBACK")
+        raise
+
+
+def _migrate_3_to_4(conn: sqlite3.Connection) -> None:
+    """Apprenticeship support: project kind, curriculum tracking, responses table.
+
+    Idempotent: every change checks for existing structure before applying.
+    """
+    conn.execute("BEGIN IMMEDIATE")
+    try:
+        project_cols = {row["name"] for row in conn.execute("PRAGMA table_info(projects)")}
+        if "kind" not in project_cols:
+            conn.execute("ALTER TABLE projects ADD COLUMN kind TEXT NOT NULL DEFAULT 'research'")
+
+        fellow_cols = {row["name"] for row in conn.execute("PRAGMA table_info(fellows)")}
+        if "curriculum_designed_at" not in fellow_cols:
+            conn.execute("ALTER TABLE fellows ADD COLUMN curriculum_designed_at TEXT")
+        if "curriculum_completed_at" not in fellow_cols:
+            conn.execute("ALTER TABLE fellows ADD COLUMN curriculum_completed_at TEXT")
+
+        conn.execute(
+            """
+            CREATE TABLE IF NOT EXISTS curriculum_responses (
+                fellow_id    TEXT NOT NULL REFERENCES fellows(id),
+                item_id      TEXT NOT NULL,
+                response_path TEXT NOT NULL,
+                submitted_at TEXT NOT NULL,
+                PRIMARY KEY (fellow_id, item_id)
+            )
+            """
+        )
         conn.execute("COMMIT")
     except Exception:
         conn.execute("ROLLBACK")

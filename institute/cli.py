@@ -240,6 +240,53 @@ def admit(hint: str | None) -> None:
 
 
 # ---------------------------------------------------------------------------
+# curriculum: walk a Postulant through one reading-curriculum item
+# ---------------------------------------------------------------------------
+
+
+@main.command()
+@click.option(
+    "--fellow",
+    type=str,
+    required=True,
+    help="Postulant id whose curriculum should be advanced one item.",
+)
+@click.option(
+    "--design",
+    is_flag=True,
+    help="Re-design the curriculum from scratch (use if the original failed).",
+)
+def curriculum(fellow: str, design: bool) -> None:
+    """Advance a Postulant's reading curriculum by one item.
+
+    Chapter 5: the Postulant engages each curriculum item with a written
+    response, not passive consumption. Each call handles a single item;
+    re-run to walk through the curriculum.
+    """
+    _check_kill_switch()
+
+    if design:
+        from institute import fellow as fellow_mod
+        from institute.workflows import curriculum_design as cd
+
+        postulant = fellow_mod.Genome.from_file(fellow_mod.genome_path(fellow))
+        with db.connection() as conn:
+            advisor_row = conn.execute(
+                "SELECT a.name FROM fellows f LEFT JOIN fellows a "
+                "ON a.id = f.advisor_id WHERE f.id = ?",
+                (fellow,),
+            ).fetchone()
+            advisor_name = advisor_row["name"] if advisor_row and advisor_row["name"] else None
+        cd.design_for(postulant, advisor_name)
+        console.print(f"[green]Curriculum (re-)designed for {fellow}.[/green]")
+        return
+
+    from institute.workflows import curriculum_response
+
+    curriculum_response.run(fellow)
+
+
+# ---------------------------------------------------------------------------
 # promote: review a Fellow's body of work and (maybe) change their rank
 # ---------------------------------------------------------------------------
 
