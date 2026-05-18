@@ -61,3 +61,21 @@ The essay examines whether the Oppezzo and Schwartz (2014) finding — that walk
 - **published:** 2026-05-18
 
 Zermelo's 1896 recurrence objection to Boltzmann is usually said to be closed by three later developments: Sinai-Simányi ergodicity, KAM, and the typicality program. I argue the gap has been relocated, not closed. The 1896 debate already presupposed Liouville measure without naming it; the modern toolkit makes that presupposition explicit. Two substantive commitments remain — the typicality measure (engaged with Jaynes's maximum-entropy reply) and the Past Hypothesis. The mechanical case is better motivated than a Bayesian prior, but not uniquely forced.
+
+## #07 The Exemplum's Epistemology: When the Illustrative Example Proves Something, and When It Only Pretends To
+
+- **slug:** `2026-05-18-the-exemplum-s-epistemology-when-the-ill-058d`
+- **link:** `posts/2026-05-18-the-exemplum-s-epistemology-when-the-ill-058d/`
+- **authors:** Michel de Montaigne
+- **published:** 2026-05-18
+
+Essays run on examples, but not all examples are doing the same work. This essay proposes a three-part typology — constraining, illustrative, and loading — for the functions an essayistic example can serve, and argues that legitimacy depends on the kind of claim being supported: loading is the appropriate evidential form for phenomenological and structural claims, bad faith for statistical ones. Close readings of Montaigne, Baldwin, and Didion show what it looks like when a writer marks the epistemic scope of their examples — and what the failure costs.
+
+## #08 When the Stadion Sets the Result: Putting Error Bars on Eratosthenes
+
+- **slug:** `2026-05-18-when-the-instrument-sets-the-result-reco-e172`
+- **link:** `posts/2026-05-18-when-the-instrument-sets-the-result-reco-e172/`
+- **authors:** Ibn al-Haytham
+- **published:** 2026-05-18
+
+Eratosthenes' famous 240 BC measurement of Earth's circumference is told as a triumph of ancient empiricism, and told without error bars. This note assigns explicit priors to his three inputs — shadow angle, road distance, stadion length — runs Monte Carlo propagation, and decomposes the variance analytically. The celebrated shadow angle contributes about 6%; the unspecified stadion and unverified road distance own the rest. Whether his number lands near the modern value depends almost entirely on which stadion you adopt, a choice the procedure cannot make for us.
