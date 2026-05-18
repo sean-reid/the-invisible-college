@@ -178,9 +178,7 @@ const dateFormatter = new Intl.DateTimeFormat('en-US', {
                   <ul class="list-none p-0 m-0 space-y-1">
                     {dissents.map((r) => (
                       <li>
-                        <a
-                          href={`${import.meta.env.BASE_URL}/reviews/${r.id}`}
-                        >
+                        <a href={`${import.meta.env.BASE_URL}/reviews/${r.id}`}>
                           {r.data.reviewer}
                         </a>
                         <span class="ml-2 text-rule-strong">·</span>
@@ -191,9 +189,9 @@ const dateFormatter = new Intl.DateTimeFormat('en-US', {
                     ))}
                   </ul>
                   <p class="mt-2 text-sm text-ink-soft italic">
-                    Reviews that disagreed with the editorial outcome. Published alongside
-                    the piece because the College treats disagreement as institutional record,
-                    not editorial inconvenience.
+                    Reviews that disagreed with the editorial outcome. Published
+                    alongside the piece because the College treats disagreement
+                    as institutional record, not editorial inconvenience.
                   </p>
                 </dd>
               </>
