@@ -49,8 +49,14 @@ export async function getStaticPaths() {
   });
 }
 
-const { fellow, publications, reviewsGiven, postTitleBySlug, advisor, advisees } =
-  Astro.props;
+const {
+  fellow,
+  publications,
+  reviewsGiven,
+  postTitleBySlug,
+  advisor,
+  advisees,
+} = Astro.props;
 
 const rankLabel: Record<string, string> = {
   postulant: 'Postulant',
