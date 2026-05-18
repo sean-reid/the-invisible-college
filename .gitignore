@@ -1,5 +1,5 @@
 # Runtime state
-fellows/
+/fellows/
 institute.db
 institute.db-shm
 institute.db-wal
