@@ -5,12 +5,14 @@
   "private": true,
   "scripts": {
     "sync-fellows": "node scripts/sync-fellows.mjs",
-    "dev": "node scripts/sync-fellows.mjs && astro dev",
-    "start": "node scripts/sync-fellows.mjs && astro dev",
-    "build": "node scripts/sync-fellows.mjs && astro build",
+    "sync-decisions": "node scripts/sync-decisions.mjs",
+    "sync": "node scripts/sync-fellows.mjs && node scripts/sync-decisions.mjs",
+    "dev": "npm run sync && astro dev",
+    "start": "npm run sync && astro dev",
+    "build": "npm run sync && astro build",
     "preview": "astro preview",
     "astro": "astro",
-    "check": "node scripts/sync-fellows.mjs && astro check",
+    "check": "npm run sync && astro check",
     "lint": "eslint .",
     "format": "prettier --write \"src/**/*.{astro,ts,tsx,js,jsx,md,mdx}\"",
     "format:check": "prettier --check \"src/**/*.{astro,ts,tsx,js,jsx,md,mdx}\""

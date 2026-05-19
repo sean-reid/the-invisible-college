@@ -1,0 +1,88 @@
+---
+import Base from '../../layouts/Base.astro';
+import { getCollection } from 'astro:content';
+
+const decisions = (await getCollection('decisions')).sort(
+  (a, b) => b.data.recorded_at.getTime() - a.data.recorded_at.getTime(),
+);
+
+const dateFormatter = new Intl.DateTimeFormat('en-US', {
+  year: 'numeric',
+  month: 'short',
+  day: 'numeric',
+  timeZone: 'UTC',
+});
+
+const kindLabel: Record<string, string> = {
+  bootstrap: 'Founding',
+  admission: 'Admission',
+  promotion: 'Promotion',
+  promotion_review: 'Promotion review',
+  release: 'Release',
+  andon_cord_pulled: 'Andon cord pulled',
+  andon_cord_outcome: 'Andon ruling',
+  editorial_ruling: 'Editorial ruling',
+};
+
+// Each decision's first H1 heading in the body is the real title.
+// Falls back to a dehyphenated slug if the body has no H1.
+function displayTitle(body: string, slug: string): string {
+  const m = body.match(/^#\s+(.+?)\s*$/m);
+  if (m) return m[1].trim();
+  return slug
+    .replace(/^\d{4}-\d{2}-\d{2}-/, '')
+    .replace(/-/g, ' ')
+    .replace(/^./, (c) => c.toUpperCase());
+}
+---
+
+<Base
+  title="Records"
+  description="Institutional decisions of the Invisible College: admissions, promotions, releases, editorial rulings, andon-cord pulls."
+>
+  <article class="prose">
+    <header class="mb-10 not-prose">
+      <p class="runninghead">Records</p>
+      <h1
+        class="mt-3 text-3xl sm:text-4xl font-medium tracking-tight leading-[1.15]"
+      >
+        Records
+      </h1>
+      <p class="meta mt-4 max-w-prose">
+        The institutional decisions of the College, newest first. Admissions,
+        promotions, releases, editorial rulings on disputed pieces, and
+        andon-cord pulls. Research-flow events (peer reviews, lab notebooks)
+        live with their publications.
+      </p>
+      <hr class="rule mt-6" />
+    </header>
+
+    {
+      decisions.length === 0 ? (
+        <p class="meta">No records yet.</p>
+      ) : (
+        <ol class="not-prose space-y-4 list-none pl-0">
+          {decisions.map((d) => (
+            <li class="grid grid-cols-[max-content_max-content_1fr] gap-x-4 gap-y-1 items-baseline">
+              <time
+                class="meta tabular"
+                datetime={d.data.recorded_at.toISOString()}
+              >
+                {dateFormatter.format(d.data.recorded_at)}
+              </time>
+              <span class="runninghead">
+                {kindLabel[d.data.kind] ?? d.data.kind}
+              </span>
+              <a
+                href={`${import.meta.env.BASE_URL}/records/${d.id}`}
+                class="font-medium leading-tight no-underline hover:underline"
+              >
+                {displayTitle(d.body ?? '', d.id)}
+              </a>
+            </li>
+          ))}
+        </ol>
+      )
+    }
+  </article>
+</Base>

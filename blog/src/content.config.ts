@@ -78,4 +78,18 @@ const fellows = defineCollection({
   }),
 });
 
-export const collections = { posts, notebooks, reviews, fellows };
+// Institutional decision records: admissions, promotions, releases,
+// editorial rulings, andon-cord pulls. Synced from archive/decisions/
+// at build time by scripts/sync-decisions.mjs. Filtered to the kinds
+// that belong on the public /records page.
+const decisions = defineCollection({
+  loader: glob({ pattern: '**/*.md', base: './src/content/decisions' }),
+  schema: z.object({
+    kind: z.string(),
+    recorded_at: z.coerce.date(),
+    actors: z.array(z.string()).default([]),
+    project: z.string().optional(),
+  }),
+});
+
+export const collections = { posts, notebooks, reviews, fellows, decisions };
