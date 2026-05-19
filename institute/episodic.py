@@ -214,9 +214,15 @@ def ingest(
     blob = _embedding_to_blob(matrix[0])
 
     now = datetime.now(UTC).isoformat(timespec="seconds")
+    # INSERT OR IGNORE silences the partial-unique-index conflict on
+    # (fellow_id, kind, source_path) when a workflow retries an ingest
+    # that already landed in a previous successful run. Without OR
+    # IGNORE, safe_ingest would yellow-log every legitimate retry.
+    # Entries with source_path NULL are not subject to the index and
+    # always insert, matching the existing semantics.
     cursor = conn.execute(
         """
-        INSERT INTO episodic_memory
+        INSERT OR IGNORE INTO episodic_memory
             (fellow_id, kind, title, content, source_path, project_id,
              metadata, embedding, created_at)
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
