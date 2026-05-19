@@ -7,23 +7,27 @@
 # fcntl, so this wrapper does not need `flock` (which macOS does not ship).
 #
 # Environment variables consumed:
-#   IC_REPO          absolute path to the repo (required)
-#   IC_MAX_BUDGET    USD cap per wake-up. Default: 10
-#   IC_MAX_STEPS     step cap per wake-up. Default: 30
-#   IC_AUTO_PUSH     "1" to enable git commit + push of artifacts. Default: 0
-#   IC_LOG_DIR       where to write log files.
-#                    Default: ~/Library/Logs/invisible-college
-#   IC_BACKUP_DIR    where to snapshot institute.db after each wake-up.
-#                    Default: ~/Library/Application Support/invisible-college/backups
-#                    Set to a cloud-synced path (iCloud Drive, Dropbox)
-#                    for off-disk durability.
-#   IC_BACKUP_RETAIN how many recent snapshots to keep. Default: 48
+#   IC_REPO              absolute path to the repo (required)
+#   IC_MAX_BUDGET        USD cap per wake-up. Default: 10
+#   IC_MAX_STEPS         step cap per wake-up. Default: 30
+#   IC_DAILY_BUDGET_USD  Charter-defined daily USD cap (UTC). 0 = disabled.
+#                        Default: 0. Crossing 80% triggers soft austerity;
+#                        crossing 100% halts the wake-up until UTC midnight.
+#   IC_AUTO_PUSH         "1" to enable git commit + push of artifacts. Default: 0
+#   IC_LOG_DIR           where to write log files.
+#                        Default: ~/Library/Logs/invisible-college
+#   IC_BACKUP_DIR        where to snapshot institute.db after each wake-up.
+#                        Default: ~/Library/Application Support/invisible-college/backups
+#                        Set to a cloud-synced path (iCloud Drive, Dropbox)
+#                        for off-disk durability.
+#   IC_BACKUP_RETAIN     how many recent snapshots to keep. Default: 48
 
 set -euo pipefail
 
 : "${IC_REPO:?IC_REPO must be set to the repository path}"
 IC_MAX_BUDGET="${IC_MAX_BUDGET:-10}"
 IC_MAX_STEPS="${IC_MAX_STEPS:-30}"
+IC_DAILY_BUDGET_USD="${IC_DAILY_BUDGET_USD:-0}"
 IC_AUTO_PUSH="${IC_AUTO_PUSH:-0}"
 IC_LOG_DIR="${IC_LOG_DIR:-$HOME/Library/Logs/invisible-college}"
 IC_BACKUP_DIR="${IC_BACKUP_DIR:-$HOME/Library/Application Support/invisible-college/backups}"
@@ -44,13 +48,14 @@ cd "$IC_REPO"
 {
     echo
     echo "===== $(date -u +%FT%TZ): autopilot wake-up ====="
-    echo "budget=\$$IC_MAX_BUDGET, max-steps=$IC_MAX_STEPS, auto-push=$IC_AUTO_PUSH"
+    echo "budget=\$$IC_MAX_BUDGET, max-steps=$IC_MAX_STEPS, daily=\$$IC_DAILY_BUDGET_USD, auto-push=$IC_AUTO_PUSH"
 } >> "$LOG"
 
 set +e
 uv run institute autopilot \
     --max-budget-usd "$IC_MAX_BUDGET" \
     --max-steps "$IC_MAX_STEPS" \
+    --daily-budget-usd "$IC_DAILY_BUDGET_USD" \
     >> "$LOG" 2>&1
 EXIT=$?
 set -e

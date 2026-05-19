@@ -900,12 +900,24 @@ def _audit_cost_total() -> float:
     help="Maximum number of single-step dispatches before halting.",
 )
 @click.option(
+    "--daily-budget-usd",
+    type=float,
+    default=0.0,
+    show_default=True,
+    help="Daily cap on cumulative Claude API cost (UTC). 0 = disabled.",
+)
+@click.option(
     "--project",
     type=str,
     default=None,
     help="Only advance this project. Default: the most-stale in-flight project.",
 )
-def run_cmd(max_budget_usd: float, max_steps: int, project: str | None) -> None:
+def run_cmd(
+    max_budget_usd: float,
+    max_steps: int,
+    daily_budget_usd: float,
+    project: str | None,
+) -> None:
     """Advance the pipeline autonomously until done, halted, or capped.
 
     Calls the equivalent of `institute next` repeatedly. Stops when:
@@ -922,11 +934,30 @@ def run_cmd(max_budget_usd: float, max_steps: int, project: str | None) -> None:
     transitions between iterations.
     """
     _check_kill_switch()
-    _advance_loop(max_budget_usd=max_budget_usd, max_steps=max_steps, project=project)
+    _advance_loop(
+        max_budget_usd=max_budget_usd,
+        max_steps=max_steps,
+        project=project,
+        daily_budget_usd=daily_budget_usd,
+    )
 
 
-def _advance_loop(*, max_budget_usd: float, max_steps: int, project: str | None) -> None:
-    """The actual step loop. Shared by `institute run` and `institute autopilot`."""
+def _advance_loop(
+    *,
+    max_budget_usd: float,
+    max_steps: int,
+    project: str | None,
+    daily_budget_usd: float = 0.0,
+) -> None:
+    """The actual step loop. Shared by `institute run` and `institute autopilot`.
+
+    Honors two cost caps: a per-wake-up cap (`max_budget_usd`) and an
+    optional daily cap (`daily_budget_usd`). The daily cap is checked
+    against the audit-log-derived daily spend before every step, so a
+    long-running wake-up halts cleanly when it crosses the cap mid-run.
+    """
+    from institute import budget as budget_mod
+
     baseline_cost = _audit_cost_total()
 
     stop_requested = {"flag": False}
@@ -949,6 +980,17 @@ def _advance_loop(*, max_budget_usd: float, max_steps: int, project: str | None)
                 return
 
             _check_kill_switch()
+
+            if daily_budget_usd > 0:
+                pre_step = budget_mod.current_status(daily_budget_usd)
+                if pre_step.level == "hard":
+                    _engage_austerity_if_new(pre_step)
+                    console.print(
+                        f"[red]Daily budget cap of ${pre_step.hard_cap_usd:.2f} "
+                        f"reached (${pre_step.today_usd:.2f} spent). "
+                        "Halting until UTC midnight.[/red]"
+                    )
+                    return
 
             row = _pick_in_flight_project(project)
             if row is None:
@@ -989,9 +1031,105 @@ def _advance_loop(*, max_budget_usd: float, max_steps: int, project: str | None)
         signal.signal(signal.SIGINT, previous_handler)
 
 
+def _engage_austerity_if_new(snapshot) -> None:
+    """Write a Decision the first time austerity engages on a UTC day.
+
+    Idempotent. Looks for an existing austerity_engaged decision dated
+    today; if one is on file, this is a no-op. Otherwise records a new
+    one with the current level, today's spend, and the caps.
+    """
+    from institute import decisions
+
+    title = f"Austerity engaged ({snapshot.level}): {snapshot.utc_date}"
+    with db.connection() as conn:
+        existing = conn.execute(
+            "SELECT 1 FROM audit_log WHERE action = 'austerity_engaged' AND at LIKE ? LIMIT 1",
+            (f"{snapshot.utc_date}%",),
+        ).fetchone()
+    if existing is not None:
+        return
+
+    body_lines = [
+        f"**UTC date:** {snapshot.utc_date}",
+        f"**Level:** `{snapshot.level}`",
+        f"**Spend today:** ${snapshot.today_usd:.2f}",
+        f"**Daily cap:** ${snapshot.hard_cap_usd:.2f}",
+        f"**Soft threshold:** ${snapshot.soft_cap_usd:.2f}",
+        "",
+        (
+            "Per Chapter 9, soft austerity pauses curriculum, new "
+            "proposals, and admissions; only in-flight peer review, "
+            "revisions, and publication advance. Hard austerity halts "
+            "the wake-up until UTC midnight, when the daily total "
+            "resets naturally."
+        ),
+    ]
+    decision = decisions.Decision(
+        kind="austerity_engaged",
+        title=title,
+        body="\n".join(body_lines),
+        actors=["orchestrator"],
+    )
+    with db.connection() as conn, db.transaction(conn):
+        decisions.record(conn, decision)
+
+
 # ---------------------------------------------------------------------------
 # schedule: manage the launchd plist that wakes autopilot on a cadence
 # ---------------------------------------------------------------------------
+
+
+# ---------------------------------------------------------------------------
+# budget: inspect daily spend and austerity status
+# ---------------------------------------------------------------------------
+
+
+@main.group()
+def budget() -> None:
+    """Inspect daily Claude API spend and austerity status."""
+
+
+@budget.command("status")
+@click.option(
+    "--daily-budget-usd",
+    type=float,
+    default=0.0,
+    show_default=True,
+    help="Daily cap to check spend against (UTC). 0 = report-only.",
+)
+@click.option(
+    "--days",
+    type=int,
+    default=7,
+    show_default=True,
+    help="How many trailing UTC days to include in the report.",
+)
+def budget_status(daily_budget_usd: float, days: int) -> None:
+    """Today's spend, current austerity level, and a daily history."""
+    from institute import budget as budget_mod
+
+    snapshot = budget_mod.current_status(daily_budget_usd)
+    console.print()
+    console.print(f"[bold]Today (UTC {snapshot.utc_date}):[/bold]")
+    console.print(f"  spend:       ${snapshot.today_usd:.2f}")
+    if snapshot.disabled:
+        console.print("  daily cap:   [dim]disabled[/dim]")
+    else:
+        console.print(f"  daily cap:   ${snapshot.hard_cap_usd:.2f}")
+        console.print(
+            f"  soft cap:    ${snapshot.soft_cap_usd:.2f} "
+            f"({int(budget_mod.DEFAULT_SOFT_THRESHOLD * 100)}% of daily)"
+        )
+        color = {"none": "green", "soft": "yellow", "hard": "red"}[snapshot.level]
+        console.print(f"  level:       [{color}]{snapshot.level}[/{color}]")
+
+    history = budget_mod.last_n_days(days)
+    if history:
+        console.print()
+        console.print(f"[bold]Last {len(history)} days:[/bold]")
+        for d, usd in history:
+            bar = "█" * min(int(usd * 2), 40)
+            console.print(f"  {d}  ${usd:>6.2f}  [dim]{bar}[/dim]")
 
 
 @main.group()
@@ -1022,13 +1160,27 @@ def schedule() -> None:
     help="Per-wake-up step cap, passed to `institute autopilot`.",
 )
 @click.option(
+    "--daily-budget-usd",
+    type=float,
+    default=0.0,
+    show_default=True,
+    help=(
+        "Daily USD cap (UTC). 0 = disabled. Crossing 80%% triggers soft "
+        "austerity; crossing 100%% halts the day."
+    ),
+)
+@click.option(
     "--auto-push/--no-auto-push",
     default=False,
     show_default=True,
     help="If a new publication was produced, commit + push to origin/main.",
 )
 def schedule_install(
-    interval_hours: int, max_budget_usd: float, max_steps: int, auto_push: bool
+    interval_hours: int,
+    max_budget_usd: float,
+    max_steps: int,
+    daily_budget_usd: float,
+    auto_push: bool,
 ) -> None:
     """Install and load the launchd agent."""
     from institute import schedule as schedule_mod
@@ -1038,11 +1190,14 @@ def schedule_install(
         max_budget_usd=max_budget_usd,
         max_steps=max_steps,
         auto_push=auto_push,
+        daily_budget_usd=daily_budget_usd,
     )
     console.print(f"[green]Installed:[/green] {path}")
+    daily_msg = f", daily ${daily_budget_usd:.2f}" if daily_budget_usd > 0 else ", no daily cap"
     console.print(
         f"  every {interval_hours}h, budget ${max_budget_usd:.2f}, "
-        f"max-steps {max_steps}, auto-push={'on' if auto_push else 'off'}"
+        f"max-steps {max_steps}{daily_msg}, "
+        f"auto-push={'on' if auto_push else 'off'}"
     )
     console.print(f"  logs: {schedule_mod.LOG_DIR}")
 
@@ -1102,12 +1257,29 @@ def schedule_status() -> None:
     help="Maximum number of single-step dispatches before halting.",
 )
 @click.option(
+    "--daily-budget-usd",
+    type=float,
+    default=0.0,
+    show_default=True,
+    help=(
+        "Charter-defined daily cap on cumulative Claude API cost (UTC). "
+        "0 = disabled. Crossing 80%% triggers soft austerity (skip "
+        "curriculum/propose/admit, advance in-flight only); crossing "
+        "100%% halts the wake-up. Resets at UTC midnight."
+    ),
+)
+@click.option(
     "--start-new-if-idle/--no-start-new-if-idle",
     default=True,
     show_default=True,
     help="If there is nothing in-flight, propose a new project.",
 )
-def autopilot(max_budget_usd: float, max_steps: int, start_new_if_idle: bool) -> None:
+def autopilot(
+    max_budget_usd: float,
+    max_steps: int,
+    daily_budget_usd: float,
+    start_new_if_idle: bool,
+) -> None:
     """Self-driving wake-up. Designed to be invoked by `launchd` or cron.
 
     Behavior:
@@ -1115,6 +1287,10 @@ def autopilot(max_budget_usd: float, max_steps: int, start_new_if_idle: bool) ->
          budget or step cap is hit (same as `institute run`).
       2. If nothing is in-flight and `--start-new-if-idle` is set: ask
          a Fellow to propose a new project, then advance one step.
+      3. If the daily cap is configured and spend has crossed the soft
+         threshold (80% by default), routine work is paused and only
+         in-flight peer review/revise/publish continues. If spend has
+         crossed the hard cap, the wake-up exits without doing anything.
 
     Acquires a single-instance lockfile so concurrent invocations (one
     manual, one scheduled) cannot race. Honors the kill switch like
@@ -1133,42 +1309,81 @@ def autopilot(max_budget_usd: float, max_steps: int, start_new_if_idle: bool) ->
                 "Skipping this invocation.[/yellow]"
             )
             sys.exit(0)
-        _autopilot_locked(max_budget_usd, max_steps, start_new_if_idle)
+        _autopilot_locked(
+            max_budget_usd=max_budget_usd,
+            max_steps=max_steps,
+            daily_budget_usd=daily_budget_usd,
+            start_new_if_idle=start_new_if_idle,
+        )
 
 
-def _autopilot_locked(max_budget_usd: float, max_steps: int, start_new_if_idle: bool) -> None:
+def _autopilot_locked(
+    *,
+    max_budget_usd: float,
+    max_steps: int,
+    daily_budget_usd: float,
+    start_new_if_idle: bool,
+) -> None:
     """The actual autopilot body, called while holding the lock."""
     _check_kill_switch()
 
-    # Apprenticeship cadence: if any Postulant has incomplete curriculum,
-    # advance one curriculum item before doing anything else. This makes
-    # autopilot pace the Postulant's training without Founder prompting,
-    # one item per wake-up.
-    _advance_one_curriculum_item()
+    from institute import budget
 
-    # Once curriculum is complete, the qualifying project is the next
-    # apprenticeship step. Auto-start one for any Postulant who has
-    # finished reading and does not yet have a qualifying project in
-    # flight. The project then advances through the normal pipeline.
-    _maybe_start_qualifying_project()
+    austerity = budget.current_status(daily_budget_usd)
+    if not austerity.disabled:
+        console.print(f"[dim]{austerity.headline()}[/dim]")
 
-    # Periodically consider admitting a new Fellow. Only fires once a
-    # Senior Fellow panel exists; until then the Founder runs admit
-    # manually.
-    _maybe_trigger_admissions()
+    if austerity.level == "hard":
+        _engage_austerity_if_new(austerity)
+        console.print(
+            f"[red]Daily budget cap of ${austerity.hard_cap_usd:.2f} reached "
+            f"(${austerity.today_usd:.2f} spent). Halting until UTC midnight.[/red]"
+        )
+        return
 
-    if start_new_if_idle:
-        with db.connection() as conn:
-            in_flight = conn.execute(
-                "SELECT COUNT(*) FROM projects WHERE state NOT IN ('published', 'rejected')"
-            ).fetchone()[0]
-        if in_flight == 0:
-            console.print("[dim]Idle. Proposing a new project...[/dim]")
-            from institute.workflows import propose as propose_workflow
+    in_soft_austerity = austerity.level == "soft"
+    if in_soft_austerity:
+        _engage_austerity_if_new(austerity)
+        console.print(
+            "[yellow]Soft austerity: pausing curriculum, propose, admit. "
+            "Only in-flight projects will advance this wake-up.[/yellow]"
+        )
 
-            propose_workflow.run(lead=None, topic=None)
+    if not in_soft_austerity:
+        # Apprenticeship cadence: if any Postulant has incomplete curriculum,
+        # advance one curriculum item before doing anything else. This makes
+        # autopilot pace the Postulant's training without Founder prompting,
+        # one item per wake-up.
+        _advance_one_curriculum_item()
 
-    _advance_loop(max_budget_usd=max_budget_usd, max_steps=max_steps, project=None)
+        # Once curriculum is complete, the qualifying project is the next
+        # apprenticeship step. Auto-start one for any Postulant who has
+        # finished reading and does not yet have a qualifying project in
+        # flight. The project then advances through the normal pipeline.
+        _maybe_start_qualifying_project()
+
+        # Periodically consider admitting a new Fellow. Only fires once a
+        # Senior Fellow panel exists; until then the Founder runs admit
+        # manually.
+        _maybe_trigger_admissions()
+
+        if start_new_if_idle:
+            with db.connection() as conn:
+                in_flight = conn.execute(
+                    "SELECT COUNT(*) FROM projects WHERE state NOT IN ('published', 'rejected')"
+                ).fetchone()[0]
+            if in_flight == 0:
+                console.print("[dim]Idle. Proposing a new project...[/dim]")
+                from institute.workflows import propose as propose_workflow
+
+                propose_workflow.run(lead=None, topic=None)
+
+    _advance_loop(
+        max_budget_usd=max_budget_usd,
+        max_steps=max_steps,
+        project=None,
+        daily_budget_usd=daily_budget_usd,
+    )
 
 
 def _advance_one_curriculum_item() -> None:

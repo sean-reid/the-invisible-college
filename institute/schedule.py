@@ -22,6 +22,7 @@ LABEL = "com.invisible-college.autopilot"
 DEFAULT_INTERVAL_HOURS = 12
 DEFAULT_MAX_BUDGET = 10.0
 DEFAULT_MAX_STEPS = 30
+DEFAULT_DAILY_BUDGET = 0.0  # 0 = disabled; set explicitly to enable
 LOG_DIR = Path.home() / "Library" / "Logs" / "invisible-college"
 PLIST_DIR = Path.home() / "Library" / "LaunchAgents"
 
@@ -40,6 +41,7 @@ def render_plist(
     max_budget_usd: float,
     max_steps: int,
     auto_push: bool,
+    daily_budget_usd: float = DEFAULT_DAILY_BUDGET,
 ) -> bytes:
     """Render the launchd plist as bytes ready to write to disk."""
     # PATH must include the locations where `uv`, `claude`, and `git` live.
@@ -54,6 +56,7 @@ def render_plist(
         "IC_REPO": str(paths.ROOT),
         "IC_MAX_BUDGET": str(max_budget_usd),
         "IC_MAX_STEPS": str(max_steps),
+        "IC_DAILY_BUDGET_USD": str(daily_budget_usd),
         "IC_AUTO_PUSH": "1" if auto_push else "0",
         "IC_LOG_DIR": str(LOG_DIR),
         "HOME": home,
@@ -95,6 +98,7 @@ def install(
     max_budget_usd: float = DEFAULT_MAX_BUDGET,
     max_steps: int = DEFAULT_MAX_STEPS,
     auto_push: bool = False,
+    daily_budget_usd: float = DEFAULT_DAILY_BUDGET,
 ) -> Path:
     """Write the plist and load it via launchctl. Returns the plist path."""
     if shutil.which("launchctl") is None:
@@ -107,6 +111,7 @@ def install(
         max_budget_usd=max_budget_usd,
         max_steps=max_steps,
         auto_push=auto_push,
+        daily_budget_usd=daily_budget_usd,
     )
     path = plist_path()
     tmp = path.with_suffix(path.suffix + ".tmp")
