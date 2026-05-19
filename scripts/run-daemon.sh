@@ -11,7 +11,13 @@
 #   IC_MAX_BUDGET    USD cap per wake-up. Default: 10
 #   IC_MAX_STEPS     step cap per wake-up. Default: 30
 #   IC_AUTO_PUSH     "1" to enable git commit + push of artifacts. Default: 0
-#   IC_LOG_DIR       where to write log files. Default: ~/Library/Logs/invisible-college
+#   IC_LOG_DIR       where to write log files.
+#                    Default: ~/Library/Logs/invisible-college
+#   IC_BACKUP_DIR    where to snapshot institute.db after each wake-up.
+#                    Default: ~/Library/Application Support/invisible-college/backups
+#                    Set to a cloud-synced path (iCloud Drive, Dropbox)
+#                    for off-disk durability.
+#   IC_BACKUP_RETAIN how many recent snapshots to keep. Default: 48
 
 set -euo pipefail
 
@@ -20,6 +26,8 @@ IC_MAX_BUDGET="${IC_MAX_BUDGET:-10}"
 IC_MAX_STEPS="${IC_MAX_STEPS:-30}"
 IC_AUTO_PUSH="${IC_AUTO_PUSH:-0}"
 IC_LOG_DIR="${IC_LOG_DIR:-$HOME/Library/Logs/invisible-college}"
+IC_BACKUP_DIR="${IC_BACKUP_DIR:-$HOME/Library/Application Support/invisible-college/backups}"
+IC_BACKUP_RETAIN="${IC_BACKUP_RETAIN:-48}"
 
 mkdir -p "$IC_LOG_DIR"
 LOG="$IC_LOG_DIR/autopilot.log"
@@ -46,6 +54,24 @@ uv run institute autopilot \
     >> "$LOG" 2>&1
 EXIT=$?
 set -e
+
+# Snapshot the DB. SQLite's .backup is safe against an actively-written
+# WAL database, unlike a plain `cp institute.db`. Runs every wake-up:
+# the audit log advances each pass, so a backup is always meaningful.
+# Retention prunes the oldest snapshots once IC_BACKUP_RETAIN is exceeded.
+mkdir -p "$IC_BACKUP_DIR"
+BACKUP_PATH="$IC_BACKUP_DIR/institute-$(date -u +%FT%H%M%SZ).db"
+if sqlite3 "$IC_REPO/institute.db" ".backup '$BACKUP_PATH'" >> "$LOG" 2>&1; then
+    echo "[$(date -u +%FT%TZ)] db snapshot: $BACKUP_PATH" >> "$LOG"
+    # Rotate: keep the IC_BACKUP_RETAIN most recent, delete older.
+    ls -1t "$IC_BACKUP_DIR"/institute-*.db 2>/dev/null \
+        | tail -n +$((IC_BACKUP_RETAIN + 1)) \
+        | while IFS= read -r stale; do
+            rm -f -- "$stale"
+        done
+else
+    echo "[$(date -u +%FT%TZ)] db snapshot FAILED" >> "$LOG"
+fi
 
 if [ "$IC_AUTO_PUSH" = "1" ] && [ "$EXIT" = "0" ]; then
     # Stage every artifact the daemon may have produced this wake-up.
