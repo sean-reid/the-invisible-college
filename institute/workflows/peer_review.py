@@ -152,10 +152,34 @@ is the targeted form of the kill switch. Do not set this lightly. If
 in doubt, set `andon_cord: true` with `charter_violation: false` and
 let the Board decide whether the breach is categorical.
 
+# OPTIONAL fifth file (outside reviewer especially): follow-up-questions.md
+
+If reading this draft surfaced questions the piece does NOT answer but
+the College should — open methodological puzzles, cross-disciplinary
+threads, negative-case checks the lead did not run — write them as
+`follow-up-questions.md` in your workspace. Each question is a level-2
+heading (`## `) followed by 2-3 paragraphs of context, optionally a
+final line `Tags: <comma-separated tags>`. The orchestrator parses
+this file and adds each question to the College's standing Open
+Problems list, signed by you as the reviewer who surfaced it.
+
+This file is OPTIONAL but the **outside reviewer is the primary
+expected source**: you come from a different specialization than the
+lead and are most likely to see questions the lead's tradition cannot
+naturally generate. Primary and secondary reviewers may also
+contribute, but only when they have a question the work genuinely
+opens (not "what about more of the same"). DO NOT add questions just
+to fill the file; an empty/missing file is fine.
+
+When you DO write a question, reach OUTSIDE the lead's specialization
+and outside your own. The Open Problems list is the College's main
+defense against topic convergence; your job is to broaden it.
+
 # Final reply
 
-When all four files exist, reply with the single word `Done.` Nothing
-else. Do NOT paste the file contents into your reply.
+When the four required files exist (and the optional
+follow-up-questions.md if you wrote one), reply with the single word
+`Done.` Nothing else. Do NOT paste the file contents into your reply.
 """
 
 
@@ -210,6 +234,17 @@ Exact filenames:
 
 After this round the project goes directly to editorial. There is no
 third round.
+
+# OPTIONAL fifth file (outside reviewer especially): follow-up-questions.md
+
+Same shape as round 1. If the revised piece surfaces questions the
+work does not answer but the College should, write them here. Level-2
+heading per question, 2-3 paragraphs of context, optional final line
+`Tags: <comma-separated>`. The outside reviewer is the primary
+expected source; the others contribute only when they have a
+question the work genuinely opens. Reach outside both your own and
+the lead's specialization — the standing list is the College's main
+defense against topic convergence.
 
 # Final reply
 
@@ -526,6 +561,86 @@ def _atomic_write(path: Path, content: str) -> None:
     tmp.replace(path)
 
 
+def _register_follow_up_questions(
+    *,
+    workspace: Path,
+    author_id: str,
+    project_id: str,
+    role: str,
+) -> list[str]:
+    """Parse the optional follow-up-questions.md and add each section
+    to the standing Open Problems list. Returns the slugs added.
+
+    Each level-2 heading is one question; the body following it (until
+    the next heading or EOF) is the problem text. An optional final
+    `Tags: a, b, c` line is parsed into tags. Missing file is fine —
+    returns an empty list silently.
+
+    Best-effort: any single problem that fails to add (duplicate slug,
+    empty body) logs a yellow note but does not block the others.
+    """
+    path = workspace / "follow-up-questions.md"
+    if not path.is_file():
+        return []
+    text = path.read_text(encoding="utf-8").strip()
+    if not text:
+        return []
+
+    from institute import open_problems
+
+    added: list[str] = []
+    blocks = _split_follow_up_blocks(text)
+    for title, body, tags in blocks:
+        if not title or not body:
+            continue
+        try:
+            problem = open_problems.add(
+                title=title,
+                body=body,
+                opened_by=author_id,
+                tags=tags,
+            )
+            added.append(problem.slug)
+        except ValueError as exc:
+            console.print(
+                f"[yellow]Could not add follow-up question {title!r} from "
+                f"{author_id} on {project_id} ({role}): {exc}[/yellow]"
+            )
+    return added
+
+
+def _split_follow_up_blocks(text: str) -> list[tuple[str, str, list[str]]]:
+    """Split follow-up-questions.md into (title, body, tags) tuples.
+
+    Parser is intentionally forgiving: any `## ` heading starts a new
+    block, body runs until the next heading or EOF, an optional last
+    line of the form `Tags: a, b, c` is consumed as the tag list.
+    """
+    import re
+
+    blocks: list[tuple[str, str, list[str]]] = []
+    matches = list(re.finditer(r"^##\s+(.+?)\s*$", text, re.MULTILINE))
+    if not matches:
+        return []
+    for i, match in enumerate(matches):
+        title = match.group(1).strip()
+        body_start = match.end()
+        body_end = matches[i + 1].start() if i + 1 < len(matches) else len(text)
+        body = text[body_start:body_end].strip()
+        tags: list[str] = []
+        body_lines = body.splitlines()
+        # Pop the trailing `Tags: ...` line if present.
+        if body_lines:
+            last = body_lines[-1].strip()
+            m = re.match(r"^[Tt]ags\s*:\s*(.+)$", last)
+            if m:
+                tag_str = m.group(1).strip()
+                tags = [t.strip() for t in tag_str.split(",") if t.strip()]
+                body = "\n".join(body_lines[:-1]).rstrip()
+        blocks.append((title, body, tags))
+    return blocks
+
+
 def _render_review_markdown(payload: dict, reviewer: Genome, role: Role) -> str:
     """Render a review JSON payload as the markdown stored in the archive."""
     lines = [
@@ -617,7 +732,14 @@ def run(project_id: str) -> None:
     # require_output below would otherwise happily return content from
     # a previous run if Claude does not re-write every file.
     workspaces.clear_outputs(
-        workspace, ("summary.md", "strengths.md", "concerns.md", "decision.json")
+        workspace,
+        (
+            "summary.md",
+            "strengths.md",
+            "concerns.md",
+            "decision.json",
+            "follow-up-questions.md",
+        ),
     )
     workspaces.stage_input(workspace, "draft.md", draft_md)
     workspaces.stage_input(workspace, "archive-index.md", archive_index.render())
@@ -816,6 +938,17 @@ def run(project_id: str) -> None:
             },
         )
 
+    # Parse and register the optional follow-up-questions.md. Outside
+    # reviewers are the primary expected source; the file is optional
+    # for every role. Each ## heading becomes one Open Problem opened
+    # by this reviewer, signed and committed to archive/open-problems/.
+    added = _register_follow_up_questions(
+        workspace=workspace,
+        author_id=reviewer.id,
+        project_id=project_id,
+        role=slot.role,
+    )
+
     remaining_after = len(remaining) - 1
     console.print()
     console.print(
@@ -823,6 +956,10 @@ def run(project_id: str) -> None:
         f"[bold]{payload['recommendation']}[/bold]  (round {review_round})"
     )
     console.print(f"[green]Review file:[/green]    {review_path.relative_to(paths.ROOT)}")
+    if added:
+        console.print(f"[green]Open problems added:[/green] {len(added)}")
+        for slug in added:
+            console.print(f"  - {slug}")
     if remaining_after > 0:
         console.print(f"[dim]{remaining_after} more reviewer(s) to go in this round.[/dim]")
     else:

@@ -719,9 +719,91 @@ def _finalize(
         return "held"
 
     new_rank = cast(Rank, outcome)
+
+    # Chapter 5: Junior Fellows must have co-authored a piece with a
+    # Fellow from another specialization before promotion to Fellow.
+    # The gate runs AFTER the panel decision so the cohort's rationale
+    # is preserved in the audit log — the block is structural, not a
+    # vote-of-no-confidence.
+    if rep.rank == "junior_fellow" and new_rank == "fellow":
+        with db.connection() as conn:
+            eligible, evidence_pid = reputation.has_cross_disciplinary_authorship(
+                conn, rep.fellow_id
+            )
+        if not eligible:
+            _write_cross_disciplinary_block(rep, payload, actors, panel_votes)
+            _log_review_attempt(
+                rep,
+                payload,
+                "cross-disciplinary block",
+                actors,
+                panel_votes,
+            )
+            console.print(
+                f"[yellow]{label.capitalize()} voted promotion to fellow, but "
+                f"{rep.name} has not yet co-authored with a Fellow from "
+                f"another specialization (Chapter 5). Held until that "
+                f"requirement is met.[/yellow]"
+            )
+            return "held"
+        # Surface the satisfying project for transparency.
+        console.print(
+            f"[dim]Cross-disciplinary requirement satisfied by project `{evidence_pid}`.[/dim]"
+        )
+
     decision_path = _apply_rank_change(rep, new_rank, payload, actors, panel_votes)
     _print_summary(rep, new_rank, decision_path)
     return "promoted" if _is_promotion(rep.rank, new_rank) else "demoted"
+
+
+def _write_cross_disciplinary_block(
+    rep: reputation.FellowReputation,
+    payload: dict,
+    actors: list[str],
+    panel_votes: list[dict] | None,
+) -> Path:
+    """Record an institutional decision when Chapter 5's cross-disciplinary
+    requirement blocks an otherwise-approved junior_fellow → fellow
+    promotion. Preserves the panel's rationale so future committees can
+    see the reasoning and the structural block separately.
+    """
+    body_lines = [
+        f"**Fellow:** {rep.name} (`{rep.fellow_id}`)",
+        f"**Current rank:** {rep.rank}",
+        "**Proposed rank:** fellow",
+        "",
+        (
+            "Per Chapter 5, promotion from Junior Fellow to Fellow requires "
+            "the candidate to have co-authored at least one publication "
+            "with a Fellow from another specialization (or to have "
+            "authored a piece that genuinely engages another discipline). "
+            "The reviewing body voted in favor of promotion, but this "
+            "structural prerequisite is not yet satisfied. The Fellow's "
+            "rank is held until they participate in cross-disciplinary "
+            "work; the panel's rationale is preserved below for the next "
+            "review cycle."
+        ),
+        "",
+        "## Reviewer rationale (not blocked by this gate)",
+        "",
+        str(payload.get("rationale", "")).strip() or "(no rationale on file)",
+    ]
+    if panel_votes:
+        body_lines.append("")
+        body_lines.append("## Panel votes")
+        body_lines.append("")
+        for v in panel_votes:
+            who = v.get("panelist_name", v.get("panelist_id", "?"))
+            vote = v.get("vote", "?")
+            body_lines.append(f"- **{who}**: `{vote}`")
+    decision = decisions.Decision(
+        kind="cross_disciplinary_block",
+        title=f"Promotion held (Chapter 5): {rep.name} junior_fellow → fellow",
+        body="\n".join(body_lines),
+        actors=actors,
+    )
+    with db.connection() as conn, db.transaction(conn):
+        return decisions.record(conn, decision)
 
 
 def _print_summary(rep: reputation.FellowReputation, new_rank: Rank, decision_path: Path) -> None:

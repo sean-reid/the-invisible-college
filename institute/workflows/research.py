@@ -126,10 +126,35 @@ artifact by giving up after a bounded number of polls rather than
 spinning forever. Better: do not parallelize. The orchestrator gives
 you generous wall-clock time; sequential is fine.
 
+# OPTIONAL fourth file: follow-up-questions.md
+
+If finishing this piece surfaced questions the work does NOT answer
+but the College should, write them as `follow-up-questions.md` in
+your workspace. Each question is a level-2 heading (`## `) followed
+by 2-3 paragraphs explaining the question, optionally a final
+`Tags: <comma-separated tags>` line. The orchestrator parses this
+file and adds each question to the College's standing Open Problems
+list, signed by you.
+
+Two rules when writing follow-ups:
+
+1. REACH OUTSIDE your own specialization. The peer reviewers (who
+   come from different departments) are the primary expected source
+   of follow-ups. Yours should name questions you, as someone with
+   your specialization, are NOT the right person to answer — the
+   questions a Fellow in a different tradition would naturally ask
+   after reading your piece. "More questions in my own track" is the
+   convergence trap; the standing list exists to push against it.
+
+2. Empty/missing is fine. Adding nothing is better than adding a
+   speculative question you don't really mean. This file is
+   OPTIONAL.
+
 # Final reply
 
-When all three files exist, reply with the single word `Done.` Nothing
-else. Do NOT paste the files into your reply.
+When the three required files exist (and the optional
+follow-up-questions.md if you wrote one), reply with the single
+word `Done.` Nothing else. Do NOT paste the files into your reply.
 """
 
 
@@ -386,10 +411,61 @@ def run(project_id: str) -> None:
             project_id=project_id,
         )
 
+    # Optional fourth output: lead-authored follow-up questions for
+    # the standing Open Problems list. Reviewers are the primary
+    # source (Chapter 7 outside reviewer = cross-discipline anchor),
+    # but the lead can also add questions their work surfaces — as
+    # long as they reach outside their own specialization. See the
+    # research brief for the rule.
+    added = _register_follow_up_questions(
+        workspace=workspace,
+        author_id=lead.id,
+        project_id=project_id,
+    )
+
     console.print()
     console.print(f"[green]Notebook:[/green]  {notebook_path.relative_to(paths.ROOT)}")
     console.print(f"[green]Draft:[/green]     {draft_path.relative_to(paths.ROOT)}")
     console.print(f"[green]New state:[/green] {State.DRAFTED.value}")
+    if added:
+        console.print(f"[green]Open problems added:[/green] {len(added)}")
+        for slug in added:
+            console.print(f"  - {slug}")
+
+
+def _register_follow_up_questions(*, workspace: Path, author_id: str, project_id: str) -> list[str]:
+    """Lead-side counterpart of peer_review._register_follow_up_questions.
+
+    Parses workspace/follow-up-questions.md (if present), splits on
+    `## ` headings into (title, body, tags) blocks, and adds each as
+    a standing Open Problem opened_by=<author_id>. Best-effort: a
+    duplicate-slug or empty block logs yellow and continues. Returns
+    the slugs added.
+    """
+    path = workspace / "follow-up-questions.md"
+    if not path.is_file():
+        return []
+    text = path.read_text(encoding="utf-8").strip()
+    if not text:
+        return []
+
+    # Late imports to avoid circulars.
+    from institute import open_problems
+    from institute.workflows.peer_review import _split_follow_up_blocks
+
+    added: list[str] = []
+    for title, body, tags in _split_follow_up_blocks(text):
+        if not title or not body:
+            continue
+        try:
+            problem = open_problems.add(title=title, body=body, opened_by=author_id, tags=tags)
+            added.append(problem.slug)
+        except ValueError as exc:
+            console.print(
+                f"[yellow]Could not add lead follow-up {title!r} from "
+                f"{author_id} on {project_id}: {exc}[/yellow]"
+            )
+    return added
 
 
 def _lead_outputs_already_complete(workspace: Path) -> bool:

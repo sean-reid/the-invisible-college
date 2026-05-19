@@ -101,6 +101,75 @@ def reviewer_stats(conn: sqlite3.Connection, fellow_id: str) -> ReviewerStats:
     )
 
 
+def has_cross_disciplinary_authorship(
+    conn: sqlite3.Connection, fellow_id: str
+) -> tuple[bool, str | None]:
+    """Did this Fellow co-author a publication with someone from another
+    specialization? Per Chapter 5, this is a precondition for promotion
+    from Junior Fellow to Fellow.
+
+    Returns (eligible, evidence_project_id). When eligible=False the
+    second item is None; otherwise it's the id of one project that
+    satisfies the criterion (the first one found, for the audit trail).
+
+    Definition of "another specialization": the candidate's
+    `specialization` string is not identical to the other author's.
+    This is a coarse proxy for the "another department" language in
+    Chapter 5 — departments aren't implemented yet. When departments
+    arrive, the predicate moves to department equality. The proxy
+    catches the case the design cares about: an apprentice generalist
+    who has never engaged a Fellow from a different tradition has not
+    yet earned Fellow rank.
+    """
+    candidate = conn.execute(
+        "SELECT specialization FROM fellows WHERE id = ?", (fellow_id,)
+    ).fetchone()
+    if candidate is None:
+        return (False, None)
+    candidate_spec = (candidate["specialization"] or "").strip().lower()
+    if not candidate_spec:
+        return (False, None)
+
+    rows = list(
+        conn.execute(
+            """
+            SELECT p.id AS project_id, p.lead_fellow_id, p.state
+            FROM projects p
+            WHERE p.state = 'published'
+              AND (
+                  p.lead_fellow_id = ?
+                  OR p.id IN (SELECT project_id FROM project_collaborators WHERE fellow_id = ?)
+              )
+            ORDER BY p.updated_at ASC
+            """,
+            (fellow_id, fellow_id),
+        )
+    )
+    for row in rows:
+        project_id = row["project_id"]
+        lead_id = row["lead_fellow_id"]
+        # Gather every other author on this project (lead + non-self
+        # collaborators) and compare specializations to the candidate's.
+        other_ids = []
+        if lead_id and lead_id != fellow_id:
+            other_ids.append(lead_id)
+        for c_row in conn.execute(
+            "SELECT fellow_id FROM project_collaborators WHERE project_id = ? AND fellow_id != ?",
+            (project_id, fellow_id),
+        ):
+            other_ids.append(c_row["fellow_id"])
+        for other_id in other_ids:
+            spec_row = conn.execute(
+                "SELECT specialization FROM fellows WHERE id = ?", (other_id,)
+            ).fetchone()
+            if spec_row is None:
+                continue
+            other_spec = (spec_row["specialization"] or "").strip().lower()
+            if other_spec and other_spec != candidate_spec:
+                return (True, project_id)
+    return (False, None)
+
+
 def author_stats(conn: sqlite3.Connection, fellow_id: str) -> AuthorStats:
     """Authorship signals across every project this Fellow co-authored.
 

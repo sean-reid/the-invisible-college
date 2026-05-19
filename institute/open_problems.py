@@ -236,6 +236,10 @@ def render_summary_md() -> str:
     """One-line-per-problem summary the propose workflow stages into the
     lead's workspace. Empty list yields a sentinel note so the brief's
     'if the file is present' check still makes sense.
+
+    Surfaces tag-cluster distribution at the top so the lead can see
+    which areas dominate the list (and ideally pick from an
+    under-represented tag instead).
     """
     open_list = open_problems()
     if not open_list:
@@ -253,6 +257,10 @@ def render_summary_md() -> str:
         "Background section if you take one on.",
         "",
     ]
+    cluster_summary = _render_cluster_summary(open_list)
+    if cluster_summary:
+        lines.append(cluster_summary)
+        lines.append("")
     for p in open_list:
         tag_str = f" [{', '.join(p.tags)}]" if p.tags else ""
         lines.append(f"## `{p.slug}` — {p.title}{tag_str}")
@@ -261,6 +269,43 @@ def render_summary_md() -> str:
         lines.append(body_preview)
         lines.append("")
     return "\n".join(lines)
+
+
+def _render_cluster_summary(open_list: list[OpenProblem]) -> str:
+    """Tag-distribution header so the lead can see which clusters
+    dominate the open list. Soft signal, not a block.
+    """
+    if not open_list:
+        return ""
+    tag_counts: dict[str, int] = {}
+    untagged = 0
+    for p in open_list:
+        if not p.tags:
+            untagged += 1
+            continue
+        for tag in p.tags:
+            tag_counts[tag] = tag_counts.get(tag, 0) + 1
+    if not tag_counts and not untagged:
+        return ""
+    total = len(open_list)
+    sorted_tags = sorted(tag_counts.items(), key=lambda kv: (-kv[1], kv[0]))
+    parts = [f"`{tag}` ({n})" for tag, n in sorted_tags]
+    if untagged:
+        parts.append(f"untagged ({untagged})")
+    distribution = ", ".join(parts)
+    # Flag saturation when one tag is at least 40% of the list and
+    # the list is meaningfully populated. The lead can read this and
+    # pick from an under-represented area instead.
+    saturation_note = ""
+    if total >= 5 and sorted_tags:
+        top_tag, top_count = sorted_tags[0]
+        if top_count / total >= 0.4:
+            saturation_note = (
+                f"\n\n> **Cluster saturation:** `{top_tag}` is "
+                f"{top_count}/{total} of the open list. Strongly prefer a "
+                "question outside this tag if you can."
+            )
+    return f"## Tag distribution\n\nOpen problems by tag: {distribution}.{saturation_note}"
 
 
 __all__ = [
