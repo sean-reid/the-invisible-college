@@ -17,7 +17,9 @@ on Claude Code session continuity.
 from __future__ import annotations
 
 import json
+import os
 import shutil
+import signal
 import subprocess
 import uuid
 from dataclasses import dataclass
@@ -27,6 +29,14 @@ from pathlib import Path
 from institute import charter, runtime
 from institute.fellow import Genome, ensure_fellow_dirs, workspace_path
 from institute.paths import AUDIT_LOG
+
+# Wall-clock timeout for a single Fellow invocation. A Claude session
+# that hangs (background bash polling for a file that never arrives,
+# infinite loop, deadlock on a tool call) would otherwise block the
+# autopilot indefinitely. 90 minutes is generous for legitimate
+# research work — Ada's Stadion/floating-point pieces took ~45 min —
+# but bounded so a stuck child never silently consumes the day.
+DEFAULT_INVOKE_TIMEOUT_SECONDS = 90 * 60
 
 
 @dataclass(frozen=True)
@@ -42,6 +52,10 @@ class FellowTask:
     # Workflows that produce file-based output set this to a project- and
     # step-scoped directory they have already staged with any input files.
     workspace: Path | None = None
+    # Wall-clock timeout for this invocation. Whole subprocess group
+    # (Claude + any tool children it spawned) is killed if it exceeds
+    # this. Default is generous enough for any current workflow.
+    timeout_seconds: int = DEFAULT_INVOKE_TIMEOUT_SECONDS
 
 
 @dataclass(frozen=True)
@@ -135,12 +149,11 @@ def invoke_orchestrator(
     for extra in extra_dirs:
         cmd.extend(["--add-dir", str(extra)])
 
-    proc = subprocess.run(
+    proc = _run_with_group_timeout(
         cmd,
         cwd=actual_cwd,
-        capture_output=True,
-        text=True,
-        check=False,
+        timeout_seconds=DEFAULT_INVOKE_TIMEOUT_SECONDS,
+        context=f"Orchestrator step {step}",
     )
 
     raw_text = proc.stdout.strip()
@@ -239,12 +252,11 @@ def invoke(task: FellowTask) -> FellowResult:
     for extra in task.extra_dirs:
         cmd.extend(["--add-dir", str(extra)])
 
-    proc = subprocess.run(
+    proc = _run_with_group_timeout(
         cmd,
         cwd=cwd,
-        capture_output=True,
-        text=True,
-        check=False,
+        timeout_seconds=task.timeout_seconds,
+        context=f"Fellow {task.genome.id} step {task.step}",
     )
 
     raw_text = proc.stdout.strip()
@@ -274,6 +286,68 @@ def invoke(task: FellowTask) -> FellowResult:
         duration_ms=raw.get("duration_ms") if isinstance(raw, dict) else None,
         cost_usd=raw.get("total_cost_usd") if isinstance(raw, dict) else None,
         is_error=is_error,
+    )
+
+
+def _run_with_group_timeout(
+    cmd: list[str],
+    *,
+    cwd: Path,
+    timeout_seconds: int,
+    context: str,
+) -> subprocess.CompletedProcess:
+    """Run `cmd` in its own process group with a wall-clock timeout.
+
+    Plain `subprocess.run(..., timeout=...)` kills only the direct child
+    on timeout, leaving any tool subprocesses Claude spawned (background
+    bash, helper scripts, child claude calls) running. Using setsid +
+    killpg ensures the entire subtree dies, so a stuck Fellow can't leak
+    zombie subprocesses that interfere with the next wake-up.
+
+    Returns a CompletedProcess shaped object on normal exit; raises
+    RuntimeError on timeout with a message that identifies the context.
+    """
+    proc = subprocess.Popen(
+        cmd,
+        cwd=cwd,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=True,
+        start_new_session=True,  # equivalent to preexec_fn=os.setsid
+    )
+    try:
+        stdout, stderr = proc.communicate(timeout=timeout_seconds)
+    except subprocess.TimeoutExpired as exc:
+        # Kill the entire process group so background bash + grandchildren
+        # die too. SIGTERM first to give Claude a chance to flush, then
+        # SIGKILL after a short grace period.
+        try:
+            os.killpg(os.getpgid(proc.pid), signal.SIGTERM)
+        except ProcessLookupError:
+            pass
+        try:
+            stdout, stderr = proc.communicate(timeout=5)
+        except subprocess.TimeoutExpired:
+            try:
+                os.killpg(os.getpgid(proc.pid), signal.SIGKILL)
+            except ProcessLookupError:
+                pass
+            try:
+                stdout, stderr = proc.communicate(timeout=5)
+            except subprocess.TimeoutExpired:
+                stdout, stderr = "", "(timed out twice; subprocess unresponsive)"
+        raise RuntimeError(
+            f"{context} exceeded {timeout_seconds}s wall clock and was killed. "
+            "This usually means the Fellow's tool use deadlocked (e.g. a "
+            "background bash poll waiting on a file that never arrives). "
+            "Process group killed; next wake-up will retry from the same "
+            "workflow state."
+        ) from exc
+    return subprocess.CompletedProcess(
+        args=cmd,
+        returncode=proc.returncode,
+        stdout=stdout or "",
+        stderr=stderr or "",
     )
 
 

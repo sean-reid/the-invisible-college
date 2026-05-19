@@ -107,6 +107,25 @@ in your current working directory. They must have these exact filenames:
   malformed or unanswerable, write about that honestly in the notebook
   and produce a draft that reports the honest negative result.
 
+# Tool use: do not background poll loops
+
+If you run shell commands, do NOT background a wait-on-file pattern
+like `until [ -f X ]; do sleep N; done` and then go back to wait on
+its output. That pattern deadlocks the session if the file you are
+polling for is never produced (e.g., you misnamed it, or the inner
+command failed). A previous Fellow lost ~45 minutes of orchestrator
+time and burned $5 of budget on exactly this pattern: the experiment
+finished and the draft was already written, but a stuck background
+loop kept the session from returning.
+
+If you need to wait for a long-running command, run it in the
+foreground and let the Bash tool block on its actual exit. If you
+need true parallelism, launch the background command, then read its
+output via BashOutput, and tolerate a missing or non-matching
+artifact by giving up after a bounded number of polls rather than
+spinning forever. Better: do not parallelize. The orchestrator gives
+you generous wall-clock time; sequential is fine.
+
 # Final reply
 
 When all three files exist, reply with the single word `Done.` Nothing
