@@ -352,13 +352,33 @@ def run(
     proposal_path = paths.PROPOSALS / project_id / "proposal.md"
     _atomic_write(proposal_path, proposal_md.rstrip() + "\n")
 
+    # Auto-form a research group from the proposal's `## Collaborators
+    # needed` section when the Founder didn't pre-select. Each named
+    # Fellow accepts or declines via a quick Claude call; accepts join
+    # the project. Founder pre-selection takes precedence over this path.
+    invitations: list = []
+    if not collaborator_genomes:
+        from institute.workflows import group_form
+
+        with db.connection() as conn:
+            eligible_cohort = _eligible_invitees(conn, lead_genome.id)
+        accepted, invitations = group_form.solicit(
+            lead=lead_genome,
+            proposal_md=proposal_md,
+            project_id=project_id,
+            title=title,
+            eligible_cohort=eligible_cohort,
+        )
+        collaborator_genomes = accepted
+        group_form.archive_invitations_md(project_id, invitations)
+
     now = datetime.now(UTC).isoformat(timespec="seconds")
     decision_actors = ["founder", lead_genome.id, *(g.id for g in collaborator_genomes)]
     decision = decisions.Decision(
         kind="proposal",
         title=f"Proposal: {title}",
         body=_format_proposal_decision_body(
-            title, lead_genome, topic, proposal_path, collaborator_genomes
+            title, lead_genome, topic, proposal_path, collaborator_genomes, invitations
         ),
         actors=decision_actors,
         related_project=project_id,
@@ -410,6 +430,10 @@ def run(
     if collaborator_genomes:
         members = ", ".join(f"{g.name} ({g.id})" for g in collaborator_genomes)
         console.print(f"[green]Collaborators:[/green] {members}")
+    if invitations:
+        for inv in invitations:
+            verdict = "accepted" if inv.accepted else "declined"
+            console.print(f"[dim]Invitation to {inv.invitee.name}: {verdict}[/dim]")
     console.print()
     console.print("[dim]Next: run `institute next` for proposal review.[/dim]")
 
@@ -420,6 +444,7 @@ def _format_proposal_decision_body(
     topic: str | None,
     proposal_path: Path,
     collaborator_genomes: list[Genome],
+    invitations: list | None = None,
 ) -> str:
     lines = [
         f"**Title:** {title}",
@@ -439,6 +464,13 @@ def _format_proposal_decision_body(
                 "",
             ]
         )
+    if invitations:
+        # Surface declines too so the record is honest about who said no.
+        from institute.workflows.group_form import render_invitations_md
+
+        invitation_block = render_invitations_md(invitations).lstrip("\n")
+        if invitation_block:
+            lines.extend([invitation_block, ""])
     lines.extend(
         [
             f"**Topic guidance from Founder:** {topic.strip() if topic else 'none (free choice)'}",
@@ -452,6 +484,25 @@ def _format_proposal_decision_body(
         ]
     )
     return "\n".join(lines)
+
+
+def _eligible_invitees(conn: sqlite3.Connection, lead_id: str) -> list[Genome]:
+    """Every Fellow who could be invited to a research group on this proposal.
+
+    Excludes the lead, Postulants (per Chapter 5 they research alone with
+    an advisor), and retired Fellows. Reviewer-eligibility marks are
+    deliberately ignored here: a Fellow who has been sidelined from
+    reviewing may still co-author.
+    """
+    rows = list(
+        conn.execute(
+            "SELECT id FROM fellows "
+            "WHERE retired_at IS NULL AND rank != 'postulant' AND id != ? "
+            "ORDER BY name ASC",
+            (lead_id,),
+        )
+    )
+    return [fellow_mod.load_genome(conn, r["id"]) for r in rows]
 
 
 def _validate_collaborators(
