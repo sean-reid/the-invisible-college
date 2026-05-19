@@ -179,6 +179,9 @@ _INGEST_KINDS = frozenset(
         "review_received",
         "advisor_feedback_given",
         "advisor_feedback_received",
+        # Research-group artifacts (Chapter 6 multi-author projects):
+        "contribution",  # a collaborator's contribution.md from research
+        "publication",  # the published piece, ingested per co-author
     }
 )
 

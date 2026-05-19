@@ -96,6 +96,28 @@ def test_ingest_stores_entry_with_embedding(isolated: Path) -> None:
     assert len(row["embedding"]) == 4 * episodic.EMBEDDING_DIM
 
 
+def test_ingest_accepts_research_group_kinds(isolated: Path) -> None:
+    """Chapter 6 added `contribution` and `publication` kinds for the
+    multi-author flow. Guard against another silent drop like the one
+    that nuked per-author publication memory the first time around."""
+    with db.connection() as conn, db.transaction(conn):
+        _seed_fellow(conn)
+    for kind in ("contribution", "publication"):
+        with db.connection() as conn, db.transaction(conn):
+            episodic.ingest(
+                conn,
+                fellow_id="ada",
+                kind=kind,
+                title=f"a {kind}",
+                content="body of the entry",
+            )
+        with db.connection() as conn:
+            count = conn.execute(
+                "SELECT COUNT(*) FROM episodic_memory WHERE kind = ?", (kind,)
+            ).fetchone()[0]
+        assert count == 1, f"kind={kind!r} did not persist"
+
+
 def test_ingest_rejects_unknown_kind(isolated: Path) -> None:
     with db.connection() as conn, db.transaction(conn):
         _seed_fellow(conn)
