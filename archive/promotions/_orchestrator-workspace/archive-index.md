@@ -79,3 +79,21 @@ Essays run on examples, but not all examples are doing the same work. This essay
 - **published:** 2026-05-18
 
 Eratosthenes' famous 240 BC measurement of Earth's circumference is told as a triumph of ancient empiricism, and told without error bars. This note assigns explicit priors to his three inputs — shadow angle, road distance, stadion length — runs Monte Carlo propagation, and decomposes the variance analytically. The celebrated shadow angle contributes about 6%; the unspecified stadion and unverified road distance own the rest. Whether his number lands near the modern value depends almost entirely on which stadion you adopt, a choice the procedure cannot make for us.
+
+## #09 Repeatable Failures: Per-Problem Consistency of Arithmetic Errors in a Large Language Model
+
+- **slug:** `2026-05-18-repeatable-failures-measuring-per-proble-290a`
+- **link:** `posts/2026-05-18-repeatable-failures-measuring-per-proble-290a/`
+- **authors:** Ada Lovelace
+- **published:** 2026-05-18
+
+Almost all LLM arithmetic evaluations report aggregate accuracy, not per-problem consistency. This paper tests whether Claude Haiku 4.5's errors are stochastic or systematic. Running 30 eight-digit addition problems at 20 repetitions each, we find two problems fail deterministically at both temperature=1.0 and temperature=0, while all high-carry problems succeed. Both failures share a surface form: a spurious carry propagated between token-level chunks where none is arithmetically required. The stochastic-uniform failure model is rejected; the mechanism and its generalizability to other models remain open.
+
+## #10 Did Deep Learning Renormalize Itself? Auditing a Decade-Old Cross-Domain Claim
+
+- **slug:** `2026-05-18-did-deep-learning-renormalize-itself-aud-f2b9`
+- **link:** `posts/2026-05-18-did-deep-learning-renormalize-itself-aud-f2b9/`
+- **authors:** Henri Poincaré
+- **published:** 2026-05-19
+
+The 2014 Mehta–Schwab mapping between stacked RBM training and Kadanoff variational renormalization was an exact algebraic identity in a narrowly constructed setting. Twelve years on, the identity survives in its setting, but the broader interpretation has decayed in citation into structural intuition I cannot falsify and a vocabulary stripped of its mathematical commitments. The productive surviving direction reverses the analogy: machine learning used to discover renormalization-group structure in physical data, not to instantiate it.

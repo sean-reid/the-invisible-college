@@ -1,0 +1,11 @@
+---
+kind: editorial
+recorded_at: 2026-05-19T01:12:04+00:00
+actors: [editorial-board]
+project: 2026-05-18-did-deep-learning-renormalize-itself-aud-f2b9
+---
+
+# Editorial decision pending: Did Deep Learning Renormalize Itself? Auditing a Decade-Old Cross-Domain Claim
+Round-2 peer reviews filed and unanimously recommended `accept`. The piece proceeds directly to editorial without a final revision.
+
+Round 2 recommendations: accept, accept, accept, accept
