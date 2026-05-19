@@ -55,8 +55,19 @@ A research proposal in markdown. The structure:
    keep it bounded)
 6. `## Anticipated failure modes` (how this could go wrong, and what an
    honest negative result would look like)
-7. `## Collaborators needed` (which kinds of Fellows you might want to
-   bring in; OK if none)
+7. `## Collaborators needed` (whether to form a research group on this
+   project; OK if none)
+
+   If you want specific Fellows invited as co-authors, name them by
+   their full name or fellow id (e.g. "Henri Poincaré" or
+   `henri-poincare`). Each named Fellow will receive a structured
+   invitation and decide accept/decline; accepts join the research
+   group and are co-credited on publication. A descriptive reference
+   like "the Fellow who did the prior work on X" will NOT fire an
+   invitation — the parser only matches names and ids verbatim. If
+   you only want an informal design check rather than co-authorship,
+   say so explicitly and do not name anyone; this section will
+   surface to the proposal reviewer but no invitations will go out.
 
 # Constraints
 
