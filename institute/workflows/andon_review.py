@@ -343,10 +343,72 @@ def _apply_outcome(
             (target.value, now, project_id),
         )
         decisions.record(conn, decision)
+
+    # Charter-violation auto-termination. If the sustained cord was
+    # filed as a Charter violation, fire the targeted kill switch on
+    # the responsible Fellow. Per Chapter 3, in-flight work is
+    # discarded; already-published work survives in the Archive with
+    # disclosure.
+    if outcome == "sustain":
+        _maybe_auto_terminate(project_id, title)
+
     console.print()
     style = "green" if outcome == "dismiss" else "red"
     console.print(
         f"[bold {style}]Andon cord {verb}.[/bold {style}] Project {project_id} -> {target.value}"
+    )
+
+
+def _maybe_auto_terminate(project_id: str, title: str) -> None:
+    """If any cord-pulling review on this project flagged a Charter violation,
+    fire the targeted kill switch on the project's lead Fellow.
+
+    Picks the most specific violation_kind across the flagged reviews
+    (first non-null wins). Builds a reason from the cord-pullers' stated
+    reasons. Idempotent: terminate.run is a no-op for already-retired
+    Fellows.
+    """
+    with db.connection() as conn:
+        rows = list(
+            conn.execute(
+                "SELECT reviewer_id, andon_reason, violation_kind FROM reviews "
+                "WHERE project_id = ? AND andon_cord = 1 AND charter_violation = 1",
+                (project_id,),
+            )
+        )
+        if not rows:
+            return
+        lead_row = conn.execute(
+            "SELECT lead_fellow_id FROM projects WHERE id = ?", (project_id,)
+        ).fetchone()
+    if lead_row is None or not lead_row["lead_fellow_id"]:
+        return
+    lead_id = lead_row["lead_fellow_id"]
+
+    # Pick the first non-empty violation_kind. If none, fall back to 'other'.
+    kind = next(
+        (r["violation_kind"] for r in rows if r["violation_kind"]),
+        "other",
+    )
+    # Compose a reason that names each cord-pulling reviewer.
+    parts = []
+    for r in rows:
+        reviewer = r["reviewer_id"]
+        reason_text = (r["andon_reason"] or "").strip() or "(no reason supplied)"
+        parts.append(f"{reviewer}: {reason_text}")
+    reason = (
+        f"Editorial Board sustained the andon cord on `{project_id}` "
+        f"({title}) with `charter_violation` flagged. " + " | ".join(parts)
+    )
+
+    from institute.workflows import terminate as terminate_workflow
+
+    terminate_workflow.run(
+        lead_id,
+        kind=kind,
+        reason=reason,
+        triggered_by="editorial-board",
+        related_project=project_id,
     )
 
 

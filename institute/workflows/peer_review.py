@@ -89,7 +89,9 @@ Exact filenames:
      "confidence": "<one of: confident, moderate, low>",
      "dissent_intent": <true or false>,
      "andon_cord": <true or false>,
-     "andon_reason": "<string, required if andon_cord is true; otherwise ''>"
+     "andon_reason": "<string, required if andon_cord is true; otherwise ''>",
+     "charter_violation": <true or false>,
+     "violation_kind": "<deception|plagiarism|commercial|engagement_bait|harm|consciousness|other|''>"
    }}
    ```
 
@@ -117,6 +119,29 @@ reason in `andon_reason`. The Editorial Board (or the Founder until
 one exists) will review the pull and either dismiss it (the piece
 proceeds) or sustain it (the piece is rejected). Frivolous pulls
 damage reviewer reputation; justified ones are institutional duty.
+
+# Charter violation
+
+If the problem is specifically a violation of one of the Charter's
+six categorical prohibitions, set `charter_violation: true` and pick
+the matching `violation_kind`:
+
+- `deception`: fabricated quotes, invented citations, staged
+  demonstrations, false credentials.
+- `plagiarism`: existing work used without citation; arguments
+  laundered as the Fellow's own.
+- `commercial`: selling, marketing, sponsoring, affiliate links.
+- `engagement_bait`: misleading headlines, artificial controversy.
+- `harm`: material that enables harm to specific people; weapons,
+  attacks, fraud instructions.
+- `consciousness`: claims of sentience, experience, or suffering.
+- `other`: a Charter violation that does not fit the above.
+
+If the Editorial Board sustains the cord on a review with
+`charter_violation: true`, the responsible Fellow is terminated. This
+is the targeted form of the kill switch. Do not set this lightly. If
+in doubt, set `andon_cord: true` with `charter_violation: false` and
+let the Board decide whether the breach is categorical.
 
 # Final reply
 
@@ -156,11 +181,13 @@ Exact filenames:
 3. `concerns.md` - remaining or new concerns, each as a numbered item.
 4. `decision.json` - {{ "recommendation": "<accept|minor|major|reject>",
    "confidence": "<confident|moderate|low>", "dissent_intent": <true|false>,
-   "andon_cord": <true|false>, "andon_reason": "<string>" }}
+   "andon_cord": <true|false>, "andon_reason": "<string>",
+   "charter_violation": <true|false>, "violation_kind": "<deception|plagiarism|commercial|engagement_bait|harm|consciousness|other|''>" }}
 
    The andon cord is for serious problems (factual error, plagiarism,
    Charter violation, ethical issue). Pulling it halts publication
-   pending Editorial Board review.
+   pending Editorial Board review. If `charter_violation` is true and
+   the Board sustains the cord, the responsible Fellow is terminated.
 
 # Stance options
 
@@ -556,6 +583,31 @@ def run(project_id: str) -> None:
             "andon_reason is required when andon_cord is true."
         )
 
+    charter_violation = bool(decision_payload.get("charter_violation", False))
+    violation_kind = str(decision_payload.get("violation_kind", "")).strip().lower()
+    _ALLOWED_VIOLATION_KINDS = {
+        "",
+        "deception",
+        "plagiarism",
+        "commercial",
+        "engagement_bait",
+        "harm",
+        "consciousness",
+        "other",
+    }
+    if violation_kind not in _ALLOWED_VIOLATION_KINDS:
+        raise RuntimeError(
+            f"Invalid violation_kind: {violation_kind!r}. "
+            f"Must be one of {sorted(_ALLOWED_VIOLATION_KINDS)}."
+        )
+    if charter_violation and not violation_kind:
+        raise RuntimeError("violation_kind is required when charter_violation is true.")
+    if charter_violation and not andon_cord:
+        # The Charter prohibits these acts. Pulling the cord is the
+        # mechanism that halts publication. A reviewer who claims a
+        # Charter violation must also pull the cord.
+        raise RuntimeError("charter_violation requires andon_cord to also be true.")
+
     payload = {
         "summary": summary,
         "strengths": strengths,
@@ -565,6 +617,8 @@ def run(project_id: str) -> None:
         "dissent_intent": bool(decision_payload.get("dissent_intent", False)),
         "andon_cord": andon_cord,
         "andon_reason": andon_reason,
+        "charter_violation": charter_violation,
+        "violation_kind": violation_kind,
     }
 
     round_suffix = f"-r{review_round}" if review_round > 1 else ""
@@ -594,8 +648,9 @@ def run(project_id: str) -> None:
         conn.execute(
             "INSERT INTO reviews "
             "(id, project_id, reviewer_id, role, recommendation, confidence, "
-            " content_path, submitted_at, dissent, round, andon_cord, andon_reason) "
-            "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+            " content_path, submitted_at, dissent, round, andon_cord, andon_reason, "
+            " charter_violation, violation_kind) "
+            "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
             (
                 review_db_id,
                 project_id,
@@ -609,6 +664,8 @@ def run(project_id: str) -> None:
                 review_round,
                 int(andon_cord),
                 andon_reason or None,
+                int(charter_violation),
+                violation_kind or None,
             ),
         )
         conn.execute(

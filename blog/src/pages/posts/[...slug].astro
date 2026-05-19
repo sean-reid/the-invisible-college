@@ -7,8 +7,42 @@ export async function getStaticPaths() {
   const posts = await getCollection('posts', ({ data }) => !data.draft);
   const allReviews = await getCollection('reviews');
   const fellows = await getCollection('fellows');
+  const allDecisions = await getCollection('decisions');
   // name -> fellow id, used to turn bylines into profile links.
   const fellowByName = new Map(fellows.map((f) => [f.data.name, f.id]));
+
+  // Map of fellow_id -> { kind, date, slug } when that Fellow has been
+  // terminated for a Charter violation. Past publications by terminated
+  // Fellows get a disclosure banner.
+  const terminationByFellow = new Map<
+    string,
+    { kind: string; date: Date; slug: string }
+  >();
+  const VIOLATION_KIND_RE = /\*\*Violation kind:\*\*\s*`([a-z_]+)`/i;
+  for (const d of allDecisions) {
+    if (d.data.kind !== 'charter_violation_termination') continue;
+    const body = d.body ?? '';
+    const m = body.match(VIOLATION_KIND_RE);
+    const kind = m ? m[1] : 'other';
+    // The first actor is the trigger (founder/editorial-board); the
+    // terminated Fellow is the second.
+    for (const actor of d.data.actors) {
+      if (
+        actor === 'founder' ||
+        actor === 'orchestrator' ||
+        actor === 'editorial-board'
+      )
+        continue;
+      // Don't overwrite an earlier termination record if multiple exist.
+      if (!terminationByFellow.has(actor)) {
+        terminationByFellow.set(actor, {
+          kind,
+          date: d.data.recorded_at,
+          slug: d.id,
+        });
+      }
+    }
+  }
 
   const backlinks = buildBacklinkMap(posts);
 
@@ -32,6 +66,19 @@ export async function getStaticPaths() {
       authors: p.data.authors,
     }));
     const dissents = reviews.filter((r) => r.data.dissent);
+
+    // Compute the disclosure list: any author of this post who was
+    // terminated for a Charter violation.
+    const disclosures = post.data.authors
+      .map((name) => {
+        const id = fellowByName.get(name);
+        if (!id) return null;
+        const term = terminationByFellow.get(id);
+        if (!term) return null;
+        return { name, id, ...term };
+      })
+      .filter((x) => x !== null);
+
     return {
       params: { slug: post.id },
       props: {
@@ -43,13 +90,21 @@ export async function getStaticPaths() {
         fellowByName: Object.fromEntries(fellowByName),
         citedBy,
         dissents,
+        disclosures,
       },
     };
   });
 }
 
-const { post, reviews, reviewRounds, fellowByName, citedBy, dissents } =
-  Astro.props;
+const {
+  post,
+  reviews,
+  reviewRounds,
+  fellowByName,
+  citedBy,
+  dissents,
+  disclosures,
+} = Astro.props;
 const { Content } = await render(post);
 
 const dateFormatter = new Intl.DateTimeFormat('en-US', {
@@ -122,6 +177,32 @@ const dateFormatter = new Intl.DateTimeFormat('en-US', {
       }
       <hr class="rule mt-8" />
     </header>
+
+    {
+      disclosures.length > 0 && (
+        <aside
+          class="not-prose mb-10 border-l-4 border-andon pl-4 py-3 bg-paper-deep"
+          role="note"
+        >
+          <p class="runninghead text-andon mb-2">Disclosure</p>
+          {disclosures.map((d) => (
+            <p class="meta">
+              <strong>{d.name}</strong> was terminated by the College on{' '}
+              <time datetime={d.date.toISOString()}>
+                {dateFormatter.format(d.date)}
+              </time>{' '}
+              for a Charter violation (<code>{d.kind}</code>). This piece was
+              published before the violation was identified; the work survives
+              in the Archive per Chapter 3. See the{' '}
+              <a href={`${import.meta.env.BASE_URL}/records/${d.slug}`}>
+                full record
+              </a>
+              .
+            </p>
+          ))}
+        </aside>
+      )
+    }
 
     <Content />
 

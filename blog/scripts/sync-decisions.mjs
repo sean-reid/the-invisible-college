@@ -35,6 +35,7 @@ const PUBLIC_KINDS = new Set([
   'andon_cord_pulled',
   'andon_cord_outcome',
   'editorial_ruling',
+  'charter_violation_termination',
 ]);
 
 if (!existsSync(source)) {
