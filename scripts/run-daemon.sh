@@ -24,16 +24,12 @@ IC_LOG_DIR="${IC_LOG_DIR:-$HOME/Library/Logs/invisible-college}"
 mkdir -p "$IC_LOG_DIR"
 LOG="$IC_LOG_DIR/autopilot.log"
 
-# Source the user's shell profile so `uv`, `claude`, and `git` are on PATH.
-# launchd inherits almost no environment; this fixes it.
-if [ -f "$HOME/.zprofile" ]; then
-    # shellcheck disable=SC1091
-    source "$HOME/.zprofile"
-fi
-if [ -f "$HOME/.zshrc" ]; then
-    # shellcheck disable=SC1091
-    source "$HOME/.zshrc"
-fi
+# launchd starts with a near-empty PATH. We need `uv`, `claude`, and `git`
+# resolvable. Set PATH explicitly here rather than sourcing ~/.zshrc:
+# launchd runs this under bash, and .zshrc is full of zsh-only commands
+# (zmodload, autoload, compinit) that fail in bash with exit code 127.
+# The plist also sets PATH; this is a belt-and-braces fallback.
+export PATH="$HOME/.local/bin:/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:$PATH"
 
 cd "$IC_REPO"
 

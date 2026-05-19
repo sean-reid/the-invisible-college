@@ -42,16 +42,22 @@ def render_plist(
     auto_push: bool,
 ) -> bytes:
     """Render the launchd plist as bytes ready to write to disk."""
+    # PATH must include the locations where `uv`, `claude`, and `git` live.
+    # The daemon script also re-exports PATH as a fallback. Common tool
+    # locations in priority order:
+    #   ~/.local/bin   uv, claude (modern installer default)
+    #   /opt/homebrew/bin   Homebrew on Apple silicon
+    #   /usr/local/bin      Homebrew on Intel + manual installs
+    #   /usr/bin, /bin      system tools (git, bash)
+    home = str(Path.home())
     env = {
         "IC_REPO": str(paths.ROOT),
         "IC_MAX_BUDGET": str(max_budget_usd),
         "IC_MAX_STEPS": str(max_steps),
         "IC_AUTO_PUSH": "1" if auto_push else "0",
         "IC_LOG_DIR": str(LOG_DIR),
-        "HOME": str(Path.home()),
-        # PATH is sourced inside the daemon script from ~/.zprofile and
-        # ~/.zshrc; launchd's PATH is too minimal to be useful.
-        "PATH": "/usr/local/bin:/opt/homebrew/bin:/usr/bin:/bin",
+        "HOME": home,
+        "PATH": f"{home}/.local/bin:/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin",
     }
     plist: dict[str, object] = {
         "Label": LABEL,
