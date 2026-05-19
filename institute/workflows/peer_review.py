@@ -290,6 +290,37 @@ def _slots_with_advisor_primary(
     return slots
 
 
+def _coi_advisors_and_advisees(conn: sqlite3.Connection, author_ids: set[str]) -> set[str]:
+    """Per Chapter 7, exclude every author's advisor and every author's advisee.
+
+    The set is symmetric: a Fellow X who advises author A cannot review,
+    and a Fellow Y whom author A advises also cannot review. Empty
+    author set yields an empty result.
+    """
+    if not author_ids:
+        return set()
+    placeholders = ",".join("?" for _ in author_ids)
+    out: set[str] = set()
+    advisor_rows = list(
+        conn.execute(
+            f"SELECT advisor_id FROM fellows "
+            f"WHERE id IN ({placeholders}) AND advisor_id IS NOT NULL",
+            tuple(author_ids),
+        )
+    )
+    for r in advisor_rows:
+        out.add(r["advisor_id"])
+    advisee_rows = list(
+        conn.execute(
+            f"SELECT id FROM fellows WHERE advisor_id IN ({placeholders})",
+            tuple(author_ids),
+        )
+    )
+    for r in advisee_rows:
+        out.add(r["id"])
+    return out
+
+
 def _pick_review_slots(
     conn: sqlite3.Connection, project_id: str, lead_id: str, review_round: int
 ) -> list[ReviewSlot]:
@@ -336,12 +367,21 @@ def _pick_review_slots(
     # (frivolous andon pulls, calibration misses, manual flags).
     # Exclude every co-author on this project (Chapter 6 research groups):
     # an author cannot review work they helped produce.
+    # Exclude conflict-of-interest reviewers per Chapter 7:
+    #   - the advisor of any author
+    #   - any advisee of any author
+    #   - any Fellow who declined a research-group invitation on this project
+    # The qualifying-project advisor-as-primary case (Chapter 5) was
+    # already routed above and short-circuits this branch.
     from institute import collaborators, reviewer_eligibility
 
-    excluded_ids = {lead_id, *collaborators.collaborator_ids(conn, project_id)}
+    author_ids = {lead_id, *collaborators.collaborator_ids(conn, project_id)}
+    excluded_ids = set(author_ids)
     if advisor_id:
         excluded_ids.add(advisor_id)
     excluded_ids |= reviewer_eligibility.ineligible_fellow_ids(conn)
+    excluded_ids |= _coi_advisors_and_advisees(conn, author_ids)
+    excluded_ids |= collaborators.decliner_ids(conn, project_id)
     placeholders = ",".join("?" for _ in excluded_ids)
     candidates = list(
         conn.execute(

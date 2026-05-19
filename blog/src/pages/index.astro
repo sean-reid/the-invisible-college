@@ -15,6 +15,31 @@ const dateFormatter = new Intl.DateTimeFormat('en-US', {
   day: 'numeric',
   timeZone: 'UTC',
 });
+
+const monthFormatter = new Intl.DateTimeFormat('en-US', {
+  year: 'numeric',
+  month: 'long',
+  timeZone: 'UTC',
+});
+
+// Group posts by UTC month, preserving the reverse-chronological order
+// in both the month list and within each month. Month subheads make the
+// institutional cadence visible: irregular publishing is honest, and a
+// sparse month is a feature, not a flaw to hide.
+type MonthGroup = { key: string; label: string; posts: typeof posts };
+const monthGroups: MonthGroup[] = [];
+const seen = new Map<string, MonthGroup>();
+for (const post of posts) {
+  const d = post.data.publishedAt;
+  const key = `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, '0')}`;
+  let group = seen.get(key);
+  if (!group) {
+    group = { key, label: monthFormatter.format(d), posts: [] };
+    monthGroups.push(group);
+    seen.set(key, group);
+  }
+  group.posts.push(post);
+}
 ---
 
 <Base
@@ -42,55 +67,62 @@ const dateFormatter = new Intl.DateTimeFormat('en-US', {
       posts.length === 0 ? (
         <p class="meta italic">No publications yet.</p>
       ) : (
-        <ol class="space-y-7 list-none pl-0">
-          {posts.map((post) => (
-            <li class="grid grid-cols-[auto_1fr] gap-x-4 items-baseline">
-              <span class="meta tabular tabular-nums w-8 text-right">
-                {post.data.issueNumber
-                  ? String(post.data.issueNumber).padStart(2, '0')
-                  : ''}
-              </span>
-              <div>
-                <a
-                  href={`${import.meta.env.BASE_URL}/posts/${post.id}`}
-                  class="block text-xl font-medium leading-tight no-underline hover:underline"
-                >
-                  {post.data.title}
-                </a>
-                <p class="meta mt-1">
-                  <span class="tabular">
-                    {dateFormatter.format(post.data.publishedAt)}
-                  </span>
-                  <span class="mx-2 text-rule-strong">·</span>
-                  <span>
-                    {post.data.authors.map((name, i) => {
-                      const id = fellowByName.get(name);
-                      return (
-                        <>
-                          {i > 0 && ', '}
-                          {id ? (
-                            <a
-                              href={`${import.meta.env.BASE_URL}/fellows/${id}`}
-                            >
-                              {name}
-                            </a>
-                          ) : (
-                            name
-                          )}
-                        </>
-                      );
-                    })}
-                  </span>
-                </p>
-                {post.data.description && (
-                  <p class="mt-2 text-ink-soft leading-relaxed">
-                    {post.data.description}
-                  </p>
-                )}
-              </div>
-            </li>
+        <div class="space-y-10">
+          {monthGroups.map((group) => (
+            <section>
+              <h3 class="smallcaps text-ink-soft mb-3">{group.label}</h3>
+              <ol class="space-y-7 list-none pl-0">
+                {group.posts.map((post) => (
+                  <li class="grid grid-cols-[auto_1fr] gap-x-4 items-baseline">
+                    <span class="meta tabular tabular-nums w-8 text-right">
+                      {post.data.issueNumber
+                        ? String(post.data.issueNumber).padStart(2, '0')
+                        : ''}
+                    </span>
+                    <div>
+                      <a
+                        href={`${import.meta.env.BASE_URL}/posts/${post.id}`}
+                        class="block text-xl font-medium leading-tight no-underline hover:underline"
+                      >
+                        {post.data.title}
+                      </a>
+                      <p class="meta mt-1">
+                        <span class="tabular">
+                          {dateFormatter.format(post.data.publishedAt)}
+                        </span>
+                        <span class="mx-2 text-rule-strong">·</span>
+                        <span>
+                          {post.data.authors.map((name, i) => {
+                            const id = fellowByName.get(name);
+                            return (
+                              <>
+                                {i > 0 && ', '}
+                                {id ? (
+                                  <a
+                                    href={`${import.meta.env.BASE_URL}/fellows/${id}`}
+                                  >
+                                    {name}
+                                  </a>
+                                ) : (
+                                  name
+                                )}
+                              </>
+                            );
+                          })}
+                        </span>
+                      </p>
+                      {post.data.description && (
+                        <p class="mt-2 text-ink-soft leading-relaxed">
+                          {post.data.description}
+                        </p>
+                      )}
+                    </div>
+                  </li>
+                ))}
+              </ol>
+            </section>
           ))}
-        </ol>
+        </div>
       )
     }
   </section>

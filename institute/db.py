@@ -15,7 +15,7 @@ from pathlib import Path
 
 from institute.paths import DB_PATH as DB_PATH  # re-exported for tests to patch
 
-SCHEMA_VERSION = 7
+SCHEMA_VERSION = 8
 
 SCHEMA = """
 CREATE TABLE IF NOT EXISTS schema_version (
@@ -94,6 +94,17 @@ CREATE TABLE IF NOT EXISTS project_collaborators (
     role        TEXT NOT NULL,
     PRIMARY KEY (project_id, fellow_id)
 );
+
+CREATE TABLE IF NOT EXISTS project_invitations (
+    project_id  TEXT NOT NULL REFERENCES projects(id),
+    fellow_id   TEXT NOT NULL REFERENCES fellows(id),
+    decision    TEXT NOT NULL,
+    rationale   TEXT,
+    invited_at  TEXT NOT NULL,
+    PRIMARY KEY (project_id, fellow_id)
+);
+CREATE INDEX IF NOT EXISTS idx_project_invitations_fellow
+    ON project_invitations(fellow_id);
 
 CREATE TABLE IF NOT EXISTS reviews (
     id                 TEXT    PRIMARY KEY,
@@ -215,6 +226,9 @@ def _run_migrations(conn: sqlite3.Connection, from_version: int, to_version: int
         elif version == 6:
             _migrate_6_to_7(conn)
             version = 7
+        elif version == 7:
+            _migrate_7_to_8(conn)
+            version = 8
         else:
             raise RuntimeError(f"No migration path from version {version}.")
     conn.execute("UPDATE schema_version SET version = ?", (to_version,))
@@ -426,6 +440,38 @@ def _migrate_6_to_7(conn: sqlite3.Connection) -> None:
         conn.execute(
             "CREATE INDEX IF NOT EXISTS idx_reviewer_marks_active "
             "ON reviewer_marks(fellow_id, expires_at)"
+        )
+        conn.execute("COMMIT")
+    except Exception:
+        conn.execute("ROLLBACK")
+        raise
+
+
+def _migrate_7_to_8(conn: sqlite3.Connection) -> None:
+    """Add project_invitations for Chapter 7 conflict-of-interest checks.
+
+    A Fellow invited to a research group and who declined cannot serve
+    as a peer reviewer on that project. Recording the decline in the DB
+    (in addition to the JSON artifact under archive/proposals/.../invitations/)
+    lets the reviewer-pool query stay a pure SQL exclusion. Idempotent.
+    """
+    conn.execute("BEGIN IMMEDIATE")
+    try:
+        conn.execute(
+            """
+            CREATE TABLE IF NOT EXISTS project_invitations (
+                project_id  TEXT NOT NULL REFERENCES projects(id),
+                fellow_id   TEXT NOT NULL REFERENCES fellows(id),
+                decision    TEXT NOT NULL,
+                rationale   TEXT,
+                invited_at  TEXT NOT NULL,
+                PRIMARY KEY (project_id, fellow_id)
+            )
+            """
+        )
+        conn.execute(
+            "CREATE INDEX IF NOT EXISTS idx_project_invitations_fellow "
+            "ON project_invitations(fellow_id)"
         )
         conn.execute("COMMIT")
     except Exception:

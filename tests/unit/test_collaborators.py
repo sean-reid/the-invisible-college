@@ -219,6 +219,99 @@ def test_peer_review_works_without_collaborators(cohort) -> None:
     assert picked == {"carol", "diana", "evan"}
 
 
+# --- conflict of interest (Chapter 7) -----------------------------------
+
+
+def test_peer_review_excludes_advisor_of_lead(cohort) -> None:
+    """A Fellow may not review work by their advisee (Chapter 7)."""
+    # Give the lead an advisor; that advisor must be filtered out.
+    with db.connection() as conn, db.transaction(conn):
+        conn.execute("UPDATE fellows SET advisor_id = ? WHERE id = ?", ("carol", "lead"))
+    _insert_project("p-advisor", lead_id="lead", state="drafted")
+    with db.connection() as conn:
+        slots = _pick_review_slots(conn, "p-advisor", "lead", 1)
+    picked = {s.reviewer_id for s in slots}
+    assert "carol" not in picked
+
+
+def test_peer_review_excludes_advisees_of_lead(cohort) -> None:
+    """A Fellow may not review work by their advisor (Chapter 7)."""
+    with db.connection() as conn, db.transaction(conn):
+        conn.execute("UPDATE fellows SET advisor_id = ? WHERE id = ?", ("lead", "carol"))
+    _insert_project("p-advisee", lead_id="lead", state="drafted")
+    with db.connection() as conn:
+        slots = _pick_review_slots(conn, "p-advisee", "lead", 1)
+    picked = {s.reviewer_id for s in slots}
+    assert "carol" not in picked
+
+
+def test_peer_review_excludes_advisor_of_collaborator(cohort) -> None:
+    """CoI extends to advisors of collaborators, not just the lead."""
+    with db.connection() as conn, db.transaction(conn):
+        conn.execute("UPDATE fellows SET advisor_id = ? WHERE id = ?", ("diana", "evan"))
+    _insert_project("p-collab-coi", lead_id="lead", state="drafted")
+    with db.connection() as conn, db.transaction(conn):
+        collaborators.add(conn, project_id="p-collab-coi", fellow_id="evan")
+    with db.connection() as conn:
+        slots = _pick_review_slots(conn, "p-collab-coi", "lead", 1)
+    picked = {s.reviewer_id for s in slots}
+    assert "evan" not in picked  # collaborator
+    assert "diana" not in picked  # collaborator's advisor
+
+
+def test_peer_review_excludes_invitation_decliner(cohort) -> None:
+    """A Fellow who declined a research-group invitation cannot review (Chapter 7)."""
+    _insert_project("p-decliner", lead_id="lead", state="drafted")
+    now = datetime.now(UTC).isoformat(timespec="seconds")
+    with db.connection() as conn, db.transaction(conn):
+        conn.execute(
+            "INSERT INTO project_invitations "
+            "(project_id, fellow_id, decision, rationale, invited_at) "
+            "VALUES (?, ?, ?, ?, ?)",
+            ("p-decliner", "carol", "decline", "too busy", now),
+        )
+    with db.connection() as conn:
+        slots = _pick_review_slots(conn, "p-decliner", "lead", 1)
+    picked = {s.reviewer_id for s in slots}
+    assert "carol" not in picked
+
+
+def test_peer_review_accept_invitation_does_not_block(cohort) -> None:
+    """Accepting an invitation makes the Fellow a co-author (already excluded);
+    it should not separately get treated as a decliner-CoI even if the row
+    happens to exist."""
+    _insert_project("p-acceptor", lead_id="lead", state="drafted")
+    now = datetime.now(UTC).isoformat(timespec="seconds")
+    with db.connection() as conn, db.transaction(conn):
+        # Carol accepted but isn't yet recorded as a collaborator (transient state).
+        conn.execute(
+            "INSERT INTO project_invitations "
+            "(project_id, fellow_id, decision, rationale, invited_at) "
+            "VALUES (?, ?, ?, ?, ?)",
+            ("p-acceptor", "carol", "accept", "yes", now),
+        )
+    with db.connection() as conn:
+        slots = _pick_review_slots(conn, "p-acceptor", "lead", 1)
+    picked = {s.reviewer_id for s in slots}
+    # Accepting alone shouldn't block: only declines are CoI.
+    assert "carol" in picked
+
+
+def test_decliner_ids_helper(cohort) -> None:
+    """collaborators.decliner_ids returns the right set."""
+    _insert_project("p-helper", lead_id="lead")
+    now = datetime.now(UTC).isoformat(timespec="seconds")
+    with db.connection() as conn, db.transaction(conn):
+        conn.execute(
+            "INSERT INTO project_invitations "
+            "(project_id, fellow_id, decision, rationale, invited_at) "
+            "VALUES (?, 'carol', 'decline', '', ?), (?, 'diana', 'accept', '', ?)",
+            ("p-helper", now, "p-helper", now),
+        )
+    with db.connection() as conn:
+        assert collaborators.decliner_ids(conn, "p-helper") == {"carol"}
+
+
 # --- reputation aggregation ---------------------------------------------
 
 

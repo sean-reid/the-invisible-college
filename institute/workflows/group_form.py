@@ -23,7 +23,7 @@ from pathlib import Path
 
 from rich.console import Console
 
-from institute import claude_runner, collaborators, parsing, paths, workspaces
+from institute import claude_runner, collaborators, db, parsing, paths, workspaces
 from institute.claude_runner import FellowTask
 from institute.fellow import Genome
 
@@ -216,6 +216,7 @@ def invite(
     rationale = str(payload.get("rationale", "")).strip()
     accepted = decision == "accept"
 
+    recorded_at = datetime.now(UTC).isoformat(timespec="seconds")
     record = {
         "invitee_id": invitee.id,
         "invitee_name": invitee.name,
@@ -224,11 +225,34 @@ def invite(
         "project_id": project_id,
         "decision": "accept" if accepted else "decline",
         "rationale": rationale or "(no rationale provided)",
-        "recorded_at": datetime.now(UTC).isoformat(timespec="seconds"),
+        "recorded_at": recorded_at,
     }
     tmp = decision_path.with_suffix(decision_path.suffix + ".tmp")
     tmp.write_text(json.dumps(record, indent=2) + "\n", encoding="utf-8")
     tmp.replace(decision_path)
+
+    # Also write the decision into project_invitations so peer-review's
+    # CoI exclusion (Chapter 7: an invited Fellow who declined cannot
+    # review the same project) stays a pure SQL filter. The JSON file
+    # remains the canonical institutional record; the DB row is the index.
+    try:
+        with db.connection() as conn, db.transaction(conn):
+            conn.execute(
+                "INSERT OR REPLACE INTO project_invitations "
+                "(project_id, fellow_id, decision, rationale, invited_at) "
+                "VALUES (?, ?, ?, ?, ?)",
+                (
+                    project_id,
+                    invitee.id,
+                    "accept" if accepted else "decline",
+                    rationale or None,
+                    recorded_at,
+                ),
+            )
+    except Exception as exc:  # pragma: no cover - best-effort path
+        console.print(
+            f"[yellow]invitation DB write failed for {invitee.id}/{project_id}: {exc}[/yellow]"
+        )
 
     return Invitation(invitee=invitee, accepted=accepted, rationale=rationale)
 

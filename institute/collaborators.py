@@ -119,3 +119,16 @@ def authored_project_ids(conn: sqlite3.Connection, fellow_id: str) -> list[str]:
         )
     )
     return [r["id"] for r in rows]
+
+
+def decliner_ids(conn: sqlite3.Connection, project_id: str) -> set[str]:
+    """Fellows invited to this project's research group who declined.
+
+    Per Chapter 7, declining an invitation is a conflict of interest:
+    such a Fellow cannot serve as a peer reviewer on the same project.
+    """
+    rows = conn.execute(
+        "SELECT fellow_id FROM project_invitations WHERE project_id = ? AND decision = 'decline'",
+        (project_id,),
+    )
+    return {r["fellow_id"] for r in rows}
