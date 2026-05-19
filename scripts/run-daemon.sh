@@ -79,13 +79,17 @@ else
 fi
 
 if [ "$IC_AUTO_PUSH" = "1" ] && [ "$EXIT" = "0" ]; then
-    # Skip the auto-commit if there are user-edited (uncommitted, unstaged)
-    # files under the paths the daemon writes. Otherwise the daemon would
-    # sweep up half-finished work in progress and ship it to origin. This
-    # check looks for any modified-but-not-staged entry under
-    # archive/, blog/src/content/, or genomes/.
+    # Skip the auto-commit if there are user-edited tracked files under
+    # the paths the daemon writes — i.e., a file the user has modified
+    # in place but not committed yet. Otherwise the daemon would sweep
+    # up half-finished work in progress and ship it to origin.
+    #
+    # Untracked files (?? in porcelain output) do NOT count: those are
+    # the daemon's own fresh output we want to commit. Only the M/A/R/C/D
+    # codes in column 2 (unstaged side) indicate a tracked file edited
+    # in the working tree, which is the user-edit signal.
     USER_EDITS=$(git status --porcelain -- archive/ blog/src/content/ genomes/ 2>/dev/null \
-        | awk '/^.[MARCD?]/ { print }')
+        | awk '/^.[MARCD]/ { print }')
     if [ -n "$USER_EDITS" ]; then
         echo "[$(date -u +%FT%TZ)] user edits present under daemon paths; skipping auto-commit:" >> "$LOG"
         echo "$USER_EDITS" >> "$LOG"

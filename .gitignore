@@ -8,6 +8,9 @@ institute.db-wal
 bootstrap-failed-output.txt
 archive/lab-notebooks/*/raw-research-output.txt
 archive/reviews/*/raw-review-by-*.txt
+# Promotion-review scratch space the orchestrator rewrites every run.
+# Not institutional record — those live in the per-Fellow vote dirs.
+archive/promotions/_orchestrator-workspace/
 
 # Python
 __pycache__/
