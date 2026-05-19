@@ -48,26 +48,21 @@ EXIT=$?
 set -e
 
 if [ "$IC_AUTO_PUSH" = "1" ] && [ "$EXIT" = "0" ]; then
-    # Only push if there is something worth pushing AND a new publication
-    # was produced this wake-up. Other intermediate state stays local.
-    if git diff --quiet HEAD -- blog/src/content/posts archive/publications 2>/dev/null; then
-        if git status --porcelain blog/src/content/posts archive/publications | grep -q .; then
-            HAS_NEW_PUB=1
-        else
-            HAS_NEW_PUB=0
-        fi
+    # Stage every artifact the daemon may have produced this wake-up.
+    # If something changed, commit and push. The push includes
+    # everything: publications, decision records, curriculum responses,
+    # advisor feedback, genome rank updates. The repo stays clean and
+    # the remote stays in sync.
+    git add archive/ blog/src/content/ genomes/ 2>/dev/null || true
+    if ! git diff --staged --quiet; then
+        # Build a short summary of what changed for the commit message.
+        SUMMARY=$(git diff --staged --name-only \
+            | awk -F/ '{print $1"/"$2}' | sort -u | head -3 | tr '\n' ' ')
+        echo "[$(date -u +%FT%TZ)] daemon produced changes; committing + pushing" >> "$LOG"
+        git commit -m "Autopilot $(date -u +%FT%TZ): ${SUMMARY}" >> "$LOG" 2>&1 || true
+        git push origin main >> "$LOG" 2>&1 || true
     else
-        HAS_NEW_PUB=1
-    fi
-    if [ "$HAS_NEW_PUB" = "1" ]; then
-        echo "[$(date -u +%FT%TZ)] new publication detected; committing + pushing" >> "$LOG"
-        git add archive/ blog/src/content/ genomes/ 2>/dev/null || true
-        if ! git diff --staged --quiet; then
-            git commit -m "Autopilot: $(date -u +%FT%TZ)" >> "$LOG" 2>&1 || true
-            git push origin main >> "$LOG" 2>&1 || true
-        fi
-    else
-        echo "[$(date -u +%FT%TZ)] no new publication; leaving local commits unpushed" >> "$LOG"
+        echo "[$(date -u +%FT%TZ)] nothing changed this wake-up; no commit" >> "$LOG"
     fi
 fi
 
