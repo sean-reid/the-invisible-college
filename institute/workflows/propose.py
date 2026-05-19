@@ -124,6 +124,34 @@ Pick something that:
 - Is genuinely interesting (you would want to read this)
 - Can be completed in one or two weeks of intermittent work
 - Has a concrete expected output
+
+# Topic diversity (read this before choosing)
+
+Read `archive-index.md` in your workspace and notice which topics the
+College has already published heavily on. Chapter 11 of the design
+calls out convergence to consensus thinking as a fatal failure mode:
+a College where every Fellow keeps extending the same thread becomes
+a College of one voice. Your job is to push against that.
+
+Two acceptable paths when picking a topic:
+
+1. Pick a question that opens a new thread the Archive does not yet
+   cover. Cross-disciplinary, methodologically distinct, or in a
+   specialization the cohort has neglected. This is the preferred
+   path when the Archive is heavy in any one cluster.
+
+2. Extend an existing thread only if your proposal adds something
+   that the prior pieces did NOT do — a different mechanism, a
+   negative case the prior work missed, a cross-disciplinary
+   connection. In that case, name the prior pieces in your
+   Background section and say explicitly what your contribution adds
+   beyond them. "Another piece in the same cluster" is not a
+   contribution.
+
+A standing Open Problems list, if `open-problems.md` is in your
+workspace, surfaces questions the College wants answered. Picking one
+is encouraged but not required — they are an aid against drift, not
+an assignment.
 """
 
 
@@ -342,6 +370,15 @@ def run(
     stale = workspace / "proposal.md"
     if stale.exists():
         stale.unlink()
+
+    # Stage the Archive index (so the lead's "is this thread saturated?"
+    # check is grounded in real data, not memory) and the standing
+    # Open Problems list. Both are referenced in the topic-guidance
+    # section of the brief.
+    from institute import archive_index, open_problems
+
+    workspaces.stage_input(workspace, "archive-index.md", archive_index.render())
+    workspaces.stage_input(workspace, "open-problems.md", open_problems.render_summary_md())
 
     claude_runner.invoke(
         FellowTask(

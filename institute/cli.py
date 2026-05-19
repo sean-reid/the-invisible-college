@@ -1229,6 +1229,125 @@ def budget_status(daily_budget_usd: float, days: int) -> None:
             console.print(f"  {d}  ${usd:>6.2f}  [dim]{bar}[/dim]")
 
 
+@main.group("open-problems")
+def open_problems_group() -> None:
+    """Standing list of open research questions any Fellow may take on."""
+
+
+@open_problems_group.command("list")
+def open_problems_list() -> None:
+    """Show every open problem on the standing list."""
+    from institute import open_problems as op
+
+    problems = op.load_all()
+    if not problems:
+        console.print(
+            "[dim]No open problems on the list. Use `institute open-problems add` to add one.[/dim]"
+        )
+        return
+    for p in problems:
+        color = "green" if p.status == "open" else "dim"
+        tag_str = f" [{', '.join(p.tags)}]" if p.tags else ""
+        console.print(f"[{color}]{p.slug}[/{color}] — {p.title}{tag_str}")
+        console.print(f"  [dim]status:[/dim] {p.status}   [dim]opened:[/dim] {p.opened_at}")
+        if p.status == "resolved" and p.resolved_by_project:
+            console.print(
+                f"  [dim]resolved by[/dim] {p.resolved_by_project} "
+                f"([dim]{p.resolved_by_fellow}[/dim])"
+            )
+
+
+@open_problems_group.command("show")
+@click.argument("slug")
+def open_problems_show(slug: str) -> None:
+    """Print one problem's full text."""
+    from institute import open_problems as op
+
+    p = op.get(slug)
+    if p is None:
+        console.print(f"[red]No such open problem: `{slug}`.[/red]")
+        sys.exit(1)
+    console.print(f"[bold]{p.title}[/bold]   [dim]({p.slug})[/dim]")
+    console.print(f"[dim]status:[/dim] {p.status}")
+    console.print(f"[dim]opened:[/dim] {p.opened_at} by {p.opened_by}")
+    if p.tags:
+        console.print(f"[dim]tags:[/dim] {', '.join(p.tags)}")
+    if p.status == "resolved":
+        console.print(
+            f"[dim]resolved:[/dim] {p.resolved_at} by "
+            f"{p.resolved_by_fellow} via project {p.resolved_by_project}"
+        )
+    console.print()
+    console.print(p.body)
+
+
+@open_problems_group.command("add")
+@click.option("--title", required=True, help="Short problem title.")
+@click.option(
+    "--body",
+    default=None,
+    help=(
+        "Problem body markdown. If omitted, reads from stdin so you can "
+        "paste a multi-line problem statement and end with Ctrl-D."
+    ),
+)
+@click.option(
+    "--tag",
+    "tags",
+    multiple=True,
+    help="Tag for filtering / clustering. Repeatable.",
+)
+@click.option(
+    "--opened-by",
+    default="founder",
+    show_default=True,
+    help="Who's adding this problem.",
+)
+def open_problems_add(title: str, body: str | None, tags: tuple[str, ...], opened_by: str) -> None:
+    """Add a new open problem to the standing list."""
+    from institute import open_problems as op
+
+    if body is None:
+        console.print("[dim]Reading body from stdin. Ctrl-D to finish.[/dim]")
+        body = sys.stdin.read()
+    if not body.strip():
+        console.print("[red]Body is required.[/red]")
+        sys.exit(1)
+    try:
+        problem = op.add(title=title, body=body, tags=list(tags), opened_by=opened_by)
+    except ValueError as exc:
+        console.print(f"[red]{exc}[/red]")
+        sys.exit(1)
+    console.print(f"[green]Added:[/green] {problem.slug}")
+    console.print(f"  path: {problem.path.relative_to(paths.ROOT)}")
+
+
+@open_problems_group.command("resolve")
+@click.argument("slug")
+@click.option(
+    "--project",
+    "project_id",
+    required=True,
+    help="Project id that resolved the problem.",
+)
+@click.option(
+    "--fellow",
+    "fellow_id",
+    required=True,
+    help="Lead Fellow id on the resolving project.",
+)
+def open_problems_resolve(slug: str, project_id: str, fellow_id: str) -> None:
+    """Mark a problem resolved by a specific project + lead Fellow."""
+    from institute import open_problems as op
+
+    try:
+        problem = op.resolve(slug, project_id=project_id, fellow_id=fellow_id)
+    except ValueError as exc:
+        console.print(f"[red]{exc}[/red]")
+        sys.exit(1)
+    console.print(f"[green]Resolved:[/green] {problem.slug} via {project_id} (lead: {fellow_id})")
+
+
 @main.group()
 def schedule() -> None:
     """Schedule autopilot via launchd (macOS)."""

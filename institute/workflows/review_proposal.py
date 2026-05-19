@@ -36,6 +36,15 @@ proposal text appears below. Your job is to render a fast, honest verdict.
 2. **Feasibility.** Can the proposed approach actually produce the expected
    output? Are the resource estimates plausible?
 3. **Fit.** Is this work appropriate for the College, given the Charter?
+4. **Topic diversity.** Read the Archive index. If this proposal extends
+   a thread the College has already published heavily on (three or more
+   pieces, or two by the same lead Fellow), it adds to a saturation
+   problem the Charter calls out in Chapter 11. Recommend
+   `approve-with-revisions` and ask the lead to either (a) name what
+   their proposal contributes beyond the prior pieces in concrete
+   terms, or (b) pivot to a different question. Do NOT approve another
+   piece in a saturated cluster on the strength of competence alone —
+   competence in a single track is what convergence looks like.
 
 # Required output
 
