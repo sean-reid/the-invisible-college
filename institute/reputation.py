@@ -286,13 +286,18 @@ def consecutive_holds(conn: sqlite3.Connection, fellow_id: str) -> int:
     Chapter 3 calls for the Tenure Committee to consider release after
     two consecutive failed promotion reviews; this helper surfaces the
     count so the orchestrator's recommendation can engage that rule.
+
+    Actor matching is exact-membership against the comma-joined
+    `actor` field (see decisions.record). Plain substring matching
+    would conflate Fellows whose ids prefix each other.
     """
     rows = list(
         conn.execute(
             "SELECT action FROM audit_log "
-            "WHERE actor LIKE ? AND action IN ('promotion', 'promotion_review') "
+            "WHERE action IN ('promotion', 'promotion_review') "
+            "  AND (',' || actor || ',') LIKE ? "
             "ORDER BY at DESC",
-            (f"%{fellow_id}%",),
+            (f"%,{fellow_id},%",),
         )
     )
     streak = 0

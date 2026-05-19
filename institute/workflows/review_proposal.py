@@ -13,11 +13,10 @@ from __future__ import annotations
 
 import re
 import sqlite3
-from datetime import UTC, datetime
 
 from rich.console import Console
 
-from institute import claude_runner, db, decisions, paths
+from institute import claude_runner, db, decisions, paths, state
 from institute import fellow as fellow_mod
 from institute.claude_runner import FellowTask
 from institute.fellow import Genome
@@ -157,7 +156,6 @@ def run(project_id: str) -> None:
     tmp.write_text(review_md.rstrip() + "\n", encoding="utf-8")
     tmp.replace(review_path)
 
-    now = datetime.now(UTC).isoformat(timespec="seconds")
     target_state = State.PROPOSAL_REVIEWED if recommendation != "reject" else State.REJECTED
 
     decision = decisions.Decision(
@@ -175,10 +173,7 @@ def run(project_id: str) -> None:
     )
 
     with db.connection() as conn, db.transaction(conn):
-        conn.execute(
-            "UPDATE projects SET state = ?, updated_at = ? WHERE id = ?",
-            (target_state.value, now, project_id),
-        )
+        state.transition(conn, project_id, target_state)
         decisions.record(conn, decision)
 
     console.print()

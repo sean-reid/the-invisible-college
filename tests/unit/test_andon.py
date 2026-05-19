@@ -123,7 +123,15 @@ def test_peer_reviewing_can_transition_to_andon_review() -> None:
 
 
 def test_andon_review_transitions_to_editorial_or_rejected() -> None:
-    assert ALLOWED_TRANSITIONS[State.ANDON_REVIEW] == {State.EDITORIAL, State.REJECTED}
+    # ANDON_REVIEW also routes back to REVISING or EDITORIAL_REVIEW when
+    # dismissed on round 1 with non-cord-pulling reviewers recommending
+    # major revisions or dissent.
+    assert ALLOWED_TRANSITIONS[State.ANDON_REVIEW] == {
+        State.EDITORIAL,
+        State.REJECTED,
+        State.REVISING,
+        State.EDITORIAL_REVIEW,
+    }
 
 
 def test_andon_review_has_next_action() -> None:

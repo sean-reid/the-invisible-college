@@ -332,6 +332,13 @@ def _tally(votes: list[dict], current_rank: str) -> PromoteOutcome:
     """Pick the outcome with strict majority; otherwise None (hold).
 
     A vote for "release" is treated as a distinct outcome from any rank.
+
+    Quorum guards (Chapter 7 spirit: the Tenure Committee is plural):
+      - A single-Fellow panel cannot promote into `senior_fellow`. That
+        threshold needs at least two voters; otherwise hold and try
+        again when the panel grows.
+      - A single-Fellow panel cannot grant a multi-rank jump. The cap
+        is one rank above current. Larger jumps need ≥2 voters.
     """
     raw = [str(v.get("vote", "hold")).strip().lower() for v in votes]
     cleaned = [r for r in raw if r in VALID_VOTES]
@@ -344,7 +351,22 @@ def _tally(votes: list[dict], current_rank: str) -> PromoteOutcome:
     if top == "hold" or top == current_rank:
         return None
     if top == "release":
+        # Release is fine from a single voter — it's a hold-by-another-name
+        # if the panel agrees the Fellow should leave. The two-failed-
+        # promotion gate (consecutive_holds) is the structural protection.
         return "release"
+    if len(cleaned) == 1:
+        try:
+            current_idx = RANK_ORDER.index(cast(Rank, current_rank))
+            target_idx = RANK_ORDER.index(cast(Rank, top))
+        except ValueError:
+            return cast(Rank, top)
+        # Cap one-voter promotions to one-rank advance, and refuse any
+        # one-voter promotion that lands at senior_fellow.
+        if target_idx - current_idx > 1:
+            return None
+        if top == "senior_fellow":
+            return None
     return cast(Rank, top)
 
 

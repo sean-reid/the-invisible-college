@@ -31,7 +31,7 @@ from datetime import UTC, datetime
 
 from rich.console import Console
 
-from institute import db, decisions
+from institute import db, decisions, state
 from institute.state import State
 
 console = Console()
@@ -112,20 +112,48 @@ def run(
         related_project=related_project,
     )
 
+    orphaned_advisees: list[dict] = []
     with db.connection() as conn, db.transaction(conn):
         conn.execute(
             "UPDATE fellows SET retired_at = ? WHERE id = ?",
             (now, fellow_id),
         )
+        # Null advisor_id on every Fellow whose advisor was just
+        # terminated. An advisor pointer to a retired Fellow would let
+        # them sneak back into reviewer slots on the advisee's qualifying
+        # project. Capture the orphaned advisees so the operator knows
+        # who needs reassignment.
+        orphaned_advisees = list(
+            conn.execute(
+                "SELECT id, name, rank FROM fellows WHERE advisor_id = ? AND retired_at IS NULL",
+                (fellow_id,),
+            )
+        )
+        if orphaned_advisees:
+            conn.execute(
+                "UPDATE fellows SET advisor_id = NULL WHERE advisor_id = ?",
+                (fellow_id,),
+            )
         # Discard in-flight work. Already-published projects are NOT
         # touched; the Archive preserves them with disclosure at render
-        # time.
+        # time. Force the REJECTED transition since terminate must apply
+        # from any state, not just states whose normal transitions
+        # include REJECTED.
         for proj in in_flight:
-            conn.execute(
-                "UPDATE projects SET state = ?, updated_at = ? WHERE id = ?",
-                (State.REJECTED.value, now, proj["id"]),
-            )
+            state.transition(conn, proj["id"], State.REJECTED, force=True)
         decisions.record(conn, decision)
+        if orphaned_advisees:
+            reassignment = decisions.Decision(
+                kind="advisor_reassignment_needed",
+                title=f"Advisor reassignment needed after termination of {row['name']}",
+                body=_format_reassignment_body(
+                    terminated_name=row["name"],
+                    terminated_id=fellow_id,
+                    advisees=list(orphaned_advisees),
+                ),
+                actors=["orchestrator", *(r["id"] for r in orphaned_advisees)],
+            )
+            decisions.record(conn, reassignment)
 
     console.print()
     console.print(f"[bold red]Terminated: {row['name']}[/bold red] ({fellow_id}) for `{kind}`.")
@@ -134,6 +162,14 @@ def run(
         console.print(f"  Discarded {len(in_flight)} in-flight project(s):")
         for proj in in_flight:
             console.print(f"    - {proj['id']} ({proj['state']} → rejected)")
+    if orphaned_advisees:
+        console.print(
+            f"  [yellow]Cleared advisor_id on {len(orphaned_advisees)} "
+            "orphaned advisee(s):[/yellow]"
+        )
+        for a in orphaned_advisees:
+            console.print(f"    - {a['name']} ({a['id']}, {a['rank']})")
+        console.print("  [yellow]Reassign before any qualifying-project step proceeds.[/yellow]")
     console.print(
         "[dim]Published work survives in the Archive with disclosure on the blog. "
         "Genome preserved in `genomes/`. The Fellow no longer participates in "
@@ -189,6 +225,35 @@ def _format_decision_body(
             "in the Archive. The blog renders a Charter-violation "
             "disclosure banner on each affected piece so readers see the "
             "context. In-flight work is discarded.",
+        ]
+    )
+    return "\n".join(lines)
+
+
+def _format_reassignment_body(
+    *,
+    terminated_name: str,
+    terminated_id: str,
+    advisees: list,
+) -> str:
+    """Build the markdown body for an advisor_reassignment_needed decision."""
+    lines = [
+        f"**Terminated advisor:** {terminated_name} (`{terminated_id}`)",
+        "",
+        f"**Orphaned advisees ({len(advisees)}):**",
+        "",
+    ]
+    for a in advisees:
+        lines.append(f"- {a['name']} (`{a['id']}`, {a['rank']})")
+    lines.extend(
+        [
+            "",
+            (
+                "These Fellows have had their `advisor_id` cleared. They "
+                "need a new advisor before any qualifying-project step "
+                "can proceed. The Admissions Committee (or the Founder "
+                "while no panel exists) should reassign them."
+            ),
         ]
     )
     return "\n".join(lines)

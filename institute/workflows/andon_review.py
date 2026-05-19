@@ -13,7 +13,6 @@ Outcomes:
 
 from __future__ import annotations
 
-from datetime import UTC, datetime
 from pathlib import Path
 from typing import cast
 
@@ -21,7 +20,7 @@ from rich.console import Console
 from rich.panel import Panel
 from rich.prompt import Prompt
 
-from institute import claude_runner, db, decisions, parsing, paths
+from institute import claude_runner, db, decisions, parsing, paths, state
 from institute import fellow as fellow_mod
 from institute.claude_runner import FellowTask
 from institute.fellow import Genome
@@ -302,7 +301,7 @@ def _apply_outcome(
 ) -> None:
     """Persist the andon outcome: update state + write decision record."""
     if outcome == "dismiss":
-        target = State.EDITORIAL
+        target = _dismiss_target_state(project_id)
         verb = "dismissed"
     else:
         target = State.REJECTED
@@ -336,12 +335,8 @@ def _apply_outcome(
         actors=actors,
         related_project=project_id,
     )
-    now = datetime.now(UTC).isoformat(timespec="seconds")
     with db.connection() as conn, db.transaction(conn):
-        conn.execute(
-            "UPDATE projects SET state = ?, updated_at = ? WHERE id = ?",
-            (target.value, now, project_id),
-        )
+        state.transition(conn, project_id, target)
         decisions.record(conn, decision)
 
     # Charter-violation auto-termination. If the sustained cord was
@@ -394,6 +389,47 @@ def _mark_frivolous_andon_pulls(project_id: str, title: str) -> None:
             related_project=project_id,
             related_review_id=row["review_id"],
         )
+
+
+def _dismiss_target_state(project_id: str) -> State:
+    """Pick the post-dismiss state by replaying non-cord-pulling reviews.
+
+    A dismissed andon cord does not mean the work is publishable — it
+    only means the cord was frivolous. Other reviewers in the same
+    round may have recommended `major`/`reject` or filed dissent, and
+    that routing should still apply. Without this, a dismiss on round
+    1 jumps the project straight to EDITORIAL even though revisions
+    are owed.
+
+    Routing:
+      - Any reviewer (non-cord) recommended `reject` or filed dissent
+        on the current round  → EDITORIAL_REVIEW (Editorial Board picks).
+      - Otherwise, any reviewer recommended `major`/`minor` (i.e. not
+        `accept`) on the current round → REVISING.
+      - Otherwise → EDITORIAL.
+    """
+    with db.connection() as conn:
+        row = conn.execute(
+            "SELECT review_round FROM projects WHERE id = ?", (project_id,)
+        ).fetchone()
+        if row is None:
+            return State.EDITORIAL
+        current_round = int(row["review_round"] or 1)
+        reviews = list(
+            conn.execute(
+                "SELECT recommendation, dissent FROM reviews "
+                "WHERE project_id = ? AND round = ? AND andon_cord = 0",
+                (project_id, current_round),
+            )
+        )
+    has_reject = any((r["recommendation"] or "").lower() == "reject" for r in reviews)
+    has_dissent = any(int(r["dissent"] or 0) for r in reviews)
+    if has_reject or has_dissent:
+        return State.EDITORIAL_REVIEW
+    needs_revision = any((r["recommendation"] or "").lower() != "accept" for r in reviews)
+    if needs_revision and reviews:
+        return State.REVISING
+    return State.EDITORIAL
 
 
 def _maybe_auto_terminate(project_id: str, title: str) -> None:

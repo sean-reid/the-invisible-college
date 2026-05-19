@@ -84,9 +84,12 @@ def test_advisor_review_dispatches_advisor_workflow() -> None:
 
 
 def test_advisor_review_transitions_to_revise_or_peer() -> None:
+    # REJECTED is also allowed because targeted termination (Chapter 3)
+    # can force a REJECTED transition from any in-flight state.
     assert ALLOWED_TRANSITIONS[State.AWAITING_ADVISOR_REVIEW] == {
         State.REVISING,
         State.PEER_REVIEWING,
+        State.REJECTED,
     }
 
 

@@ -39,8 +39,9 @@ def _tenure_timestamp(conn: sqlite3.Connection, fellow_id: str) -> str:
     """
     row = conn.execute(
         "SELECT MIN(at) AS first_promotion FROM audit_log "
-        "WHERE action = 'promotion' AND actor LIKE ?",
-        (f"%{fellow_id}%",),
+        "WHERE action = 'promotion' "
+        "  AND (',' || actor || ',') LIKE ?",
+        (f"%,{fellow_id},%",),
     ).fetchone()
     if row is not None and row["first_promotion"]:
         return row["first_promotion"]

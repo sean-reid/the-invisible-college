@@ -137,7 +137,21 @@ def _pick_lead(conn: sqlite3.Connection, requested: str | None) -> Genome:
     their own.
     """
     if requested is not None:
-        return fellow_mod.load_genome(conn, requested)
+        genome = fellow_mod.load_genome(conn, requested)
+        # Chapter 5: Postulants research under apprenticeship via the
+        # qualifying-project flow, never as the lead of a research-kind
+        # proposal. The auto-pick path filters Postulants out below; the
+        # explicit --lead path needs the same gate.
+        if genome.rank == "postulant":
+            raise SystemExit(
+                f"Lead Fellow {requested!r} is a Postulant. Postulants do their "
+                "qualifying project under advisor supervision; use `institute "
+                "qualify --fellow <id>` instead."
+            )
+        row = conn.execute("SELECT retired_at FROM fellows WHERE id = ?", (requested,)).fetchone()
+        if row is not None and row["retired_at"] is not None:
+            raise SystemExit(f"Lead Fellow {requested!r} is retired and cannot lead new work.")
+        return genome
 
     # MAX(updated_at) per Fellow over projects they have led. NULL means
     # they have never led one, which sorts first under ASC NULLS FIRST

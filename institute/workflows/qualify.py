@@ -192,7 +192,6 @@ def run(postulant_id: str) -> None:
     title = title_match.group(1).strip()
     project_id = _project_id(title)
     proposal_path = paths.PROPOSALS / project_id / "proposal.md"
-    _write_atomically(proposal_path, proposal_md.rstrip() + "\n")
 
     now = datetime.now(UTC).isoformat(timespec="seconds")
     decision = decisions.Decision(
@@ -214,6 +213,14 @@ def run(postulant_id: str) -> None:
         related_project=project_id,
     )
 
+    # Insert the project row first, then write the proposal to the
+    # archive. A crash between Claude returning and this transaction
+    # leaves the workspace proposal.md but no archive file and no row;
+    # re-running the workflow finds the workspace draft and reuses it
+    # via require_output. A crash between INSERT and the file write
+    # leaves a row pointing at a missing file, which the next
+    # review_proposal dispatch raises on, surfacing the corruption
+    # rather than silently re-spending budget.
     with db.connection() as conn, db.transaction(conn):
         conn.execute(
             "INSERT INTO projects "
@@ -231,6 +238,7 @@ def run(postulant_id: str) -> None:
             ),
         )
         decisions.record(conn, decision)
+    _write_atomically(proposal_path, proposal_md.rstrip() + "\n")
 
     episodic.safe_ingest(
         fellow_id=postulant_id,

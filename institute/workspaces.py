@@ -62,3 +62,19 @@ def optional_output(workspace: Path, filename: str) -> str | None:
         return None
     text = path.read_text(encoding="utf-8").strip()
     return text or None
+
+
+def clear_outputs(workspace: Path, filenames: tuple[str, ...]) -> None:
+    """Unlink any of the named output files that exist in `workspace`.
+
+    Each Fellow invocation can run more than once for the same step (a
+    parse error on the previous run, a retry by the operator). Without
+    clearing the prior outputs, a Claude call that fails to re-write
+    every expected file would let `require_output` silently return the
+    stale content. Call this at the top of each workflow that uses
+    require_output, before invoking the runner.
+    """
+    for name in filenames:
+        path = workspace / name
+        if path.is_file():
+            path.unlink()

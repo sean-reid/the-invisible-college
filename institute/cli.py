@@ -12,6 +12,8 @@ import signal
 import sqlite3
 import sys
 import time
+from collections.abc import Iterator
+from contextlib import contextmanager
 from datetime import UTC, datetime
 
 import click
@@ -29,14 +31,54 @@ def _now() -> str:
 
 
 def _check_kill_switch() -> None:
-    with db.connection() as conn:
-        row = conn.execute("SELECT active, reason FROM kill_switch WHERE id = 1").fetchone()
-        if row is not None and row["active"]:
-            console.print("[red]Kill switch is engaged.[/red] All operations are halted.")
-            if row["reason"]:
-                console.print(f"Reason: {row['reason']}")
-            console.print("Run `institute kill-switch off` to resume.")
-            sys.exit(2)
+    """Delegate to runtime.check_kill_switch so claude_runner and the CLI
+    use the same guard. Kept as a thin alias so existing call sites
+    remain unchanged."""
+    from institute import runtime
+
+    runtime.check_kill_switch()
+
+
+def _non_negative_usd(_ctx, param, value: float) -> float:
+    """Click callback for USD budget options. Rejects negative inputs
+    so a typo like `--daily-budget-usd -5` doesn't silently disable
+    the cap (negatives are clamped to 0 by budget.current_status,
+    which behaves as "no cap")."""
+    if value is None:
+        return 0.0
+    if value < 0:
+        raise click.BadParameter(
+            f"{param.name} must be >= 0 (got {value}). Use 0 to disable the cap."
+        )
+    return value
+
+
+@contextmanager
+def _advance_lock() -> Iterator[None]:
+    """Single-instance lock shared by `institute run` and `institute autopilot`.
+
+    Both commands eventually call `_advance_loop`, which mutates the
+    same projects/reviews state. Without this guard, an autopilot wake-up
+    that fires while a manual `run` is in flight will race the same
+    most-stale project and double-dispatch its workflow. fcntl.flock is
+    cooperative: a second invocation lands BlockingIOError and exits 0
+    so the daemon's launchd retry policy treats it as a skipped wake-up,
+    not a failure.
+    """
+    import fcntl
+
+    lock_path = paths.ROOT / ".autopilot.lock"
+    lock_path.touch(exist_ok=True)
+    with lock_path.open("w") as lock_fh:
+        try:
+            fcntl.flock(lock_fh.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
+        except BlockingIOError:
+            console.print(
+                "[yellow]Another autopilot or run is already in progress. "
+                "Skipping this invocation.[/yellow]"
+            )
+            sys.exit(0)
+        yield
 
 
 @click.group()
@@ -739,6 +781,15 @@ def _dispatch_step(project_id: str, state: str) -> None:
         if kind_row is not None and kind_row["kind"] == "qualifying":
             workflow_name = "advisor_review"
 
+    # Bump updated_at on entry. The picker orders by ASC updated_at, so a
+    # workflow that consistently raises before its own commit would
+    # otherwise monopolize the queue: it keeps the oldest updated_at,
+    # gets picked again, raises again. Bumping at entry rotates the
+    # broken project to the back so other in-flight work makes progress.
+    now = _now()
+    with db.connection() as conn, db.transaction(conn):
+        conn.execute("UPDATE projects SET updated_at = ? WHERE id = ?", (now, project_id))
+
     console.print(
         f"[dim]Dispatching {workflow_name} for project {project_id} (state={state})...[/dim]"
     )
@@ -861,11 +912,21 @@ def _pick_review_candidate(cohort: list, mode: str) -> object:
 
 
 def _audit_cost_total() -> float:
-    """Sum cost_usd across every entry in the audit log. Best-effort."""
+    """Sum cost_usd across every entry in the audit log. Best-effort.
+
+    Kept as the full-file scan for callers that genuinely want the
+    grand total. The hot path inside `_advance_loop` uses
+    `_AuditCostTracker` instead, which seeks past the lines that
+    existed at loop start and only reads new entries each iteration.
+    """
     if not paths.AUDIT_LOG.is_file():
         return 0.0
+    return _sum_cost_lines(paths.AUDIT_LOG.read_text(encoding="utf-8"))
+
+
+def _sum_cost_lines(text: str) -> float:
     total = 0.0
-    for line in paths.AUDIT_LOG.read_text(encoding="utf-8").splitlines():
+    for line in text.splitlines():
         line = line.strip()
         if not line:
             continue
@@ -875,8 +936,39 @@ def _audit_cost_total() -> float:
             continue
         cost = entry.get("cost_usd")
         if isinstance(cost, int | float):
-            total += float(cost)
+            # Negative cost would be a corrupted line; clamp so a bad
+            # entry can never produce a negative run_cost.
+            total += max(float(cost), 0.0)
     return total
+
+
+class _AuditCostTracker:
+    """Incremental delta over the JSONL audit log.
+
+    Captures the file size at construction so subsequent `.delta()`
+    calls only parse the bytes appended since. The previous
+    implementation re-read the whole log on every loop iteration
+    (O(N * steps)); this is O(N + delta) per loop. The audit log is
+    append-only, so seeking to the captured offset is safe.
+    """
+
+    def __init__(self, initial_size: int) -> None:
+        self._initial_size = initial_size
+
+    @classmethod
+    def from_now(cls) -> _AuditCostTracker:
+        size = paths.AUDIT_LOG.stat().st_size if paths.AUDIT_LOG.is_file() else 0
+        return cls(initial_size=size)
+
+    def delta(self) -> float:
+        if not paths.AUDIT_LOG.is_file():
+            return 0.0
+        with paths.AUDIT_LOG.open("rb") as fh:
+            fh.seek(self._initial_size)
+            new_bytes = fh.read()
+        if not new_bytes:
+            return 0.0
+        return _sum_cost_lines(new_bytes.decode("utf-8", errors="replace"))
 
 
 # ---------------------------------------------------------------------------
@@ -890,6 +982,7 @@ def _audit_cost_total() -> float:
     type=float,
     default=10.0,
     show_default=True,
+    callback=_non_negative_usd,
     help="Hard cap on cumulative Claude API cost for this run.",
 )
 @click.option(
@@ -904,6 +997,7 @@ def _audit_cost_total() -> float:
     type=float,
     default=0.0,
     show_default=True,
+    callback=_non_negative_usd,
     help="Daily cap on cumulative Claude API cost (UTC). 0 = disabled.",
 )
 @click.option(
@@ -934,12 +1028,13 @@ def run_cmd(
     transitions between iterations.
     """
     _check_kill_switch()
-    _advance_loop(
-        max_budget_usd=max_budget_usd,
-        max_steps=max_steps,
-        project=project,
-        daily_budget_usd=daily_budget_usd,
-    )
+    with _advance_lock():
+        _advance_loop(
+            max_budget_usd=max_budget_usd,
+            max_steps=max_steps,
+            project=project,
+            daily_budget_usd=daily_budget_usd,
+        )
 
 
 def _advance_loop(
@@ -958,7 +1053,7 @@ def _advance_loop(
     """
     from institute import budget as budget_mod
 
-    baseline_cost = _audit_cost_total()
+    audit_cost = _AuditCostTracker.from_now()
 
     stop_requested = {"flag": False}
 
@@ -1008,7 +1103,7 @@ def _advance_loop(
             prev_state = row["state"]
             _dispatch_step(row["id"], row["state"])
             elapsed = time.monotonic() - start
-            run_cost = _audit_cost_total() - baseline_cost
+            run_cost = audit_cost.delta()
             console.print(
                 f"  [dim]elapsed: {elapsed:.0f}s  ·  "
                 f"run cost: ${run_cost:.2f} of ${max_budget_usd:.2f}[/dim]"
@@ -1034,21 +1129,16 @@ def _advance_loop(
 def _engage_austerity_if_new(snapshot) -> None:
     """Write a Decision the first time austerity engages on a UTC day.
 
-    Idempotent. Looks for an existing austerity_engaged decision dated
-    today; if one is on file, this is a no-op. Otherwise records a new
-    one with the current level, today's spend, and the caps.
+    Atomic + idempotent: the SELECT-then-INSERT runs inside one
+    transaction so two concurrent callers (e.g. an autopilot wake-up
+    and a manual `institute run`) cannot both pass the check and
+    double-write. The date used for the dedup query comes from the
+    snapshot itself, so a wake-up that straddles UTC midnight uses a
+    consistent date for both the lookup and the row.
     """
     from institute import decisions
 
     title = f"Austerity engaged ({snapshot.level}): {snapshot.utc_date}"
-    with db.connection() as conn:
-        existing = conn.execute(
-            "SELECT 1 FROM audit_log WHERE action = 'austerity_engaged' AND at LIKE ? LIMIT 1",
-            (f"{snapshot.utc_date}%",),
-        ).fetchone()
-    if existing is not None:
-        return
-
     body_lines = [
         f"**UTC date:** {snapshot.utc_date}",
         f"**Level:** `{snapshot.level}`",
@@ -1071,6 +1161,12 @@ def _engage_austerity_if_new(snapshot) -> None:
         actors=["orchestrator"],
     )
     with db.connection() as conn, db.transaction(conn):
+        existing = conn.execute(
+            "SELECT 1 FROM audit_log WHERE action = 'austerity_engaged' AND at LIKE ? LIMIT 1",
+            (f"{snapshot.utc_date}%",),
+        ).fetchone()
+        if existing is not None:
+            return
         decisions.record(conn, decision)
 
 
@@ -1095,6 +1191,7 @@ def budget() -> None:
     type=float,
     default=0.0,
     show_default=True,
+    callback=_non_negative_usd,
     help="Daily cap to check spend against (UTC). 0 = report-only.",
 )
 @click.option(
@@ -1150,6 +1247,7 @@ def schedule() -> None:
     type=float,
     default=10.0,
     show_default=True,
+    callback=_non_negative_usd,
     help="Per-wake-up USD cap, passed to `institute autopilot`.",
 )
 @click.option(
@@ -1164,6 +1262,7 @@ def schedule() -> None:
     type=float,
     default=0.0,
     show_default=True,
+    callback=_non_negative_usd,
     help=(
         "Daily USD cap (UTC). 0 = disabled. Crossing 80%% triggers soft "
         "austerity; crossing 100%% halts the day."
@@ -1247,6 +1346,7 @@ def schedule_status() -> None:
     type=float,
     default=10.0,
     show_default=True,
+    callback=_non_negative_usd,
     help="Hard cap on cumulative Claude API cost for this wake-up.",
 )
 @click.option(
@@ -1261,6 +1361,7 @@ def schedule_status() -> None:
     type=float,
     default=0.0,
     show_default=True,
+    callback=_non_negative_usd,
     help=(
         "Charter-defined daily cap on cumulative Claude API cost (UTC). "
         "0 = disabled. Crossing 80%% triggers soft austerity (skip "
@@ -1296,19 +1397,7 @@ def autopilot(
     manual, one scheduled) cannot race. Honors the kill switch like
     every other command, and the cost cap applies to the whole wake-up.
     """
-    import fcntl
-
-    lock_path = paths.ROOT / ".autopilot.lock"
-    lock_path.touch(exist_ok=True)
-    with lock_path.open("w") as lock_fh:
-        try:
-            fcntl.flock(lock_fh.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
-        except BlockingIOError:
-            console.print(
-                "[yellow]Another autopilot wake-up is already running. "
-                "Skipping this invocation.[/yellow]"
-            )
-            sys.exit(0)
+    with _advance_lock():
         _autopilot_locked(
             max_budget_usd=max_budget_usd,
             max_steps=max_steps,

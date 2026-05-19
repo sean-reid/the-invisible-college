@@ -22,12 +22,20 @@ from __future__ import annotations
 
 import re
 import sqlite3
-from datetime import UTC, datetime
 from pathlib import Path
 
 from rich.console import Console
 
-from institute import archive_index, claude_runner, db, decisions, episodic, paths, workspaces
+from institute import (
+    archive_index,
+    claude_runner,
+    db,
+    decisions,
+    episodic,
+    paths,
+    state,
+    workspaces,
+)
 from institute import fellow as fellow_mod
 from institute.claude_runner import FellowTask
 from institute.state import State
@@ -151,7 +159,7 @@ def run(project_id: str) -> None:
     """Top-level revise entry point. Called when state is REVISING."""
     with db.connection() as conn:
         proj = conn.execute(
-            "SELECT id, title, state, draft_path, notebook_path, lead_fellow_id, "
+            "SELECT id, title, state, kind, draft_path, notebook_path, lead_fellow_id, "
             "review_round FROM projects WHERE id = ?",
             (project_id,),
         ).fetchone()
@@ -162,6 +170,7 @@ def run(project_id: str) -> None:
                 f"Project {project_id} is in state {proj['state']}, expected revising."
             )
         current_round = int(proj["review_round"])
+        kind = proj["kind"] or "research"
         lead = fellow_mod.load_genome(conn, proj["lead_fellow_id"])
         draft_md = (paths.ROOT / proj["draft_path"]).read_text(encoding="utf-8")
         notebook_md = (paths.ROOT / proj["notebook_path"]).read_text(encoding="utf-8")
@@ -235,7 +244,20 @@ def run(project_id: str) -> None:
 
     new_title = _extract_draft_title(new_draft_md) or proj["title"]
 
-    if current_round == 1:
+    if kind == "qualifying":
+        # Chapter 5: qualifying projects are advisor-supervised. After
+        # the Postulant addresses the advisor's revision request, the
+        # piece routes back to AWAITING_ADVISOR_REVIEW (not into peer
+        # review or editorial), so the same advisor confirms the fix
+        # before the project enters the normal peer-review pipeline.
+        target_state = State.AWAITING_ADVISOR_REVIEW
+        next_round = current_round
+        next_description = (
+            "Qualifying project: revised draft returns to the advisor for a "
+            "second look. The advisor either approves (advancing to peer "
+            "review) or requests further revision."
+        )
+    elif current_round == 1:
         target_state = State.PEER_REVIEWING
         next_round = 2
         next_description = (
@@ -268,13 +290,11 @@ def run(project_id: str) -> None:
         related_project=project_id,
     )
 
-    now = datetime.now(UTC).isoformat(timespec="seconds")
     with db.connection() as conn, db.transaction(conn):
+        state.transition(conn, project_id, target_state)
         conn.execute(
-            "UPDATE projects "
-            "SET state = ?, title = ?, review_round = ?, updated_at = ? "
-            "WHERE id = ?",
-            (target_state.value, new_title, next_round, now, project_id),
+            "UPDATE projects SET title = ?, review_round = ? WHERE id = ?",
+            (new_title, next_round, project_id),
         )
         decisions.record(conn, decision)
 

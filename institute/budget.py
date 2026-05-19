@@ -93,7 +93,10 @@ def _iter_audit_entries(audit_log: Path | None = None) -> list[dict]:
 def daily_total_usd(utc_date: str, *, audit_log: Path | None = None) -> float:
     """Sum cost_usd across all audit entries dated `utc_date` (YYYY-MM-DD).
 
-    Entries without a parseable ts or cost are skipped, not counted.
+    Entries without a parseable ts or cost are skipped. Negative cost
+    values are clamped to zero on the read side: a single corrupted or
+    hand-edited line with `"cost_usd": -1000` would otherwise mask a
+    full day of real spend and keep austerity from engaging.
     """
     total = 0.0
     for entry in _iter_audit_entries(audit_log):
@@ -102,7 +105,7 @@ def daily_total_usd(utc_date: str, *, audit_log: Path | None = None) -> float:
         if not isinstance(ts, str) or not isinstance(cost, int | float):
             continue
         if ts.startswith(utc_date):
-            total += float(cost)
+            total += max(float(cost), 0.0)
     return total
 
 
@@ -115,7 +118,8 @@ def last_n_days(n: int, *, audit_log: Path | None = None) -> list[tuple[str, flo
     """Return (date, usd) pairs for the last n UTC days, oldest first.
 
     Includes days with zero spend so a sparse log still renders as a
-    contiguous timeline. Today is the last entry.
+    contiguous timeline. Today is the last entry. Negative cost
+    entries are clamped to zero (see `daily_total_usd`).
     """
     if n <= 0:
         return []
@@ -127,7 +131,7 @@ def last_n_days(n: int, *, audit_log: Path | None = None) -> list[tuple[str, flo
         cost = entry.get("cost_usd")
         if not isinstance(ts, str) or not isinstance(cost, int | float):
             continue
-        totals[ts[:10]] = totals.get(ts[:10], 0.0) + float(cost)
+        totals[ts[:10]] = totals.get(ts[:10], 0.0) + max(float(cost), 0.0)
     out: list[tuple[str, float]] = []
     for offset in range(n - 1, -1, -1):
         d = (today - timedelta(days=offset)).isoformat()
@@ -145,6 +149,17 @@ def _classify(today_spent: float, hard_cap: float, soft_threshold: float) -> Aus
     return "none"
 
 
+def _clamped_threshold(soft_threshold: float) -> float:
+    """Clamp pathological soft-threshold values into (0.01, 0.99).
+
+    A caller-supplied threshold > 1.0 would mean hard fires before soft
+    and the soft branch becomes unreachable. <= 0 would mean every
+    nonzero spend lands in soft. Both produce confusing routing; clamp
+    silently rather than fail the autopilot wake-up.
+    """
+    return max(0.01, min(0.99, soft_threshold))
+
+
 def current_status(
     hard_cap_usd: float,
     *,
@@ -153,16 +168,19 @@ def current_status(
 ) -> Austerity:
     """Compute today's austerity snapshot from the live audit log.
 
-    A `hard_cap_usd` of 0 disables the cap entirely; level stays "none"
-    regardless of spend.
+    A `hard_cap_usd` of 0 (or negative) disables the cap entirely;
+    level stays "none" regardless of spend. The soft_threshold is
+    clamped to a sane (0.01, 0.99) range.
     """
+    threshold = _clamped_threshold(soft_threshold)
     today_spent = today_usd(audit_log=audit_log)
     today_str = _today_str()
+    hard = max(hard_cap_usd, 0.0)
     return Austerity(
-        level=_classify(today_spent, hard_cap_usd, soft_threshold),
+        level=_classify(today_spent, hard, threshold),
         today_usd=today_spent,
-        hard_cap_usd=max(hard_cap_usd, 0.0),
-        soft_cap_usd=max(hard_cap_usd, 0.0) * soft_threshold,
+        hard_cap_usd=hard,
+        soft_cap_usd=hard * threshold,
         utc_date=today_str,
     )
 
@@ -175,12 +193,14 @@ def status_for_date(
     audit_log: Path | None = None,
 ) -> Austerity:
     """Compute austerity snapshot for any UTC date. Used by tests + reports."""
+    threshold = _clamped_threshold(soft_threshold)
     spent = daily_total_usd(utc_date_str, audit_log=audit_log)
+    hard = max(hard_cap_usd, 0.0)
     return Austerity(
-        level=_classify(spent, hard_cap_usd, soft_threshold),
+        level=_classify(spent, hard, threshold),
         today_usd=spent,
-        hard_cap_usd=max(hard_cap_usd, 0.0),
-        soft_cap_usd=max(hard_cap_usd, 0.0) * soft_threshold,
+        hard_cap_usd=hard,
+        soft_cap_usd=hard * threshold,
         utc_date=utc_date_str,
     )
 

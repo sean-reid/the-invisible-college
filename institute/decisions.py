@@ -66,16 +66,28 @@ def record(
     body_text = "\n".join(front) + decision.body.strip() + "\n"
     _atomic_write(path, body_text)
 
-    conn.execute(
-        "INSERT INTO audit_log (at, actor, action, project_id, detail) VALUES (?, ?, ?, ?, ?)",
-        (
-            now.isoformat(timespec="seconds"),
-            ",".join(decision.actors),
-            decision.kind,
-            decision.related_project,
-            str(path.relative_to(DECISIONS.parent.parent)),
-        ),
-    )
+    try:
+        conn.execute(
+            "INSERT INTO audit_log (at, actor, action, project_id, detail) VALUES (?, ?, ?, ?, ?)",
+            (
+                now.isoformat(timespec="seconds"),
+                ",".join(decision.actors),
+                decision.kind,
+                decision.related_project,
+                str(path.relative_to(DECISIONS.parent.parent)),
+            ),
+        )
+    except Exception:
+        # Drop the just-written markdown so we never leave an orphan
+        # in archive/decisions/ that has no matching audit_log row.
+        # `missing_ok` covers the edge case where the file was already
+        # unlinked between write and exception (extremely unlikely
+        # but cheap to handle).
+        try:
+            path.unlink(missing_ok=True)
+        except OSError:
+            pass
+        raise
     return path
 
 

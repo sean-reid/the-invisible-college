@@ -16,12 +16,11 @@ Outcomes (the advisor chooses one):
 from __future__ import annotations
 
 import json
-from datetime import UTC, datetime
 from pathlib import Path
 
 from rich.console import Console
 
-from institute import claude_runner, db, decisions, episodic, paths, workspaces
+from institute import claude_runner, db, decisions, episodic, paths, state, workspaces
 from institute import fellow as fellow_mod
 from institute.claude_runner import FellowTask
 from institute.fellow import Genome
@@ -121,12 +120,8 @@ def run(project_id: str) -> None:
 
     # Transition into AWAITING_ADVISOR_REVIEW the first time we run.
     if proj["state"] == State.DRAFTED.value:
-        now = datetime.now(UTC).isoformat(timespec="seconds")
         with db.connection() as conn, db.transaction(conn):
-            conn.execute(
-                "UPDATE projects SET state = ?, updated_at = ? WHERE id = ?",
-                (State.AWAITING_ADVISOR_REVIEW.value, now, project_id),
-            )
+            state.transition(conn, project_id, State.AWAITING_ADVISOR_REVIEW)
 
     workspace = workspaces.workspace_for(advisor.id, f"advisor-{project_id}")
     workspaces.stage_input(workspace, "draft.md", draft_path.read_text(encoding="utf-8"))
@@ -181,7 +176,6 @@ def run(project_id: str) -> None:
     )
 
     target = State.PEER_REVIEWING if outcome == "ready" else State.REVISING
-    now = datetime.now(UTC).isoformat(timespec="seconds")
     decision = decisions.Decision(
         kind="advisor_review",
         title=f"Advisor review ({outcome}): {proj['title']}",
@@ -197,10 +191,7 @@ def run(project_id: str) -> None:
         related_project=project_id,
     )
     with db.connection() as conn, db.transaction(conn):
-        conn.execute(
-            "UPDATE projects SET state = ?, updated_at = ? WHERE id = ?",
-            (target.value, now, project_id),
-        )
+        state.transition(conn, project_id, target)
         decisions.record(conn, decision)
 
     feedback_full = _render_feedback_markdown(

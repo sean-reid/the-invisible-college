@@ -79,21 +79,36 @@ else
 fi
 
 if [ "$IC_AUTO_PUSH" = "1" ] && [ "$EXIT" = "0" ]; then
-    # Stage every artifact the daemon may have produced this wake-up.
-    # If something changed, commit and push. The push includes
-    # everything: publications, decision records, curriculum responses,
-    # advisor feedback, genome rank updates. The repo stays clean and
-    # the remote stays in sync.
-    git add archive/ blog/src/content/ genomes/ 2>/dev/null || true
-    if ! git diff --staged --quiet; then
-        # Build a short summary of what changed for the commit message.
-        SUMMARY=$(git diff --staged --name-only \
-            | awk -F/ '{print $1"/"$2}' | sort -u | head -3 | tr '\n' ' ')
-        echo "[$(date -u +%FT%TZ)] daemon produced changes; committing + pushing" >> "$LOG"
-        git commit -m "Autopilot $(date -u +%FT%TZ): ${SUMMARY}" >> "$LOG" 2>&1 || true
-        git push origin main >> "$LOG" 2>&1 || true
+    # Skip the auto-commit if there are user-edited (uncommitted, unstaged)
+    # files under the paths the daemon writes. Otherwise the daemon would
+    # sweep up half-finished work in progress and ship it to origin. This
+    # check looks for any modified-but-not-staged entry under
+    # archive/, blog/src/content/, or genomes/.
+    USER_EDITS=$(git status --porcelain -- archive/ blog/src/content/ genomes/ 2>/dev/null \
+        | awk '/^.[MARCD?]/ { print }')
+    if [ -n "$USER_EDITS" ]; then
+        echo "[$(date -u +%FT%TZ)] user edits present under daemon paths; skipping auto-commit:" >> "$LOG"
+        echo "$USER_EDITS" >> "$LOG"
     else
-        echo "[$(date -u +%FT%TZ)] nothing changed this wake-up; no commit" >> "$LOG"
+        # Stage every artifact the daemon may have produced this wake-up.
+        # If something changed, commit and push. The push includes
+        # everything: publications, decision records, curriculum responses,
+        # advisor feedback, genome rank updates. The repo stays clean and
+        # the remote stays in sync.
+        # `-c commit.gpgsign=false` disables signing for this commit even
+        # if global git config has it enabled — the daemon runs without
+        # a TTY and would otherwise block on gpg-agent's pinentry.
+        git add archive/ blog/src/content/ genomes/ 2>/dev/null || true
+        if ! git diff --staged --quiet; then
+            # Build a short summary of what changed for the commit message.
+            SUMMARY=$(git diff --staged --name-only \
+                | awk -F/ '{print $1"/"$2}' | sort -u | head -3 | tr '\n' ' ')
+            echo "[$(date -u +%FT%TZ)] daemon produced changes; committing + pushing" >> "$LOG"
+            git -c commit.gpgsign=false commit -m "Autopilot $(date -u +%FT%TZ): ${SUMMARY}" >> "$LOG" 2>&1 || true
+            git push origin main >> "$LOG" 2>&1 || true
+        else
+            echo "[$(date -u +%FT%TZ)] nothing changed this wake-up; no commit" >> "$LOG"
+        fi
     fi
 fi
 

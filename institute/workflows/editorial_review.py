@@ -29,7 +29,7 @@ from rich.console import Console
 from rich.panel import Panel
 from rich.prompt import Prompt
 
-from institute import claude_runner, db, decisions, editorial_board, parsing, paths
+from institute import claude_runner, db, decisions, editorial_board, parsing, paths, state
 from institute.claude_runner import FellowTask
 from institute.fellow import Genome
 from institute.state import State
@@ -256,12 +256,8 @@ def _apply_outcome(
         actors=actors,
         related_project=project_id,
     )
-    now = datetime.now(UTC).isoformat(timespec="seconds")
     with db.connection() as conn, db.transaction(conn):
-        conn.execute(
-            "UPDATE projects SET state = ?, updated_at = ? WHERE id = ?",
-            (target.value, now, project_id),
-        )
+        state.transition(conn, project_id, target)
         decisions.record(conn, decision)
 
     # Calibration accounting. The Board's ruling is the ground truth.

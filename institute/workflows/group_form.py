@@ -119,8 +119,10 @@ def match_invitees(
 
     cohort is a list of `(fellow_id, fellow_name)` for every Fellow
     eligible to be invited (active, non-postulant, not the lead).
-    Matching is case- and accent-insensitive. A match counts if either
-    the full name or the fellow id appears as a substring in the
+    Matching is case- and accent-insensitive, and uses word boundaries
+    so the id `ada` does not match "adam" and the name `Lee` does not
+    match "leeway". Each candidate matches if either its normalized
+    full name or its fellow id appears as a word-bounded token in the
     section. Output is deduplicated and capped at `max_count`.
     """
     if not section_text:
@@ -131,12 +133,12 @@ def match_invitees(
         candidates: list[int] = []
         norm_name = _norm(name)
         if norm_name:
-            pos = norm_text.find(norm_name)
-            if pos != -1:
-                candidates.append(pos)
-        pos = norm_text.find(fid.lower())
-        if pos != -1:
-            candidates.append(pos)
+            m = re.search(rf"(?<!\w){re.escape(norm_name)}(?!\w)", norm_text)
+            if m:
+                candidates.append(m.start())
+        m = re.search(rf"(?<!\w){re.escape(fid.lower())}(?!\w)", norm_text)
+        if m:
+            candidates.append(m.start())
         if candidates:
             positions.append((min(candidates), fid))
     positions.sort()
@@ -167,6 +169,7 @@ def invite(
     rationale records the parse failure so the audit trail is honest.
     """
     workspace = workspaces.workspace_for(invitee.id, f"{project_id}-invite")
+    workspaces.clear_outputs(workspace, ("decision.json",))
     workspaces.stage_input(workspace, "proposal.md", proposal_md)
 
     console.print(
@@ -197,6 +200,7 @@ def invite(
     invitations_dir.mkdir(parents=True, exist_ok=True)
     decision_path = invitations_dir / f"{invitee.id}.json"
 
+    invalid = False
     try:
         decision_text = workspaces.require_output(workspace, "decision.json", min_chars=10)
         payload = parsing.parse_json_or_dump(
@@ -205,16 +209,26 @@ def invite(
             context=f"Invitation response from {invitee.id} on {project_id}",
         )
     except Exception as exc:
+        # Recorded as `invalid`, not `decline`. The Fellow tried to
+        # respond; conflating that with an active decline would block
+        # them from peer-reviewing this project (Chapter 7's CoI rule
+        # targets a Fellow who chose not to join, not one whose
+        # response we failed to parse).
+        invalid = True
         payload = {
-            "decision": "decline",
-            "rationale": (
-                f"Implicit decline: invitation response was missing or unparseable ({exc})."
-            ),
+            "decision": "invalid",
+            "rationale": (f"Response missing or unparseable ({exc}). Not counted as a decline."),
         }
 
-    decision = str(payload.get("decision", "decline")).strip().lower()
+    raw_decision = str(payload.get("decision", "invalid")).strip().lower()
     rationale = str(payload.get("rationale", "")).strip()
-    accepted = decision == "accept"
+    accepted = raw_decision == "accept" and not invalid
+    if invalid:
+        recorded_decision = "invalid"
+    elif accepted:
+        recorded_decision = "accept"
+    else:
+        recorded_decision = "decline"
 
     recorded_at = datetime.now(UTC).isoformat(timespec="seconds")
     record = {
@@ -223,7 +237,7 @@ def invite(
         "lead_id": lead.id,
         "lead_name": lead.name,
         "project_id": project_id,
-        "decision": "accept" if accepted else "decline",
+        "decision": recorded_decision,
         "rationale": rationale or "(no rationale provided)",
         "recorded_at": recorded_at,
     }
@@ -235,6 +249,8 @@ def invite(
     # CoI exclusion (Chapter 7: an invited Fellow who declined cannot
     # review the same project) stays a pure SQL filter. The JSON file
     # remains the canonical institutional record; the DB row is the index.
+    # Only declines (not invalid responses) count as the CoI; that
+    # distinction is enforced by `decliner_ids`' WHERE clause.
     try:
         with db.connection() as conn, db.transaction(conn):
             conn.execute(
@@ -244,7 +260,7 @@ def invite(
                 (
                     project_id,
                     invitee.id,
-                    "accept" if accepted else "decline",
+                    recorded_decision,
                     rationale or None,
                     recorded_at,
                 ),

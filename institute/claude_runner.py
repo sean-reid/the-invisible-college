@@ -24,7 +24,7 @@ from dataclasses import dataclass
 from datetime import UTC, datetime
 from pathlib import Path
 
-from institute import charter
+from institute import charter, runtime
 from institute.fellow import Genome, ensure_fellow_dirs, workspace_path
 from institute.paths import AUDIT_LOG
 
@@ -91,6 +91,11 @@ def invoke_orchestrator(
     Fellow with a genome.
     """
     from institute.paths import ROOT  # local to avoid import cycle
+
+    # Same kill-switch gate as `invoke`. Orchestrator calls are typically
+    # cheaper than Fellow calls, but still cost money and time, and they
+    # should obey the same operational halt.
+    runtime.check_kill_switch()
 
     actual_cwd = cwd if cwd is not None else ROOT
     # Orchestrator calls are one-shot and not meant to be resumed across
@@ -197,6 +202,12 @@ def invoke(task: FellowTask) -> FellowResult:
     remember between sessions, but their own past work is present in
     every workspace via Read tool.
     """
+
+    # Re-check the kill switch immediately before every Claude call.
+    # Workflows that fire multiple Claude invocations per step (admit,
+    # andon_review, promote, research) would otherwise let queued work
+    # drain after the Founder engages the switch mid-step.
+    runtime.check_kill_switch()
 
     ensure_fellow_dirs(task.genome.id)
     cwd = task.workspace if task.workspace is not None else workspace_path(task.genome.id)

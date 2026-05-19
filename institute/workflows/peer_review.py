@@ -27,7 +27,16 @@ from typing import Literal
 
 from rich.console import Console
 
-from institute import archive_index, claude_runner, db, decisions, episodic, paths, workspaces
+from institute import (
+    archive_index,
+    claude_runner,
+    db,
+    decisions,
+    episodic,
+    paths,
+    state,
+    workspaces,
+)
 from institute import fellow as fellow_mod
 from institute.claude_runner import FellowTask
 from institute.fellow import Genome
@@ -324,7 +333,7 @@ def _coi_advisors_and_advisees(conn: sqlite3.Connection, author_ids: set[str]) -
 def _pick_review_slots(
     conn: sqlite3.Connection, project_id: str, lead_id: str, review_round: int
 ) -> list[ReviewSlot]:
-    """Pick reviewer slots for the requested round.
+    """Pick reviewer slots for the requested round, persisting the choice.
 
     Round 1: primary and secondary go to Fellows whose specialization
     is closest to the lead's (most relevant expertise). Outside goes
@@ -334,7 +343,26 @@ def _pick_review_slots(
 
     Round 2: re-use the round-1 reviewers in the same roles. The same
     Fellows judge whether their concerns were addressed.
+
+    Slot choices are persisted to `reviewer_slots` on first call for
+    a given (project, round). Subsequent calls (including those that
+    happen after a reviewer is sidelined mid-round for misconduct) read
+    from this table, so the panel is stable for the lifetime of the
+    round and we never produce a 4th-reviewer artifact.
     """
+    # Stable cache: if we've already chosen slots for this (project, round),
+    # return them verbatim. This is what prevents the "sidelined mid-round
+    # ⇒ panel reshuffles" bug.
+    cached = list(
+        conn.execute(
+            "SELECT reviewer_id, role FROM reviewer_slots "
+            "WHERE project_id = ? AND round = ? ORDER BY role",
+            (project_id, review_round),
+        )
+    )
+    if cached:
+        return [ReviewSlot(reviewer_id=r["reviewer_id"], role=r["role"]) for r in cached]
+
     if review_round > 1:
         prior = list(
             conn.execute(
@@ -345,7 +373,9 @@ def _pick_review_slots(
         )
         if not prior:
             raise SystemExit(f"Cannot start round {review_round}: no round-1 reviews found.")
-        return [ReviewSlot(reviewer_id=r["reviewer_id"], role=r["role"]) for r in prior]
+        slots = [ReviewSlot(reviewer_id=r["reviewer_id"], role=r["role"]) for r in prior]
+        _persist_slots(conn, project_id, review_round, slots)
+        return slots
 
     # For a qualifying-kind project, the advisor is forced as primary
     # reviewer per Chapter 5. Secondary and outside come from the usual
@@ -400,7 +430,9 @@ def _pick_review_slots(
 
     if advisor_id:
         # Advisor primary; the candidate pool fills secondary and outside.
-        return _slots_with_advisor_primary(conn, advisor_id, candidates, lead_id)
+        slots = _slots_with_advisor_primary(conn, advisor_id, candidates, lead_id)
+        _persist_slots(conn, project_id, review_round, slots)
+        return slots
 
     lead_row = conn.execute(
         "SELECT specialization FROM fellows WHERE id = ?", (lead_id,)
@@ -432,7 +464,26 @@ def _pick_review_slots(
     if secondary_id is not None:
         slots.append(ReviewSlot(reviewer_id=secondary_id, role="secondary"))
     slots.append(ReviewSlot(reviewer_id=outside_id, role="outside"))
+    _persist_slots(conn, project_id, review_round, slots)
     return slots
+
+
+def _persist_slots(
+    conn: sqlite3.Connection,
+    project_id: str,
+    review_round: int,
+    slots: list[ReviewSlot],
+) -> None:
+    """Write the picked slots to reviewer_slots so subsequent calls return
+    the same panel even if a reviewer is later sidelined for misconduct."""
+    now = datetime.now(UTC).isoformat(timespec="seconds")
+    for slot in slots:
+        conn.execute(
+            "INSERT OR IGNORE INTO reviewer_slots "
+            "(project_id, round, role, reviewer_id, assigned_at) "
+            "VALUES (?, ?, ?, ?, ?)",
+            (project_id, review_round, slot.role, slot.reviewer_id, now),
+        )
 
 
 def _load_round_1_review(conn: sqlite3.Connection, project_id: str, reviewer_id: str) -> str | None:
@@ -558,14 +609,16 @@ def run(project_id: str) -> None:
 
     # Transition into PEER_REVIEWING the first time work starts for a round.
     if proj["state"] == State.DRAFTED.value:
-        now = datetime.now(UTC).isoformat(timespec="seconds")
         with db.connection() as conn, db.transaction(conn):
-            conn.execute(
-                "UPDATE projects SET state = ?, updated_at = ? WHERE id = ?",
-                (State.PEER_REVIEWING.value, now, project_id),
-            )
+            state.transition(conn, project_id, State.PEER_REVIEWING)
 
     workspace = workspaces.workspace_for(reviewer.id, f"{project_id}-review-r{review_round}")
+    # Clear stale output files from any prior aborted/failed attempt.
+    # require_output below would otherwise happily return content from
+    # a previous run if Claude does not re-write every file.
+    workspaces.clear_outputs(
+        workspace, ("summary.md", "strengths.md", "concerns.md", "decision.json")
+    )
     workspaces.stage_input(workspace, "draft.md", draft_md)
     workspaces.stage_input(workspace, "archive-index.md", archive_index.render())
     if review_round > 1:
@@ -889,12 +942,8 @@ def _transition_after_all_reviews(project_id: str, title: str, review_round: int
         actors=["editorial-board"],
         related_project=project_id,
     )
-    now = datetime.now(UTC).isoformat(timespec="seconds")
     with db.connection() as conn, db.transaction(conn):
-        conn.execute(
-            "UPDATE projects SET state = ?, updated_at = ? WHERE id = ?",
-            (target_state.value, now, project_id),
-        )
+        state.transition(conn, project_id, target_state)
         decisions.record(conn, decision)
     console.print(
         f"[bold green]All round-{review_round} reviews filed.[/bold green] "
@@ -929,12 +978,8 @@ def _route_to_andon_review(
         actors=[row["reviewer_id"] for row in cord_pulls],
         related_project=project_id,
     )
-    now = datetime.now(UTC).isoformat(timespec="seconds")
     with db.connection() as conn, db.transaction(conn):
-        conn.execute(
-            "UPDATE projects SET state = ?, updated_at = ? WHERE id = ?",
-            (State.ANDON_REVIEW.value, now, project_id),
-        )
+        state.transition(conn, project_id, State.ANDON_REVIEW)
         decisions.record(conn, decision)
     console.print()
     console.print(

@@ -11,6 +11,8 @@ writes the resulting artifact.
 
 from __future__ import annotations
 
+import sqlite3
+from datetime import UTC, datetime
 from enum import StrEnum
 
 
@@ -46,16 +48,18 @@ NEXT_ACTION: dict[State, str | None] = {
 }
 
 
-# Allowed forward transitions. Backward transitions only happen on rejection.
+# Allowed forward transitions. Every non-terminal state allows REJECTED
+# as an exit, because targeted termination (Chapter 3) can hit a Fellow
+# mid-project from any state.
 ALLOWED_TRANSITIONS: dict[State, set[State]] = {
     State.PROPOSED: {State.PROPOSAL_REVIEWED, State.REJECTED},
-    State.PROPOSAL_REVIEWED: {State.RESEARCHING},
-    State.RESEARCHING: {State.RESEARCHING, State.DRAFTED},
+    State.PROPOSAL_REVIEWED: {State.RESEARCHING, State.REJECTED},
+    State.RESEARCHING: {State.RESEARCHING, State.DRAFTED, State.REJECTED},
     # A qualifying-kind project routes through AWAITING_ADVISOR_REVIEW
     # before peer review. A research-kind project skips straight to
     # PEER_REVIEWING. Both transitions are allowed; the workflow chooses.
-    State.DRAFTED: {State.AWAITING_ADVISOR_REVIEW, State.PEER_REVIEWING},
-    State.AWAITING_ADVISOR_REVIEW: {State.REVISING, State.PEER_REVIEWING},
+    State.DRAFTED: {State.AWAITING_ADVISOR_REVIEW, State.PEER_REVIEWING, State.REJECTED},
+    State.AWAITING_ADVISOR_REVIEW: {State.REVISING, State.PEER_REVIEWING, State.REJECTED},
     State.PEER_REVIEWING: {
         State.PEER_REVIEWING,
         State.REVISING,
@@ -64,8 +68,24 @@ ALLOWED_TRANSITIONS: dict[State, set[State]] = {
         State.EDITORIAL,
         State.REJECTED,
     },
-    State.REVISING: {State.PEER_REVIEWING, State.EDITORIAL, State.AWAITING_ADVISOR_REVIEW},
-    State.ANDON_REVIEW: {State.EDITORIAL, State.REJECTED},
+    # REVISING can self-loop when the revise step itself produces another
+    # round of concerns. AWAITING_ADVISOR_REVIEW is the qualifying-project
+    # path back to the advisor instead of leaping into peer review.
+    State.REVISING: {
+        State.REVISING,
+        State.PEER_REVIEWING,
+        State.EDITORIAL,
+        State.AWAITING_ADVISOR_REVIEW,
+        State.REJECTED,
+    },
+    # Andon dismiss may need to route back through revise or editorial
+    # review based on the non-cord-pulling reviewers' recommendations.
+    State.ANDON_REVIEW: {
+        State.EDITORIAL,
+        State.REJECTED,
+        State.REVISING,
+        State.EDITORIAL_REVIEW,
+    },
     # Editorial Board makes the final call after round-2 peer review with
     # reject recommendations or dissent. Accept → editorial; reject → rejected.
     State.EDITORIAL_REVIEW: {State.EDITORIAL, State.REJECTED},
@@ -86,3 +106,31 @@ def assert_transition(current: State, target: State) -> None:
 
 def is_terminal(state: State) -> bool:
     return NEXT_ACTION[state] is None
+
+
+def transition(
+    conn: sqlite3.Connection,
+    project_id: str,
+    target: State,
+    *,
+    force: bool = False,
+) -> None:
+    """Write a state transition with validation. Caller manages the transaction.
+
+    Reads current state from the DB, asserts the move is allowed, and
+    updates `state` + `updated_at` atomically. `force=True` skips the
+    validation; only the targeted-termination workflow should use it, and
+    only because terminate explicitly overrides all in-flight states to
+    REJECTED.
+    """
+    row = conn.execute("SELECT state FROM projects WHERE id = ?", (project_id,)).fetchone()
+    if row is None:
+        raise ValueError(f"No such project: {project_id}")
+    current = State(row["state"])
+    if not force:
+        assert_transition(current, target)
+    now = datetime.now(UTC).isoformat(timespec="seconds")
+    conn.execute(
+        "UPDATE projects SET state = ?, updated_at = ? WHERE id = ?",
+        (target.value, now, project_id),
+    )

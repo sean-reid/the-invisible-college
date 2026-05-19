@@ -27,7 +27,7 @@ from typing import Any
 
 from rich.console import Console
 
-from institute import collaborators, db, decisions, episodic, paths
+from institute import collaborators, db, decisions, episodic, paths, state
 from institute import fellow as fellow_mod
 from institute.state import State
 
@@ -353,10 +353,10 @@ def run(project_id: str) -> None:
     is_qualifying = kind_row is not None and kind_row["kind"] == "qualifying"
 
     with db.connection() as conn, db.transaction(conn):
+        state.transition(conn, project_id, State.PUBLISHED)
         conn.execute(
-            "UPDATE projects SET state = ?, publication_slug = ?, title = ?, updated_at = ? "
-            "WHERE id = ?",
-            (State.PUBLISHED.value, slug, title, timestamp, project_id),
+            "UPDATE projects SET publication_slug = ?, title = ? WHERE id = ?",
+            (slug, title, project_id),
         )
         decisions.record(conn, decision)
         if is_qualifying:

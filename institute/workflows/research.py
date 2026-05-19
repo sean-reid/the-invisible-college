@@ -14,7 +14,6 @@ failures that plagued an earlier version.
 from __future__ import annotations
 
 import re
-from datetime import UTC, datetime
 from pathlib import Path
 
 from rich.console import Console
@@ -27,6 +26,7 @@ from institute import (
     decisions,
     episodic,
     paths,
+    state,
     workspaces,
 )
 from institute import fellow as fellow_mod
@@ -244,13 +244,9 @@ def run(project_id: str) -> None:
     # Transition into RESEARCHING immediately so an interruption shows the
     # in-flight state on `institute status`. Doing this before collaborator
     # contributions makes a partial group-research run resumable.
-    now = datetime.now(UTC).isoformat(timespec="seconds")
     if proj["state"] != State.RESEARCHING.value:
         with db.connection() as conn, db.transaction(conn):
-            conn.execute(
-                "UPDATE projects SET state = ?, updated_at = ? WHERE id = ?",
-                (State.RESEARCHING.value, now, project_id),
-            )
+            state.transition(conn, project_id, State.RESEARCHING)
 
     # Collect each collaborator's contribution before the lead drafts.
     # Each contribution is saved both to the archive (permanent record)
@@ -287,16 +283,27 @@ def run(project_id: str) -> None:
         contributions_directive=CONTRIBUTIONS_DIRECTIVE if collaborator_genomes else "",
     )
 
-    claude_runner.invoke(
-        FellowTask(
-            genome=lead,
-            project_id=project_id,
-            step="research",
-            brief=brief,
-            workspace=workspace,
-            extra_dirs=(paths.DOCS, paths.ARCHIVE),
+    # Idempotency mirroring the collaborator-contribution check above:
+    # if the lead's three outputs already exist with substantive content
+    # (e.g. a previous run completed Claude but crashed before the DB
+    # update), reuse them instead of re-invoking the model and burning
+    # budget on identical work.
+    if _lead_outputs_already_complete(workspace):
+        console.print(
+            "[dim]Lead's draft/notebook/abstract already on disk; "
+            "skipping Claude call and proceeding to commit.[/dim]"
         )
-    )
+    else:
+        claude_runner.invoke(
+            FellowTask(
+                genome=lead,
+                project_id=project_id,
+                step="research",
+                brief=brief,
+                workspace=workspace,
+                extra_dirs=(paths.DOCS, paths.ARCHIVE),
+            )
+        )
 
     abstract = workspaces.optional_output(workspace, "abstract.txt")
     notebook_md = workspaces.require_output(workspace, "notebook.md", min_chars=200)
@@ -327,18 +334,14 @@ def run(project_id: str) -> None:
         related_project=project_id,
     )
 
-    now = datetime.now(UTC).isoformat(timespec="seconds")
     with db.connection() as conn, db.transaction(conn):
+        state.transition(conn, project_id, State.DRAFTED)
         conn.execute(
-            "UPDATE projects "
-            "SET state = ?, title = ?, notebook_path = ?, draft_path = ?, updated_at = ? "
-            "WHERE id = ?",
+            "UPDATE projects SET title = ?, notebook_path = ?, draft_path = ? WHERE id = ?",
             (
-                State.DRAFTED.value,
                 new_title,
                 str(notebook_path.relative_to(paths.ROOT)),
                 str(draft_path.relative_to(paths.ROOT)),
-                now,
                 project_id,
             ),
         )
@@ -368,6 +371,22 @@ def run(project_id: str) -> None:
     console.print(f"[green]Notebook:[/green]  {notebook_path.relative_to(paths.ROOT)}")
     console.print(f"[green]Draft:[/green]     {draft_path.relative_to(paths.ROOT)}")
     console.print(f"[green]New state:[/green] {State.DRAFTED.value}")
+
+
+def _lead_outputs_already_complete(workspace: Path) -> bool:
+    """True iff the lead's three required outputs already exist with
+    substantive content in this workspace. Used to skip the Claude call
+    when a previous run wrote them but didn't finish committing.
+    """
+    notebook = workspace / "notebook.md"
+    draft = workspace / "draft.md"
+    if not (notebook.is_file() and draft.is_file()):
+        return False
+    if len(notebook.read_text(encoding="utf-8").strip()) < 200:
+        return False
+    if len(draft.read_text(encoding="utf-8").strip()) < 400:
+        return False
+    return True
 
 
 def _collect_collaborator_contribution(

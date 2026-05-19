@@ -15,7 +15,7 @@ from pathlib import Path
 
 from institute.paths import DB_PATH as DB_PATH  # re-exported for tests to patch
 
-SCHEMA_VERSION = 8
+SCHEMA_VERSION = 9
 
 SCHEMA = """
 CREATE TABLE IF NOT EXISTS schema_version (
@@ -124,6 +124,15 @@ CREATE TABLE IF NOT EXISTS reviews (
     UNIQUE (project_id, reviewer_id, round)
 );
 
+CREATE TABLE IF NOT EXISTS reviewer_slots (
+    project_id  TEXT    NOT NULL REFERENCES projects(id),
+    round       INTEGER NOT NULL,
+    role        TEXT    NOT NULL,
+    reviewer_id TEXT    NOT NULL REFERENCES fellows(id),
+    assigned_at TEXT    NOT NULL,
+    PRIMARY KEY (project_id, round, role)
+);
+
 CREATE TABLE IF NOT EXISTS sessions (
     fellow_id   TEXT NOT NULL REFERENCES fellows(id),
     project_id  TEXT NOT NULL REFERENCES projects(id),
@@ -154,7 +163,20 @@ INSERT OR IGNORE INTO kill_switch (id, active) VALUES (1, 0);
 CREATE INDEX IF NOT EXISTS idx_projects_state ON projects(state);
 CREATE INDEX IF NOT EXISTS idx_audit_log_at ON audit_log(at);
 CREATE INDEX IF NOT EXISTS idx_reviews_project ON reviews(project_id);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_episodic_dedup
+    ON episodic_memory(fellow_id, kind, source_path)
+    WHERE source_path IS NOT NULL;
 """
+
+# Indexes that exist in the SCHEMA but might be missing on a DB that
+# went through forward migrations from an older version, where the index
+# was only declared in SCHEMA (which runs on fresh DBs) and never in a
+# migration. _run_migrations always ensures these at the end.
+_ENSURE_INDEXES = (
+    "CREATE INDEX IF NOT EXISTS idx_projects_state ON projects(state)",
+    "CREATE INDEX IF NOT EXISTS idx_audit_log_at ON audit_log(at)",
+    "CREATE INDEX IF NOT EXISTS idx_reviews_project ON reviews(project_id)",
+)
 
 
 def _connect(path: Path) -> sqlite3.Connection:
@@ -206,6 +228,10 @@ def _detect_schema_version(conn: sqlite3.Connection) -> int | None:
 
 
 def _run_migrations(conn: sqlite3.Connection, from_version: int, to_version: int) -> None:
+    """Run forward migrations. Each migration stamps schema_version inside
+    its own transaction, so a crash between migrations leaves the version
+    matching the actually-applied schema. Idempotent: every migration
+    checks for its own preconditions before applying."""
     version = from_version
     while version < to_version:
         if version == 1:
@@ -229,9 +255,27 @@ def _run_migrations(conn: sqlite3.Connection, from_version: int, to_version: int
         elif version == 7:
             _migrate_7_to_8(conn)
             version = 8
+        elif version == 8:
+            _migrate_8_to_9(conn)
+            version = 9
         else:
             raise RuntimeError(f"No migration path from version {version}.")
-    conn.execute("UPDATE schema_version SET version = ?", (to_version,))
+        # Each migration is responsible for stamping its own version
+        # inside its own transaction. _stamp_version is idempotent.
+        _stamp_version(conn, version)
+
+    # Backfill any indexes that live in the SCHEMA declaration but were
+    # never added by a specific migration. A DB started at v1 may have
+    # missed these. CREATE INDEX IF NOT EXISTS is a no-op when present.
+    for stmt in _ENSURE_INDEXES:
+        conn.execute(stmt)
+
+
+def _stamp_version(conn: sqlite3.Connection, version: int) -> None:
+    """Write the current schema version. Caller manages or omits the
+    transaction; UPDATE is itself atomic.
+    """
+    conn.execute("UPDATE schema_version SET version = ?", (version,))
 
 
 def _migrate_1_to_2(conn: sqlite3.Connection) -> None:
@@ -473,6 +517,60 @@ def _migrate_7_to_8(conn: sqlite3.Connection) -> None:
             "CREATE INDEX IF NOT EXISTS idx_project_invitations_fellow "
             "ON project_invitations(fellow_id)"
         )
+        conn.execute("COMMIT")
+    except Exception:
+        conn.execute("ROLLBACK")
+        raise
+
+
+def _migrate_8_to_9(conn: sqlite3.Connection) -> None:
+    """Add reviewer_slots for round-1 slot persistence and a UNIQUE
+    partial index on episodic_memory(fellow_id, kind, source_path) to
+    make live ingest idempotent.
+
+    Dedups any existing duplicate (fellow_id, kind, source_path) rows
+    in episodic_memory before creating the unique index, keeping the
+    oldest entry (lowest id) per group.
+    """
+    conn.execute("BEGIN IMMEDIATE")
+    try:
+        conn.execute(
+            """
+            CREATE TABLE IF NOT EXISTS reviewer_slots (
+                project_id  TEXT    NOT NULL REFERENCES projects(id),
+                round       INTEGER NOT NULL,
+                role        TEXT    NOT NULL,
+                reviewer_id TEXT    NOT NULL REFERENCES fellows(id),
+                assigned_at TEXT    NOT NULL,
+                PRIMARY KEY (project_id, round, role)
+            )
+            """
+        )
+        # Dedup before creating unique index. Keep the oldest entry per
+        # (fellow_id, kind, source_path) so the surviving row points at
+        # the first time the artifact was ingested.
+        conn.execute(
+            """
+            DELETE FROM episodic_memory
+            WHERE source_path IS NOT NULL
+              AND id NOT IN (
+                  SELECT MIN(id) FROM episodic_memory
+                  WHERE source_path IS NOT NULL
+                  GROUP BY fellow_id, kind, source_path
+              )
+            """
+        )
+        conn.execute(
+            """
+            CREATE UNIQUE INDEX IF NOT EXISTS idx_episodic_dedup
+                ON episodic_memory(fellow_id, kind, source_path)
+                WHERE source_path IS NOT NULL
+            """
+        )
+        # Stamp version inside the migration's transaction so a crash
+        # between migrations leaves the version matching the actually-
+        # applied schema.
+        conn.execute("UPDATE schema_version SET version = 9")
         conn.execute("COMMIT")
     except Exception:
         conn.execute("ROLLBACK")
