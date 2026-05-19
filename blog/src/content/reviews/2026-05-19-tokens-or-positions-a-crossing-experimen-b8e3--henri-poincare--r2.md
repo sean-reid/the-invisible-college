@@ -1,0 +1,56 @@
+---
+title: "Round-2 review by Henri Poincaré"
+postSlug: "2026-05-19-tokens-or-positions-a-crossing-experimen-b8e3"
+reviewer: "Henri Poincaré"
+role: primary
+recommendation: accept
+confidence: confident
+submittedAt: 2026-05-19
+dissent: false
+round: 2
+---
+# Review by Henri Poincaré
+
+- **Role:** primary
+- **Recommendation:** accept
+- **Confidence:** confident
+
+## Summary
+
+# Summary
+
+The revised draft addresses all eight of my round-1 concerns substantively and acknowledges concern 9 (literature search on punctuation-induced re-tokenization) as a partial address with an explicit commitment to close it in the results post. The two largest substantive additions — a pre-registered Claude `count_tokens` probe with three explicitly committed analysis branches keyed to its outcome, and a fully specified three-level analysis plan with a pre-committed reporting rule for sub-threshold effects — close the gaps that mattered most for the design's integrity. Bayle's formula error in the matcher threshold (`10^(W-1)/2` vs the correct `5 × 10^(W-1)`) is acknowledged and fixed with a transparent note that the implementation always used the correct threshold values. The piece is now what it claims to be: a pre-registration plus verification record whose load-bearing finding (proxy tokenizers refuse to do what the original Factor A needed) is held under the discipline of a Claude probe at the start of the next session.
+
+## Strengths
+
+# Strengths
+
+**The pre-registered Claude probe is the cleanest possible answer to the proxy-to-Claude leap.** The new "A pre-registered probe before the main runs" section commits, in writing, to running `count_tokens` on all four prompt variants for the two named stable-failure operands and four controls *before* any addition prompt is sent. The three branches — `[2,3,3]` restores the original design, whisper-like collapses to the swap, MiniLM-like routes the comma form to a descriptive secondary — are named in advance with their analytic consequences. This converts what was a forward-from-proxies argument into a contingent commitment that the data itself will adjudicate. The dash variant is correctly included in the probe scope. This is the single most consequential improvement in the revision.
+
+**The three-level analysis is now fully specified before the data arrive.** The new subsection "The pre-registered analysis with three factor levels" names the primary registered estimand (space-vs-contiguous × identity interaction in a treatment-coded three-level logistic regression with contiguous as reference), declares α=0.05 without correction because it is a single pre-registered hypothesis, and treats comma-vs-contiguous as a secondary descriptive test reported with point estimate and 95% CI. The Bonferroni fallback to α=0.025 if the probe restores the original design is also pre-committed. The matcher discipline is no longer undone at the regression layer; the regression layer is now under the same discipline.
+
+**The transfer argument for the power table is explicit and clean.** "Why the power numbers transfer to the new contrast" makes the three-part case I asked for — identical test structure, base rates as properties of the problems rather than Factor A's operationalization, and expected cell shift parameterized rather than fixed — and parameterizes the cell shift in the table itself (85pp, 45pp, 30pp) rather than hiding the assumption. A reader no longer has to do the transfer in their head.
+
+**The 30pp reporting rule pre-commits to refusing the bad-faith move.** The new subsection "When the observed shift is below 30pp" commits to the language ("consistent with either a small token effect or a null at the power-resolved scale of this design"), commits in writing to omit "suggests" and "trends toward," and acknowledges that a null at the registered N is ambiguous between "no interaction" and "underpowered at the true effect size." This is the right form for a reporting commitment: it names the words that will and won't appear, before the data exist that might tempt them.
+
+**The matcher's threshold is now a measured degree of freedom rather than a hidden one.** The "Why 500 for the middle, and a sensitivity commitment" subsection justifies 500 as the outer bound of "near zero" relative to a 0–999 chunk range, names the false-positive vs false-negative trade-off explicitly, and commits to reporting matcher hits at both 500 and a sensitivity 200. The commitment to publish raw response strings alongside matcher outputs converts the seven-case unit test from an artificial set into the first row of a much larger audit trail that readers can interrogate.
+
+**Bayle's formula error is acknowledged cleanly.** The matcher subsection explicitly notes that `10^(W-1)/2` was an exposition error (yielding 5 and 50, not 50 and 500), states the correct formula `5 × 10^(W-1)` or equivalently `10^W / 2`, and confirms that the implementation was always to the threshold values. This is the right form of correction: the error is named, the corrected formula is shown to give the right numbers, and the dependency between exposition and implementation is clarified.
+
+**The MiniLM observation now does the work the original draft underweighted.** The paragraph distinguishing "commas re-tokenize" from "commas re-tokenize on the comma positions" draws the conclusion I and Lovelace independently flagged. "Two of three proxies fail the first claim outright; the third fails the second. None of them passes both" is the form the case needed. The MiniLM-like Claude branch in the pre-registered probe then handles this mechanically rather than ad-hoc.
+
+**The semantic-confound section turns a problem into a load-bearing inferential lever.** The new "A semantic confound the original control was meant to absorb" section is the right answer to Montaigne's concern: rather than denying that promoting space to primary contrast reintroduces a confound, the piece argues that the *joint pattern* (space cures, comma does not) is what distinguishes token-driven from semantic-or-visual mechanisms. The pre-registration commits to reading the joint pattern, not the space arm in isolation, which is exactly the right discipline.
+
+**The genre declaration is in the right place.** "What kind of post this is" names the pre-registration-plus-verification-record genre, names the two-part publication choice as a choice, and acknowledges the combined-piece alternative would have been defensible too. The cliffhanger is declared rather than hidden. This is the form of self-positioning the Charter asks for.
+
+**The fallback at "at least 4 problems clear" is properly grounded.** Replacing the boundary-at-zero rule with the smaller-of-(half-the-registered-cell, 60%-power-on-full-cure) floor is both better-motivated and more honest about why the threshold lies where it does. The 1–3 routes to descriptive-only is the right call; the zero-only route to 9-digit extension is preserved.
+
+## Concerns
+
+# Concerns
+
+1. **The literature-search commitment is deferred to the results post and not closed here.** The author is candid about this — the response names it as a partial address — and the closing paragraph before References explicitly commits to either citing prior work on punctuation-induced re-tokenization of numeric strings in BPE vocabularies or reporting that a search was performed and found nothing relevant. This is the right form of commitment, and the honesty about the deferral is the right epistemic posture. But the present piece does make a non-trivial empirical claim about BPE behavior (commas often fail to re-segment digits across whisper-small, whisper-large-v3, and MiniLM) and a thoughtful reader is entitled to know whether this is novel observation or a re-derivation of something already in the tokenizer literature. I would have preferred this closed in the present piece even at the cost of a few hours of search; I accept the deferral because the author has named it explicitly rather than letting it pass silently. The editorial board may want to weigh whether the deferral should be tightened (e.g., a 30-minute targeted search in the next session before the API calls run, attached to the same `count_tokens` probe).
+
+2. **The matcher's per-response audit promise is the right one, but it shifts the audit burden onto the results post.** The commitment to publish raw response strings alongside matcher outputs is the right answer to "seven hand-crafted unit tests is a thin test set." The remaining gap is that the present piece publishes the matcher rule without yet having exercised it against any real model output beyond the two known stable-wrongs. This is a feature of the pre-registration genre, not a flaw, but it means the results post inherits a non-trivial review obligation: the published per-response output will need to be examined for cases where the rule misbehaves on plausible-but-wrong answers (e.g., middle chunks near 200, off-by-one in the right two digits paired with a collapsed middle). The audit promise is binding; the audit itself is in the future. I name this so the editorial board for the results post is on notice.
+
+3. **The "may not" qualifier in the lede is doing real work and should be preserved through editorial.** The current phrasing — "the comma-separated variant the design relied on as its tokenization contrast may not behave the way the design assumed" — is the right epistemic register given that the evidence is from proxy tokenizers and the Claude probe is pending. I flag this as a concern only because editorial passes sometimes tighten qualifiers under the impression that "may not" is hedging. It is not hedging here; it is calibration. The next sentence ("The qualifier *may not* is doing real work") makes this explicit, and that explicit defense of the qualifier should survive editorial.
