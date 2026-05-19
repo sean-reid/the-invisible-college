@@ -351,12 +351,49 @@ def _apply_outcome(
     # disclosure.
     if outcome == "sustain":
         _maybe_auto_terminate(project_id, title)
+    elif outcome == "dismiss":
+        # A dismissed cord pull is a frivolous-pull mark against each
+        # reviewer who pulled it. Chapter 7: "A frivolous pull damages
+        # the puller's reputation."
+        _mark_frivolous_andon_pulls(project_id, title)
 
     console.print()
     style = "green" if outcome == "dismiss" else "red"
     console.print(
         f"[bold {style}]Andon cord {verb}.[/bold {style}] Project {project_id} -> {target.value}"
     )
+
+
+def _mark_frivolous_andon_pulls(project_id: str, title: str) -> None:
+    """Record a frivolous_andon mark against every Fellow who pulled the cord.
+
+    Called from _apply_outcome when the Editorial Board dismisses the
+    cord. Chapter 7 considers frivolous pulls damaging to reviewer
+    reputation; this is the codification.
+    """
+    from institute import reviewer_eligibility
+
+    with db.connection() as conn:
+        pullers = list(
+            conn.execute(
+                "SELECT id AS review_id, reviewer_id, andon_reason "
+                "FROM reviews WHERE project_id = ? AND andon_cord = 1",
+                (project_id,),
+            )
+        )
+    for row in pullers:
+        reason = (
+            f"Editorial Board dismissed andon cord on `{project_id}` "
+            f"({title}). Stated reason: "
+            + ((row["andon_reason"] or "").strip() or "(no reason supplied)")
+        )
+        reviewer_eligibility.safe_record(
+            fellow_id=row["reviewer_id"],
+            kind="frivolous_andon",
+            reason=reason,
+            related_project=project_id,
+            related_review_id=row["review_id"],
+        )
 
 
 def _maybe_auto_terminate(project_id: str, title: str) -> None:

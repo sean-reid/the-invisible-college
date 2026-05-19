@@ -332,9 +332,14 @@ def _pick_review_slots(
     # Postulants do not review per Chapter 7 (Junior Fellow is the
     # minimum reviewer rank). Exclude them from the candidate pool.
     # Exclude the advisor too if they're already taking the primary slot.
+    # Exclude any Fellow currently sidelined for reviewer misconduct
+    # (frivolous andon pulls, calibration misses, manual flags).
+    from institute import reviewer_eligibility
+
     excluded_ids = {lead_id}
     if advisor_id:
         excluded_ids.add(advisor_id)
+    excluded_ids |= reviewer_eligibility.ineligible_fellow_ids(conn)
     placeholders = ",".join("?" for _ in excluded_ids)
     candidates = list(
         conn.execute(

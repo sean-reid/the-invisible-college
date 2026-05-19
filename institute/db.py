@@ -15,7 +15,7 @@ from pathlib import Path
 
 from institute.paths import DB_PATH as DB_PATH  # re-exported for tests to patch
 
-SCHEMA_VERSION = 6
+SCHEMA_VERSION = 7
 
 SCHEMA = """
 CREATE TABLE IF NOT EXISTS schema_version (
@@ -73,6 +73,20 @@ CREATE TABLE IF NOT EXISTS episodic_memory (
 );
 CREATE INDEX IF NOT EXISTS idx_episodic_fellow ON episodic_memory(fellow_id);
 CREATE INDEX IF NOT EXISTS idx_episodic_fellow_kind ON episodic_memory(fellow_id, kind);
+
+CREATE TABLE IF NOT EXISTS reviewer_marks (
+    id                INTEGER PRIMARY KEY AUTOINCREMENT,
+    fellow_id         TEXT    NOT NULL REFERENCES fellows(id),
+    kind              TEXT    NOT NULL,
+    weight            REAL    NOT NULL,
+    reason            TEXT,
+    related_project   TEXT,
+    related_review_id TEXT,
+    recorded_at       TEXT    NOT NULL,
+    expires_at        TEXT    NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_reviewer_marks_active
+    ON reviewer_marks(fellow_id, expires_at);
 
 CREATE TABLE IF NOT EXISTS project_collaborators (
     project_id  TEXT NOT NULL REFERENCES projects(id),
@@ -198,6 +212,9 @@ def _run_migrations(conn: sqlite3.Connection, from_version: int, to_version: int
         elif version == 5:
             _migrate_5_to_6(conn)
             version = 6
+        elif version == 6:
+            _migrate_6_to_7(conn)
+            version = 7
         else:
             raise RuntimeError(f"No migration path from version {version}.")
     conn.execute("UPDATE schema_version SET version = ?", (to_version,))
@@ -373,6 +390,43 @@ def _migrate_5_to_6(conn: sqlite3.Connection) -> None:
             )
         if "violation_kind" not in existing:
             conn.execute("ALTER TABLE reviews ADD COLUMN violation_kind TEXT")
+        conn.execute("COMMIT")
+    except Exception:
+        conn.execute("ROLLBACK")
+        raise
+
+
+def _migrate_6_to_7(conn: sqlite3.Connection) -> None:
+    """Add reviewer_marks table for misconduct + calibration accumulation.
+
+    Marks accrue against a Fellow's reviewer eligibility. Each has a
+    kind (frivolous_andon, calibration_miss, sycophancy, lazy_review,
+    conflict_undisclosed, animus, other), a weight, and an expiration
+    date so penalties decay rather than haunt a Fellow permanently.
+
+    Idempotent: CREATE IF NOT EXISTS.
+    """
+    conn.execute("BEGIN IMMEDIATE")
+    try:
+        conn.execute(
+            """
+            CREATE TABLE IF NOT EXISTS reviewer_marks (
+                id                INTEGER PRIMARY KEY AUTOINCREMENT,
+                fellow_id         TEXT    NOT NULL REFERENCES fellows(id),
+                kind              TEXT    NOT NULL,
+                weight            REAL    NOT NULL,
+                reason            TEXT,
+                related_project   TEXT,
+                related_review_id TEXT,
+                recorded_at       TEXT    NOT NULL,
+                expires_at        TEXT    NOT NULL
+            )
+            """
+        )
+        conn.execute(
+            "CREATE INDEX IF NOT EXISTS idx_reviewer_marks_active "
+            "ON reviewer_marks(fellow_id, expires_at)"
+        )
         conn.execute("COMMIT")
     except Exception:
         conn.execute("ROLLBACK")

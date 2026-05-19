@@ -287,6 +287,122 @@ def curriculum(fellow: str, design: bool) -> None:
 
 
 # ---------------------------------------------------------------------------
+# misconduct: flag a reviewer for a quality failure
+# ---------------------------------------------------------------------------
+
+
+@main.group()
+def misconduct() -> None:
+    """Reviewer misconduct: flag, inspect, manage marks."""
+
+
+@misconduct.command("flag")
+@click.option(
+    "--fellow",
+    type=str,
+    required=True,
+    help="Reviewer to mark.",
+)
+@click.option(
+    "--kind",
+    type=click.Choice(
+        [
+            "lazy_review",
+            "sycophancy",
+            "conflict_undisclosed",
+            "animus",
+            "other",
+        ]
+    ),
+    required=True,
+    help="Misconduct category. (frivolous_andon and calibration_miss are recorded automatically.)",
+)
+@click.option(
+    "--reason",
+    type=str,
+    required=True,
+    help="What specifically failed. Becomes part of the record.",
+)
+@click.option(
+    "--related-project",
+    type=str,
+    default=None,
+    help="Project this is tied to, if applicable.",
+)
+def misconduct_flag(fellow: str, kind: str, reason: str, related_project: str | None) -> None:
+    """Record a misconduct mark against a reviewer.
+
+    Accumulated active-weight ≥ 3.0 sidelines the Fellow from the
+    reviewer pool. Marks expire after 90 days. Use this for failures
+    a workflow cannot detect automatically: sycophancy, undisclosed
+    conflict, personal animus, manifestly lazy review.
+    """
+    _check_kill_switch()
+    from institute import reviewer_eligibility
+
+    with db.connection() as conn:
+        row = conn.execute("SELECT name FROM fellows WHERE id = ?", (fellow,)).fetchone()
+        if row is None:
+            console.print(f"[red]No such Fellow: `{fellow}`.[/red]")
+            sys.exit(1)
+        with db.transaction(conn):
+            reviewer_eligibility.record_mark(
+                conn,
+                fellow_id=fellow,
+                kind=kind,
+                reason=reason,
+                related_project=related_project,
+            )
+        weight = reviewer_eligibility.active_weight(conn, fellow)
+        eligible = weight < reviewer_eligibility.INELIGIBILITY_THRESHOLD
+    console.print()
+    console.print(
+        f"[bold]{row['name']}[/bold] marked for `{kind}`. "
+        f"Active weight: {weight:.1f} / {reviewer_eligibility.INELIGIBILITY_THRESHOLD:.1f}."
+    )
+    if not eligible:
+        console.print(
+            f"[red]{row['name']} is now sidelined from the reviewer pool[/red] "
+            "until marks decay below the threshold."
+        )
+
+
+@misconduct.command("list")
+@click.option("--fellow", type=str, required=True, help="Fellow id.")
+@click.option(
+    "--active-only/--all",
+    default=False,
+    show_default=True,
+    help="Show only non-expired marks.",
+)
+def misconduct_list(fellow: str, active_only: bool) -> None:
+    """List marks against a reviewer."""
+    from institute import reviewer_eligibility
+
+    with db.connection() as conn:
+        marks = reviewer_eligibility.list_marks(conn, fellow, active_only=active_only)
+        weight = reviewer_eligibility.active_weight(conn, fellow)
+        eligible = weight < reviewer_eligibility.INELIGIBILITY_THRESHOLD
+    if not marks:
+        console.print(f"[dim]No marks for `{fellow}`.[/dim]")
+        return
+    t = Table(title=f"Reviewer marks: {fellow}", title_style="bold")
+    t.add_column("recorded")
+    t.add_column("kind")
+    t.add_column("weight", justify="right")
+    t.add_column("expires")
+    t.add_column("reason")
+    for m in marks:
+        t.add_row(m.recorded_at, m.kind, f"{m.weight:.1f}", m.expires_at, (m.reason or "")[:60])
+    console.print(t)
+    console.print()
+    status = "[green]eligible[/green]" if eligible else "[red]SIDELINED[/red]"
+    console.print(
+        f"Active weight: {weight:.1f} / {reviewer_eligibility.INELIGIBILITY_THRESHOLD:.1f} — {status}"
+    )
+
+
+# ---------------------------------------------------------------------------
 # terminate: targeted kill switch for a Charter violation
 # ---------------------------------------------------------------------------
 

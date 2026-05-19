@@ -263,12 +263,62 @@ def _apply_outcome(
             (target.value, now, project_id),
         )
         decisions.record(conn, decision)
+
+    # Calibration accounting. The Board's ruling is the ground truth.
+    # Any round-2 reviewer whose recommendation diverges from the
+    # ruling takes a calibration_miss mark. This is the symmetric
+    # signal to the andon dismiss → frivolous_andon mark above.
+    _record_calibration_marks(project_id, title, outcome)
+
     style = "green" if outcome == "accept" else "red"
     console.print()
     console.print(
         f"[bold {style}]Editorial Board {outcome}ed.[/bold {style}] "
         f"Project {project_id} → {target.value}"
     )
+
+
+def _record_calibration_marks(project_id: str, title: str, outcome: str) -> None:
+    """Mark round-2 reviewers whose recommendation diverged from the Board.
+
+    A reviewer who recommended `accept` on a piece the Board rejected,
+    or `reject` on a piece the Board accepted, takes a
+    calibration_miss mark. `minor` and `major` are interpreted as
+    leaning-accept (publishable with revisions) and counted as
+    consistent with an accept ruling.
+    """
+    from institute import reviewer_eligibility
+
+    with db.connection() as conn:
+        rows = list(
+            conn.execute(
+                "SELECT id AS review_id, reviewer_id, recommendation "
+                "FROM reviews WHERE project_id = ? AND round = 2",
+                (project_id,),
+            )
+        )
+
+    for row in rows:
+        rec = (row["recommendation"] or "").strip().lower()
+        reviewer_voted_for_publication = rec in {"accept", "minor", "major"}
+        if outcome == "accept" and not reviewer_voted_for_publication:
+            mismatch = True
+        elif outcome == "reject" and reviewer_voted_for_publication:
+            mismatch = True
+        else:
+            mismatch = False
+        if not mismatch:
+            continue
+        reason = (
+            f"Editorial Board {outcome}ed `{project_id}` ({title}); reviewer recommended `{rec}`."
+        )
+        reviewer_eligibility.safe_record(
+            fellow_id=row["reviewer_id"],
+            kind="calibration_miss",
+            reason=reason,
+            related_project=project_id,
+            related_review_id=row["review_id"],
+        )
 
 
 def run(project_id: str) -> None:
