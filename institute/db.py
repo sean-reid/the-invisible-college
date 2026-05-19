@@ -15,7 +15,7 @@ from pathlib import Path
 
 from institute.paths import DB_PATH as DB_PATH  # re-exported for tests to patch
 
-SCHEMA_VERSION = 5
+SCHEMA_VERSION = 6
 
 SCHEMA = """
 CREATE TABLE IF NOT EXISTS schema_version (
@@ -82,18 +82,20 @@ CREATE TABLE IF NOT EXISTS project_collaborators (
 );
 
 CREATE TABLE IF NOT EXISTS reviews (
-    id              TEXT    PRIMARY KEY,
-    project_id      TEXT    NOT NULL REFERENCES projects(id),
-    reviewer_id     TEXT    NOT NULL REFERENCES fellows(id),
-    role            TEXT    NOT NULL,
-    recommendation  TEXT,
-    confidence      TEXT,
-    content_path    TEXT    NOT NULL,
-    submitted_at    TEXT,
-    dissent         INTEGER NOT NULL DEFAULT 0,
-    round           INTEGER NOT NULL DEFAULT 1,
-    andon_cord      INTEGER NOT NULL DEFAULT 0,
-    andon_reason    TEXT,
+    id                 TEXT    PRIMARY KEY,
+    project_id         TEXT    NOT NULL REFERENCES projects(id),
+    reviewer_id        TEXT    NOT NULL REFERENCES fellows(id),
+    role               TEXT    NOT NULL,
+    recommendation     TEXT,
+    confidence         TEXT,
+    content_path       TEXT    NOT NULL,
+    submitted_at       TEXT,
+    dissent            INTEGER NOT NULL DEFAULT 0,
+    round              INTEGER NOT NULL DEFAULT 1,
+    andon_cord         INTEGER NOT NULL DEFAULT 0,
+    andon_reason       TEXT,
+    charter_violation  INTEGER NOT NULL DEFAULT 0,
+    violation_kind     TEXT,
     UNIQUE (project_id, reviewer_id, round)
 );
 
@@ -193,6 +195,9 @@ def _run_migrations(conn: sqlite3.Connection, from_version: int, to_version: int
         elif version == 4:
             _migrate_4_to_5(conn)
             version = 5
+        elif version == 5:
+            _migrate_5_to_6(conn)
+            version = 6
         else:
             raise RuntimeError(f"No migration path from version {version}.")
     conn.execute("UPDATE schema_version SET version = ?", (to_version,))
@@ -346,6 +351,28 @@ def _migrate_4_to_5(conn: sqlite3.Connection) -> None:
             "CREATE INDEX IF NOT EXISTS idx_episodic_fellow_kind "
             "ON episodic_memory(fellow_id, kind)"
         )
+        conn.execute("COMMIT")
+    except Exception:
+        conn.execute("ROLLBACK")
+        raise
+
+
+def _migrate_5_to_6(conn: sqlite3.Connection) -> None:
+    """Add charter_violation + violation_kind to reviews.
+
+    A reviewer can flag a Charter violation (Chapter 1) on a review.
+    When the andon cord is sustained on a flagged review, the
+    responsible Fellow is terminated. Idempotent.
+    """
+    conn.execute("BEGIN IMMEDIATE")
+    try:
+        existing = {row["name"] for row in conn.execute("PRAGMA table_info(reviews)")}
+        if "charter_violation" not in existing:
+            conn.execute(
+                "ALTER TABLE reviews ADD COLUMN charter_violation INTEGER NOT NULL DEFAULT 0"
+            )
+        if "violation_kind" not in existing:
+            conn.execute("ALTER TABLE reviews ADD COLUMN violation_kind TEXT")
         conn.execute("COMMIT")
     except Exception:
         conn.execute("ROLLBACK")

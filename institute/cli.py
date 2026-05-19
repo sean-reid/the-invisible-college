@@ -287,6 +287,51 @@ def curriculum(fellow: str, design: bool) -> None:
 
 
 # ---------------------------------------------------------------------------
+# terminate: targeted kill switch for a Charter violation
+# ---------------------------------------------------------------------------
+
+
+@main.command()
+@click.option("--fellow", type=str, required=True, help="Fellow id to terminate.")
+@click.option(
+    "--kind",
+    type=click.Choice(
+        [
+            "deception",
+            "plagiarism",
+            "commercial",
+            "engagement_bait",
+            "harm",
+            "consciousness",
+            "other",
+        ]
+    ),
+    required=True,
+    help="Which of the Charter's categorical prohibitions was violated.",
+)
+@click.option(
+    "--reason",
+    type=str,
+    required=True,
+    help="Free-text reason for the termination. Becomes part of the public record.",
+)
+def terminate(fellow: str, kind: str, reason: str) -> None:
+    """Terminate a Fellow for a Charter violation (the targeted kill switch).
+
+    Chapter 1 lists six categorical prohibitions: deception, plagiarism,
+    commercial activity, engagement-bait, harm, and claims of consciousness.
+    A violation triggers immediate termination of the responsible Fellow.
+
+    Already-published work survives in the Archive with a disclosure banner
+    on the blog. In-flight work is discarded.
+    """
+    _check_kill_switch()
+    from institute.workflows import terminate as terminate_workflow
+
+    terminate_workflow.run(fellow, kind=kind, reason=reason)
+
+
+# ---------------------------------------------------------------------------
 # memory: inspect or backfill a Fellow's episodic memory
 # ---------------------------------------------------------------------------
 
