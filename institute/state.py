@@ -23,6 +23,7 @@ class State(StrEnum):
     PEER_REVIEWING = "peer_reviewing"
     REVISING = "revising"
     ANDON_REVIEW = "andon_review"
+    EDITORIAL_REVIEW = "editorial_review"
     EDITORIAL = "editorial"
     PUBLISHED = "published"
     REJECTED = "rejected"
@@ -38,6 +39,7 @@ NEXT_ACTION: dict[State, str | None] = {
     State.PEER_REVIEWING: "peer_review",
     State.REVISING: "revise",
     State.ANDON_REVIEW: "andon_review",
+    State.EDITORIAL_REVIEW: "editorial_review",
     State.EDITORIAL: "publish",
     State.PUBLISHED: None,
     State.REJECTED: None,
@@ -58,11 +60,15 @@ ALLOWED_TRANSITIONS: dict[State, set[State]] = {
         State.PEER_REVIEWING,
         State.REVISING,
         State.ANDON_REVIEW,
+        State.EDITORIAL_REVIEW,
         State.EDITORIAL,
         State.REJECTED,
     },
     State.REVISING: {State.PEER_REVIEWING, State.EDITORIAL, State.AWAITING_ADVISOR_REVIEW},
     State.ANDON_REVIEW: {State.EDITORIAL, State.REJECTED},
+    # Editorial Board makes the final call after round-2 peer review with
+    # reject recommendations or dissent. Accept → editorial; reject → rejected.
+    State.EDITORIAL_REVIEW: {State.EDITORIAL, State.REJECTED},
     State.EDITORIAL: {State.PUBLISHED, State.REJECTED},
     State.PUBLISHED: set(),
     State.REJECTED: set(),

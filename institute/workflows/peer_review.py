@@ -695,15 +695,44 @@ def _transition_after_all_reviews(project_id: str, title: str, review_round: int
                 (project_id, review_round),
             )
         )
+        dissents = list(
+            conn.execute(
+                "SELECT reviewer_id FROM reviews "
+                "WHERE project_id = ? AND round = ? AND dissent = 1",
+                (project_id, review_round),
+            )
+        )
 
     if cord_pulls:
         _route_to_andon_review(project_id, title, review_round, cord_pulls)
         return
 
     needs_revision = any(r != "accept" for r in recommendations)
-    target_state = State.REVISING if needs_revision else State.EDITORIAL
+    has_reject = any(r == "reject" for r in recommendations)
+    has_dissent = len(dissents) > 0
 
-    if needs_revision and review_round == 1:
+    # Round 2 with a reject recommendation or any dissent goes to the
+    # Editorial Board. Chapter 7: the Board makes the final accept/reject
+    # call when reviewers disagree, not the lead doing a polish pass.
+    if review_round >= 2 and (has_reject or has_dissent):
+        target_state = State.EDITORIAL_REVIEW
+        kind = "editorial_review_requested"
+        flavor = []
+        if has_reject:
+            flavor.append("at least one reviewer recommended `reject`")
+        if has_dissent:
+            flavor.append("at least one reviewer filed a dissent")
+        body = (
+            "Round-2 peer reviews filed with disagreement: "
+            + ", ".join(flavor)
+            + ". The Editorial Board (or the Founder, until one exists) "
+            "will read the draft, all reviews, and any dissents, and make "
+            "the final accept/reject decision.\n\n"
+            f"Round 2 recommendations: {', '.join(recommendations)}"
+        )
+        title_prefix = "Editorial Board review requested"
+    elif needs_revision and review_round == 1:
+        target_state = State.REVISING
         kind = "revision_required"
         body = (
             "Round-1 peer reviews filed. At least one reviewer requested "
@@ -714,16 +743,18 @@ def _transition_after_all_reviews(project_id: str, title: str, review_round: int
         )
         title_prefix = "Revisions requested"
     elif needs_revision and review_round >= 2:
+        target_state = State.REVISING
         kind = "final_revision_required"
         body = (
-            "Round-2 peer reviews filed. At least one reviewer still requested "
-            "revisions. The lead Fellow will do one final polishing pass to "
-            "address the remaining concerns, then the piece goes to editorial. "
-            "There is no third round.\n\n"
+            "Round-2 peer reviews filed. Minor revisions requested; no "
+            "reject recommendations and no dissent. The lead Fellow will do "
+            "one final polishing pass to address the remaining concerns, "
+            "then the piece goes to editorial. There is no third round.\n\n"
             f"Round 2 recommendations: {', '.join(recommendations)}"
         )
         title_prefix = "Final revision requested"
     elif review_round >= 2:
+        target_state = State.EDITORIAL
         kind = "editorial"
         body = (
             "Round-2 peer reviews filed and unanimously recommended `accept`. "
@@ -732,6 +763,7 @@ def _transition_after_all_reviews(project_id: str, title: str, review_round: int
         )
         title_prefix = "Editorial decision pending"
     else:
+        target_state = State.EDITORIAL
         kind = "editorial"
         body = (
             "Round-1 peer reviews filed and unanimously recommended `accept`. "

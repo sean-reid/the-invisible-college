@@ -44,6 +44,7 @@ uv run institute bootstrap          # one-time: orchestrator drafts the founding
 | `institute curriculum --fellow <id>` | Walk a Postulant's reading curriculum one item. |
 | `institute qualify --fellow <id>` | Start a Postulant's qualifying project. |
 | `institute promote [--fellow <id>]` | Print cohort reputation, or run a promotion review. |
+| Editorial Board | (Automatic) Round-2 peer review with a `reject` recommendation or any dissent routes through Editorial Board ruling before publication. Up to 3 longest-tenured Senior Fellows serve. |
 | `institute memory {list,query,backfill} --fellow <id>` | Inspect or backfill a Fellow's episodic memory. |
 | `institute autopilot` | One self-driving wake-up. Curriculum step, then advance. |
 | `institute schedule {install,status,uninstall}` | macOS `launchd` agent that fires `autopilot` on a cadence. |
