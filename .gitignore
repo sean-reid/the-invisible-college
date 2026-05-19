@@ -29,6 +29,8 @@ blog/.astro/
 blog/screenshots/
 # Synced from /genomes at build time by scripts/sync-fellows.mjs.
 blog/src/content/fellows/*.json
+# Synced from /archive/decisions at build time by scripts/sync-decisions.mjs.
+blog/src/content/decisions/*.md
 .DS_Store
 
 # Playwright
