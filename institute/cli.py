@@ -634,17 +634,33 @@ def promote(fellow: str | None) -> None:
     default=None,
     help="Optional topic guidance. The Fellow may sharpen, narrow, or push back.",
 )
-def propose(lead: str | None, topic: str | None) -> None:
+@click.option(
+    "--collaborator",
+    "collaborators",
+    type=str,
+    multiple=True,
+    help=(
+        "Fellow id to add as a research-group collaborator. Repeatable; "
+        "Chapter 6 caps a group at the lead plus four others."
+    ),
+)
+def propose(
+    lead: str | None,
+    topic: str | None,
+    collaborators: tuple[str, ...],
+) -> None:
     """A Fellow drafts a new research proposal.
 
     The lead Fellow is invoked once and asked for a structured proposal.
     The result is written to archive/proposals/ and a new project enters
-    state PROPOSED.
+    state PROPOSED. When --collaborator is supplied, the named Fellows
+    join the research group: they contribute during execution, are
+    excluded from the reviewer pool, and are co-credited on publication.
     """
     _check_kill_switch()
     from institute.workflows import propose as propose_workflow
 
-    propose_workflow.run(lead=lead, topic=topic)
+    propose_workflow.run(lead=lead, topic=topic, collaborators=list(collaborators))
 
 
 # ---------------------------------------------------------------------------

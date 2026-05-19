@@ -334,9 +334,11 @@ def _pick_review_slots(
     # Exclude the advisor too if they're already taking the primary slot.
     # Exclude any Fellow currently sidelined for reviewer misconduct
     # (frivolous andon pulls, calibration misses, manual flags).
-    from institute import reviewer_eligibility
+    # Exclude every co-author on this project (Chapter 6 research groups):
+    # an author cannot review work they helped produce.
+    from institute import collaborators, reviewer_eligibility
 
-    excluded_ids = {lead_id}
+    excluded_ids = {lead_id, *collaborators.collaborator_ids(conn, project_id)}
     if advisor_id:
         excluded_ids.add(advisor_id)
     excluded_ids |= reviewer_eligibility.ineligible_fellow_ids(conn)
@@ -700,19 +702,26 @@ def run(project_id: str) -> None:
             "andon_cord": andon_cord,
         },
     )
-    episodic.safe_ingest(
-        fellow_id=proj["lead_fellow_id"],
-        kind="review_received",
-        title=f"Review from {reviewer.name} on {proj['title']} (round {review_round})",
-        content=review_md,
-        source_path=str(review_path.relative_to(paths.ROOT)),
-        project_id=project_id,
-        metadata={
-            "reviewer": reviewer.id,
-            "round": review_round,
-            "recommendation": payload["recommendation"],
-        },
-    )
+    # Each co-author on the project (lead + collaborators) gets the
+    # received-review in their episodic memory — they're all judged by it.
+    from institute import collaborators
+
+    with db.connection() as conn:
+        author_ids = collaborators.author_ids(conn, project_id)
+    for author_id in author_ids:
+        episodic.safe_ingest(
+            fellow_id=author_id,
+            kind="review_received",
+            title=f"Review from {reviewer.name} on {proj['title']} (round {review_round})",
+            content=review_md,
+            source_path=str(review_path.relative_to(paths.ROOT)),
+            project_id=project_id,
+            metadata={
+                "reviewer": reviewer.id,
+                "round": review_round,
+                "recommendation": payload["recommendation"],
+            },
+        )
 
     remaining_after = len(remaining) - 1
     console.print()

@@ -102,14 +102,34 @@ def reviewer_stats(conn: sqlite3.Connection, fellow_id: str) -> ReviewerStats:
 
 
 def author_stats(conn: sqlite3.Connection, fellow_id: str) -> AuthorStats:
+    """Authorship signals across every project this Fellow co-authored.
+
+    Counts include both projects led by this Fellow (`lead_fellow_id`)
+    and projects where they joined as a collaborator (`project_collaborators`).
+    Per Chapter 6, authorship reflects actual contribution; the
+    reputation aggregator follows that convention.
+    """
     publications = conn.execute(
-        "SELECT COUNT(*) FROM projects WHERE lead_fellow_id = ? AND state = 'published'",
-        (fellow_id,),
+        """
+        SELECT COUNT(*) FROM projects p
+        WHERE p.state = 'published'
+          AND (
+              p.lead_fellow_id = ?
+              OR p.id IN (SELECT project_id FROM project_collaborators WHERE fellow_id = ?)
+          )
+        """,
+        (fellow_id, fellow_id),
     ).fetchone()[0]
     in_flight = conn.execute(
-        "SELECT COUNT(*) FROM projects WHERE lead_fellow_id = ? "
-        "AND state NOT IN ('published', 'rejected')",
-        (fellow_id,),
+        """
+        SELECT COUNT(*) FROM projects p
+        WHERE p.state NOT IN ('published', 'rejected')
+          AND (
+              p.lead_fellow_id = ?
+              OR p.id IN (SELECT project_id FROM project_collaborators WHERE fellow_id = ?)
+          )
+        """,
+        (fellow_id, fellow_id),
     ).fetchone()[0]
 
     round_1_received = list(
@@ -118,9 +138,13 @@ def author_stats(conn: sqlite3.Connection, fellow_id: str) -> AuthorStats:
             SELECT r.recommendation
             FROM reviews r
             JOIN projects p ON p.id = r.project_id
-            WHERE p.lead_fellow_id = ? AND r.round = 1
+            WHERE r.round = 1
+              AND (
+                  p.lead_fellow_id = ?
+                  OR p.id IN (SELECT project_id FROM project_collaborators WHERE fellow_id = ?)
+              )
             """,
-            (fellow_id,),
+            (fellow_id, fellow_id),
         )
     )
     r1_majors = sum(

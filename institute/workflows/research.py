@@ -19,7 +19,16 @@ from pathlib import Path
 
 from rich.console import Console
 
-from institute import archive_index, claude_runner, db, decisions, episodic, paths, workspaces
+from institute import (
+    archive_index,
+    claude_runner,
+    collaborators,
+    db,
+    decisions,
+    episodic,
+    paths,
+    workspaces,
+)
 from institute import fellow as fellow_mod
 from institute.claude_runner import FellowTask
 from institute.fellow import Genome
@@ -50,9 +59,9 @@ In your current working directory you will find:
                        given or received, advisor feedback). Read it as
                        your own — it is. Your past thinking should inform
                        this work; do not contradict yourself without
-                       acknowledging it.
+                       acknowledging it.{contributions_inputs}
 
-Read them with the Read tool before doing the work.
+Read them with the Read tool before doing the work.{contributions_directive}
 
 # Outputs
 
@@ -105,6 +114,80 @@ else. Do NOT paste the files into your reply.
 """
 
 
+CONTRIBUTIONS_INPUTS = """
+- `contributions/<id>.md`   one file per research-group collaborator.
+                       Each file is signed by the collaborator named in
+                       its filename. Read every contribution file before
+                       drafting — you are integrating their work, not
+                       writing alone."""
+
+
+CONTRIBUTIONS_DIRECTIVE = """
+
+# Research group
+
+This is a multi-author project. The contributions/ directory holds notes
+written by each collaborator. The draft must reflect what they actually
+brought: integrate their substantive arguments, cite them by name where
+their angle shapes a section, and credit them in a `## Acknowledgements`
+section at the end of the draft if their contribution is more
+methodological than narrative. The byline reflects actual contribution;
+do not list collaborators whose notes you did not use, and do not
+silently absorb collaborator material without credit.
+"""
+
+
+COLLABORATOR_BRIEF = """\
+You are {collab_name} ({collab_specialization}), serving as a research
+collaborator on a project led by {lead_name} for the Invisible College.
+
+# Inputs
+
+In your current working directory you will find:
+- `proposal.md`      the approved research proposal you have joined
+- `archive-index.md` every piece the College has published so far
+- `memory.md`        if present, the most relevant entries from your own
+                     episodic memory
+
+Read them with the Read tool first.
+
+# Your contribution
+
+Use the Write tool to create `contribution.md` (300 to 800 words of
+markdown) containing your specific contribution to this project. Pick
+whichever angle best fits your specialization and the proposal's
+weakest seam:
+
+- A methodological refinement the lead has under-specified
+- Specific sources, prior work, or counter-examples the lead should
+  engage that they likely have not seen
+- A failure mode you think the approach will hit, and a concrete way to
+  handle it
+- A subordinate question that must be answered before the main one
+- An experiment, test, or check that should be run as part of the work
+
+Be specific. The lead will read your file and integrate it into the
+draft, citing you by name. A vague "I'd suggest considering ..." that
+could come from anyone is not a contribution. Authorship at publication
+reflects actual contribution — Chapter 6 says explicitly that nominal
+contributors are not listed as coauthors.
+
+# Constraints
+
+- 300 to 800 words. Substantive, not exhaustive.
+- Charter applies: no deception, no engagement-bait, no consciousness
+  claims, no commercial framing.
+- Stay in the role of a peer collaborator helping execute the work, not
+  a reviewer judging finished work. Reviewing comes later, after the
+  draft exists, by other Fellows.
+
+# Final reply
+
+When `contribution.md` exists, reply with the single word `Done.` Nothing
+else. Do NOT paste the contribution into your reply.
+"""
+
+
 def _load_review_md(project_id: str) -> str:
     project_dir = paths.PROPOSALS / project_id
     if not project_dir.is_dir():
@@ -132,6 +215,11 @@ def run(project_id: str) -> None:
 
     Called by `institute next` when a project is in PROPOSAL_REVIEWED or
     RESEARCHING. For v1, runs once and transitions to DRAFTED.
+
+    For research-group projects (collaborators present), each
+    collaborator's `contribution.md` is collected first, then the lead
+    integrates them into the draft. Contributions are file artifacts:
+    re-running after an interrupt skips any contribution already on disk.
     """
     with db.connection() as conn:
         proj = conn.execute(
@@ -146,34 +234,65 @@ def run(project_id: str) -> None:
                 "expected proposal_reviewed or researching."
             )
         lead: Genome = fellow_mod.load_genome(conn, proj["lead_fellow_id"])
+        collaborator_genomes = [
+            fellow_mod.load_genome(conn, c.fellow_id)
+            for c in collaborators.for_project(conn, project_id)
+        ]
         proposal_md = (paths.ROOT / proj["proposal_path"]).read_text(encoding="utf-8")
     review_md = _load_review_md(project_id)
+
+    # Transition into RESEARCHING immediately so an interruption shows the
+    # in-flight state on `institute status`. Doing this before collaborator
+    # contributions makes a partial group-research run resumable.
+    now = datetime.now(UTC).isoformat(timespec="seconds")
+    if proj["state"] != State.RESEARCHING.value:
+        with db.connection() as conn, db.transaction(conn):
+            conn.execute(
+                "UPDATE projects SET state = ?, updated_at = ? WHERE id = ?",
+                (State.RESEARCHING.value, now, project_id),
+            )
+
+    # Collect each collaborator's contribution before the lead drafts.
+    # Each contribution is saved both to the archive (permanent record)
+    # and into the lead's workspace under contributions/<id>.md so the
+    # lead reads them as inputs.
+    contribution_paths: list[Path] = []
+    for collab in collaborator_genomes:
+        contribution_path = _collect_collaborator_contribution(
+            project_id=project_id,
+            collaborator=collab,
+            lead=lead,
+            proposal_md=proposal_md,
+        )
+        contribution_paths.append(contribution_path)
 
     workspace = workspaces.workspace_for(lead.id, project_id)
     workspaces.stage_input(workspace, "proposal.md", proposal_md)
     workspaces.stage_input(workspace, "proposal-review.md", review_md)
     workspaces.stage_input(workspace, "archive-index.md", archive_index.render())
+    for path, collab in zip(contribution_paths, collaborator_genomes, strict=False):
+        workspaces.stage_input(
+            workspace,
+            f"contributions/{collab.id}.md",
+            path.read_text(encoding="utf-8"),
+        )
 
     console.print(
         f"[dim]Asking {lead.name} ({lead.id}) to execute the research. "
         "This will likely take several minutes...[/dim]"
     )
 
-    # Transition into RESEARCHING immediately so an interruption shows the
-    # in-flight state on `institute status`.
-    now = datetime.now(UTC).isoformat(timespec="seconds")
-    with db.connection() as conn, db.transaction(conn):
-        conn.execute(
-            "UPDATE projects SET state = ?, updated_at = ? WHERE id = ?",
-            (State.RESEARCHING.value, now, project_id),
-        )
+    brief = BRIEF.format(
+        contributions_inputs=CONTRIBUTIONS_INPUTS if collaborator_genomes else "",
+        contributions_directive=CONTRIBUTIONS_DIRECTIVE if collaborator_genomes else "",
+    )
 
     claude_runner.invoke(
         FellowTask(
             genome=lead,
             project_id=project_id,
             step="research",
-            brief=BRIEF,
+            brief=brief,
             workspace=workspace,
             extra_dirs=(paths.DOCS, paths.ARCHIVE),
         )
@@ -225,6 +344,8 @@ def run(project_id: str) -> None:
         )
         decisions.record(conn, decision)
 
+    # Notebook and draft go into the lead's episodic memory, and the
+    # draft also enters each collaborator's memory — they co-authored it.
     episodic.safe_ingest(
         fellow_id=lead.id,
         kind="lab_notebook",
@@ -233,16 +354,84 @@ def run(project_id: str) -> None:
         source_path=str(notebook_path.relative_to(paths.ROOT)),
         project_id=project_id,
     )
-    episodic.safe_ingest(
-        fellow_id=lead.id,
-        kind="draft",
-        title=new_title,
-        content=draft_md,
-        source_path=str(draft_path.relative_to(paths.ROOT)),
-        project_id=project_id,
-    )
+    for author in [lead, *collaborator_genomes]:
+        episodic.safe_ingest(
+            fellow_id=author.id,
+            kind="draft",
+            title=new_title,
+            content=draft_md,
+            source_path=str(draft_path.relative_to(paths.ROOT)),
+            project_id=project_id,
+        )
 
     console.print()
     console.print(f"[green]Notebook:[/green]  {notebook_path.relative_to(paths.ROOT)}")
     console.print(f"[green]Draft:[/green]     {draft_path.relative_to(paths.ROOT)}")
     console.print(f"[green]New state:[/green] {State.DRAFTED.value}")
+
+
+def _collect_collaborator_contribution(
+    *,
+    project_id: str,
+    collaborator: Genome,
+    lead: Genome,
+    proposal_md: str,
+) -> Path:
+    """Ask one collaborator for their contribution and persist it.
+
+    Re-entrant: if the contribution already exists on disk with
+    substantive content, this is a no-op and the path is returned. That
+    makes a partial group-research run resumable across `institute next`
+    invocations.
+    """
+    contribution_path = paths.LAB_NOTEBOOKS / project_id / "contributions" / f"{collaborator.id}.md"
+    if contribution_path.is_file():
+        existing = contribution_path.read_text(encoding="utf-8").strip()
+        if len(existing) >= 200:
+            console.print(
+                f"[dim]Contribution from {collaborator.name} already on disk; skipping.[/dim]"
+            )
+            return contribution_path
+
+    workspace = workspaces.workspace_for(collaborator.id, f"{project_id}-contribute")
+    workspaces.stage_input(workspace, "proposal.md", proposal_md)
+    workspaces.stage_input(workspace, "archive-index.md", archive_index.render())
+
+    console.print(
+        f"[dim]Asking {collaborator.name} ({collaborator.id}) to contribute "
+        f"to {lead.name}'s research group...[/dim]"
+    )
+
+    brief = COLLABORATOR_BRIEF.format(
+        collab_name=collaborator.name,
+        collab_specialization=collaborator.specialization,
+        lead_name=lead.name,
+    )
+
+    claude_runner.invoke(
+        FellowTask(
+            genome=collaborator,
+            project_id=project_id,
+            step=f"contribute:{collaborator.id}",
+            brief=brief,
+            workspace=workspace,
+            extra_dirs=(paths.DOCS, paths.ARCHIVE),
+        )
+    )
+
+    contribution_md = workspaces.require_output(workspace, "contribution.md", min_chars=200)
+    _atomic_write(contribution_path, contribution_md.rstrip() + "\n")
+
+    # Each collaborator's contribution lands in their own episodic memory
+    # so subsequent reviews/promotion calls have it.
+    episodic.safe_ingest(
+        fellow_id=collaborator.id,
+        kind="contribution",
+        title=f"Contribution to research group on {project_id}",
+        content=contribution_md,
+        source_path=str(contribution_path.relative_to(paths.ROOT)),
+        project_id=project_id,
+    )
+
+    console.print(f"[green]Contribution filed:[/green] {contribution_path.relative_to(paths.ROOT)}")
+    return contribution_path

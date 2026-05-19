@@ -27,7 +27,7 @@ from typing import Any
 
 from rich.console import Console
 
-from institute import db, decisions, paths
+from institute import collaborators, db, decisions, episodic, paths
 from institute import fellow as fellow_mod
 from institute.state import State
 
@@ -234,6 +234,10 @@ def run(project_id: str) -> None:
             raise SystemExit(f"Project {project_id} has no draft.")
 
         lead = fellow_mod.load_genome(conn, proj["lead_fellow_id"])
+        collaborator_genomes = [
+            fellow_mod.load_genome(conn, c.fellow_id)
+            for c in collaborators.for_project(conn, project_id)
+        ]
         reviews_data = _gather_reviews(conn, project_id)
         # Resolve reviewer names from their ids.
         reviewer_genomes = [fellow_mod.load_genome(conn, r["reviewer_id"]) for r in reviews_data]
@@ -252,7 +256,8 @@ def run(project_id: str) -> None:
     started = datetime.fromisoformat(proj["created_at"])
     abstract = _read_abstract_file(project_id) or _extract_abstract_fallback(body)
     slug = project_id  # stable, unique, sortable
-    authors = [lead.name]
+    author_genomes = [lead, *collaborator_genomes]
+    authors = [g.name for g in author_genomes]
     reviewer_names = [g.name for g in reviewer_genomes]
     issue_number = _next_issue_number()
 
@@ -309,21 +314,33 @@ def run(project_id: str) -> None:
     decision_body_lines = [
         f"**Title:** {title}",
         f"**Lead Fellow:** {lead.name} (`{lead.id}`)",
-        f"**Reviewers:** {', '.join(reviewer_names) if reviewer_names else 'none'}",
-        "",
-        f"**Publication:** [{publication_archive_path.relative_to(paths.ROOT)}]"
-        f"({publication_archive_path.relative_to(paths.ROOT)})",
-        f"**Blog post:** [{publication_blog_path.relative_to(paths.ROOT)}]"
-        f"({publication_blog_path.relative_to(paths.ROOT)})",
-        "",
-        "Editorial outcome: accepted. "
-        + ("Includes dissenting review(s)." if has_dissent else "Reviews were unanimous."),
     ]
+    if collaborator_genomes:
+        members = ", ".join(f"{g.name} (`{g.id}`)" for g in collaborator_genomes)
+        decision_body_lines.append(f"**Collaborators:** {members}")
+    decision_body_lines.extend(
+        [
+            f"**Reviewers:** {', '.join(reviewer_names) if reviewer_names else 'none'}",
+            "",
+            f"**Publication:** [{publication_archive_path.relative_to(paths.ROOT)}]"
+            f"({publication_archive_path.relative_to(paths.ROOT)})",
+            f"**Blog post:** [{publication_blog_path.relative_to(paths.ROOT)}]"
+            f"({publication_blog_path.relative_to(paths.ROOT)})",
+            "",
+            "Editorial outcome: accepted. "
+            + ("Includes dissenting review(s)." if has_dissent else "Reviews were unanimous."),
+        ]
+    )
     decision = decisions.Decision(
         kind="publication",
         title=f"Published: {title}",
         body="\n".join(decision_body_lines),
-        actors=["editorial-board", lead.id, *(g.id for g in reviewer_genomes)],
+        actors=[
+            "editorial-board",
+            lead.id,
+            *(g.id for g in collaborator_genomes),
+            *(g.id for g in reviewer_genomes),
+        ],
         related_project=project_id,
     )
 
@@ -344,6 +361,23 @@ def run(project_id: str) -> None:
         decisions.record(conn, decision)
         if is_qualifying:
             _auto_promote_to_novice(conn, lead.id, project_id, timestamp)
+
+    # Every co-author gets the published piece in their episodic memory
+    # so future proposals and reviews can build on their own published work.
+    for author in author_genomes:
+        episodic.safe_ingest(
+            fellow_id=author.id,
+            kind="publication",
+            title=title,
+            content=body,
+            source_path=str(publication_archive_path.relative_to(paths.ROOT)),
+            project_id=project_id,
+            metadata={
+                "slug": slug,
+                "issue": issue_number,
+                "role": "lead" if author.id == lead.id else "collaborator",
+            },
+        )
 
     console.print()
     console.print(f"[bold green]Published.[/bold green] Title: {title}")

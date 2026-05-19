@@ -22,7 +22,7 @@ from pathlib import Path
 
 from rich.console import Console
 
-from institute import claude_runner, db, decisions, episodic, paths, workspaces
+from institute import claude_runner, collaborators, db, decisions, episodic, paths, workspaces
 from institute import fellow as fellow_mod
 from institute.claude_runner import FellowTask
 from institute.fellow import Genome
@@ -288,12 +288,20 @@ def _atomic_write(path: Path, content: str) -> None:
     tmp.replace(path)
 
 
-def run(*, lead: str | None = None, topic: str | None = None) -> None:
+def run(
+    *,
+    lead: str | None = None,
+    topic: str | None = None,
+    collaborators: list[str] | None = None,
+) -> None:
     """Top-level propose entry point. Called from cli.propose."""
+
+    collaborator_ids = list(collaborators or [])
 
     # Resolve the lead fellow first so we error early if the institution is empty.
     with db.connection() as conn:
         lead_genome = _pick_lead(conn, lead)
+        collaborator_genomes = _validate_collaborators(conn, lead_genome.id, collaborator_ids)
 
     topic_section = TOPIC_SECTION_WITH.format(topic=topic.strip()) if topic else TOPIC_SECTION_FREE
     brief = PROPOSE_BRIEF_TEMPLATE.format(topic_section=topic_section)
@@ -345,11 +353,14 @@ def run(*, lead: str | None = None, topic: str | None = None) -> None:
     _atomic_write(proposal_path, proposal_md.rstrip() + "\n")
 
     now = datetime.now(UTC).isoformat(timespec="seconds")
+    decision_actors = ["founder", lead_genome.id, *(g.id for g in collaborator_genomes)]
     decision = decisions.Decision(
         kind="proposal",
         title=f"Proposal: {title}",
-        body=_format_proposal_decision_body(title, lead_genome, topic, proposal_path),
-        actors=["founder", lead_genome.id],
+        body=_format_proposal_decision_body(
+            title, lead_genome, topic, proposal_path, collaborator_genomes
+        ),
+        actors=decision_actors,
         related_project=project_id,
     )
 
@@ -368,6 +379,8 @@ def run(*, lead: str | None = None, topic: str | None = None) -> None:
                 now,
             ),
         )
+        for collab in collaborator_genomes:
+            collaborators.add(conn, project_id=project_id, fellow_id=collab.id)
         decisions.record(conn, decision)
 
     episodic.safe_ingest(
@@ -378,11 +391,25 @@ def run(*, lead: str | None = None, topic: str | None = None) -> None:
         source_path=str(proposal_path.relative_to(paths.ROOT)),
         project_id=project_id,
     )
+    # Co-authors get the proposal in their episodic memory too, so their
+    # contributions during research grow out of the same shared context.
+    for collab in collaborator_genomes:
+        episodic.safe_ingest(
+            fellow_id=collab.id,
+            kind="proposal",
+            title=f"Joined research group: {title}",
+            content=proposal_md,
+            source_path=str(proposal_path.relative_to(paths.ROOT)),
+            project_id=project_id,
+        )
 
     console.print()
     console.print(f"[green]Proposal written:[/green] {proposal_path.relative_to(paths.ROOT)}")
     console.print(f"[green]Project id:[/green]    {project_id}")
     console.print(f"[green]Lead Fellow:[/green]   {lead_genome.name} ({lead_genome.id})")
+    if collaborator_genomes:
+        members = ", ".join(f"{g.name} ({g.id})" for g in collaborator_genomes)
+        console.print(f"[green]Collaborators:[/green] {members}")
     console.print()
     console.print("[dim]Next: run `institute next` for proposal review.[/dim]")
 
@@ -392,18 +419,81 @@ def _format_proposal_decision_body(
     lead: Genome,
     topic: str | None,
     proposal_path: Path,
+    collaborator_genomes: list[Genome],
 ) -> str:
     lines = [
         f"**Title:** {title}",
         "",
         f"**Lead Fellow:** {lead.name} (`{lead.id}`, {lead.specialization})",
         "",
-        f"**Topic guidance from Founder:** {topic.strip() if topic else 'none (free choice)'}",
-        "",
-        f"**Proposal:** [{proposal_path.relative_to(paths.ROOT)}]({proposal_path.relative_to(paths.ROOT)})",
-        "",
-        "The lead Fellow drafted this proposal in response to the topic",
-        "guidance above (or chose the topic themselves if none was given).",
-        "The proposal now enters review.",
     ]
+    if collaborator_genomes:
+        member_lines = "\n".join(
+            f"- {g.name} (`{g.id}`, {g.specialization})" for g in collaborator_genomes
+        )
+        lines.extend(
+            [
+                "**Research group:**",
+                "",
+                member_lines,
+                "",
+            ]
+        )
+    lines.extend(
+        [
+            f"**Topic guidance from Founder:** {topic.strip() if topic else 'none (free choice)'}",
+            "",
+            f"**Proposal:** [{proposal_path.relative_to(paths.ROOT)}]"
+            f"({proposal_path.relative_to(paths.ROOT)})",
+            "",
+            "The lead Fellow drafted this proposal in response to the topic",
+            "guidance above (or chose the topic themselves if none was given).",
+            "The proposal now enters review.",
+        ]
+    )
     return "\n".join(lines)
+
+
+def _validate_collaborators(
+    conn: sqlite3.Connection,
+    lead_id: str,
+    collaborator_ids: list[str],
+) -> list[Genome]:
+    """Resolve collaborator ids to Genomes; enforce Chapter 6 group rules.
+
+    - Lead may not also be a collaborator.
+    - Each collaborator must exist, be active (not retired), and not a
+      Postulant (Postulants research under apprenticeship; see Chapter 5).
+    - Distinct ids only.
+    - At most MAX_COLLABORATORS additional members (Chapter 6).
+    """
+    if not collaborator_ids:
+        return []
+    if len(collaborator_ids) > collaborators.MAX_COLLABORATORS:
+        raise SystemExit(
+            f"Too many collaborators ({len(collaborator_ids)}). "
+            f"Chapter 6 caps a research group at one lead plus "
+            f"{collaborators.MAX_COLLABORATORS} others."
+        )
+    seen: set[str] = set()
+    resolved: list[Genome] = []
+    for cid in collaborator_ids:
+        if cid == lead_id:
+            raise SystemExit(f"Lead Fellow {lead_id} cannot also be listed as a collaborator.")
+        if cid in seen:
+            raise SystemExit(f"Collaborator {cid} listed more than once.")
+        seen.add(cid)
+        row = conn.execute(
+            "SELECT id, rank, retired_at FROM fellows WHERE id = ?", (cid,)
+        ).fetchone()
+        if row is None:
+            raise SystemExit(f"Unknown Fellow id: {cid}")
+        if row["retired_at"] is not None:
+            raise SystemExit(f"Fellow {cid} is retired and cannot join a research group.")
+        if row["rank"] == "postulant":
+            raise SystemExit(
+                f"Fellow {cid} is a Postulant; Postulants do their qualifying "
+                "project alone with an advisor, per Chapter 5."
+            )
+        resolved.append(fellow_mod.load_genome(conn, cid))
+    return resolved
