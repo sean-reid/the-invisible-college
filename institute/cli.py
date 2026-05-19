@@ -1002,12 +1002,18 @@ def _advance_one_curriculum_item() -> None:
     with db.connection() as conn:
         rows = list(
             conn.execute(
-                "SELECT id FROM fellows "
-                "WHERE rank = 'postulant' "
-                "AND retired_at IS NULL "
-                "AND curriculum_designed_at IS NOT NULL "
-                "AND curriculum_completed_at IS NULL "
-                "ORDER BY curriculum_designed_at ASC"
+                """
+                SELECT f.id
+                FROM fellows f
+                LEFT JOIN curriculum_responses r ON r.fellow_id = f.id
+                WHERE f.rank = 'postulant'
+                  AND f.retired_at IS NULL
+                  AND f.curriculum_designed_at IS NOT NULL
+                  AND f.curriculum_completed_at IS NULL
+                GROUP BY f.id
+                ORDER BY MAX(r.submitted_at) ASC,
+                         f.curriculum_designed_at ASC
+                """
             )
         )
     if not rows:

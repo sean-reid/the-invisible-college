@@ -399,6 +399,60 @@ def test_qualifying_picker_skips_postulant_with_existing_qualifying(isolated: Pa
     assert rows == [], "Postulant with existing qualifying project should not be picked"
 
 
+def test_curriculum_picker_interleaves_postulants(isolated: Path) -> None:
+    """Autopilot's curriculum picker should rotate, not exhaust one Postulant first.
+
+    Regression: the original picker sorted by curriculum_designed_at ASC,
+    which meant the Postulant whose curriculum was designed first
+    monopolized every wake-up until their curriculum was done. With two
+    Postulants admitted minutes apart, the second would wait days.
+    """
+    with db.connection() as conn, db.transaction(conn):
+        _seed(conn, _genome("adam", "Adam", "postulant"))
+        _seed(conn, _genome("charles", "Charles", "postulant"))
+        conn.execute(
+            "UPDATE fellows SET curriculum_designed_at = ? WHERE id = 'adam'",
+            ("2026-05-18T18:49:25+00:00",),
+        )
+        conn.execute(
+            "UPDATE fellows SET curriculum_designed_at = ? WHERE id = 'charles'",
+            ("2026-05-18T18:51:06+00:00",),
+        )
+        # Adam has two completed responses; Charles has zero. The picker
+        # should prefer Charles next, not Adam.
+        conn.execute(
+            "INSERT INTO curriculum_responses (fellow_id, item_id, response_path, submitted_at) "
+            "VALUES (?, ?, ?, ?)",
+            ("adam", "foun-charter", "x", "2026-05-18T19:45:23+00:00"),
+        )
+        conn.execute(
+            "INSERT INTO curriculum_responses (fellow_id, item_id, response_path, submitted_at) "
+            "VALUES (?, ?, ?, ?)",
+            ("adam", "foun-exemplum", "x", "2026-05-19T00:41:28+00:00"),
+        )
+
+    with db.connection() as conn:
+        rows = list(
+            conn.execute(
+                """
+                SELECT f.id
+                FROM fellows f
+                LEFT JOIN curriculum_responses r ON r.fellow_id = f.id
+                WHERE f.rank = 'postulant'
+                  AND f.retired_at IS NULL
+                  AND f.curriculum_designed_at IS NOT NULL
+                  AND f.curriculum_completed_at IS NULL
+                GROUP BY f.id
+                ORDER BY MAX(r.submitted_at) ASC,
+                         f.curriculum_designed_at ASC
+                """
+            )
+        )
+    assert [r["id"] for r in rows] == ["charles", "adam"], (
+        "Charles (no responses yet) should be picked before Adam (2 responses)"
+    )
+
+
 def test_qualifying_picker_skips_postulant_with_unfinished_curriculum(isolated: Path) -> None:
     """A Postulant who hasn't finished curriculum is not picked for qualifying."""
     with db.connection() as conn, db.transaction(conn):
