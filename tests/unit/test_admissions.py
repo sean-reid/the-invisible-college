@@ -56,6 +56,13 @@ def _make_genome(idx: int, model: str = "claude-sonnet-4-6") -> Genome:
     )
 
 
+def test_propose_brief_references_research_agenda() -> None:
+    """The orchestrator's candidate-design brief should reference the
+    Research Agenda so the new Fellow plausibly moves an institutional
+    priority forward, not just fills a backend or specialization slot."""
+    assert "research-agenda.md" in admit.PROPOSE_BRIEF
+
+
 def test_load_problems_returns_all_five() -> None:
     out = problems.load_problems()
     ids = {p.id for p in out}

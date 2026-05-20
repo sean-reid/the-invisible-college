@@ -152,6 +152,15 @@ A standing Open Problems list, if `open-problems.md` is in your
 workspace, surfaces questions the College wants answered. Picking one
 is encouraged but not required — they are an aid against drift, not
 an assignment.
+
+The College also maintains a Research Agenda at `research-agenda.md`
+in your workspace (or `docs/research-agenda.md` in the repo). It is
+the small set of durable institutional priorities — broad, slow
+questions the College considers important enough that a Fellow could
+spend a career on any one of them. Connecting your proposal to one of
+the agenda items is encouraged when the fit is natural; the
+connection can be oblique. Do not force a connection that does not
+exist. The agenda is a gravitational field, not a fence.
 """
 
 
@@ -371,13 +380,18 @@ def run(
         stale.unlink()
 
     # Stage the Archive index (so the lead's "is this thread saturated?"
-    # check is grounded in real data, not memory) and the standing
-    # Open Problems list. Both are referenced in the topic-guidance
-    # section of the brief.
+    # check is grounded in real data, not memory), the standing Open
+    # Problems list, and the institutional Research Agenda. All three
+    # are referenced in the topic-guidance section of the brief.
     from institute import archive_index, open_problems
 
     workspaces.stage_input(workspace, "archive-index.md", archive_index.render())
     workspaces.stage_input(workspace, "open-problems.md", open_problems.render_summary_md())
+    agenda_path = paths.DOCS / "research-agenda.md"
+    if agenda_path.is_file():
+        workspaces.stage_input(
+            workspace, "research-agenda.md", agenda_path.read_text(encoding="utf-8")
+        )
 
     claude_runner.invoke(
         FellowTask(

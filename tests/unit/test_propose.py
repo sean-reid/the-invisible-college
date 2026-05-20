@@ -38,6 +38,14 @@ None.
 """
 
 
+def test_propose_brief_references_research_agenda() -> None:
+    """When the lead Fellow chooses freely, their brief should point at
+    research-agenda.md so the institutional priorities act as a
+    gravitational field on topic selection, not just the recent
+    Archive. A Founder-supplied topic overrides this, by design."""
+    assert "research-agenda.md" in propose.TOPIC_SECTION_FREE
+
+
 def test_extract_title_from_valid_proposal() -> None:
     title = propose._extract_title(VALID_PROPOSAL)
     assert title == "A modest test of proposal parsing"

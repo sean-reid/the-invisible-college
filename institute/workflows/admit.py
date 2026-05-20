@@ -57,9 +57,16 @@ would complement the existing cohort.
 
 In your current working directory:
 
-- `cohort.md`        the current Fellows, with their specializations,
-                     model backends, and a brief on their work so far.
-- `archive-index.md` every piece the College has published.
+- `cohort.md`         the current Fellows, with their specializations,
+                      model backends, and a brief on their work so far.
+- `archive-index.md`  every piece the College has published.
+- `research-agenda.md` the College's standing institutional priorities
+                      — the durable questions the institution cares
+                      about. A strong candidate should plausibly move
+                      one of these forward (the connection can be
+                      oblique; a perfect fit is not required, but a
+                      candidate with no plausible relation to any
+                      agenda item is the wrong candidate).
 {founder_hint_section}{call_section}{sponsor_section}
 
 Read all of them with the Read tool before designing.
@@ -291,6 +298,11 @@ def _propose_candidate(
     meta_dir.mkdir(parents=True, exist_ok=True)
     workspaces.stage_input(meta_dir, "cohort.md", _read_cohort_summary())
     workspaces.stage_input(meta_dir, "archive-index.md", archive_index.render())
+    agenda_path = paths.DOCS / "research-agenda.md"
+    if agenda_path.is_file():
+        workspaces.stage_input(
+            meta_dir, "research-agenda.md", agenda_path.read_text(encoding="utf-8")
+        )
 
     if founder_hint:
         founder_hint_section = (
