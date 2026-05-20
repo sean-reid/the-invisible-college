@@ -7,7 +7,7 @@ from pathlib import Path
 
 import pytest
 
-from institute import db, paths
+from institute import db, decisions, paths
 from institute import fellow as fellow_mod
 from institute.fellow import Genome
 from institute.workflows import abandon
@@ -18,6 +18,7 @@ def isolated(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
     monkeypatch.setattr(paths, "ROOT", tmp_path)
     monkeypatch.setattr(paths, "ARCHIVE", tmp_path / "archive")
     monkeypatch.setattr(paths, "DECISIONS", tmp_path / "archive" / "decisions")
+    monkeypatch.setattr(decisions, "DECISIONS", tmp_path / "archive" / "decisions")
     monkeypatch.setattr(paths, "GENOMES", tmp_path / "genomes")
     monkeypatch.setattr(paths, "FELLOWS", tmp_path / "fellows")
     monkeypatch.setattr(

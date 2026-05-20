@@ -10,17 +10,27 @@ that intervenes when needed:
   - Handles cases where reviewers themselves are alleged to have
     failed in their reviewing duties.
 
-The Board is "typically three" Senior Fellows with rotating
-membership. In v1, with ≤3 Senior Fellows in the cohort, all serve
-simultaneously and the rotation never fires. When the cohort grows to
->3 Senior Fellows, the three longest-tenured (by promotion timestamp
-in the audit log; created_at fallback for the founding cohort) serve
-as members. Rotation by term length comes in a follow-up.
+The Board is "typically three" Senior Fellows with **rotating
+membership**. Rotation here is deterministic and tenure-anchored:
+
+  - Term length is one calendar month (UTC). Each new month begins
+    a fresh rotation window.
+  - When the cohort has at most BOARD_SEAT_COUNT eligible Senior
+    Fellows, all serve and rotation is a no-op.
+  - When more Senior Fellows are eligible than seats, the cohort
+    is cycled by the month index: at month N the seats are held by
+    `eligible[N % len : N % len + BOARD_SEAT_COUNT]` (wrapping).
+    The order is by tenure, longest-tenured first.
+
+This rotates every month, never seats fewer than the cohort
+allows, and avoids any persistent term state — the membership for
+any moment is a pure function of (rank, tenure, current month).
 """
 
 from __future__ import annotations
 
 import sqlite3
+from datetime import UTC, datetime
 from pathlib import Path
 
 from institute import fellow as fellow_mod
@@ -49,12 +59,30 @@ def _tenure_timestamp(conn: sqlite3.Connection, fellow_id: str) -> str:
     return row["created_at"] if row else ""
 
 
-def current_member_ids(conn: sqlite3.Connection) -> list[str]:
+def _month_index(now: datetime | None = None) -> int:
+    """Return a monotone integer for the current UTC calendar month."""
+    now = now or datetime.now(UTC)
+    return now.year * 12 + (now.month - 1)
+
+
+def _rotate(window: list[str], offset: int) -> list[str]:
+    if not window:
+        return []
+    k = offset % len(window)
+    return window[k:] + window[:k]
+
+
+def current_member_ids(
+    conn: sqlite3.Connection,
+    *,
+    at: datetime | None = None,
+) -> list[str]:
     """Resolve the Editorial Board membership for this moment.
 
-    Up to BOARD_SEAT_COUNT Senior Fellows, longest-tenured first.
-    Stable for a given DB state; will only change when a Fellow
-    becomes Senior, gets demoted from Senior, or is released.
+    Returns at most BOARD_SEAT_COUNT Senior Fellows. With more Senior
+    Fellows than seats, the cohort cycles by calendar month so any
+    given Senior Fellow rotates onto and off the Board over time.
+    `at` is provided for tests; defaults to now.
     """
     rows = list(
         conn.execute("SELECT id FROM fellows WHERE rank = 'senior_fellow' AND retired_at IS NULL")
@@ -62,8 +90,13 @@ def current_member_ids(conn: sqlite3.Connection) -> list[str]:
     if not rows:
         return []
     scored = [(_tenure_timestamp(conn, r["id"]), r["id"]) for r in rows]
+    # Stable order: longest-tenured first, then lexicographic id.
     scored.sort(key=lambda t: (t[0] or "", t[1]))
-    return [fellow_id for _, fellow_id in scored[:BOARD_SEAT_COUNT]]
+    ordered_ids = [fellow_id for _, fellow_id in scored]
+    if len(ordered_ids) <= BOARD_SEAT_COUNT:
+        return ordered_ids
+    rotated = _rotate(ordered_ids, _month_index(at))
+    return rotated[:BOARD_SEAT_COUNT]
 
 
 def current_members(conn: sqlite3.Connection) -> list[Genome]:

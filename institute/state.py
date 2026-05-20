@@ -119,7 +119,10 @@ ALLOWED_TRANSITIONS: dict[State, set[State]] = {
     State.EDITORIAL_REVIEW: {State.EDITORIAL, State.REJECTED, State.ABANDONED},
     State.EDITORIAL: {State.PUBLISHED, State.REJECTED, State.ABANDONED},
     State.PUBLISHED: set(),
-    State.REJECTED: set(),
+    # REJECTED is normally terminal, but Chapter 7 allows the author to
+    # petition the Editorial Board to reconsider when the rejection was
+    # unanimous. The petition workflow enforces the unanimity check.
+    State.REJECTED: {State.EDITORIAL_REVIEW},
     State.ABANDONED: set(),
 }
 

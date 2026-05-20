@@ -15,7 +15,7 @@ from pathlib import Path
 
 from institute.paths import DB_PATH as DB_PATH  # re-exported for tests to patch
 
-SCHEMA_VERSION = 12
+SCHEMA_VERSION = 13
 
 SCHEMA = """
 CREATE TABLE IF NOT EXISTS schema_version (
@@ -152,6 +152,22 @@ CREATE TABLE IF NOT EXISTS reviews (
     violation_kind     TEXT,
     UNIQUE (project_id, reviewer_id, round)
 );
+
+-- Records each peer-review-assignment decline (a reviewer asked to
+-- review who refuses, claims a CoI we didn't catch, or otherwise
+-- declines the assignment). Repeated declines are a reliability
+-- signal surfaced on the Fellow's profile (Chapter 7).
+CREATE TABLE IF NOT EXISTS review_declines (
+    id          INTEGER PRIMARY KEY AUTOINCREMENT,
+    fellow_id   TEXT NOT NULL,
+    project_id  TEXT,
+    declined_at TEXT NOT NULL,
+    reason      TEXT NOT NULL,
+    FOREIGN KEY (fellow_id) REFERENCES fellows(id)
+);
+
+CREATE INDEX IF NOT EXISTS idx_review_declines_fellow
+    ON review_declines(fellow_id);
 
 CREATE TABLE IF NOT EXISTS reviewer_slots (
     project_id  TEXT    NOT NULL REFERENCES projects(id),
@@ -318,6 +334,9 @@ def _run_migrations(conn: sqlite3.Connection, from_version: int, to_version: int
         elif version == 11:
             _migrate_11_to_12(conn)
             version = 12
+        elif version == 12:
+            _migrate_12_to_13(conn)
+            version = 13
         else:
             raise RuntimeError(f"No migration path from version {version}.")
         # Each migration is responsible for stamping its own version
@@ -734,6 +753,30 @@ def _migrate_11_to_12(conn: sqlite3.Connection) -> None:
             "key TEXT PRIMARY KEY, value TEXT NOT NULL)"
         )
         _stamp_version(conn, 12)
+        conn.execute("COMMIT")
+    except Exception:
+        conn.execute("ROLLBACK")
+        raise
+
+
+def _migrate_12_to_13(conn: sqlite3.Connection) -> None:
+    """Add the review_declines table (Chapter 7 reviewer reliability)."""
+    conn.execute("BEGIN IMMEDIATE")
+    try:
+        conn.execute(
+            "CREATE TABLE IF NOT EXISTS review_declines ("
+            "id INTEGER PRIMARY KEY AUTOINCREMENT, "
+            "fellow_id TEXT NOT NULL, "
+            "project_id TEXT, "
+            "declined_at TEXT NOT NULL, "
+            "reason TEXT NOT NULL, "
+            "FOREIGN KEY (fellow_id) REFERENCES fellows(id))"
+        )
+        conn.execute(
+            "CREATE INDEX IF NOT EXISTS idx_review_declines_fellow "
+            "ON review_declines(fellow_id)"
+        )
+        _stamp_version(conn, 13)
         conn.execute("COMMIT")
     except Exception:
         conn.execute("ROLLBACK")

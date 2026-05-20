@@ -773,6 +773,46 @@ def terminate(fellow: str, kind: str, reason: str) -> None:
 
 
 # ---------------------------------------------------------------------------
+# peer-review: manual operations on the peer-review subsystem
+# ---------------------------------------------------------------------------
+
+
+@main.group("peer-review")
+def peer_review_grp() -> None:
+    """Manual operations on the peer-review subsystem."""
+
+
+@peer_review_grp.command("decline")
+@click.option("--fellow", required=True, help="Fellow id who declined the assignment.")
+@click.option(
+    "--reason",
+    required=True,
+    help="Why the Fellow declined (CoI, scope, refusal).",
+)
+@click.option(
+    "--project",
+    default=None,
+    help="Project id the assignment was for, if known.",
+)
+def peer_review_decline(fellow: str, reason: str, project: str | None) -> None:
+    """Record that a Fellow declined a peer-review assignment.
+
+    Repeated declines surface on the Fellow's profile and feed
+    promotion review per Chapter 7.
+    """
+    _check_kill_switch()
+    from institute import review_declines
+
+    with db.connection() as conn, db.transaction(conn):
+        rid = review_declines.record(
+            conn, fellow_id=fellow, project_id=project, reason=reason
+        )
+    console.print(
+        f"[yellow]Recorded review decline #{rid}[/yellow] for {fellow}."
+    )
+
+
+# ---------------------------------------------------------------------------
 # abandon: end a project with an honest lesson preserved
 # ---------------------------------------------------------------------------
 
@@ -809,6 +849,31 @@ def abandon(project_id: str, reason: str, lesson: str, actor: str | None) -> Non
     from institute.workflows import abandon as abandon_workflow
 
     abandon_workflow.run(project_id, reason=reason, lesson=lesson, actor=actor)
+
+
+# ---------------------------------------------------------------------------
+# petition: author appeal of a unanimous reject
+# ---------------------------------------------------------------------------
+
+
+@main.command()
+@click.argument("project_id")
+@click.option(
+    "--reason",
+    required=True,
+    help="Author's case for Editorial Board review (multi-line ok).",
+)
+def petition(project_id: str, reason: str) -> None:
+    """Petition the Editorial Board to reconsider a unanimously rejected piece.
+
+    Only valid when every filed peer review in the final round was a
+    reject. Non-unanimous rejections are not petitionable: the dissent
+    is already published alongside the work.
+    """
+    _check_kill_switch()
+    from institute.workflows import petition as petition_workflow
+
+    petition_workflow.run(project_id, reason=reason)
 
 
 # ---------------------------------------------------------------------------

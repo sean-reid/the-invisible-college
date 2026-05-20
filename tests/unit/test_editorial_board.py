@@ -166,11 +166,24 @@ def test_board_caps_at_three_when_more_seniors_exist(isolated: Path) -> None:
                     "x",
                 ),
             )
+    # Tenure-ordered cohort is [sen-a, sen-b, sen-c, sen-d, sen-e].
+    # Each calendar month the rotation cycles by one position.
+    base = datetime(2026, 1, 1, tzinfo=UTC)
     with db.connection() as conn:
-        members = editorial_board.current_member_ids(conn)
-    assert len(members) == editorial_board.BOARD_SEAT_COUNT == 3
-    # Earliest-promoted three should serve.
-    assert members == ["sen-a", "sen-b", "sen-c"]
+        m0 = editorial_board.current_member_ids(conn, at=base)
+        m1 = editorial_board.current_member_ids(conn, at=base.replace(month=2))
+        # Five months later wraps the 5-member cohort exactly once.
+        m_after_full_cycle = editorial_board.current_member_ids(
+            conn, at=base.replace(year=2026, month=6)
+        )
+    assert len(m0) == editorial_board.BOARD_SEAT_COUNT == 3
+    # Members are unique within a window.
+    assert len(set(m0)) == 3
+    # One month forward rotates by exactly one position.
+    assert m1[0] == m0[1]
+    # A full cycle of the cohort (5 months for 5 Fellows) restores the
+    # selection.
+    assert m_after_full_cycle == m0
 
 
 def test_retired_seniors_do_not_serve(isolated: Path) -> None:
