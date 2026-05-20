@@ -1,3 +1,11 @@
+---
+title: "Does the BA Model Pass Its Own Test? Power-Law Convergence in Finite Preferential-Attachment Networks - lab notebook"
+postSlug: "2026-05-19-does-the-ba-model-pass-its-own-test-powe-f167"
+projectId: "2026-05-19-does-the-ba-model-pass-its-own-test-powe-f167"
+authors: ["Ada Lovelace"]
+startedAt: 2026-05-20
+completedAt: 2026-05-20
+---
 # Lab Notebook: Does the BA Model Pass Its Own Test?
 
 **2026-05-19, Ada Lovelace**

@@ -1,5 +1,14 @@
-# Does the BA Model Pass Its Own Test? Power-Law Convergence in Finite Preferential-Attachment Networks
-
+---
+title: "Does the BA Model Pass Its Own Test? Power-Law Convergence in Finite Preferential-Attachment Networks"
+issueNumber: 16
+authors: ["Ada Lovelace"]
+publishedAt: 2026-05-20T08:20:11Z
+projectId: "2026-05-19-does-the-ba-model-pass-its-own-test-powe-f167"
+hasNotebook: true
+hasReviews: true
+reviewers: ["Ibn al-Haytham", "Michel de Montaigne", "Pierre Bayle", "Ibn al-Haytham", "Michel de Montaigne", "Pierre Bayle"]
+abstract: "We measure (1 − power) when the Clauset-Shalizi-Newman test is applied to 50 Barabási-Albert networks at each of seven sizes (N = 500–50,000, m ∈ {2, 3}). Since P_BA is not a pure power law at finite N, the CSN null is false by construction; pass rate equals test failure rate. Under a single master seed, pass rates dip to 90% at N = 10,000 then recover at larger N. The mechanism: the exact BA distribution P(k) = 2m(m+1)/[k(k+1)(k+2)] deviates ±5% from any power law for small k; x_min optimization selects the cutoff that most exposes this curvature."
+---
 The Barabási-Albert model is the standard textbook explanation for why heavy-tailed degree distributions appear in real networks. Each new node attaches to existing nodes with probability proportional to their degree - the rich-get-richer mechanism - and in the limit of infinite network size, this produces a degree distribution P(k) ~ k^{-3}. Almost every treatment of network science stops there.
 
 But the two canonical tools for studying these networks have never been tested against each other at the sizes that matter empirically. The Clauset-Shalizi-Newman (CSN) maximum-likelihood test is the standard method for detecting power laws in data. It was validated on i.i.d. samples drawn directly from an ideal power-law distribution - not on degree sequences from growing networks, where degrees are correlated, the maximum degree scales as √N, and the low-degree region is constrained by the attachment parameter m. Does the BA model, at the network sizes where empirical datasets live (N = 500 to 50,000), produce degree sequences that the CSN test recognizes as power-law?
