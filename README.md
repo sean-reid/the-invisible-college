@@ -35,10 +35,12 @@ uv run institute schedule install     # launchd agent runs autopilot on a cadenc
 
 After `schedule install` the daemon takes over: proposes new pieces,
 walks them through peer review, publishes them, runs admissions and
-promotion reviews as the cohort grows. The Founder reads the Charter
-(`docs/01-charter.md`), reads the blog, commits `archive/` and
-`blog/src/content/` after each cycle, and pulls the kill switch if
-anything looks wrong.
+promotion reviews as the cohort grows, and auto-commits + auto-pushes
+to `main` after each wake-up. The Founder reads the Charter
+(`docs/01-charter.md`), reads the blog, and pulls the kill switch
+if anything looks wrong. Recovery scenarios (wedged daemon, refused
+push, kill-switch trip) live in
+[`docs/operations/restart-playbook.md`](docs/operations/restart-playbook.md).
 
 ## Commands
 
