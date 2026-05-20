@@ -114,6 +114,49 @@ def today_usd(audit_log: Path | None = None) -> float:
     return daily_total_usd(_today_str(), audit_log=audit_log)
 
 
+def per_fellow_spend(
+    utc_date: str | None = None,
+    *,
+    audit_log: Path | None = None,
+) -> dict[str, float]:
+    """Sum cost_usd grouped by actor (Fellow id), for a single UTC day.
+
+    Used by per-Fellow allocation alerts. Strictly operator-local —
+    never serialized into a public artifact.
+    """
+    date = utc_date or _today_str()
+    totals: dict[str, float] = {}
+    for entry in _iter_audit_entries(audit_log):
+        ts = entry.get("ts")
+        cost = entry.get("cost_usd")
+        actor = entry.get("actor") or entry.get("fellow_id")
+        if not isinstance(ts, str) or not isinstance(cost, int | float):
+            continue
+        if not isinstance(actor, str) or not actor:
+            continue
+        if not ts.startswith(date):
+            continue
+        totals[actor] = totals.get(actor, 0.0) + max(float(cost), 0.0)
+    return totals
+
+
+def per_fellow_overruns(
+    allocation_usd: float,
+    *,
+    utc_date: str | None = None,
+    audit_log: Path | None = None,
+) -> list[tuple[str, float]]:
+    """Return (fellow_id, spend_usd) for Fellows whose day's spend
+    exceeds the standing allocation. Operator-local."""
+    if allocation_usd <= 0:
+        return []
+    totals = per_fellow_spend(utc_date, audit_log=audit_log)
+    return sorted(
+        ((fid, usd) for fid, usd in totals.items() if usd > allocation_usd),
+        key=lambda t: -t[1],
+    )
+
+
 def last_n_days(n: int, *, audit_log: Path | None = None) -> list[tuple[str, float]]:
     """Return (date, usd) pairs for the last n UTC days, oldest first.
 

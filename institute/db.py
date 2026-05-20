@@ -15,7 +15,7 @@ from pathlib import Path
 
 from institute.paths import DB_PATH as DB_PATH  # re-exported for tests to patch
 
-SCHEMA_VERSION = 17
+SCHEMA_VERSION = 18
 
 SCHEMA = """
 CREATE TABLE IF NOT EXISTS schema_version (
@@ -258,6 +258,23 @@ CREATE TABLE IF NOT EXISTS department_memberships (
 CREATE INDEX IF NOT EXISTS idx_dept_membership_fellow
     ON department_memberships(fellow_id);
 
+-- Departmental seminars (Chapter 5). Each department holds periodic
+-- internal seminars where a member presents their current work and
+-- the rest engage. Minutes are recorded for the archive.
+CREATE TABLE IF NOT EXISTS department_seminars (
+    id              TEXT PRIMARY KEY,
+    department_id   TEXT NOT NULL,
+    held_at         TEXT NOT NULL,
+    presenter_id    TEXT NOT NULL,
+    topic           TEXT NOT NULL,
+    minutes_path    TEXT,
+    FOREIGN KEY (department_id) REFERENCES departments(id),
+    FOREIGN KEY (presenter_id) REFERENCES fellows(id)
+);
+
+CREATE INDEX IF NOT EXISTS idx_dept_seminars_dept
+    ON department_seminars(department_id);
+
 -- Centers (Chapter 2). A Center is a finite-term cross-disciplinary
 -- convening: a research focus that pulls Fellows from multiple
 -- departments for a defined window, ending with a written report.
@@ -417,6 +434,9 @@ def _run_migrations(conn: sqlite3.Connection, from_version: int, to_version: int
         elif version == 16:
             _migrate_16_to_17(conn)
             version = 17
+        elif version == 17:
+            _migrate_17_to_18(conn)
+            version = 18
         else:
             raise RuntimeError(f"No migration path from version {version}.")
         # Each migration is responsible for stamping its own version
@@ -833,6 +853,32 @@ def _migrate_11_to_12(conn: sqlite3.Connection) -> None:
             "key TEXT PRIMARY KEY, value TEXT NOT NULL)"
         )
         _stamp_version(conn, 12)
+        conn.execute("COMMIT")
+    except Exception:
+        conn.execute("ROLLBACK")
+        raise
+
+
+def _migrate_17_to_18(conn: sqlite3.Connection) -> None:
+    """Add department_seminars (Chapter 5)."""
+    conn.execute("BEGIN IMMEDIATE")
+    try:
+        conn.execute(
+            "CREATE TABLE IF NOT EXISTS department_seminars ("
+            "id TEXT PRIMARY KEY, "
+            "department_id TEXT NOT NULL, "
+            "held_at TEXT NOT NULL, "
+            "presenter_id TEXT NOT NULL, "
+            "topic TEXT NOT NULL, "
+            "minutes_path TEXT, "
+            "FOREIGN KEY (department_id) REFERENCES departments(id), "
+            "FOREIGN KEY (presenter_id) REFERENCES fellows(id))"
+        )
+        conn.execute(
+            "CREATE INDEX IF NOT EXISTS idx_dept_seminars_dept "
+            "ON department_seminars(department_id)"
+        )
+        _stamp_version(conn, 18)
         conn.execute("COMMIT")
     except Exception:
         conn.execute("ROLLBACK")

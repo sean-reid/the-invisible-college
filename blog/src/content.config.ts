@@ -93,4 +93,24 @@ const decisions = defineCollection({
   }),
 });
 
-export const collections = { posts, notebooks, reviews, fellows, decisions };
+// Corrections (Chapter 8). Each correction names the post it amends,
+// what changed, and why. Surfaced both on the corrected post and on
+// the standalone /corrections page accessible from the site footer.
+const corrections = defineCollection({
+  loader: glob({ pattern: '**/*.md', base: './src/content/corrections' }),
+  schema: z.object({
+    postSlug: z.string(),
+    issuedAt: z.coerce.date(),
+    summary: z.string(),
+    severity: z.enum(['typo', 'clarification', 'factual', 'retraction']).default('factual'),
+  }),
+});
+
+export const collections = {
+  posts,
+  notebooks,
+  reviews,
+  fellows,
+  decisions,
+  corrections,
+};

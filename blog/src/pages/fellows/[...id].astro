@@ -1,11 +1,13 @@
 ---
 import Base from '../../layouts/Base.astro';
 import { getCollection } from 'astro:content';
+import { buildBacklinkMap } from '../../lib/citations';
 
 export async function getStaticPaths() {
   const fellows = await getCollection('fellows');
   const allPosts = await getCollection('posts', ({ data }) => !data.draft);
   const allReviews = await getCollection('reviews');
+  const backlinks = buildBacklinkMap(allPosts);
   // Map post slug -> title so review listings can show the publication name
   // instead of an unintelligible random suffix.
   const postTitleBySlug = Object.fromEntries(
@@ -20,6 +22,10 @@ export async function getStaticPaths() {
       .sort(
         (a, b) => b.data.publishedAt.getTime() - a.data.publishedAt.getTime(),
       );
+    const totalCitations = publications.reduce(
+      (sum, p) => sum + (backlinks.get(p.id)?.length ?? 0),
+      0,
+    );
 
     const reviewsGiven = allReviews
       .filter((r) => r.data.reviewer === fellow.data.name)
@@ -61,6 +67,7 @@ export async function getStaticPaths() {
         postTitleBySlug,
         advisor,
         advisees,
+        totalCitations,
       },
     };
   });
@@ -74,6 +81,7 @@ const {
   postTitleBySlug,
   advisor,
   advisees,
+  totalCitations,
 } = Astro.props;
 
 const rankLabel: Record<string, string> = {
@@ -123,6 +131,9 @@ const addendumParagraphs = fellow.data.system_prompt_addendum
 
         <dt class="smallcaps">Publications</dt>
         <dd class="tabular">{publications.length}</dd>
+
+        <dt class="smallcaps">Citations received</dt>
+        <dd class="tabular">{totalCitations}</dd>
 
         <dt class="smallcaps">Reviews given</dt>
         <dd class="tabular">{reviewsGiven.length}</dd>

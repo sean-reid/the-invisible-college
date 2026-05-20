@@ -1852,6 +1852,131 @@ def audit_tripwires() -> None:
     raise SystemExit(1)
 
 
+@audit.command("reviews")
+@click.option(
+    "--limit",
+    type=int,
+    default=20,
+    show_default=True,
+    help="How many most-recent reviews to surface.",
+)
+def audit_reviews(limit: int) -> None:
+    """Reviewer-quality spot check.
+
+    Surfaces a sample of recent reviews with calibration signals so
+    the Founder can scan for sycophancy, low-engagement reviews, and
+    miscalibration. Per Chapter 11.
+    """
+    with db.connection() as conn:
+        rows = list(
+            conn.execute(
+                "SELECT r.id, r.reviewer_id, r.recommendation, r.confidence, "
+                "  r.dissent, r.round, r.submitted_at, p.title "
+                "FROM reviews r JOIN projects p ON p.id = r.project_id "
+                "ORDER BY r.submitted_at DESC LIMIT ?",
+                (limit,),
+            )
+        )
+    if not rows:
+        console.print("[dim]No reviews yet.[/dim]")
+        return
+    # Per-reviewer aggregate signals across the recent window.
+    counts: dict[str, dict[str, int]] = {}
+    for r in rows:
+        agg = counts.setdefault(r["reviewer_id"], {"total": 0, "accept": 0, "reject": 0, "dissent": 0})
+        agg["total"] += 1
+        if r["recommendation"] == "accept":
+            agg["accept"] += 1
+        elif r["recommendation"] == "reject":
+            agg["reject"] += 1
+        if r["dissent"]:
+            agg["dissent"] += 1
+
+    console.print()
+    console.print(f"[bold]Recent {len(rows)} reviews:[/bold]")
+    for r in rows:
+        flag = ""
+        rec = r["recommendation"]
+        if rec == "accept" and r["confidence"] == "low":
+            flag = "  [yellow]accept@low-conf[/yellow]"
+        elif rec == "reject" and r["confidence"] == "low":
+            flag = "  [yellow]reject@low-conf[/yellow]"
+        d = " (dissent)" if r["dissent"] else ""
+        console.print(
+            f"  {r['submitted_at']:<25}  {r['reviewer_id']:<18}  "
+            f"r{r['round']} {rec:<7}{d}{flag}  {r['title'][:60]}"
+        )
+    console.print()
+    console.print("[bold]Per-reviewer calibration (recent window):[/bold]")
+    for rid, agg in sorted(counts.items(), key=lambda t: -t[1]["total"]):
+        flags = []
+        if agg["total"] >= 4 and agg["accept"] == agg["total"]:
+            flags.append("[red]all-accept[/red]")
+        if agg["total"] >= 4 and agg["reject"] == agg["total"]:
+            flags.append("[red]all-reject[/red]")
+        if agg["total"] >= 4 and agg["dissent"] == 0 and agg["accept"] >= agg["total"] - 1:
+            flags.append("[yellow]no-dissent[/yellow]")
+        marker = "  " + " ".join(flags) if flags else ""
+        console.print(
+            f"  {rid:<20}  total={agg['total']} accept={agg['accept']} "
+            f"reject={agg['reject']} dissent={agg['dissent']}{marker}"
+        )
+
+
+@audit.command("committees")
+@click.option(
+    "--limit",
+    type=int,
+    default=20,
+    show_default=True,
+    help="How many most-recent committee decisions to surface.",
+)
+def audit_committees(limit: int) -> None:
+    """Committee-output audit view.
+
+    Streams recent Editorial Board and Tenure Committee decisions
+    so the Founder can scan for capture, bureaucratic drift, or
+    systematic bias. Per Chapter 11.
+    """
+    kinds = (
+        "editorial_review",
+        "editorial_petition",
+        "promotion",
+        "promotion_review",
+        "release",
+    )
+    placeholders = ",".join("?" for _ in kinds)
+    with db.connection() as conn:
+        rows = list(
+            conn.execute(
+                f"SELECT at, actor, action, project_id, detail FROM audit_log "
+                f"WHERE action IN ({placeholders}) "
+                f"ORDER BY at DESC LIMIT ?",
+                (*kinds, limit),
+            )
+        )
+    if not rows:
+        console.print("[dim]No committee decisions yet.[/dim]")
+        return
+    console.print()
+    console.print(
+        f"[bold]Recent {len(rows)} committee decisions[/bold] "
+        "(Editorial Board + Tenure Committee):"
+    )
+    by_kind: dict[str, int] = {}
+    for r in rows:
+        by_kind[r["action"]] = by_kind.get(r["action"], 0) + 1
+        actor_short = (r["actor"] or "")[:60]
+        console.print(
+            f"  {r['at']:<25}  {r['action']:<20}  "
+            f"{r['project_id'] or '-':<45}  {actor_short}"
+        )
+    console.print()
+    console.print("[bold]Breakdown:[/bold]")
+    for kind, n in sorted(by_kind.items(), key=lambda t: -t[1]):
+        console.print(f"  {kind:<20}  {n}")
+
+
 @audit.command("rebaseline-charter")
 def audit_rebaseline_charter() -> None:
     """Recompute and store the trusted Charter SHA.
@@ -1919,6 +2044,49 @@ def budget_status(daily_budget_usd: float, days: int) -> None:
         for d, usd in history:
             bar = "█" * min(int(usd * 2), 40)
             console.print(f"  {d}  ${usd:>6.2f}  [dim]{bar}[/dim]")
+
+
+@budget.command("per-fellow")
+@click.option(
+    "--allocation-usd",
+    type=float,
+    default=0.0,
+    show_default=True,
+    callback=_non_negative_usd,
+    help=(
+        "Per-Fellow standing allocation. Fellows whose day's spend "
+        "exceeds this are flagged as overruns. 0 = report-only."
+    ),
+)
+@click.option(
+    "--date",
+    type=str,
+    default=None,
+    help="UTC date (YYYY-MM-DD) to inspect. Defaults to today.",
+)
+def budget_per_fellow(allocation_usd: float, date: str | None) -> None:
+    """Per-Fellow spend for a day. Operator-local; never published."""
+    from institute import budget as budget_mod
+
+    totals = budget_mod.per_fellow_spend(date)
+    if not totals:
+        console.print("[dim]No per-Fellow audit entries for that date.[/dim]")
+        return
+    console.print()
+    console.print("[bold]Per-Fellow spend[/bold] (operator-local):")
+    for fid, usd in sorted(totals.items(), key=lambda t: -t[1]):
+        flag = ""
+        if allocation_usd > 0 and usd > allocation_usd:
+            flag = "  [red]over allocation[/red]"
+        console.print(f"  {fid:<24}  ${usd:>7.2f}{flag}")
+    if allocation_usd > 0:
+        overruns = budget_mod.per_fellow_overruns(allocation_usd, utc_date=date)
+        if overruns:
+            console.print()
+            console.print(
+                f"[yellow]{len(overruns)} Fellow(s) exceeded the "
+                f"${allocation_usd:.2f} standing allocation.[/yellow]"
+            )
 
 
 @main.group("open-problems")

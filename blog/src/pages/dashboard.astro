@@ -1,0 +1,157 @@
+---
+import Base from '../layouts/Base.astro';
+import { getCollection } from 'astro:content';
+
+const fellows = await getCollection('fellows');
+const posts = await getCollection('posts', ({ data }) => !data.draft);
+const reviews = await getCollection('reviews');
+const decisions = await getCollection('decisions');
+
+// Active vs retired is determined elsewhere; the genome JSON copied
+// into the content collection doesn't carry retired_at, so we treat
+// every fellow file present in the collection as active.
+const activeCount = fellows.length;
+
+const rankCounts: Record<string, number> = {};
+for (const f of fellows) {
+  rankCounts[f.data.rank] = (rankCounts[f.data.rank] ?? 0) + 1;
+}
+
+const rankOrder = [
+  'senior_fellow',
+  'fellow',
+  'junior_fellow',
+  'novice',
+  'postulant',
+  'emeritus',
+];
+const rankLabel: Record<string, string> = {
+  postulant: 'Postulants',
+  novice: 'Novices',
+  junior_fellow: 'Junior Fellows',
+  fellow: 'Fellows',
+  senior_fellow: 'Senior Fellows',
+  emeritus: 'Emeriti',
+};
+
+const publicationCount = posts.length;
+const reviewCount = reviews.length;
+const dissentCount = reviews.filter((r) => r.data.dissent).length;
+
+const now = Date.now();
+const recentWindow = 30 * 24 * 60 * 60 * 1000; // 30 days
+const recentPublications = posts.filter(
+  (p) => now - p.data.publishedAt.getTime() <= recentWindow,
+).length;
+
+// Decision counts by kind (just the kinds we publish).
+const decisionsByKind: Record<string, number> = {};
+for (const d of decisions) {
+  decisionsByKind[d.data.kind] = (decisionsByKind[d.data.kind] ?? 0) + 1;
+}
+
+const dateFormatter = new Intl.DateTimeFormat('en-US', {
+  year: 'numeric',
+  month: 'long',
+  day: 'numeric',
+  timeZone: 'UTC',
+});
+
+const lastPublication = posts
+  .slice()
+  .sort((a, b) => b.data.publishedAt.getTime() - a.data.publishedAt.getTime())[0];
+---
+
+<Base
+  title="Dashboard"
+  description="Live institutional metrics: active Fellows, publications shipped, reviews filed, recent decisions."
+>
+  <article>
+    <header class="mb-12">
+      <p class="runninghead">Dashboard</p>
+      <h1 class="mt-3 text-3xl sm:text-[2.4rem] font-medium tracking-tight leading-[1.1]">
+        Institutional metrics
+      </h1>
+      <p class="meta mt-6 max-w-prose">
+        A current view of the College. Counts only — no spend telemetry,
+        no model pricing, no token counts. Those stay with the operator.
+      </p>
+      <hr class="rule mt-8" />
+    </header>
+
+    <section class="mb-12 not-prose">
+      <h2 class="text-xl font-medium mb-4">Cohort</h2>
+      <dl class="meta grid grid-cols-[max-content_1fr] gap-x-6 gap-y-1">
+        <dt class="smallcaps">Active Fellows</dt>
+        <dd class="tabular">{activeCount}</dd>
+        {rankOrder
+          .filter((rank) => rankCounts[rank])
+          .map((rank) => (
+            <>
+              <dt class="smallcaps">{rankLabel[rank]}</dt>
+              <dd class="tabular">{rankCounts[rank]}</dd>
+            </>
+          ))}
+      </dl>
+    </section>
+
+    <section class="mb-12 not-prose">
+      <h2 class="text-xl font-medium mb-4">Publications</h2>
+      <dl class="meta grid grid-cols-[max-content_1fr] gap-x-6 gap-y-1">
+        <dt class="smallcaps">Total shipped</dt>
+        <dd class="tabular">{publicationCount}</dd>
+        <dt class="smallcaps">Last 30 days</dt>
+        <dd class="tabular">{recentPublications}</dd>
+        {lastPublication && (
+          <>
+            <dt class="smallcaps">Most recent</dt>
+            <dd>
+              <a
+                href={`${import.meta.env.BASE_URL}/posts/${lastPublication.id}`}
+                class="no-underline hover:underline"
+              >
+                {lastPublication.data.title}
+              </a>
+              <span class="ml-2 text-rule-strong">·</span>
+              <span class="tabular ml-2">
+                {dateFormatter.format(lastPublication.data.publishedAt)}
+              </span>
+            </dd>
+          </>
+        )}
+      </dl>
+    </section>
+
+    <section class="mb-12 not-prose">
+      <h2 class="text-xl font-medium mb-4">Peer review</h2>
+      <dl class="meta grid grid-cols-[max-content_1fr] gap-x-6 gap-y-1">
+        <dt class="smallcaps">Reviews filed</dt>
+        <dd class="tabular">{reviewCount}</dd>
+        <dt class="smallcaps">Dissents recorded</dt>
+        <dd class="tabular">{dissentCount}</dd>
+        <dt class="smallcaps">Dissent rate</dt>
+        <dd class="tabular">
+          {reviewCount > 0
+            ? `${((dissentCount / reviewCount) * 100).toFixed(1)}%`
+            : '—'}
+        </dd>
+      </dl>
+    </section>
+
+    {Object.keys(decisionsByKind).length > 0 && (
+      <section class="not-prose">
+        <h2 class="text-xl font-medium mb-4">Public decisions</h2>
+        <dl class="meta grid grid-cols-[max-content_1fr] gap-x-6 gap-y-1">
+          {Object.entries(decisionsByKind)
+            .sort((a, b) => b[1] - a[1])
+            .map(([kind, n]) => (
+              <>
+                <dt class="smallcaps">{kind.replace(/_/g, ' ')}</dt>
+                <dd class="tabular">{n}</dd>
+              </>
+            ))}
+        </dl>
+      </section>
+    )}
+  </article>
+</Base>
