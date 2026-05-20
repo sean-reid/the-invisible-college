@@ -115,7 +115,7 @@ def run(
         ).fetchone()
         if proj is None:
             raise SystemExit(f"No such project: {project_id}")
-        if proj["state"] in {State.PUBLISHED.value, State.REJECTED.value, State.ABANDONED.value}:
+        if proj["state"] in state.TERMINAL_STATE_VALUES:
             raise SystemExit(
                 f"Project {project_id} is in terminal state {proj['state']}; cannot abandon."
             )

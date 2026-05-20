@@ -1386,15 +1386,19 @@ def next_cmd(project: str | None) -> None:
 
 def _pick_in_flight_project(project: str | None) -> sqlite3.Row | None:
     """Return the row to advance next, or None if there is nothing to do."""
+    from institute.state import TERMINAL_STATE_VALUES
+
+    placeholders = ",".join("?" * len(TERMINAL_STATE_VALUES))
     with db.connection() as conn:
         if project is not None:
             return conn.execute(
                 "SELECT id, state FROM projects WHERE id = ?", (project,)
             ).fetchone()
         return conn.execute(
-            "SELECT id, state FROM projects "
-            "WHERE state NOT IN ('published', 'rejected', 'abandoned') "
-            "ORDER BY updated_at ASC LIMIT 1"
+            f"SELECT id, state FROM projects "
+            f"WHERE state NOT IN ({placeholders}) "
+            f"ORDER BY updated_at ASC LIMIT 1",
+            TERMINAL_STATE_VALUES,
         ).fetchone()
 
 
