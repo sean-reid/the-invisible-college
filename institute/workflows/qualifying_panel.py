@@ -164,6 +164,29 @@ def _evaluator_brief(role: str) -> str:
     return f"# Role\n\n{role}\n"
 
 
+def _read_cached_panel_feedback(path) -> tuple[str, str] | None:
+    """Parse a previously-written panel feedback file. Returns
+    (outcome, summary) if the file exists and matches the writer's
+    shape; None otherwise (re-invoke the evaluator).
+    """
+    import re
+
+    if not path.is_file():
+        return None
+    try:
+        text = path.read_text(encoding="utf-8")
+    except OSError:
+        return None
+    outcome_match = re.search(r"\*\*Outcome:\*\*\s*`(ready|revise)`", text)
+    if not outcome_match:
+        return None
+    summary_match = re.search(
+        r"## Summary\s*\n+(.+?)(?=\n## |\Z)", text, re.DOTALL
+    )
+    summary = summary_match.group(1).strip() if summary_match else ""
+    return (outcome_match.group(1), summary)
+
+
 def _run_evaluator(
     *,
     project_id: str,
@@ -280,6 +303,26 @@ def run(project_id: str) -> None:
             )
             outcomes.append("ready")
             continue
+        feedback_path = (
+            paths.REVIEWS / project_id / f"panel-{role}-{evaluator.id}.md"
+        )
+        # Resume guard: if a previous run already invoked this
+        # evaluator and persisted their verdict, re-parse the file
+        # instead of paying for the call again. The outcome lives
+        # on its own `- **Outcome:**` line, the summary is the
+        # paragraph under `## Summary`. This is what protects the
+        # qualifying-panel workflow from double-charging when the
+        # second evaluator raises mid-flight.
+        cached = _read_cached_panel_feedback(feedback_path)
+        if cached is not None:
+            cached_outcome, cached_summary = cached
+            console.print(
+                f"[dim]{evaluator.name} ({role}) already filed; "
+                f"reusing cached verdict (`{cached_outcome}`).[/dim]"
+            )
+            outcomes.append(cached_outcome)
+            panel_summaries.append((evaluator.id, role, cached_summary))
+            continue
         console.print(
             f"[dim]Asking {evaluator.name} ({role}) to evaluate qualifying "
             f"project `{project_id}`...[/dim]"
@@ -295,11 +338,6 @@ def run(project_id: str) -> None:
         )
         outcomes.append(outcome)
         panel_summaries.append((evaluator.id, role, summary))
-        # Write the feedback into the same reviews directory the
-        # advisor uses, with a distinguishing prefix.
-        feedback_path = (
-            paths.REVIEWS / project_id / f"panel-{role}-{evaluator.id}.md"
-        )
         atomic_write(
             feedback_path,
             f"# Qualifying-panel feedback by {evaluator.name} ({role})\n\n"

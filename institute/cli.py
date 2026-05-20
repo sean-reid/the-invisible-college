@@ -1366,16 +1366,22 @@ def next_cmd(project: str | None) -> None:
     Looks at the project's current state and dispatches the corresponding
     workflow. Each call advances by exactly one step (one Claude invocation
     or one transition). Safe to pause and resume between calls.
+
+    Holds the advance lock for the duration so a manual `next` and the
+    autopilot daemon do not race on the same most-stale project.
     """
     _check_kill_switch()
-    row = _pick_in_flight_project(project)
-    if row is None:
-        if project is not None:
-            console.print(f"[red]No such project: {project}[/red]")
-            sys.exit(1)
-        console.print("[dim]No in-flight projects. Start one with `institute propose`.[/dim]")
-        return
-    _dispatch_step(row["id"], row["state"])
+    with _advance_lock():
+        row = _pick_in_flight_project(project)
+        if row is None:
+            if project is not None:
+                console.print(f"[red]No such project: {project}[/red]")
+                sys.exit(1)
+            console.print(
+                "[dim]No in-flight projects. Start one with `institute propose`.[/dim]"
+            )
+            return
+        _dispatch_step(row["id"], row["state"])
 
 
 def _pick_in_flight_project(project: str | None) -> sqlite3.Row | None:

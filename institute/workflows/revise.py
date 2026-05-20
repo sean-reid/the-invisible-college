@@ -220,26 +220,21 @@ def run(project_id: str) -> None:
     response_md = workspaces.require_output(workspace, "response.md", min_chars=100)
     addendum = workspaces.optional_output(workspace, "notebook-addendum.md")
 
-    # Preserve the prior draft as draft.vN.md before overwriting.
+    # Preserve the prior draft as draft.vN.md. The versioned file is
+    # additive so it's safe to write before the state transition. The
+    # canonical draft.md, by contrast, must NOT be overwritten until
+    # after the transition commits - otherwise a crash between the
+    # overwrite and the commit leaves a "new" canonical with stale
+    # state, and the next `institute next` runs revise again,
+    # bumping the version number a second time on the same revision.
     draft_dir = paths.DRAFTS / project_id
     draft_dir.mkdir(parents=True, exist_ok=True)
     version = _next_draft_version(draft_dir)
     prior_draft_path = draft_dir / f"draft.v{version}.md"
     _atomic_write(prior_draft_path, draft_md.rstrip() + "\n")
-    _atomic_write(draft_dir / "draft.md", new_draft_md + "\n")
-
-    if new_abstract:
-        _atomic_write(draft_dir / "abstract.txt", new_abstract + "\n")
 
     response_path = draft_dir / f"response-to-reviewers.v{version}.md"
     _atomic_write(response_path, response_md.rstrip() + "\n")
-
-    # Append to the lab notebook rather than overwriting.
-    if addendum:
-        notebook_path = paths.ROOT / proj["notebook_path"]
-        existing = notebook_path.read_text(encoding="utf-8").rstrip()
-        combined = existing + "\n\n---\n\n" + addendum.rstrip() + "\n"
-        _atomic_write(notebook_path, combined)
 
     new_title = _extract_draft_title(new_draft_md) or proj["title"]
 
@@ -296,6 +291,21 @@ def run(project_id: str) -> None:
             (new_title, next_round, project_id),
         )
         decisions.record(conn, decision)
+
+    # Canonical draft.md, abstract.txt, and notebook addendum land
+    # AFTER the state transition committed. A crash between the
+    # transaction and these writes is recoverable: the workflow
+    # checks `_lead_outputs_already_complete`-style guards on
+    # restart, sees the workspace files, and re-renders without
+    # re-invoking Claude.
+    _atomic_write(draft_dir / "draft.md", new_draft_md + "\n")
+    if new_abstract:
+        _atomic_write(draft_dir / "abstract.txt", new_abstract + "\n")
+    if addendum:
+        notebook_path = paths.ROOT / proj["notebook_path"]
+        existing = notebook_path.read_text(encoding="utf-8").rstrip()
+        combined = existing + "\n\n---\n\n" + addendum.rstrip() + "\n"
+        _atomic_write(notebook_path, combined)
 
     episodic.safe_ingest(
         fellow_id=lead.id,

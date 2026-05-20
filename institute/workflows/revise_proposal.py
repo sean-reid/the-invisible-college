@@ -151,7 +151,11 @@ def run(project_id: str) -> None:
         workspace, "proposal.md", min_chars=200
     )
 
-    # Preserve the prior version, then overwrite the canonical proposal.
+    # Preserve the prior version FIRST (additive, version-stamped).
+    # The canonical proposal.md overwrite happens only after the
+    # state transition commits, so a crash between the two cannot
+    # leave a "new" canonical file with stale state and trigger
+    # another revise on the next institute next.
     proposal_path = paths.PROPOSALS / project_id / "proposal.md"
     if proposal_path.exists():
         version = 1
@@ -159,7 +163,6 @@ def run(project_id: str) -> None:
             version += 1
         archived = paths.PROPOSALS / project_id / f"proposal.v{version}.md"
         atomic_write(archived, prior_proposal)
-    atomic_write(proposal_path, new_proposal_md.rstrip() + "\n")
 
     decision = decisions.Decision(
         kind="proposal_revision",
@@ -176,6 +179,9 @@ def run(project_id: str) -> None:
     with db.connection() as conn, db.transaction(conn):
         state.transition(conn, project_id, State.PROPOSED)
         decisions.record(conn, decision)
+
+    # Canonical proposal.md lands after the state transition.
+    atomic_write(proposal_path, new_proposal_md.rstrip() + "\n")
 
     console.print(
         f"[green]Redraft complete.[/green] Proposal returned to "
