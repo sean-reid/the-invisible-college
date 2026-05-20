@@ -458,6 +458,21 @@ def test_curriculum_picker_interleaves_postulants(isolated: Path) -> None:
     )
 
 
+def test_qualifying_brief_forbids_collaborators() -> None:
+    """Qualifying projects are solo work under advisor supervision
+    (Chapter 5). The brief must explicitly forbid co-authors so a
+    Postulant cannot list collaborators that the workflow would
+    silently ignore."""
+    from institute.workflows import qualify
+
+    brief = qualify.PROPOSE_BRIEF
+    # The Collaborators section was removed entirely; no `##
+    # Collaborators` heading in the proposal-shape instructions.
+    assert "## Collaborators" not in brief
+    # The constraint must explicitly tell the Postulant this is solo work.
+    assert "solo work" in brief.lower()
+
+
 def test_qualifying_picker_skips_postulant_with_unfinished_curriculum(isolated: Path) -> None:
     """A Postulant who hasn't finished curriculum is not picked for qualifying."""
     with db.connection() as conn, db.transaction(conn):

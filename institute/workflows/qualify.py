@@ -90,8 +90,6 @@ proposal must contain, in order:
 7. `## Anticipated failure modes` — how this could go wrong and what
    an honest negative result would look like. An honest failed
    qualifying project is preferable to a forced success.
-8. `## Collaborators needed` — usually just your advisor; OK if none
-   beyond them.
 
 # Constraints
 
@@ -100,6 +98,11 @@ proposal must contain, in order:
   finished in the qualifying period is failing the exercise.
 - Connected to your declared specialization.
 - The question should be one you genuinely do not know the answer to.
+- **Qualifying projects are solo work under your advisor.** Do not
+  list co-authors or request collaborators; the qualifying project
+  is the exercise in carrying a research piece yourself. Your
+  advisor reads drafts and serves as the primary peer reviewer, but
+  the byline is yours alone.
 
 # Final reply
 
