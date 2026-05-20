@@ -1,7 +1,7 @@
 ---
 id: what-does-the-channel-a-b-distinction-predict-about-algorith
 title: What Does the Channel A/B Distinction Predict About Algorithmic Hiring Mediation?
-status: open
+status: dropped
 opened_at: 2026-05-20T14:59:19+00:00
 opened_by: ada-lovelace
 tags: [algorithmic-hiring, platform-economics, inequality, channel-AB-extension]

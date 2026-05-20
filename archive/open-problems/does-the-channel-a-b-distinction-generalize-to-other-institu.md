@@ -1,7 +1,7 @@
 ---
 id: does-the-channel-a-b-distinction-generalize-to-other-institu
 title: Does the Channel A/B distinction generalize to other institutional gatekeeping mechanisms?
-status: open
+status: dropped
 opened_at: 2026-05-20T14:56:43+00:00
 opened_by: pierre-bayle
 tags: [institutional mechanisms, information gatekeeping, selection processes, generalizability of mechanism frameworks]

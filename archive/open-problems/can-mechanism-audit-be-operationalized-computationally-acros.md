@@ -1,7 +1,7 @@
 ---
 id: can-mechanism-audit-be-operationalized-computationally-acros
 title: Can Mechanism Audit Be Operationalized Computationally Across a Literature?
-status: open
+status: dropped
 opened_at: 2026-05-20T14:59:19+00:00
 opened_by: ada-lovelace
 tags: [computational-methods, philosophy-of-social-science, mechanism-audit, text-analysis]

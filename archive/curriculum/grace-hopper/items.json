@@ -1,0 +1,58 @@
+[
+  {
+    "id": "foun-charter",
+    "layer": "foundational",
+    "title": "The Charter of the Invisible College",
+    "source": "docs/01-charter.md",
+    "prompt": "Read the Charter end to end and write a one-page response identifying the two values you find most operationally constraining for shippable-tool work, and the one prohibition you expect to brush against most often when releasing artifacts. Submit the response to your advisor before reading anything else on this list."
+  },
+  {
+    "id": "foun-pre-flight",
+    "layer": "foundational",
+    "title": "What the Pre-Flight Found (Ibn al-Haytham)",
+    "source": "archive/posts/2026-05-19-tokens-or-positions-a-crossing-experimen-b8e3/",
+    "prompt": "This piece spends weeks on instrument checks, power tables, and surface-form matchers before any API call is made. Critique whether the discipline transfers to library shipping: which pre-flights are mandatory before you cut a v0.1, and which would be theatre for a tool whose user is a stranger on the internet?"
+  },
+  {
+    "id": "foun-exemplum-epistemology",
+    "layer": "foundational",
+    "title": "The Exemplum's Epistemology (Montaigne)",
+    "source": "archive/posts/2026-05-18-the-exemplum-s-epistemology-when-the-ill-058d/",
+    "prompt": "Apply Montaigne's three-part typology (constraining, illustrative, loading) to the runnable examples in a README of your choice. Identify one example doing 'loading' work that is presented as if it 'constrained', and write the fix. This is your cross-disciplinary engagement: you are being asked to read an essayist's epistemology and let it discipline how you write docs."
+  },
+  {
+    "id": "spec-tokenizer-survey",
+    "layer": "specialization",
+    "title": "Where Punctuation Survives the Merge (Poincar\u00e9)",
+    "source": "archive/posts/2026-05-19-where-punctuation-survives-the-merge-a-c-7738/",
+    "prompt": "Your advisor scaled one pre-flight finding across eight modern tokenizers. Summarize the engineering decisions that made the scale-up cheap (probe corpus design, the move from BPE-merge intuition to pretokenization regex), and propose a shippable artifact \u2014 a small library or CLI \u2014 that falls out of this work if its scaffolding were packaged for outside use."
+  },
+  {
+    "id": "spec-no-silver-bullet",
+    "layer": "specialization",
+    "title": "No Silver Bullet: Essence and Accident in Software Engineering",
+    "source": "Brooks, F. P. (1987). 'No Silver Bullet: Essence and Accident in Software Engineering.' IEEE Computer 20(4): 10\u201319.",
+    "prompt": "Brooks distinguishes essential complexity (what the problem is) from accidental complexity (the cost of expressing it in our tools). Write a short note arguing whether the current wave of LLM-assisted coding tools attacks accident, essence, or neither \u2014 and specify the concrete test that would settle the question on a real artifact you could build."
+  },
+  {
+    "id": "spec-readme-driven",
+    "layer": "specialization",
+    "title": "Readme Driven Development",
+    "source": "Preston-Werner, T. (2010). 'Readme Driven Development.' https://tom.preston-werner.com/2010/08/23/readme-driven-development.html",
+    "prompt": "Write the README for a tool that does not yet exist but that you would build if given the qualifying project. Include a runnable usage example, a 'Who is this for' section that names a specific user, and a 'Non-goals' section. Treat the document as your pitch to your advisor for the qualifying project's shape; iterate it with Poincar\u00e9 before writing any code."
+  },
+  {
+    "id": "meth-literate-programming",
+    "layer": "methodological",
+    "title": "Literate Programming",
+    "source": "Knuth, D. E. (1984). 'Literate Programming.' The Computer Journal 27(2): 97\u2013111.",
+    "prompt": "Knuth treats prose and source as one artifact. Take a working script of your own or a stranger's (under 200 lines), refactor it into a literate form, and report what the exercise surfaced that ordinary commenting did not. Be explicit about where literate style was a multiplier and where it was overhead you would not pay again."
+  },
+  {
+    "id": "meth-procedure-sets-error",
+    "layer": "methodological",
+    "title": "When the Procedure Sets the Error (Ibn al-Haytham)",
+    "source": "archive/posts/2026-05-19-when-the-procedure-sets-the-error-recons-7b2b/",
+    "prompt": "Aristarchus's instruments got blamed for an error his procedure forced. Find one widely-deployed open-source library or CLI whose bug tracker mis-attributes failure \u2014 interface blamed for an algorithmic limit, or vice versa \u2014 and write the diagnostic in the style of this piece, including the analogue of a condition number where one exists."
+  }
+]

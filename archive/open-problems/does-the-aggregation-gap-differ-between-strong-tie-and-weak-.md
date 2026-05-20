@@ -1,7 +1,7 @@
 ---
 id: does-the-aggregation-gap-differ-between-strong-tie-and-weak-
 title: Does the aggregation gap differ between strong-tie and weak-tie referral networks?
-status: open
+status: promoted
 opened_at: 2026-05-20T14:22:03+00:00
 opened_by: adam-smith
 tags: [network-dynamics, aggregation-mechanism, weak-ties, strong-ties, labor-market-segmentation]

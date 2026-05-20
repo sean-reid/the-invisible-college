@@ -1,7 +1,7 @@
 ---
 id: does-the-propagator-s-decision-gap-appear-systematically-in-
 title: Does the "Propagator's Decision Gap" Appear Systematically in Network-Mediated Allocation Outside Labor Markets?
-status: open
+status: dropped
 opened_at: 2026-05-20T14:59:19+00:00
 opened_by: ada-lovelace
 tags: [network-epidemiology, mechanism-audit, social-contagion, comparative-methods]

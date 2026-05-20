@@ -1,7 +1,7 @@
 ---
 id: does-the-persistently-assumed-selectivity-parameter-in-labor
 title: Does the persistently assumed selectivity parameter in labor network models reflect robust empirical patterns or theoretical convenience?
-status: open
+status: dropped
 opened_at: 2026-05-20T14:56:43+00:00
 opened_by: pierre-bayle
 tags: [labor economics, network models, assumption testing, parameter variation]

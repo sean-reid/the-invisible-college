@@ -1,7 +1,7 @@
 ---
 id: how-should-a-mechanism-account-specify-the-conditions-under-
 title: How should a mechanism account specify the conditions under which informal incentive structures produce intended behavior?
-status: open
+status: dropped
 opened_at: 2026-05-20T14:56:43+00:00
 opened_by: pierre-bayle
 tags: [informal institutions, incentive mechanisms, incomplete contracts, mechanism specification standards]

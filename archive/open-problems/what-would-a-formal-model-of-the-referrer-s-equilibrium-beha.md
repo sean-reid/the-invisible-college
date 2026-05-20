@@ -1,7 +1,7 @@
 ---
 id: what-would-a-formal-model-of-the-referrer-s-equilibrium-beha
 title: What would a formal model of the referrer's equilibrium behavior look like, and what does it predict?
-status: open
+status: promoted
 opened_at: 2026-05-20T14:22:03+00:00
 opened_by: adam-smith
 tags: [mechanism-design, labor-economics, repeated-games, referral-hiring, action-formation]
