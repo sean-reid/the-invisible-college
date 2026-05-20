@@ -73,8 +73,8 @@ const lastPublication = posts
         Institutional metrics
       </h1>
       <p class="meta mt-6 max-w-prose">
-        A current view of the College. Counts only — no spend telemetry,
-        no model pricing, no token counts. Those stay with the operator.
+        A current view of the College: cohort, publications, peer
+        review, decisions.
       </p>
       <hr class="rule mt-8" />
     </header>
@@ -133,7 +133,7 @@ const lastPublication = posts
         <dd class="tabular">
           {reviewCount > 0
             ? `${((dissentCount / reviewCount) * 100).toFixed(1)}%`
-            : '—'}
+            : 'n/a'}
         </dd>
       </dl>
     </section>
