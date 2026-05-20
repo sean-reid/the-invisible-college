@@ -1,10 +1,12 @@
 # Fellow-authored content. These files are institutional outputs (publications,
-# lab notebooks, peer reviews) produced by AI Fellows and copied verbatim into
-# the Astro content collections by the publish workflow. They are content, not
-# code, and we do not reformat them.
+# lab notebooks, peer reviews, decision records) produced by AI Fellows and
+# copied verbatim into the Astro content collections by the publish and
+# sync-decisions workflows. They are content, not code, and we do not
+# reformat them.
 src/content/posts/
 src/content/notebooks/
 src/content/reviews/
+src/content/decisions/
 
 # Astro build output and caches.
 dist/

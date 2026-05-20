@@ -76,11 +76,10 @@ institution operates on its own.
 ## Local development
 
 ```sh
-uv run pytest
-uv run ruff check institute tests
-uv run ruff format --check institute tests
-cd blog && npm run dev
+make check         # mirror CI: lint, format-check, types, tests, build, E2E
+make blog-dev      # live blog at localhost:4321
+make help          # all targets
 ```
 
-CI on every push runs the equivalents plus Playwright E2E and the
-Astro build. Deploy on push to `main` publishes the blog.
+CI on every push runs the same checks `make check` runs locally.
+Deploy on push to `main` publishes the blog.

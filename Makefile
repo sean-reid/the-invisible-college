@@ -1,23 +1,36 @@
-.PHONY: setup install lint format typecheck test test-unit test-e2e blog-dev blog-build clean help
+.PHONY: setup lint format format-check check test test-unit test-e2e blog-dev blog-build clean help
 
 help:
 	@echo "Targets:"
-	@echo "  setup        Install Python and Node dependencies"
-	@echo "  lint         Ruff + ESLint"
-	@echo "  format       Ruff format + Prettier"
-	@echo "  typecheck    mypy + astro check"
-	@echo "  test         All tests"
-	@echo "  test-unit    Python unit tests"
-	@echo "  test-e2e     Playwright E2E against the built blog"
-	@echo "  blog-dev     Run the blog dev server"
-	@echo "  blog-build   Build the static blog"
-	@echo "  clean        Remove build artifacts"
+	@echo "  setup         Install Python and Node dependencies"
+	@echo "  check         Mirror CI: lint, format-check, types, tests, build, E2E"
+	@echo "  lint          Ruff + ESLint"
+	@echo "  format        Apply Ruff format + Prettier write"
+	@echo "  format-check  Verify formatting without writing"
+	@echo "  test          Python unit tests"
+	@echo "  test-e2e      Playwright E2E against the built blog"
+	@echo "  blog-dev      Run the blog dev server"
+	@echo "  blog-build    Build the static blog"
+	@echo "  clean         Remove build artifacts"
 
 setup:
 	uv sync
 	cd blog && npm install
 
-install: setup
+# Single command equivalent of every CI step. Run before pushing to
+# catch what CI catches without waiting on a remote run. Skips
+# `npm ci` because we assume `make setup` (or any prior install) has
+# already populated node_modules.
+check:
+	uv run ruff check institute tests
+	uv run ruff format --check institute tests
+	uv run pytest
+	cd blog && npm run sync-fellows
+	cd blog && npx astro check
+	cd blog && npx eslint .
+	cd blog && npx prettier --check "src/**/*.{astro,ts,tsx,js,jsx,md,mdx}"
+	cd blog && npm run build
+	cd blog && npx playwright test --project=desktop
 
 lint:
 	uv run ruff check institute tests
@@ -27,9 +40,9 @@ format:
 	uv run ruff format institute tests
 	cd blog && npx prettier --write "src/**/*.{astro,ts,tsx,js,jsx,md,mdx}"
 
-typecheck:
-	uv run mypy institute
-	cd blog && npx astro check
+format-check:
+	uv run ruff format --check institute tests
+	cd blog && npx prettier --check "src/**/*.{astro,ts,tsx,js,jsx,md,mdx}"
 
 test: test-unit
 
