@@ -15,7 +15,7 @@ from pathlib import Path
 
 from institute.paths import DB_PATH as DB_PATH  # re-exported for tests to patch
 
-SCHEMA_VERSION = 18
+SCHEMA_VERSION = 19
 
 SCHEMA = """
 CREATE TABLE IF NOT EXISTS schema_version (
@@ -303,6 +303,12 @@ CREATE TABLE IF NOT EXISTS center_memberships (
 CREATE INDEX IF NOT EXISTS idx_center_membership_fellow
     ON center_memberships(fellow_id);
 
+CREATE INDEX IF NOT EXISTS idx_centers_open_closes
+    ON centers(closed_at, closes_at);
+
+CREATE INDEX IF NOT EXISTS idx_dept_membership_dept_joined
+    ON department_memberships(department_id, joined_at);
+
 -- Trusted baselines for the Charter integrity tripwire. The Founder
 -- amends the Charter and updates the baseline in the same operation,
 -- so any mid-flight mutation to docs/01-charter.md by a Fellow is
@@ -437,6 +443,9 @@ def _run_migrations(conn: sqlite3.Connection, from_version: int, to_version: int
         elif version == 17:
             _migrate_17_to_18(conn)
             version = 18
+        elif version == 18:
+            _migrate_18_to_19(conn)
+            version = 19
         else:
             raise RuntimeError(f"No migration path from version {version}.")
         # Each migration is responsible for stamping its own version
@@ -853,6 +862,25 @@ def _migrate_11_to_12(conn: sqlite3.Connection) -> None:
             "key TEXT PRIMARY KEY, value TEXT NOT NULL)"
         )
         _stamp_version(conn, 12)
+        conn.execute("COMMIT")
+    except Exception:
+        conn.execute("ROLLBACK")
+        raise
+
+
+def _migrate_18_to_19(conn: sqlite3.Connection) -> None:
+    """Add two composite indexes the new selection queries hit."""
+    conn.execute("BEGIN IMMEDIATE")
+    try:
+        conn.execute(
+            "CREATE INDEX IF NOT EXISTS idx_centers_open_closes "
+            "ON centers(closed_at, closes_at)"
+        )
+        conn.execute(
+            "CREATE INDEX IF NOT EXISTS idx_dept_membership_dept_joined "
+            "ON department_memberships(department_id, joined_at)"
+        )
+        _stamp_version(conn, 19)
         conn.execute("COMMIT")
     except Exception:
         conn.execute("ROLLBACK")

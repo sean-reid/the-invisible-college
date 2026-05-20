@@ -78,3 +78,48 @@ def clear_outputs(workspace: Path, filenames: tuple[str, ...]) -> None:
         path = workspace / name
         if path.is_file():
             path.unlink()
+
+
+def gc_terminal_projects() -> int:
+    """Remove every Fellow workspace whose scope matches a project in
+    a terminal state. The state machine guarantees those workspaces
+    will never be touched again, so keeping them around accumulates
+    disk indefinitely (and the Henri-Poincaré directory grew to
+    nearly half a gigabyte before this was wired). Returns the count
+    of removed directories.
+    """
+    import shutil
+    from institute import db, state
+
+    placeholders = ",".join("?" for _ in state.TERMINAL_STATE_VALUES)
+    with db.connection() as conn:
+        terminal_ids = {
+            r["id"]
+            for r in conn.execute(
+                f"SELECT id FROM projects WHERE state IN ({placeholders})",
+                state.TERMINAL_STATE_VALUES,
+            )
+        }
+    if not terminal_ids:
+        return 0
+
+    if not FELLOWS.exists():
+        return 0
+    removed = 0
+    for fellow_dir in FELLOWS.iterdir():
+        ws_root = fellow_dir / "workspace"
+        if not ws_root.is_dir():
+            continue
+        for scope_dir in ws_root.iterdir():
+            if not scope_dir.is_dir():
+                continue
+            # Scopes are sometimes suffixed (e.g. <project>-review-r1);
+            # match any prefix against the terminal-project set.
+            scope_name = scope_dir.name
+            if any(
+                scope_name == pid or scope_name.startswith(f"{pid}-")
+                for pid in terminal_ids
+            ):
+                shutil.rmtree(scope_dir, ignore_errors=True)
+                removed += 1
+    return removed

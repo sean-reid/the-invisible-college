@@ -2401,6 +2401,21 @@ def _autopilot_locked(
     """The actual autopilot body, called while holding the lock."""
     _check_kill_switch()
 
+    # Garbage-collect workspaces of terminal projects. Cheap (DB read +
+    # directory enumeration), worth doing once per wake-up so disk
+    # doesn't accumulate without bound. Per-project workspaces have
+    # held a half-gigabyte+ historically when this was unwired.
+    try:
+        from institute import workspaces as _ws
+
+        removed = _ws.gc_terminal_projects()
+        if removed:
+            console.print(
+                f"[dim]Reclaimed {removed} terminal-project workspace(s).[/dim]"
+            )
+    except Exception as exc:  # pragma: no cover - best-effort cleanup
+        console.print(f"[dim]Workspace GC skipped: {exc}[/dim]")
+
     from institute import budget
 
     austerity = budget.current_status(daily_budget_usd)
