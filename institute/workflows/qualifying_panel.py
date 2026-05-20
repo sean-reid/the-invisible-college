@@ -401,20 +401,33 @@ def run(project_id: str) -> None:
         (outside_panel, "outside-the-discipline"),
     ]:
         if evaluator is None:
+            # Small-cohort tolerance on non-final rounds: a missing
+            # slot defaults to ready so an early panel doesn't stall
+            # on cohort size alone. On the FINAL round the default
+            # flips to shelve: when the institution is forced to
+            # render a verdict, an unstaffed slot must not push the
+            # decision toward advancement. A panel that cannot be
+            # convened properly on a final round produces a safer-
+            # default shelve.
+            default_outcome = "shelve" if is_final_round else "ready"
             console.print(
                 f"[yellow]No {role} panelist available; "
-                "treating slot as `ready` (small cohort).[/yellow]"
+                f"treating slot as `{default_outcome}` "
+                f"({'final round' if is_final_round else 'small cohort'}).[/yellow]"
             )
-            outcomes.append("ready")
+            outcomes.append(default_outcome)
             continue
-        feedback_path = paths.REVIEWS / project_id / f"panel-{role}-{evaluator.id}.md"
-        # Resume guard: if a previous run already invoked this
-        # evaluator and persisted their verdict, re-parse the file
-        # instead of paying for the call again. The outcome lives
-        # on its own `- **Outcome:**` line, the summary is the
-        # paragraph under `## Summary`. This is what protects the
-        # qualifying-panel workflow from double-charging when the
-        # second evaluator raises mid-flight.
+        # Round-numbered feedback path. The resume guard must only fire
+        # within a single panel convening (so a mid-cycle crash doesn't
+        # re-pay for the first evaluator). A verdict from an earlier
+        # convening of the same panel is stale: the project was sent
+        # back to revision, the draft has changed, the evaluator must
+        # render a fresh judgment. Using r<N> in the filename keeps
+        # convenings cleanly separated.
+        convening_number = prior_revise_rounds + 1
+        feedback_path = (
+            paths.REVIEWS / project_id / f"panel-{role}-{evaluator.id}-r{convening_number}.md"
+        )
         cached = _read_cached_panel_feedback(feedback_path)
         if cached is not None:
             cached_outcome, cached_summary = cached
