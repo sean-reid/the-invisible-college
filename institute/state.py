@@ -23,6 +23,7 @@ class State(StrEnum):
     RESEARCHING = "researching"
     DRAFTED = "drafted"
     AWAITING_ADVISOR_REVIEW = "awaiting_advisor_review"
+    AWAITING_QUALIFYING_PANEL = "awaiting_qualifying_panel"
     PEER_REVIEWING = "peer_reviewing"
     REVISING = "revising"
     ANDON_REVIEW = "andon_review"
@@ -41,6 +42,7 @@ NEXT_ACTION: dict[State, str | None] = {
     State.RESEARCHING: "research",  # research can take multiple invocations
     State.DRAFTED: "peer_review",
     State.AWAITING_ADVISOR_REVIEW: "advisor_review",
+    State.AWAITING_QUALIFYING_PANEL: "qualifying_panel",
     State.PEER_REVIEWING: "peer_review",
     State.REVISING: "revise",
     State.ANDON_REVIEW: "andon_review",
@@ -82,6 +84,13 @@ ALLOWED_TRANSITIONS: dict[State, set[State]] = {
     State.AWAITING_ADVISOR_REVIEW: {
         State.REVISING,
         State.PEER_REVIEWING,
+        State.AWAITING_QUALIFYING_PANEL,
+        State.REJECTED,
+        State.ABANDONED,
+    },
+    State.AWAITING_QUALIFYING_PANEL: {
+        State.PEER_REVIEWING,
+        State.REVISING,
         State.REJECTED,
         State.ABANDONED,
     },

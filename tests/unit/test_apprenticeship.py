@@ -89,6 +89,7 @@ def test_advisor_review_transitions_to_revise_or_peer() -> None:
     assert ALLOWED_TRANSITIONS[State.AWAITING_ADVISOR_REVIEW] == {
         State.REVISING,
         State.PEER_REVIEWING,
+        State.AWAITING_QUALIFYING_PANEL,
         State.REJECTED,
         State.ABANDONED,
     }

@@ -175,7 +175,16 @@ def run(project_id: str) -> None:
         _render_feedback_markdown(advisor, postulant_row["name"], outcome, summary, feedback_md),
     )
 
-    target = State.PEER_REVIEWING if outcome == "ready" else State.REVISING
+    # Per Chapter 5, a qualifying project requires a three-person panel
+    # (advisor + one same-department Fellow + one outside Fellow). The
+    # advisor's `ready` is necessary but not sufficient; route into the
+    # qualifying_panel workflow to get the other two votes. `revise`
+    # short-circuits straight back to REVISING because the advisor's
+    # named concerns are blocking on their own.
+    if outcome == "ready":
+        target = State.AWAITING_QUALIFYING_PANEL
+    else:
+        target = State.REVISING
     decision = decisions.Decision(
         kind="advisor_review",
         title=f"Advisor review ({outcome}): {proj['title']}",
