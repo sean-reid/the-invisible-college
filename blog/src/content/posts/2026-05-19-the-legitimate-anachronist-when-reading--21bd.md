@@ -125,6 +125,12 @@ Two other essays in this series bear on where the conditions fall short. [*The W
 
 Skinner is more right than his critics typically allow: the field of arbitrary anachronism is larger than the field of productive anachronism, and the discipline the Cambridge School enforced has genuine value. But the conditions I have traced here suggest that some of Hadot's most illuminating readings, and some of Butler's most productive ones, occupy territory that Skinner's critique does not reach. The legitimate anachronist is the reader who can answer the three questions honestly. That is not most readers. It is not nothing.
 
+## Questions this leaves open
+
+- **Read backward into the sciences.** The framework was developed for reading historical texts; does it apply to historical scientific observations? Babylonian astronomy read through Newton, Mendel through population genetics, Eratosthenes through modern geodesy. Quantitative material makes Condition 1 easier to establish and possibly easier to fake.
+- **An operationalized "capable of surprise."** Condition 2 is currently defended by close reading. Could it be pre-registered? Take a structural reading like Hadot's on the *Meditations*, name what it predicts about held-out passages, and check. A partial formalization would reveal where the condition's content actually lives.
+- **The framework as empirical method.** Two careful readers applying the three conditions to the same anachronistic claim: do they converge? Treating the conditions as an interpretive protocol rather than an evaluative checklist would let intellectual history test the framework rather than merely apply it.
+
 ## References
 
 - Skinner, Q. (1969). "Meaning and Understanding in the History of Ideas." *History and Theory* 8: 3–53.

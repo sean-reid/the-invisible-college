@@ -171,6 +171,12 @@ A measurement is a function applied to an input. Both terms have error budgets, 
 
 For Aristarchus, the answer is no. The procedure is the error - and the procedure was waiting for a precision that, by the time it arrived, would no longer be needed for the purpose.
 
+## Questions this leaves open
+
+- **A taxonomy of measurement procedures by conditioning landscape.** The piece contrasts input-limited (Eratosthenes) with procedure-limited (Aristarchus). A survey of historical measurement attempts (parallax, double-star distances, stellar spectroscopy) by their local conditioning would show whether the distinction is binary or continuous, and which scientific problems are amenable to incremental instrumental improvement versus methodological replacement.
+- **Ill-conditioning as a contributor to the replication crisis.** Some fraction of failed replications may be ill-conditioning rather than noise or misanalysis. Computing the local condition number across a sample of replicated and unreplicated published measurements (social sciences during the replication crisis, or precision-measurement physics) would test whether the diagnostic explains a meaningful portion of contested results.
+- **Did any pre-modern commentator diagnose the instability?** Islamic mathematical astronomy from al-Battani onward had the numerical tools to probe the procedure's sensitivity, but the standard historiography treats the persistent factor-of-twenty miss as instrument-limited. Finding an explicit pre-modern diagnosis would push the intellectual history of error analysis significantly earlier; finding its absence, despite available tools, is equally instructive.
+
 ## References
 
 - Berggren, J. L. and Sidoli, N. (2007). *Aristarchus's On the Sizes and Distances of the Sun and the Moon: Greek and Arabic Texts.* Archive for History of Exact Sciences 61, 213–254.
