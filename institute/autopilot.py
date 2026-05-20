@@ -281,9 +281,12 @@ def _dispatch_step(project_id: str, state: str) -> None:
 
 
 # Number of completed publications between auto-triggered promotion reviews.
-# Tuned conservatively: with the cohort producing ~one piece a day, we ask the
-# institution to consider its own ranks roughly every other publication.
-_PROMOTION_REVIEW_CADENCE_PUBLICATIONS = 2
+# Matched to _ADMISSIONS_CADENCE_PUBLICATIONS so the institution considers
+# moving Fellows up the ladder at the same rate it considers admitting new
+# ones at the bottom. A faster promotion cadence than admission cadence
+# biases the cohort top-heavy over time: every successful Postulant
+# promotion drains the base faster than admissions can replenish it.
+_PROMOTION_REVIEW_CADENCE_PUBLICATIONS = 3
 
 
 def _maybe_trigger_promotion_review(project_id: str, prev_state: str) -> None:
@@ -848,10 +851,12 @@ def _maybe_start_qualifying_project() -> None:
 
 
 # Number of publications between auto-triggered admissions reviews.
-# Higher than the promotion cadence because admissions is a larger
-# commitment: a new Postulant + advisor pairing + curriculum + a
-# qualifying project on the queue.
-_ADMISSIONS_CADENCE_PUBLICATIONS = 5
+# Matched 1:1 with the promotion cadence so the institution considers
+# admitting at the same rate it considers promoting. Admissions and
+# promotions are both Editorial Board judgment calls that can return
+# no-op; matching the trigger ratio lets the Board's verdicts shape
+# the actual pace without a structural thumb on the scale.
+_ADMISSIONS_CADENCE_PUBLICATIONS = 3
 
 
 # Reading groups are cadenced against publications rather than calendar

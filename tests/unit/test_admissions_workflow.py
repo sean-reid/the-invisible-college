@@ -141,6 +141,18 @@ def test_admissions_trigger_cadence_constant_set() -> None:
     assert _ADMISSIONS_CADENCE_PUBLICATIONS >= 1
 
 
+def test_admissions_and_promotion_cadences_match() -> None:
+    """Pin the 1:1 trigger ratio. A faster promotion cadence than
+    admission cadence drains the bottom of the ladder faster than
+    new Postulants enter, biasing the cohort top-heavy over time."""
+    from institute.cli import (
+        _ADMISSIONS_CADENCE_PUBLICATIONS,
+        _PROMOTION_REVIEW_CADENCE_PUBLICATIONS,
+    )
+
+    assert _ADMISSIONS_CADENCE_PUBLICATIONS == _PROMOTION_REVIEW_CADENCE_PUBLICATIONS
+
+
 def test_register_fellow_records_advisor(isolated: Path) -> None:
     advisor = _make_genome(8, model="claude-opus-4-7")
     candidate = _make_genome(9)
