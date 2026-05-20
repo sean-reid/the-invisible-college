@@ -296,9 +296,9 @@ def run(
     discarded = [p for p in candidates if p.slug not in promoted_set]
 
     for p in promoted:
-        open_problems.mark_promoted(p.slug)
+        open_problems.mark_promoted(p)
     for p in discarded:
-        open_problems.discard(p.slug)
+        open_problems.discard(p)
 
     _stage(
         ws / "decision.json",

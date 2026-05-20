@@ -3,9 +3,15 @@
 Per Chapter 2, the Institute Layer maintains a list of standing open
 problems any Fellow may take on. This module is that list. Each
 problem is a markdown file with YAML frontmatter under
-`archive/open-problems/<slug>.md`. Open problems are surfaced into
-the propose workflow as a hint — leads can browse and pick one when
-choosing what to investigate.
+`archive/open-problems/<project_id>/<slug>.md`. The directory layer
+shards the namespace per-publication so slug collisions are bounded
+to a single paper's review pass; questions filed against different
+papers cannot collide just because their titles share a long prefix
+and the slug gets truncated.
+
+The sentinel project id `"standing"` is used for problems with no
+source paper (founder- or orchestrator-curated questions kept on the
+College's research-agenda list).
 
 The list is the design's diversity lever: without it, leads default
 to whatever is nearest in their own episodic memory, which converges
@@ -15,12 +21,14 @@ genuinely wants answered.
 
 Lifecycle:
   - Founder or orchestrator adds a problem via `institute open-problems
-    add` or by writing a file directly to archive/open-problems/.
-  - A lead may take a problem by referencing its id in the Background
-    section of their proposal. Marking the problem `resolved` is a
-    follow-up action: `institute open-problems resolve <id>
-    --project <pid>`.
-  - The blog can render the list at /open-problems (future).
+    add` or by writing a file directly to archive/open-problems/standing/.
+  - A reviewer's follow-up questions land under the paper they
+    reviewed: archive/open-problems/<that_paper>/<slug>.md.
+  - At publish-time the editorial pass picks at most three per paper
+    via `for_project()`; the rest are dropped.
+  - A lead may take a standing problem by referencing its id in the
+    Background section of their proposal. Marking resolved is a
+    follow-up action: `institute open-problems resolve <id> --project <pid>`.
 """
 
 from __future__ import annotations
@@ -32,6 +40,9 @@ from pathlib import Path
 
 from institute import paths
 
+# Sentinel subdir for problems without a source paper.
+STANDING = "standing"
+
 _FRONTMATTER_RE = re.compile(r"\A---\n(.*?)\n---\n(.*)\Z", re.DOTALL)
 
 
@@ -39,24 +50,23 @@ _FRONTMATTER_RE = re.compile(r"\A---\n(.*?)\n---\n(.*)\Z", re.DOTALL)
 class OpenProblem:
     """One entry on the standing Open Problems list."""
 
-    slug: str  # filename stem under archive/open-problems/
+    slug: str  # filename stem under archive/open-problems/<project_id>/
     title: str
     body: str
-    status: str  # 'open', 'resolved', or 'promoted' (moved into a paper footer)
+    status: str  # 'open', 'resolved', 'promoted', 'dropped'
     opened_at: str
     opened_by: str  # 'founder', 'orchestrator', or a fellow id
     tags: list[str]
+    # Source paper this problem was first raised in, or `"standing"`
+    # for non-paper-bound entries. Authoritative for path resolution.
+    source_project_id: str = STANDING
     resolved_at: str | None = None
     resolved_by_project: str | None = None
     resolved_by_fellow: str | None = None
-    # Project this problem was first raised in. Set when a Fellow's
-    # revise step registers follow-up questions. Used by the editorial
-    # pass at publish-time to pull every candidate for that paper.
-    source_project_id: str | None = None
 
     @property
     def path(self) -> Path:
-        return paths.OPEN_PROBLEMS / f"{self.slug}.md"
+        return paths.OPEN_PROBLEMS / self.source_project_id / f"{self.slug}.md"
 
 
 def _slugify(text: str) -> str:
@@ -76,7 +86,7 @@ def _slugify(text: str) -> str:
 def _parse_frontmatter(text: str) -> tuple[dict[str, str | list[str]], str]:
     """Parse a YAML-ish frontmatter block. Returns (fields, body).
 
-    Intentionally small parser — these files are machine-written by
+    Intentionally small parser - these files are machine-written by
     `add()` and meant to round-trip through `load()` without surprises.
     Supports scalar fields and `tags: [a, b, c]` lists. Unrecognized
     fields are preserved as strings.
@@ -112,9 +122,8 @@ def _render_frontmatter(problem: OpenProblem) -> str:
         f"opened_at: {problem.opened_at}",
         f"opened_by: {problem.opened_by}",
         f"tags: [{', '.join(problem.tags)}]",
+        f"source_project_id: {problem.source_project_id}",
     ]
-    if problem.source_project_id:
-        lines.append(f"source_project_id: {problem.source_project_id}")
     if problem.resolved_at:
         lines.append(f"resolved_at: {problem.resolved_at}")
     if problem.resolved_by_project:
@@ -126,18 +135,25 @@ def _render_frontmatter(problem: OpenProblem) -> str:
     return "\n".join(lines)
 
 
+def _project_dirs() -> list[Path]:
+    """Every per-project subdir of OPEN_PROBLEMS, sorted by name."""
+    base = paths.OPEN_PROBLEMS
+    if not base.is_dir():
+        return []
+    return sorted(p for p in base.iterdir() if p.is_dir())
+
+
 def load_all() -> list[OpenProblem]:
-    """Every problem on disk, newest-opened first."""
+    """Every problem on disk, sorted by status (open first) then opened_at."""
     paths.OPEN_PROBLEMS.mkdir(parents=True, exist_ok=True)
     problems: list[OpenProblem] = []
-    for path in sorted(paths.OPEN_PROBLEMS.glob("*.md")):
-        if path.name == "INDEX.md":
-            continue
-        problems.append(_load_path(path))
-    problems.sort(key=lambda p: (p.status != "open", p.opened_at), reverse=False)
-    # Open first (status sorts 'open' before 'resolved' because that's
-    # how the boolean tuple key resolves). Within each group, oldest
-    # first so reading top-to-bottom is chronological.
+    for subdir in _project_dirs():
+        project_id = subdir.name
+        for path in sorted(subdir.glob("*.md")):
+            if path.name == "INDEX.md":
+                continue
+            problems.append(_load_path(path, project_id=project_id))
+    problems.sort(key=lambda p: (p.status != "open", p.opened_at))
     return problems
 
 
@@ -146,12 +162,15 @@ def open_problems() -> list[OpenProblem]:
     return [p for p in load_all() if p.status == "open"]
 
 
-def _load_path(path: Path) -> OpenProblem:
+def _load_path(path: Path, *, project_id: str) -> OpenProblem:
     text = path.read_text(encoding="utf-8")
     fields, body = _parse_frontmatter(text)
     tags = fields.get("tags") or []
     if not isinstance(tags, list):
         tags = []
+    # The path is authoritative for source_project_id; fall back to
+    # the frontmatter only if the path-derived value is missing
+    # (shouldn't happen but stays defensive).
     return OpenProblem(
         slug=path.stem,
         title=str(fields.get("title") or "").strip(),
@@ -160,38 +179,49 @@ def _load_path(path: Path) -> OpenProblem:
         opened_at=str(fields.get("opened_at") or "").strip(),
         opened_by=str(fields.get("opened_by") or "").strip(),
         tags=[str(t) for t in tags],
+        source_project_id=project_id,
         resolved_at=str(fields.get("resolved_at") or "").strip() or None,
         resolved_by_project=str(fields.get("resolved_by_project") or "").strip() or None,
         resolved_by_fellow=str(fields.get("resolved_by_fellow") or "").strip() or None,
-        source_project_id=str(fields.get("source_project_id") or "").strip() or None,
     )
 
 
-def get(slug: str) -> OpenProblem | None:
-    path = paths.OPEN_PROBLEMS / f"{slug}.md"
+def get(slug: str, project_id: str) -> OpenProblem | None:
+    """Load a problem by (slug, project_id). Returns None if absent."""
+    path = paths.OPEN_PROBLEMS / project_id / f"{slug}.md"
     if not path.is_file():
         return None
-    return _load_path(path)
+    return _load_path(path, project_id=project_id)
 
 
 def add(
     *,
     title: str,
     body: str,
+    project_id: str = STANDING,
     opened_by: str = "founder",
     tags: list[str] | None = None,
-    source_project_id: str | None = None,
 ) -> OpenProblem:
-    """Create a new open problem on disk. Raises if the slug collides."""
+    """Create a new open problem on disk under `archive/open-problems/<project_id>/`.
+
+    Raises if a problem with the same slug already exists in the same
+    project subdir. Cross-project slug collisions are allowed (and
+    expected) - two papers can legitimately raise questions that
+    slugify to the same short form.
+    """
     slug = _slugify(title)
     if not slug:
         raise ValueError("Title produced an empty slug.")
-    paths.OPEN_PROBLEMS.mkdir(parents=True, exist_ok=True)
-    target = paths.OPEN_PROBLEMS / f"{slug}.md"
+    if not project_id:
+        raise ValueError("project_id is required (use 'standing' for non-paper-bound problems).")
+    subdir = paths.OPEN_PROBLEMS / project_id
+    subdir.mkdir(parents=True, exist_ok=True)
+    target = subdir / f"{slug}.md"
     if target.exists():
         raise ValueError(
-            f"An open problem with slug {slug!r} already exists. Pick a "
-            "different title or edit the existing file directly."
+            f"An open problem with slug {slug!r} already exists under "
+            f"project {project_id!r}. Pick a different title or edit "
+            "the existing file directly."
         )
     now = datetime.now(UTC).isoformat(timespec="seconds")
     problem = OpenProblem(
@@ -202,73 +232,49 @@ def add(
         opened_at=now,
         opened_by=opened_by,
         tags=list(tags or []),
-        source_project_id=source_project_id,
+        source_project_id=project_id,
     )
     _write(problem)
     return problem
 
 
 def for_project(project_id: str) -> list[OpenProblem]:
-    """All open problems whose source_project_id matches.
+    """All problems filed against this project, in filename order.
 
     Used by the publish-time editorial pass to find candidate
     follow-ups raised by the paper that's about to ship.
     """
-    return [p for p in load_all() if p.source_project_id == project_id]
+    subdir = paths.OPEN_PROBLEMS / project_id
+    if not subdir.is_dir():
+        return []
+    return [_load_path(p, project_id=project_id) for p in sorted(subdir.glob("*.md"))]
 
 
-def mark_promoted(slug: str) -> None:
-    """Flip an open problem to status='promoted' (moved into a paper
-    footer). The file is kept so the historical record is intact, but
-    it no longer surfaces in `open_problems()`."""
-    existing = get(slug)
-    if existing is None:
+def mark_promoted(problem: OpenProblem) -> None:
+    """Flip a problem to status='promoted' (moved into a paper footer).
+    The file is kept so the historical record is intact, but it no
+    longer surfaces in `open_problems()`."""
+    if get(problem.slug, problem.source_project_id) is None:
         return
-    updated = OpenProblem(
-        slug=existing.slug,
-        title=existing.title,
-        body=existing.body,
-        status="promoted",
-        opened_at=existing.opened_at,
-        opened_by=existing.opened_by,
-        tags=existing.tags,
-        resolved_at=existing.resolved_at,
-        resolved_by_project=existing.resolved_by_project,
-        resolved_by_fellow=existing.resolved_by_fellow,
-        source_project_id=existing.source_project_id,
-    )
-    _write(updated)
+    _write(_with_status(problem, "promoted"))
 
 
-def discard(slug: str) -> None:
-    """Flip an open problem to status='dropped' (not promoted to a
-    paper footer). Same lifecycle reason as `mark_promoted`."""
-    existing = get(slug)
-    if existing is None:
+def discard(problem: OpenProblem) -> None:
+    """Flip a problem to status='dropped' (editor passed on it)."""
+    if get(problem.slug, problem.source_project_id) is None:
         return
-    updated = OpenProblem(
-        slug=existing.slug,
-        title=existing.title,
-        body=existing.body,
-        status="dropped",
-        opened_at=existing.opened_at,
-        opened_by=existing.opened_by,
-        tags=existing.tags,
-        resolved_at=existing.resolved_at,
-        resolved_by_project=existing.resolved_by_project,
-        resolved_by_fellow=existing.resolved_by_fellow,
-        source_project_id=existing.source_project_id,
-    )
-    _write(updated)
+    _write(_with_status(problem, "dropped"))
 
 
-def resolve(slug: str, *, project_id: str, fellow_id: str) -> OpenProblem:
+def resolve(problem: OpenProblem, *, by_project: str, by_fellow: str) -> OpenProblem:
     """Mark a problem resolved by a specific project + lead Fellow."""
-    existing = get(slug)
+    existing = get(problem.slug, problem.source_project_id)
     if existing is None:
-        raise ValueError(f"No such open problem: {slug!r}")
+        raise ValueError(
+            f"No such open problem: {problem.slug!r} under project {problem.source_project_id!r}."
+        )
     if existing.status == "resolved":
-        raise ValueError(f"Open problem {slug!r} is already resolved.")
+        raise ValueError(f"Open problem {problem.slug!r} is already resolved.")
     now = datetime.now(UTC).isoformat(timespec="seconds")
     updated = OpenProblem(
         slug=existing.slug,
@@ -278,18 +284,39 @@ def resolve(slug: str, *, project_id: str, fellow_id: str) -> OpenProblem:
         opened_at=existing.opened_at,
         opened_by=existing.opened_by,
         tags=existing.tags,
+        source_project_id=existing.source_project_id,
         resolved_at=now,
-        resolved_by_project=project_id,
-        resolved_by_fellow=fellow_id,
+        resolved_by_project=by_project,
+        resolved_by_fellow=by_fellow,
     )
     _write(updated)
     return updated
 
 
+def _with_status(problem: OpenProblem, status: str) -> OpenProblem:
+    """Return a copy of `problem` with status replaced. Used by the
+    lifecycle transitions that don't add resolver fields."""
+    return OpenProblem(
+        slug=problem.slug,
+        title=problem.title,
+        body=problem.body,
+        status=status,
+        opened_at=problem.opened_at,
+        opened_by=problem.opened_by,
+        tags=problem.tags,
+        source_project_id=problem.source_project_id,
+        resolved_at=problem.resolved_at,
+        resolved_by_project=problem.resolved_by_project,
+        resolved_by_fellow=problem.resolved_by_fellow,
+    )
+
+
 def _write(problem: OpenProblem) -> None:
-    """Atomic write of a single problem file."""
+    """Atomic write of a single problem file. Creates the project
+    subdir if it doesn't exist yet."""
     from institute.safe_io import atomic_write
 
+    problem.path.parent.mkdir(parents=True, exist_ok=True)
     text = _render_frontmatter(problem) + problem.body.rstrip() + "\n"
     atomic_write(problem.path, text)
 
@@ -325,7 +352,7 @@ def render_summary_md() -> str:
         lines.append("")
     for p in open_list:
         tag_str = f" [{', '.join(p.tags)}]" if p.tags else ""
-        lines.append(f"## `{p.slug}` — {p.title}{tag_str}")
+        lines.append(f"## `{p.slug}` - {p.title}{tag_str}")
         lines.append("")
         body_preview = p.body.strip().split("\n\n", 1)[0]
         lines.append(body_preview)
@@ -392,7 +419,7 @@ def split_follow_up_blocks(text: str) -> list[tuple[str, str, list[str]]]:
         # Fellows sometimes leave at the end of a block. Without this,
         # a `Tags: ...` line above a trailing `---` separator is
         # missed by the last-line check, and BOTH the Tags line and
-        # the `---` end up baked into the body — which later leaks
+        # the `---` end up baked into the body - which later leaks
         # into the published "Questions this leaves open" footer
         # rendered from this body.
         while body_lines and (not body_lines[-1].strip() or body_lines[-1].strip() == "---"):
@@ -411,10 +438,14 @@ def split_follow_up_blocks(text: str) -> list[tuple[str, str, list[str]]]:
 
 
 __all__ = [
+    "STANDING",
     "OpenProblem",
     "add",
+    "discard",
+    "for_project",
     "get",
     "load_all",
+    "mark_promoted",
     "open_problems",
     "render_summary_md",
     "resolve",

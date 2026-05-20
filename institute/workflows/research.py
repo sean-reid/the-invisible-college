@@ -470,9 +470,9 @@ def _register_follow_up_questions(*, workspace: Path, author_id: str, project_id
             problem = open_problems.add(
                 title=title,
                 body=body,
+                project_id=project_id,
                 opened_by=author_id,
                 tags=tags,
-                source_project_id=project_id,
             )
             added.append(problem.slug)
         except ValueError as exc:
