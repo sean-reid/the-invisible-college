@@ -486,6 +486,28 @@ def run(project_id: str) -> None:
     ]
     for pid, role, summary in panel_summaries:
         decision_body_lines.append(f"- **{role}** (`{pid}`): {summary or '(no summary)'}")
+
+    # Determine whether transitioning to PEER_REVIEWING needs to bump
+    # `review_round`. We compute it before constructing the decision
+    # body so the decision record reflects the bump.
+    will_bump_review_round = False
+    bump_from = bump_to = 0
+    if target == State.PEER_REVIEWING:
+        with db.connection() as conn:
+            row = conn.execute(
+                "SELECT review_round FROM projects WHERE id = ?",
+                (project_id,),
+            ).fetchone()
+            current_review_round = int(row["review_round"]) if row else 1
+            existing_reviews = conn.execute(
+                "SELECT COUNT(*) AS n FROM reviews WHERE project_id = ? AND round = ?",
+                (project_id, current_review_round),
+            ).fetchone()["n"]
+        if existing_reviews > 0:
+            will_bump_review_round = True
+            bump_from = current_review_round
+            bump_to = current_review_round + 1
+
     if target == State.SHELVED:
         decision_body_lines.extend(
             [
@@ -502,6 +524,13 @@ def run(project_id: str) -> None:
         )
     else:
         decision_body_lines.extend(["", f"Project advances to `{target.value}`."])
+        if will_bump_review_round:
+            decision_body_lines.append(
+                f"Stale reviews from a prior pass exist for round "
+                f"{bump_from}. Bumping `review_round` to {bump_to} so the "
+                "next peer-review pass requests fresh reviews against the "
+                "current draft."
+            )
     decision = decisions.Decision(
         kind="qualifying_panel",
         title=f"Qualifying-project panel: {proj['title']}",
@@ -514,6 +543,15 @@ def run(project_id: str) -> None:
         related_project=project_id,
     )
     with db.connection() as conn, db.transaction(conn):
+        if will_bump_review_round:
+            # Invalidate stale reviews from a prior peer-review pass by
+            # incrementing review_round. peer_review.run() will then
+            # look for fresh round-N+1 reviews and find none, prompting
+            # a new round against the current draft.
+            conn.execute(
+                "UPDATE projects SET review_round = ? WHERE id = ?",
+                (bump_to, project_id),
+            )
         state.transition(conn, project_id, target)
         decisions.record(conn, decision)
 
