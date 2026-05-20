@@ -197,3 +197,28 @@ def test_pick_convener_skips_retired_fellows(isolated: Path) -> None:
     with db.connection() as conn:
         convener = reading_group.pick_convener(conn)
     assert convener.id == "ada"
+
+
+# ---------------------------------------------------------------------------
+# CONVENER_BRIEF mentions the external option
+# ---------------------------------------------------------------------------
+
+
+def test_convener_brief_mentions_external_option() -> None:
+    """The brief must explicitly invite external (open-access)
+    readings alongside internal College publications. The mechanism
+    only does its cross-pollination job if conveners know they can
+    bring outside texts."""
+    brief = reading_group.CONVENER_BRIEF
+    assert "external" in brief.lower()
+    assert "open-access" in brief.lower()
+    assert "WebFetch" in brief
+    # Both kinds documented.
+    assert '"kind": "internal"' in brief
+    assert '"kind": "external"' in brief
+
+
+def test_convener_brief_warns_against_paywalled() -> None:
+    """Copyright pressure: paywalled full-text dumps are out."""
+    brief = reading_group.CONVENER_BRIEF
+    assert "paywalled" in brief.lower()

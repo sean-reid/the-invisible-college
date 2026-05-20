@@ -142,42 +142,82 @@ then to each other.
 Read all of them with the Read tool. You are choosing a text the
 group will read together.
 
-# Selection constraints
+# What you may select
 
-- **Choose a College publication you did NOT author.** The point of
-  rotation is cross-pollination; your own work isn't the right read
-  for a session you're convening. Pick something whose ideas you
-  want to put in front of the group.
-- **Prefer something recent** unless you have a strong reason to
-  pick older work (e.g., an earlier piece the College has built on
-  but never re-examined).
-- **Pick for substantive engagement, not consensus.** A reading
-  worth the group's time has something a thoughtful Fellow could
-  defensibly disagree with. Avoid texts that everyone will simply
-  nod at.
+You may pick EITHER:
+
+**(a) A College publication you did NOT author.** Cross-pollination
+within the institution. Pick something whose ideas you want to put
+in front of your colleagues. The slug must match an entry in
+`archive-index.md`; do not invent.
+
+**(b) An external open-access reading.** Bring something from outside
+the College into the conversation: an open-access paper (e.g., on
+arXiv, PLOS, a university preprint server), a public essay, a
+classic in the public domain. The College's discussions are
+sharpened by texts the institution did not produce. Use the
+WebFetch tool to read the source, then write the text into
+`text.md` in your workspace (the discussion participants will read
+that file, not the URL).
+
+Important constraint for external choices: pick **open-access** or
+public-domain sources only. Do not paste the full body of a
+paywalled article into the workspace. If you want to discuss a
+paywalled work, prefer a published preprint version, or summarize
+the argument and link to the source.
+
+Either way, the reading should be **worth substantive engagement**.
+A text worth the group's time has something a thoughtful Fellow
+could defensibly disagree with. Avoid pieces that everyone will
+simply nod at.
+
+The College benefits from a mix of internal and external readings
+over time; consult `prior-conveners.md` for what's been picked
+recently and weigh accordingly.
 
 # What you must produce
 
-Use the Write tool to create TWO files:
+Use the Write tool to create files in your workspace.
 
-1. `selection.json`:
+ALWAYS:
+
+1. `selection.json` — one of these two shapes:
+
+   For an internal reading:
    ```
    {
-     "post_slug": "<the slug of the chosen publication, e.g. 2026-05-17-...>",
+     "kind": "internal",
+     "post_slug": "<slug from archive-index.md>",
      "title": "<the publication's title verbatim>"
    }
    ```
-   The slug must match an entry in `archive-index.md`. Do not invent.
+
+   For an external reading:
+   ```
+   {
+     "kind": "external",
+     "source_url": "<full URL>",
+     "source_label": "<short citation, e.g. 'Smith, J. (2023). Title. Publisher.'>",
+     "title": "<short human-readable title for the session>"
+   }
+   ```
 
 2. `framing.md` — 150 to 300 words. Your angle on this reading.
    What you want the group to engage with. Why now. What you would
-   like to see the discussion press on. Write in your own voice;
-   you are the convener, this is your framing.
+   like to see the discussion press on. Write in your own voice.
+
+IF external:
+
+3. `text.md` — the body of the source. Use WebFetch to retrieve the
+   URL, then write the retrieved content here. Markdown is fine;
+   stripping HTML noise is fine; preserving the author's headings
+   and structure matters more than perfect formatting. The
+   participants will read `text.md`, not your URL.
 
 # Final reply
 
-When both files exist and `selection.json` parses, reply with `Done.`
-Nothing else.
+When all required files exist and `selection.json` parses, reply
+with `Done.` Nothing else.
 """
 
 
@@ -595,39 +635,88 @@ def convene_with_rotating_leader(*, target_participants: int = 3) -> Path | None
     except (OSError, ValueError) as exc:
         console.print(f"[yellow]Convener selection.json malformed: {exc}; skipping.[/yellow]")
         return None
-    post_slug = str(selection.get("post_slug", "")).strip()
-    title = str(selection.get("title", "")).strip()
-    framing_md = (workspace / "framing.md").read_text(encoding="utf-8").strip()
-
-    if not post_slug or not title or len(framing_md) < 100:
-        console.print("[yellow]Convener produced incomplete selection; skipping.[/yellow]")
+    framing_path = workspace / "framing.md"
+    if not framing_path.is_file():
+        console.print("[yellow]Convener did not write framing.md; skipping.[/yellow]")
+        return None
+    framing_md = framing_path.read_text(encoding="utf-8").strip()
+    if len(framing_md) < 100:
+        console.print("[yellow]Convener framing note too short; skipping.[/yellow]")
         return None
 
-    # Resolve the chosen text. We look in archive/publications/ first
-    # (the canonical source); fall back to blog/src/content/posts/ if
-    # the operator restructured the archive layout.
-    text_path = paths.PUBLICATIONS / f"{post_slug}.md"
-    if not text_path.is_file():
-        alt = paths.BLOG_POSTS / f"{post_slug}.md"
-        if alt.is_file():
-            text_path = alt
-        else:
+    # Two paths: an internal (College publication) reading or an
+    # external open-access reading the convener fetched themselves via
+    # WebFetch and saved into their workspace as text.md.
+    kind = str(selection.get("kind", "")).strip().lower()
+    # Backward-compat: a payload with `post_slug` and no `kind` is
+    # treated as internal.
+    if not kind and selection.get("post_slug"):
+        kind = "internal"
+    title = str(selection.get("title", "")).strip()
+    if not title:
+        console.print("[yellow]Convener selection has no title; skipping.[/yellow]")
+        return None
+
+    text_path: Path
+    convener_note_md = framing_md
+
+    if kind == "internal":
+        post_slug = str(selection.get("post_slug", "")).strip()
+        if not post_slug:
+            console.print("[yellow]Internal selection missing post_slug; skipping.[/yellow]")
+            return None
+        candidate = paths.PUBLICATIONS / f"{post_slug}.md"
+        if not candidate.is_file():
+            alt = paths.BLOG_POSTS / f"{post_slug}.md"
+            if alt.is_file():
+                candidate = alt
+            else:
+                console.print(
+                    f"[yellow]Convener picked internal `{post_slug}` but no "
+                    "matching publication file found; skipping.[/yellow]"
+                )
+                return None
+        text_path = candidate
+        # Defensive: log if the convener's name shows up at the top of
+        # the picked file — the brief told them to avoid their own work.
+        text_md = text_path.read_text(encoding="utf-8")
+        if convener.name in "\n".join(text_md.splitlines()[:5]):
             console.print(
-                f"[yellow]Convener picked `{post_slug}` but no matching publication "
-                f"file found; skipping.[/yellow]"
+                "[dim]Note: convener's name appears in selected text. "
+                "Trusting their judgment.[/dim]"
+            )
+
+    elif kind == "external":
+        source_url = str(selection.get("source_url", "")).strip()
+        source_label = str(selection.get("source_label", "")).strip()
+        if not source_url or not source_label:
+            console.print(
+                "[yellow]External selection missing source_url or source_label; skipping.[/yellow]"
             )
             return None
-
-    # Refuse to seat the convener's own work as the reading text.
-    text_md = text_path.read_text(encoding="utf-8")
-    if f"`{convener.id}`" in text_md or convener.name in text_md.splitlines()[0:5]:
-        # Imperfect check; the brief asked them to avoid their own
-        # work, and the workflow should not silently override the
-        # ask, but we don't bail just on this — we trust the model
-        # to obey, and log a note for inspection.
-        console.print(
-            "[dim]Note: convener's name appears in selected text. Trusting their judgment.[/dim]"
+        external_text_path = workspace / "text.md"
+        if not external_text_path.is_file() or external_text_path.stat().st_size < 300:
+            console.print(
+                "[yellow]External selection: convener did not write a "
+                "substantive text.md from WebFetch; skipping.[/yellow]"
+            )
+            return None
+        text_path = external_text_path
+        # Prepend a citation header to the framing note so participants
+        # see the source up front.
+        convener_note_md = (
+            f"**External reading.**\n"
+            f"- **Source:** {source_label}\n"
+            f"- **URL:** {source_url}\n\n"
+            f"---\n\n{framing_md}"
         )
+
+    else:
+        console.print(
+            f"[yellow]Convener selection has unknown kind {kind!r}; expected "
+            "`internal` or `external`. Skipping.[/yellow]"
+        )
+        return None
 
     # Phase 2: standard two-pass session.
     participant_ids = [convener.id] + [p.id for p in participants]
@@ -636,7 +725,7 @@ def convene_with_rotating_leader(*, target_participants: int = 3) -> Path | None
         text_path=text_path,
         participants=participant_ids,
         convener=convener.id,
-        convener_note=framing_md,
+        convener_note=convener_note_md,
     )
 
 
