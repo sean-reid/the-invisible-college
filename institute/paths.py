@@ -39,6 +39,7 @@ DECISIONS = ARCHIVE / "decisions"
 OPEN_PROBLEMS = ARCHIVE / "open-problems"
 ADMISSIONS = ARCHIVE / "admissions"
 CURRICULUM = ARCHIVE / "curriculum"
+ABANDONMENTS = ARCHIVE / "abandonments"
 
 BLOG = ROOT / "blog"
 BLOG_CONTENT = BLOG / "src" / "content"
@@ -65,6 +66,7 @@ def ensure_runtime_dirs() -> None:
         ADMISSIONS,
         CURRICULUM,
         OPEN_PROBLEMS,
+        ABANDONMENTS,
         BLOG_POSTS,
         BLOG_NOTEBOOKS,
         BLOG_REVIEWS,

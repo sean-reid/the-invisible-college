@@ -131,6 +131,7 @@ def test_andon_review_transitions_to_editorial_or_rejected() -> None:
         State.REJECTED,
         State.REVISING,
         State.EDITORIAL_REVIEW,
+        State.ABANDONED,
     }
 
 

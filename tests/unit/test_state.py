@@ -12,17 +12,18 @@ from institute.state import (
     is_terminal,
 )
 
+TERMINAL = (State.PUBLISHED, State.REJECTED, State.ABANDONED)
+
 
 def test_terminal_states_have_no_next_action() -> None:
-    assert NEXT_ACTION[State.PUBLISHED] is None
-    assert NEXT_ACTION[State.REJECTED] is None
-    assert is_terminal(State.PUBLISHED)
-    assert is_terminal(State.REJECTED)
+    for s in TERMINAL:
+        assert NEXT_ACTION[s] is None
+        assert is_terminal(s)
 
 
 def test_non_terminal_states_have_an_action() -> None:
     for s in State:
-        if s in (State.PUBLISHED, State.REJECTED):
+        if s in TERMINAL:
             continue
         assert NEXT_ACTION[s] is not None, f"state {s} has no next action"
 

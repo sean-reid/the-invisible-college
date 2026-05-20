@@ -19,6 +19,7 @@ from enum import StrEnum
 class State(StrEnum):
     PROPOSED = "proposed"
     PROPOSAL_REVIEWED = "proposal_reviewed"
+    PROPOSAL_HELD = "proposal_held"  # reviewer asked for refine + resubmit
     RESEARCHING = "researching"
     DRAFTED = "drafted"
     AWAITING_ADVISOR_REVIEW = "awaiting_advisor_review"
@@ -29,12 +30,14 @@ class State(StrEnum):
     EDITORIAL = "editorial"
     PUBLISHED = "published"
     REJECTED = "rejected"
+    ABANDONED = "abandoned"  # Fellow withdrew with honest lesson
 
 
 # The single next action that follows each state. Terminal states map to None.
 NEXT_ACTION: dict[State, str | None] = {
     State.PROPOSED: "review_proposal",
     State.PROPOSAL_REVIEWED: "research",
+    State.PROPOSAL_HELD: "revise_proposal",
     State.RESEARCHING: "research",  # research can take multiple invocations
     State.DRAFTED: "peer_review",
     State.AWAITING_ADVISOR_REVIEW: "advisor_review",
@@ -45,6 +48,7 @@ NEXT_ACTION: dict[State, str | None] = {
     State.EDITORIAL: "publish",
     State.PUBLISHED: None,
     State.REJECTED: None,
+    State.ABANDONED: None,
 }
 
 
@@ -52,14 +56,35 @@ NEXT_ACTION: dict[State, str | None] = {
 # as an exit, because targeted termination (Chapter 3) can hit a Fellow
 # mid-project from any state.
 ALLOWED_TRANSITIONS: dict[State, set[State]] = {
-    State.PROPOSED: {State.PROPOSAL_REVIEWED, State.REJECTED},
-    State.PROPOSAL_REVIEWED: {State.RESEARCHING, State.REJECTED},
-    State.RESEARCHING: {State.RESEARCHING, State.DRAFTED, State.REJECTED},
+    State.PROPOSED: {
+        State.PROPOSAL_REVIEWED,
+        State.PROPOSAL_HELD,
+        State.REJECTED,
+        State.ABANDONED,
+    },
+    State.PROPOSAL_REVIEWED: {State.RESEARCHING, State.REJECTED, State.ABANDONED},
+    State.PROPOSAL_HELD: {State.PROPOSED, State.REJECTED, State.ABANDONED},
+    State.RESEARCHING: {
+        State.RESEARCHING,
+        State.DRAFTED,
+        State.REJECTED,
+        State.ABANDONED,
+    },
     # A qualifying-kind project routes through AWAITING_ADVISOR_REVIEW
     # before peer review. A research-kind project skips straight to
     # PEER_REVIEWING. Both transitions are allowed; the workflow chooses.
-    State.DRAFTED: {State.AWAITING_ADVISOR_REVIEW, State.PEER_REVIEWING, State.REJECTED},
-    State.AWAITING_ADVISOR_REVIEW: {State.REVISING, State.PEER_REVIEWING, State.REJECTED},
+    State.DRAFTED: {
+        State.AWAITING_ADVISOR_REVIEW,
+        State.PEER_REVIEWING,
+        State.REJECTED,
+        State.ABANDONED,
+    },
+    State.AWAITING_ADVISOR_REVIEW: {
+        State.REVISING,
+        State.PEER_REVIEWING,
+        State.REJECTED,
+        State.ABANDONED,
+    },
     State.PEER_REVIEWING: {
         State.PEER_REVIEWING,
         State.REVISING,
@@ -67,6 +92,7 @@ ALLOWED_TRANSITIONS: dict[State, set[State]] = {
         State.EDITORIAL_REVIEW,
         State.EDITORIAL,
         State.REJECTED,
+        State.ABANDONED,
     },
     # REVISING can self-loop when the revise step itself produces another
     # round of concerns. AWAITING_ADVISOR_REVIEW is the qualifying-project
@@ -77,6 +103,7 @@ ALLOWED_TRANSITIONS: dict[State, set[State]] = {
         State.EDITORIAL,
         State.AWAITING_ADVISOR_REVIEW,
         State.REJECTED,
+        State.ABANDONED,
     },
     # Andon dismiss may need to route back through revise or editorial
     # review based on the non-cord-pulling reviewers' recommendations.
@@ -85,13 +112,15 @@ ALLOWED_TRANSITIONS: dict[State, set[State]] = {
         State.REJECTED,
         State.REVISING,
         State.EDITORIAL_REVIEW,
+        State.ABANDONED,
     },
     # Editorial Board makes the final call after round-2 peer review with
     # reject recommendations or dissent. Accept → editorial; reject → rejected.
-    State.EDITORIAL_REVIEW: {State.EDITORIAL, State.REJECTED},
-    State.EDITORIAL: {State.PUBLISHED, State.REJECTED},
+    State.EDITORIAL_REVIEW: {State.EDITORIAL, State.REJECTED, State.ABANDONED},
+    State.EDITORIAL: {State.PUBLISHED, State.REJECTED, State.ABANDONED},
     State.PUBLISHED: set(),
     State.REJECTED: set(),
+    State.ABANDONED: set(),
 }
 
 

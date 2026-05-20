@@ -120,6 +120,7 @@ def test_editorial_review_transitions() -> None:
     assert ALLOWED_TRANSITIONS[State.EDITORIAL_REVIEW] == {
         State.EDITORIAL,
         State.REJECTED,
+        State.ABANDONED,
     }
 
 

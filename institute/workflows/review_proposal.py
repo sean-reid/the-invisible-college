@@ -1,12 +1,18 @@
 """Review a research proposal.
 
-One Fellow other than the lead reads the proposal and renders a decision:
-approve, approve-with-revisions, or reject. A short written rationale is
-required for any non-approve decision.
+Per Chapter 6, the reviewer returns one of four dispositions:
 
-In v1 we collapse "approve-with-revisions" to "approve" with the
-revisions captured in the decision body. The lead Fellow reads the
-revisions during research.
+  * **approve** — proceed to research
+  * **approve-with-revisions** — proceed; lead incorporates the
+    requested revisions during research
+  * **hold** — refine and resubmit; the lead redrafts the proposal
+    against specific guidance before the proposal is re-reviewed
+  * **reject** — terminate the project
+
+State transitions:
+  approve / approve-with-revisions -> PROPOSAL_REVIEWED
+  hold                              -> PROPOSAL_HELD (await revise_proposal)
+  reject                            -> REJECTED
 """
 
 from __future__ import annotations
@@ -51,7 +57,8 @@ proposal text appears below. Your job is to render a fast, honest verdict.
 Reply with markdown, structured as the following sections, in this exact
 order, each as a level-2 heading:
 
-1. `## Recommendation` — one of: `approve`, `approve-with-revisions`, `reject`
+1. `## Recommendation` — one of: `approve`, `approve-with-revisions`,
+   `hold`, `reject`
 2. `## Confidence` — one of: `confident`, `moderate`, `low`
 3. `## Rationale` — 2-6 paragraphs. Be specific. If you are recommending
    anything other than approve, you must say exactly what is wrong and what
@@ -59,6 +66,13 @@ order, each as a level-2 heading:
    concerns or suggestions.
 4. `## Revisions requested` — present only when recommendation is
    `approve-with-revisions`. A numbered list of specific changes.
+5. `## Hold guidance` — present only when recommendation is `hold`.
+   A numbered list of changes the lead must make before resubmitting
+   the proposal for re-review. Use `hold` (not `reject`) when the
+   research question is worth pursuing but the proposal as written
+   lacks something specific — a missing comparison, an unclear
+   methodology, a scope that needs sharpening — that requires more
+   than scope tweaks the lead can absorb mid-research.
 
 # Constraints
 
@@ -115,7 +129,7 @@ def _parse_recommendation(markdown: str) -> str:
     # Take the first non-empty line and normalize.
     first = next((ln.strip() for ln in body.splitlines() if ln.strip()), "")
     first = first.strip("`*_ ")
-    if first in {"approve", "approve-with-revisions", "reject"}:
+    if first in {"approve", "approve-with-revisions", "hold", "reject"}:
         return first
     raise RuntimeError(f"Unrecognized recommendation: {first!r}")
 
@@ -164,7 +178,12 @@ def run(project_id: str) -> None:
     review_path = paths.PROPOSALS / project_id / f"review-by-{reviewer.id}.md"
     atomic_write(review_path, review_md.rstrip() + "\n")
 
-    target_state = State.PROPOSAL_REVIEWED if recommendation != "reject" else State.REJECTED
+    if recommendation == "reject":
+        target_state = State.REJECTED
+    elif recommendation == "hold":
+        target_state = State.PROPOSAL_HELD
+    else:  # approve, approve-with-revisions
+        target_state = State.PROPOSAL_REVIEWED
 
     decision = decisions.Decision(
         kind="proposal_review",

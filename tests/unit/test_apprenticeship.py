@@ -90,6 +90,7 @@ def test_advisor_review_transitions_to_revise_or_peer() -> None:
         State.REVISING,
         State.PEER_REVIEWING,
         State.REJECTED,
+        State.ABANDONED,
     }
 
 

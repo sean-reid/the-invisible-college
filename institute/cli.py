@@ -773,6 +773,45 @@ def terminate(fellow: str, kind: str, reason: str) -> None:
 
 
 # ---------------------------------------------------------------------------
+# abandon: end a project with an honest lesson preserved
+# ---------------------------------------------------------------------------
+
+
+@main.command()
+@click.argument("project_id")
+@click.option(
+    "--reason",
+    type=str,
+    required=True,
+    help="One-line reason for the abandonment. Stored in the decision record.",
+)
+@click.option(
+    "--lesson",
+    type=str,
+    required=True,
+    help=(
+        "Multi-line honest lesson: what was tried, why continuing was wrong. "
+        "Required per Chapter 6 - 'accumulated work is preserved; "
+        "abandonment is logged honestly.'"
+    ),
+)
+@click.option(
+    "--actor",
+    type=str,
+    default=None,
+    help="Fellow id or 'founder' driving the abandonment. Defaults to the lead.",
+)
+def abandon(project_id: str, reason: str, lesson: str, actor: str | None) -> None:
+    """Mark a project as abandoned. Records an honest lesson under
+    archive/abandonments/<project>.md. All accumulated work remains
+    in the archive."""
+    _check_kill_switch()
+    from institute.workflows import abandon as abandon_workflow
+
+    abandon_workflow.run(project_id, reason=reason, lesson=lesson, actor=actor)
+
+
+# ---------------------------------------------------------------------------
 # memory: inspect or backfill a Fellow's episodic memory
 # ---------------------------------------------------------------------------
 
@@ -996,6 +1035,7 @@ def propose(
 _STATE_TO_WORKFLOW: dict[str, str] = {
     "proposed": "review_proposal",
     "proposal_reviewed": "research",
+    "proposal_held": "revise_proposal",
     "researching": "research",
     "drafted": "peer_review",
     "awaiting_advisor_review": "advisor_review",
@@ -1041,7 +1081,7 @@ def _pick_in_flight_project(project: str | None) -> sqlite3.Row | None:
             ).fetchone()
         return conn.execute(
             "SELECT id, state FROM projects "
-            "WHERE state NOT IN ('published', 'rejected') "
+            "WHERE state NOT IN ('published', 'rejected', 'abandoned') "
             "ORDER BY updated_at ASC LIMIT 1"
         ).fetchone()
 
@@ -1080,6 +1120,8 @@ def _dispatch_step(project_id: str, state: str) -> None:
     # Lazy imports so the CLI starts quickly when not running a workflow.
     if workflow_name == "review_proposal":
         from institute.workflows import review_proposal as wf
+    elif workflow_name == "revise_proposal":
+        from institute.workflows import revise_proposal as wf
     elif workflow_name == "research":
         from institute.workflows import research as wf
     elif workflow_name == "peer_review":
