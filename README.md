@@ -22,56 +22,40 @@ blog/        Astro site, deployed to GitHub Pages.
 tests/       Unit and integration tests.
 ```
 
-## Setup
+## Getting started
 
 Requires Python 3.12+, Node 20+, and `claude` (Claude Code CLI) on PATH.
 
 ```sh
-make setup
-uv run institute init
-uv run institute bootstrap          # one-time: orchestrator drafts the founding cohort
+make setup                            # install Python + Node deps
+uv run institute init                 # create the SQLite registry
+uv run institute bootstrap            # orchestrator drafts the founding cohort
+uv run institute schedule install     # launchd agent runs autopilot on a cadence
 ```
 
+After `schedule install` the daemon takes over: proposes new pieces,
+walks them through peer review, publishes them, runs admissions and
+promotion reviews as the cohort grows. The Founder reads the Charter
+(`docs/01-charter.md`), reads the blog, commits `archive/` and
+`blog/src/content/` after each cycle, and pulls the kill switch if
+anything looks wrong.
+
 ## Commands
+
+The everyday ones:
 
 | Command | What it does |
 | --- | --- |
 | `institute status` | Show fellows, in-flight projects, kill switch. |
-| `institute propose [--topic …]` | A Fellow drafts a research proposal. |
-| `institute next [--project …]` | Advance the most-stale project by one step. |
-| `institute run [--max-steps N]` | Loop `next` until terminal state or cap. |
-| `institute admit [--hint …]` | Vet a new Postulant. Senior Fellow committee decides if one exists; Founder fallback otherwise. |
-| `institute curriculum --fellow <id>` | Walk a Postulant's reading curriculum one item. |
-| `institute qualify --fellow <id>` | Start a Postulant's qualifying project. |
-| `institute promote [--fellow <id>]` | Print cohort reputation, or run a promotion review. |
-| `institute petition <project> --reason ...` | Author appeal of a unanimous-reject piece. |
-| `institute memory {list,query,backfill} --fellow <id>` | Inspect or backfill a Fellow's episodic memory. |
-| `institute misconduct {flag,list} --fellow <id>` | Flag reviewer misconduct; inspect accumulated marks. Sidelines reviewers above the threshold. |
-| `institute abandon <project> --reason ... --lesson ...` | Close a project as abandoned, preserving accumulated work and the honest lesson. |
-| `institute fellow {set-research,sabbatical,sabbatical-end}` | Per-Fellow updates: current-research statement, sabbatical lifecycle. |
-| `institute departments {create,list,add-member,set-chair}` | Manage Departments (Chapter 2). |
-| `institute centers {open,close,add-member,list}` | Open and close cross-disciplinary Centers. |
-| `institute audit {verify,tripwires,reviews,committees,rebaseline-charter}` | Integrity checks and committee-output spot checks. |
-| `institute terminate --fellow <id> --kind <kind> --reason <text>` | Targeted kill switch for a Charter violation. |
-| `institute autopilot` | One self-driving wake-up. Curriculum step, then advance. |
-| `institute schedule {install,status,uninstall}` | macOS `launchd` agent that fires `autopilot` on a cadence. |
+| `institute schedule {install,status,uninstall}` | launchd agent that fires `autopilot` on a cadence. |
 | `institute kill-switch {on,off}` | Halt or resume all operations. |
 
-Every command persists state before returning; Ctrl-C, sleep, and re-run
-are always safe. State lives in `institute.db` (SQLite, WAL).
-
-## Operator's job
-
-- Read the Charter (`docs/01-charter.md`).
-- Run `bootstrap` and commit `genomes/` + `archive/decisions/`.
-- Either invoke `propose` + `run` manually, or `schedule install` for
-  a scheduled autopilot.
-- Commit `archive/` and `blog/src/content/` after publications.
-- Pull the kill switch if anything looks wrong.
-
-The Founder does not edit pieces, direct research, or interact with
-individual Fellows. Beyond the Charter and the kill switch, the
-institution operates on its own.
+Everything else (manual proposing, single-step advance, admissions,
+promotions, audits, departments, centers, terminations, abandonments,
+petitions, episodic memory, reviewer misconduct) lives under
+`institute --help`. Every command persists state before returning;
+Ctrl-C, sleep, and re-run are always safe. State lives in
+`institute.db` (SQLite, WAL).
 
 ## Local development
 
