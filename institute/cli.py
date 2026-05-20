@@ -1396,9 +1396,53 @@ def next_cmd(project: str | None) -> None:
         _dispatch_step(row["id"], row["state"])
 
 
+def _guarded(label: str, fn) -> None:
+    """Run a pre-loop autopilot helper, swallowing Fellow CLI failures.
+
+    The pre-loop helpers (curriculum advance, qualifying-project
+    start, admit, idle-propose) each invoke Claude at least once.
+    Without a guard, a transient CLI failure on any of them kills the
+    whole wake-up before the step loop even gets a chance to run.
+    This helper catches the failure, records it as a `step_failure`
+    decision (project_id is None since these helpers are not bound
+    to a single project), and returns so the wake-up continues.
+    """
+    try:
+        fn()
+    except claude_runner.FellowInvocationError as exc:
+        console.print(
+            f"[yellow]Autopilot helper `{label}` failed: Fellow "
+            f"{exc.fellow_id} ({exc.step}) returned "
+            f"returncode={exc.returncode}. Skipping this helper for "
+            "this cycle; the next cycle will retry.[/yellow]"
+        )
+        _record_step_failure(
+            project_id=exc.project_id or label,
+            state=label,
+            fellow_id=exc.fellow_id,
+            step=exc.step,
+            returncode=exc.returncode,
+            stderr=exc.stderr,
+        )
+    except Exception as exc:
+        console.print(
+            f"[yellow]Autopilot helper `{label}` failed: "
+            f"{type(exc).__name__}: {exc}. Skipping this helper for "
+            "this cycle.[/yellow]"
+        )
+        _record_step_failure(
+            project_id=label,
+            state=label,
+            fellow_id="orchestrator",
+            step=label,
+            returncode=1,
+            stderr=f"{type(exc).__name__}: {exc}",
+        )
+
+
 def _record_step_failure(
     *,
-    project_id: str,
+    project_id: str | None,
     state: str,
     fellow_id: str,
     step: str,
@@ -1407,14 +1451,19 @@ def _record_step_failure(
 ) -> None:
     """Record a transient Fellow invocation failure as an institutional
     decision. The daemon retries on the next cycle; this row exists so
-    the record shows the attempt rather than silently skipping it."""
+    the record shows the attempt rather than silently skipping it.
+
+    `project_id` is None for pre-loop helper failures (curriculum
+    advance, idle-propose, etc.) that are not bound to a specific
+    project. For step-loop failures it's the project_id."""
     from datetime import UTC, datetime
 
     from institute import decisions
 
     now = datetime.now(UTC).isoformat(timespec="seconds")
+    where = f"project `{project_id}` (state: `{state}`)" if project_id else f"phase `{state}`"
     body_lines = [
-        f"**Project:** `{project_id}` (state: `{state}`)",
+        f"**Where:** {where}",
         f"**Fellow:** `{fellow_id}`",
         f"**Step:** `{step}`",
         f"**Returncode:** {returncode}",
@@ -1422,16 +1471,17 @@ def _record_step_failure(
         "",
         (
             "The Fellow's Claude invocation returned non-zero. The "
-            "autopilot loop caught the failure, recorded this row, and "
-            "skipped the project for the rest of the cycle. The next "
-            "cycle will retry the same step. No state was changed."
+            "autopilot caught the failure, recorded this row, and "
+            "moved on. The next cycle will retry the same step. No "
+            "project state was changed."
         ),
     ]
     if stderr:
         body_lines.extend(["", "## stderr (truncated)", "", "```", stderr, "```"])
+    title_suffix = f" on {project_id}" if project_id else f" ({state})"
     decision = decisions.Decision(
         kind="step_failure",
-        title=f"Step failure: {fellow_id} on {project_id}",
+        title=f"Step failure: {fellow_id}{title_suffix}",
         body="\n".join(body_lines),
         actors=["orchestrator", fellow_id],
         related_project=project_id,
@@ -1924,7 +1974,15 @@ def _advance_loop(
                 f"run cost: ${run_cost:.2f} of ${max_budget_usd:.2f}[/dim]"
             )
 
-            _maybe_trigger_promotion_review(row["id"], prev_state)
+            # The promotion-review hook also invokes Claude (panel
+            # votes), so a transient failure here would kill the loop.
+            # Guard it the same way as the pre-loop helpers.
+            _guarded(
+                "promotion-review",
+                lambda row_id=row["id"], prev=prev_state: _maybe_trigger_promotion_review(
+                    row_id, prev
+                ),
+            )
 
             if run_cost >= max_budget_usd:
                 console.print(
@@ -2626,18 +2684,18 @@ def _autopilot_locked(
         # advance one curriculum item before doing anything else. This makes
         # autopilot pace the Postulant's training without Founder prompting,
         # one item per wake-up.
-        _advance_one_curriculum_item()
+        _guarded("curriculum", _advance_one_curriculum_item)
 
         # Once curriculum is complete, the qualifying project is the next
         # apprenticeship step. Auto-start one for any Postulant who has
         # finished reading and does not yet have a qualifying project in
         # flight. The project then advances through the normal pipeline.
-        _maybe_start_qualifying_project()
+        _guarded("qualifying-start", _maybe_start_qualifying_project)
 
         # Periodically consider admitting a new Fellow. Only fires once a
         # Senior Fellow panel exists; until then the Founder runs admit
         # manually.
-        _maybe_trigger_admissions()
+        _guarded("admit", _maybe_trigger_admissions)
 
         if start_new_if_idle:
             from institute.state import TERMINAL_STATE_VALUES
@@ -2652,7 +2710,7 @@ def _autopilot_locked(
                 console.print("[dim]Idle. Proposing a new project...[/dim]")
                 from institute.workflows import propose as propose_workflow
 
-                propose_workflow.run(lead=None, topic=None)
+                _guarded("propose", lambda: propose_workflow.run(lead=None, topic=None))
 
     _advance_loop(
         max_budget_usd=max_budget_usd,
