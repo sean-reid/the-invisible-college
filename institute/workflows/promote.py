@@ -34,6 +34,7 @@ from institute import archive_index, claude_runner, db, decisions, parsing, path
 from institute import fellow as fellow_mod
 from institute.claude_runner import FellowTask
 from institute.fellow import Genome, Rank
+from institute.workflows import concern_review
 
 # A promotion review can end in one of three ways:
 #   - a Rank string  → the Fellow's rank changes
@@ -652,19 +653,48 @@ def _is_promotion(old: str, new: str) -> bool:
 # ---------------------------------------------------------------------------
 
 
-def run(fellow_id: str, *, auto: bool = False) -> str:
+def run(
+    fellow_id: str,
+    *,
+    auto: bool = False,
+    concern_grounds: str | None = None,
+    concern_sponsor: str | None = None,
+) -> str:
     """Top-level promote entry point.
 
     When `auto=True` and no Senior Fellow panel exists, the workflow
     exits without prompting (used by the autonomous run loop).
     Otherwise the Founder serves as committee.
 
-    Returns one of: "promoted", "demoted", "released", "held", "skipped".
+    Senior Fellow is a terminal rank not enrolled in calendar review.
+    Reviewing one requires `concern_grounds` (a peer-stated reason);
+    the review uses a restricted outcome set (`confirm`, `release`,
+    `sabbatical-suggested`) and skips the orchestrator's full-ladder
+    recommendation.
+
+    Returns one of: "promoted", "demoted", "released", "held",
+    "confirmed", "sabbatical-suggested", "skipped".
     """
     rep = reputation.load_fellow(fellow_id)
     if rep is None:
         console.print(f"[red]No active Fellow with id `{fellow_id}`.[/red]")
         return "skipped"
+
+    if rep.rank == "senior_fellow":
+        if not (concern_grounds and concern_grounds.strip()):
+            console.print(
+                "[yellow]Senior Fellow is a terminal rank; calendar review is "
+                "disabled by design. To review a specific Senior Fellow, "
+                'supply `--concern-grounds "..."` with the peer-stated '
+                "reason for the review.[/yellow]"
+            )
+            return "skipped"
+        return concern_review.run(
+            rep,
+            grounds=concern_grounds.strip(),
+            sponsor=concern_sponsor,
+            auto=auto,
+        )
 
     panel = _senior_panel(rep.fellow_id)
     payload = _orchestrator_recommend(rep)
@@ -730,7 +760,22 @@ def _finalize(
         # `_log_review_attempt` writes a hold-style row, so we count
         # holds AFTER recording this one. Held + counted == 2 means
         # we just landed a second consecutive hold; escalate.
+        #
+        # The auto-release gate is rank-conditional. For Senior Fellows
+        # — a terminal indefinite rank — the consecutive-holds count is
+        # a misread: there is no rank above for them to be promoted to,
+        # so "hold" is the only available outcome of every review, and
+        # escalating to release would punish them for the ladder's
+        # structural ceiling rather than for any failure. Senior Fellow
+        # concerns route through the peer-sponsored concern-review path
+        # instead; calendar holds for them never auto-release.
         _log_review_attempt(rep, payload, f"{label} held", actors, panel_votes)
+        if rep.rank == "senior_fellow":
+            console.print(
+                f"[dim]{label.capitalize()} held: rank unchanged at {rep.rank}. "
+                "Senior Fellow holds do not auto-release.[/dim]"
+            )
+            return "held"
         with db.connection() as conn:
             streak = reputation.consecutive_holds(conn, rep.fellow_id)
         if streak >= 2:

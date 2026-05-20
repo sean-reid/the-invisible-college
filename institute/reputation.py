@@ -373,7 +373,8 @@ def consecutive_holds(conn: sqlite3.Connection, fellow_id: str) -> int:
     rows = list(
         conn.execute(
             "SELECT action FROM audit_log "
-            "WHERE action IN ('promotion', 'promotion_review') "
+            "WHERE action IN ('promotion', 'promotion_review', "
+            "                 'senior_fellow_confirmed') "
             "  AND (',' || actor || ',') LIKE ? "
             "ORDER BY at DESC",
             (f"%,{fellow_id},%",),

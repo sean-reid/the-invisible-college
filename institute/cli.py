@@ -1223,12 +1223,42 @@ def qualify(fellow: str) -> None:
     default=None,
     help="Fellow id to consider for promotion. If omitted, prints the cohort reputation table and exits.",
 )
-def promote(fellow: str | None) -> None:
+@click.option(
+    "--concern-grounds",
+    type=str,
+    default=None,
+    help=(
+        "Stated grounds for reviewing a Senior Fellow. Required when --fellow names "
+        "a Senior Fellow: their rank is indefinite and calendar review is disabled, "
+        "so a review must be sponsored with concrete grounds."
+    ),
+)
+@click.option(
+    "--concern-sponsor",
+    type=str,
+    default=None,
+    help=(
+        "Fellow id of the peer sponsoring the concern review. Optional; "
+        "recorded in the decision so the institutional record shows who "
+        "initiated the review."
+    ),
+)
+def promote(
+    fellow: str | None,
+    concern_grounds: str | None,
+    concern_sponsor: str | None,
+) -> None:
     """Promotion review: orchestrator recommends, Tenure Committee or Founder decides.
 
     With `--fellow ID`: runs the full review. If at least one Senior
     Fellow exists, they vote as the Tenure Committee. Otherwise the
     Founder serves as committee and decides in the terminal.
+
+    Senior Fellow is a terminal rank with no calendar review. To review
+    a specific Senior Fellow, supply `--concern-grounds` (and optionally
+    `--concern-sponsor`); the review is peer-sponsored and its possible
+    outcomes are `confirm`, `release`, or `sabbatical-suggested` rather
+    than the full ladder.
 
     Without `--fellow`: prints the cohort reputation table for the
     Founder to read, then exits.
@@ -1267,7 +1297,11 @@ def promote(fellow: str | None) -> None:
 
     from institute.workflows import promote as promote_workflow
 
-    promote_workflow.run(fellow)
+    promote_workflow.run(
+        fellow,
+        concern_grounds=concern_grounds,
+        concern_sponsor=concern_sponsor,
+    )
 
 
 @main.command()
@@ -1489,7 +1523,13 @@ def _maybe_trigger_promotion_review(project_id: str, prev_state: str) -> None:
         return
 
     mode = "overdue" if past_reviews % 2 == 1 else "strong"
-    candidate = _pick_review_candidate(cohort, mode)
+    try:
+        candidate = _pick_review_candidate(cohort, mode)
+    except ValueError:
+        # All active Fellows are Senior Fellows, so no one is on the
+        # calendar review cadence. Senior Fellows are reviewed only
+        # via the peer-sponsored concern-review path.
+        return
     console.rule(
         f"[bold]Tenure review ({mode}): {candidate.name}[/bold]",
         align="left",
@@ -1508,7 +1548,26 @@ def _activity_score(rep: object) -> float:
 
 
 def _pick_review_candidate(cohort: list, mode: str) -> object:
-    """Pick a Fellow to review under the requested selection mode."""
+    """Pick a Fellow to review under the requested selection mode.
+
+    Senior Fellows are excluded from the calendar-triggered candidate
+    pool. Senior Fellow is a terminal, indefinite rank; periodically
+    re-evaluating it would subvert the academic-freedom logic that
+    makes it indefinite in the first place. Concern about a specific
+    Senior Fellow's standing routes through the peer-sponsored
+    concern-review path (`institute promote --fellow X --concern-grounds
+    ...`), not through the calendar.
+    """
+    cohort = [
+        rep
+        for rep in cohort
+        if getattr(rep, "rank", None) != "senior_fellow"  # type: ignore[attr-defined]
+    ]
+    if not cohort:
+        # Nothing to do this cycle. Callers tolerate ValueError below
+        # via the cohort emptiness check upstream; if every active
+        # Fellow is a Senior Fellow we simply do not auto-review.
+        raise ValueError("no calendar-eligible candidates")
     if mode == "strong":
         return max(cohort, key=_activity_score)
 

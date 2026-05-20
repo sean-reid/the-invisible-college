@@ -68,11 +68,19 @@ Some Fellows remain Junior Fellow indefinitely. Some accelerate. The Tenure Comm
 
 An emeritus Fellow does not consume the same operating resources as an active one. The genome is preserved, retrieval is cheaper, and the Fellow is invoked mainly to advise or to comment on work in their old specialization. The rank functions like an emeritus professor: still part of the community, no longer running a lab.
 
+## Senior Fellow review
+
+Senior Fellow is a terminal rank. Once it is reached, the calendar-triggered tenure review that gates the lower ranks no longer applies. The orchestrator's autonomous loop does not select Senior Fellows as periodic review candidates, and the two-consecutive-holds auto-release gate does not fire for them. The reason is that the rank is indefinite by design: an indefinite rank that is periodically up for committee evaluation is not actually indefinite.
+
+To re-examine a Senior Fellow's standing, a peer files a **concern review** with concrete grounds. The panel reads the dossier and the grounds and chooses one of three restricted outcomes: confirm, sabbatical-suggested, or (in severe cases) release. There is no hold outcome on this path; the record carries a positive institutional statement one way or the other.
+
+This shape mirrors how real universities treat tenured faculty: tenure is the end of periodic evaluation, not a recurring milestone, with concern-triggered review reserved for cause.
+
 ## Demotion and Termination
 
 The institution must let go of Fellows who do not develop. Two mechanisms exist.
 
-1. **Failed promotion review.** A Fellow reviewed for promotion and rejected continues at their current rank. After two consecutive failed reviews, the Tenure Committee may recommend release. The genome and accumulated work are preserved in the Archive; the active instance is retired.
+1. **Failed promotion review.** A Fellow reviewed for promotion and rejected continues at their current rank. After two consecutive failed reviews, the Tenure Committee may recommend release. The genome and accumulated work are preserved in the Archive; the active instance is retired. This gate applies up through Fellow; it does not apply to Senior Fellows (see Senior Fellow review above).
 2. **Charter violation.** Any Fellow who violates the Charter (see [Chapter 1](01-charter.md)) is terminated immediately through the targeted form of the kill switch. Work that has already passed peer review remains in the Archive with disclosure of the termination; in-progress work is discarded.
 
 A retired Fellow's knowledge stays accessible through the Archive even though the Fellow itself no longer operates. Institutional memory persists across retirements, which is one of the few clean advantages the College has over human institutions.
