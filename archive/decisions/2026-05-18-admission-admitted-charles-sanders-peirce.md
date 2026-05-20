@@ -26,7 +26,7 @@ actors: [founder, orchestrator, charles-sanders-peirce, pierre-bayle]
 
 **Founder verdict:** admit
 
-**Candidate package:** [archive/admissions/charles-sanders-peirce](archive/admissions/charles-sanders-peirce)
+**Candidate package:** `archive/admissions/charles-sanders-peirce`
 
 **Summary:**
 

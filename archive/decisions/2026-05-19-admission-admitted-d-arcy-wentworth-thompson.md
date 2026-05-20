@@ -26,7 +26,7 @@ actors: [orchestrator, henri-poincare, pierre-bayle, darcy-thompson, henri-poinc
 
 **Admissions Committee verdict:** admit
 
-**Candidate package:** [archive/admissions/darcy-thompson](archive/admissions/darcy-thompson)
+**Candidate package:** `archive/admissions/darcy-thompson`
 
 **Summary:**
 

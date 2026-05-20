@@ -929,7 +929,7 @@ def _format_decision_body(
             "",
             f"**{verdict_actor} verdict:** {'admit' if admitted else 'reject'}",
             "",
-            f"**Candidate package:** [{pkg.relative_to(paths.ROOT)}]({pkg.relative_to(paths.ROOT)})",
+            f"**Candidate package:** `{pkg.relative_to(paths.ROOT)}`",
         ]
     )
     if evaluation.get("summary"):

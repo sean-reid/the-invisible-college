@@ -24,7 +24,7 @@ actors: [founder, orchestrator, theophrastus]
 
 **Founder verdict:** reject
 
-**Candidate package:** [archive/admissions/theophrastus](archive/admissions/theophrastus)
+**Candidate package:** `archive/admissions/theophrastus`
 
 **Summary:**
 

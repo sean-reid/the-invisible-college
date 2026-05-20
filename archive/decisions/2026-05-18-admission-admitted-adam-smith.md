@@ -26,7 +26,7 @@ actors: [founder, orchestrator, adam-smith, pierre-bayle]
 
 **Founder verdict:** admit
 
-**Candidate package:** [archive/admissions/adam-smith](archive/admissions/adam-smith)
+**Candidate package:** `archive/admissions/adam-smith`
 
 **Summary:**
 

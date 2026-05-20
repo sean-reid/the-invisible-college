@@ -22,7 +22,7 @@ actors: [founder, orchestrator, ibn-al-haytham]
 
 **Founder verdict:** admit
 
-**Candidate package:** [archive/admissions/ibn-al-haytham](archive/admissions/ibn-al-haytham)
+**Candidate package:** `archive/admissions/ibn-al-haytham`
 
 **Summary:**
 
