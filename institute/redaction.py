@@ -109,10 +109,12 @@ _PATTERNS: list[tuple[re.Pattern[str], str, str]] = [
         _COST_MARKER,
         "tilde-dollar",
     ),
-    # "USD $X" / "USD $X-$Y"
+    # "USD $X" / "USD $X-$Y" (the dash class admits both ASCII hyphen
+    # and the en-dash U+2013 that markdown editors emit for ranges).
     (
         re.compile(
-            r"\bUSD\s+\$\s*\d[\d,._]*(?:\s*[–-]\s*\$?\s*\d[\d,._]*)?" + _NOT_LATEX,
+            r"\bUSD\s+\$\s*\d[\d,._]*(?:\s*[–-]\s*\$?\s*\d[\d,._]*)?"  # noqa: RUF001
+            + _NOT_LATEX,
             re.IGNORECASE,
         ),
         _COST_MARKER,

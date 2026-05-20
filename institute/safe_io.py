@@ -37,7 +37,7 @@ def _normalize_punctuation(text: str) -> str:
     hyphen. Surrounding whitespace is preserved as-is; downstream
     rendering collapses runs of whitespace anyway. En-dashes (U+2013)
     are kept because they carry legitimate range semantics (e.g.,
-    `2–3 days`).
+    `2-3 days` written with an en-dash).
     """
     return text.replace("—", "-")
 

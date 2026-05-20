@@ -89,6 +89,7 @@ def gc_terminal_projects() -> int:
     of removed directories.
     """
     import shutil
+
     from institute import db, state
 
     placeholders = ",".join("?" for _ in state.TERMINAL_STATE_VALUES)
