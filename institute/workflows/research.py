@@ -360,6 +360,16 @@ def run(project_id: str) -> None:
     if abstract:
         _atomic_write(abstract_path, abstract + "\n")
 
+    # Sweep any code or small-data artifacts the Fellow wrote in their
+    # workspace into archive/code/<project_id>/ before the workspace
+    # gets cleaned up. A paper that says "see the attached script" must
+    # actually have an attached script for the published claim to hold.
+    from institute import code_artifacts
+
+    swept = code_artifacts.sweep_workspace(workspace=workspace, project_id=project_id)
+    if swept:
+        console.print(f"[green]Archived {len(swept)} code/data artifact(s).[/green]")
+
     new_title = _extract_draft_title(draft_md) or proj["title"]
 
     decision = decisions.Decision(

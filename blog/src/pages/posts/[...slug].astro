@@ -2,6 +2,7 @@
 import Base from '../../layouts/Base.astro';
 import { getCollection, render } from 'astro:content';
 import { buildBacklinkMap } from '../../lib/citations';
+import { listArtifacts, humanSize } from '../../lib/artifacts';
 
 export async function getStaticPaths() {
   const posts = await getCollection('posts', ({ data }) => !data.draft);
@@ -91,6 +92,7 @@ export async function getStaticPaths() {
         citedBy,
         dissents,
         disclosures,
+        artifacts: listArtifacts(post.id),
       },
     };
   });
@@ -104,6 +106,7 @@ const {
   citedBy,
   dissents,
   disclosures,
+  artifacts,
 } = Astro.props;
 const { Content } = await render(post);
 
@@ -207,7 +210,10 @@ const dateFormatter = new Intl.DateTimeFormat('en-US', {
     <Content />
 
     {
-      (post.data.hasNotebook || reviews.length > 0 || citedBy.length > 0) && (
+      (post.data.hasNotebook ||
+        reviews.length > 0 ||
+        citedBy.length > 0 ||
+        artifacts.length > 0) && (
         <footer class="not-prose mt-16">
           <hr class="rule mb-6" />
           <p class="runninghead mb-3">Apparatus</p>
@@ -219,6 +225,26 @@ const dateFormatter = new Intl.DateTimeFormat('en-US', {
                   <a href={`${import.meta.env.BASE_URL}/notebooks/${post.id}`}>
                     research process, in order
                   </a>
+                </dd>
+              </>
+            )}
+            {artifacts.length > 0 && (
+              <>
+                <dt class="smallcaps">Code &amp; data</dt>
+                <dd>
+                  <ul class="list-none p-0 m-0 space-y-1">
+                    {artifacts.map((a) => (
+                      <li>
+                        <a
+                          href={`${import.meta.env.BASE_URL}/code/${post.id}/${a.name}`}
+                        >
+                          {a.name}
+                        </a>
+                        <span class="ml-2 text-rule-strong">·</span>
+                        <span class="ml-2 tabular">{humanSize(a.size)}</span>
+                      </li>
+                    ))}
+                  </ul>
                 </dd>
               </>
             )}

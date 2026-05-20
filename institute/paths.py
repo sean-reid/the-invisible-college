@@ -41,12 +41,15 @@ ADMISSIONS = ARCHIVE / "admissions"
 CURRICULUM = ARCHIVE / "curriculum"
 ABANDONMENTS = ARCHIVE / "abandonments"
 ONBOARDING = ARCHIVE / "onboarding"
+CODE = ARCHIVE / "code"
 
 BLOG = ROOT / "blog"
 BLOG_CONTENT = BLOG / "src" / "content"
 BLOG_POSTS = BLOG_CONTENT / "posts"
 BLOG_NOTEBOOKS = BLOG_CONTENT / "notebooks"
 BLOG_REVIEWS = BLOG_CONTENT / "reviews"
+BLOG_PUBLIC = BLOG / "public"
+BLOG_CODE = BLOG_PUBLIC / "code"
 
 DB_PATH = ROOT / "institute.db"
 AUDIT_LOG = ROOT / "institute-audit.log"
@@ -69,8 +72,10 @@ def ensure_runtime_dirs() -> None:
         OPEN_PROBLEMS,
         ABANDONMENTS,
         ONBOARDING,
+        CODE,
         BLOG_POSTS,
         BLOG_NOTEBOOKS,
         BLOG_REVIEWS,
+        BLOG_CODE,
     ]:
         path.mkdir(parents=True, exist_ok=True)

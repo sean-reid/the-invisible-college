@@ -307,6 +307,15 @@ def run(project_id: str) -> None:
         combined = existing + "\n\n---\n\n" + addendum.rstrip() + "\n"
         _atomic_write(notebook_path, combined)
 
+    # Re-sweep code/data artifacts from the revise workspace so any
+    # updated scripts (or new ones introduced during this revision
+    # round) replace the prior copies under archive/code/<project>/.
+    from institute import code_artifacts
+
+    swept = code_artifacts.sweep_workspace(workspace=workspace, project_id=project_id)
+    if swept:
+        console.print(f"[green]Re-archived {len(swept)} code/data artifact(s).[/green]")
+
     episodic.safe_ingest(
         fellow_id=lead.id,
         kind="revision",

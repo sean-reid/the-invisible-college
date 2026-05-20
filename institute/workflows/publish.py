@@ -27,7 +27,16 @@ from typing import Any
 
 from rich.console import Console
 
-from institute import collaborators, db, decisions, editorial_followups, episodic, paths, state
+from institute import (
+    code_artifacts,
+    collaborators,
+    db,
+    decisions,
+    editorial_followups,
+    episodic,
+    paths,
+    state,
+)
 from institute import fellow as fellow_mod
 from institute.state import State
 
@@ -297,6 +306,11 @@ def run(project_id: str) -> None:
     _atomic_write(publication_archive_path, publication_md)
     _atomic_write(publication_blog_path, publication_md)
 
+    # Mirror any code/data artifacts the research and revise steps
+    # archived into the blog's public/ tree so the static site can
+    # serve them alongside the post.
+    mirrored_artifacts = code_artifacts.mirror_to_blog(project_id)
+
     if notebook_md is not None:
         nb_text = _notebook_markdown(
             title=title,
@@ -419,6 +433,11 @@ def run(project_id: str) -> None:
             f"[green]Follow-ups editor:[/green] {editorial_result.editor.name} "
             f"(promoted {len(editorial_result.promoted)}, "
             f"discarded {len(editorial_result.discarded)})"
+        )
+    if mirrored_artifacts:
+        console.print(
+            f"[green]Code/data artifacts:[/green] {len(mirrored_artifacts)} "
+            f"file(s) at blog/public/code/{slug}/"
         )
     if has_dissent:
         console.print("[yellow]Includes dissenting review(s).[/yellow]")
