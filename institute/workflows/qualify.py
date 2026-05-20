@@ -134,10 +134,16 @@ def run(postulant_id: str) -> None:
             f"{postulant_id} has no advisor. Assign one before starting a qualifying project."
         )
 
-    # Refuse if a qualifying project is already in flight (or completed).
+    # Refuse if a qualifying project is already in flight or has
+    # successfully completed. A SHELVED prior attempt does NOT block
+    # a new qualifying project: shelving is the institutional graceful
+    # outcome that explicitly preserves the Postulant's right to try
+    # again with a different topic.
     with db.connection() as conn:
         existing = conn.execute(
-            "SELECT id, state FROM projects WHERE lead_fellow_id = ? AND kind = 'qualifying'",
+            "SELECT id, state FROM projects "
+            "WHERE lead_fellow_id = ? AND kind = 'qualifying' "
+            "  AND state != 'shelved'",
             (postulant_id,),
         ).fetchone()
     if existing is not None:

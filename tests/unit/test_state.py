@@ -12,7 +12,7 @@ from institute.state import (
     is_terminal,
 )
 
-TERMINAL = (State.PUBLISHED, State.REJECTED, State.ABANDONED)
+TERMINAL = (State.PUBLISHED, State.REJECTED, State.ABANDONED, State.SHELVED)
 
 
 def test_terminal_states_have_no_next_action() -> None:

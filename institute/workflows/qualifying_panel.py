@@ -100,6 +100,72 @@ Reply with `Done.` when both files exist.
 """
 
 
+# The qualifying panel may only request `revise` a bounded number of
+# times before it must render a final verdict. After this many prior
+# `revise` rounds, the next convening switches to FINAL mode: panelists
+# can choose `ready` or `shelve` but not `revise`. The cap mirrors
+# real grad-school practice: a committee that has already asked for
+# revisions twice gives a definitive third-round verdict rather than
+# looping the candidate indefinitely.
+MAX_PANEL_REVISE_ROUNDS = 2
+
+
+PANEL_BRIEF_FINAL = """\
+You are serving as a panel evaluator on the qualifying project of a
+Postulant of the Invisible College. **This is the final convening of
+the qualifying panel for this project.** The panel has already
+requested revisions twice and the work has been revised each time.
+The College does not permit a third revision request; this round
+ends in either acceptance or shelving.
+
+# Inputs in your workspace
+
+- `draft.md`         the Postulant's current draft
+- `proposal.md`      the original proposal
+- `postulant.md`     identity card for the Postulant
+- `advisor-feedback.md`  the advisor's most recent feedback (context)
+- `role.md`          your role on this panel — same-department or
+                     outside-the-discipline
+
+Read the draft carefully. Read the proposal for scope. Read the
+advisor's feedback for what they already named. Then form your own
+view.
+
+# What you must produce
+
+Use the Write tool to create TWO files:
+
+1. `feedback.md` — 200 to 600 words. Targeted to your role. State
+   plainly whether the work is now ready or whether the project
+   should be shelved. The College's purpose is published research,
+   not endless development.
+
+2. `decision.json`:
+   ```
+   {{
+     "outcome": "<ready|shelve>",
+     "summary": "<2-3 sentences for the institutional record>"
+   }}
+   ```
+
+The two outcomes:
+
+- `ready`: the work is good enough to advance to peer review. Not
+  perfect, but the bar to clear is the same College bar as any other
+  publication. Shelving the project because of remediable concerns
+  would be the wrong call.
+- `shelve`: the qualifying project should be closed without
+  publication. The Postulant retains their rank and may propose a
+  new qualifying project; this record stands as institutional
+  history of what was attempted. Choose this when the work, after
+  two prior rounds of revision, is still not clearable.
+
+`revise` is not available on this convening.
+
+Reply with `Done.` when both files exist.
+"""
+
+
 def _pick_panel(
     conn: sqlite3.Connection,
     *,
@@ -173,12 +239,32 @@ def _read_cached_panel_feedback(path) -> tuple[str, str] | None:
         text = path.read_text(encoding="utf-8")
     except OSError:
         return None
-    outcome_match = re.search(r"\*\*Outcome:\*\*\s*`(ready|revise)`", text)
+    outcome_match = re.search(r"\*\*Outcome:\*\*\s*`(ready|revise|shelve)`", text)
     if not outcome_match:
         return None
     summary_match = re.search(r"## Summary\s*\n+(.+?)(?=\n## |\Z)", text, re.DOTALL)
     summary = summary_match.group(1).strip() if summary_match else ""
     return (outcome_match.group(1), summary)
+
+
+def count_prior_revise_rounds(conn: sqlite3.Connection, project_id: str) -> int:
+    """How many prior qualifying-panel convenings on this project
+    ended with the panel routing back to revision rather than
+    advancing to peer review or shelving.
+
+    Implementation: every prior qualifying_panel decision on this
+    project that did NOT result in advancement counts as one revise
+    round. We approximate by counting all prior qualifying_panel
+    audit rows. Once a panel says `ready` the project leaves the
+    AWAITING_QUALIFYING_PANEL → REVISING → AWAITING_QUALIFYING_PANEL
+    loop and never re-enters it (a clean panel decision routes to
+    PEER_REVIEWING). So the loop count equals the panel-row count.
+    """
+    row = conn.execute(
+        "SELECT COUNT(*) AS n FROM audit_log WHERE action = 'qualifying_panel' AND project_id = ?",
+        (project_id,),
+    ).fetchone()
+    return int(row["n"]) if row else 0
 
 
 def _run_evaluator(
@@ -190,8 +276,13 @@ def _run_evaluator(
     proposal_md: str,
     postulant_card: str,
     advisor_feedback_md: str,
+    is_final_round: bool,
 ) -> tuple[str, str, str]:
-    """Run one panelist. Returns (outcome, summary, feedback_md)."""
+    """Run one panelist. Returns (outcome, summary, feedback_md).
+
+    `is_final_round=True` switches the brief to FINAL mode: panelists
+    must choose `ready` or `shelve`; `revise` is rejected.
+    """
     workspace = workspaces.workspace_for(evaluator.id, f"panel-{project_id}-{role}")
     workspaces.stage_input(workspace, "draft.md", draft_md)
     workspaces.stage_input(workspace, "proposal.md", proposal_md)
@@ -202,12 +293,14 @@ def _run_evaluator(
         p = workspace / stale
         if p.exists():
             p.unlink()
+    brief = PANEL_BRIEF_FINAL if is_final_round else PANEL_BRIEF
+    step_suffix = f"{role}-final" if is_final_round else role
     claude_runner.invoke(
         FellowTask(
             genome=evaluator,
             project_id=project_id,
-            step=f"qualifying-panel:{role}",
-            brief=PANEL_BRIEF,
+            step=f"qualifying-panel:{step_suffix}",
+            brief=brief,
             workspace=workspace,
             extra_dirs=(paths.DOCS, paths.ARCHIVE),
         )
@@ -221,8 +314,23 @@ def _run_evaluator(
             f"panelist {evaluator.id} decision.json is not valid JSON: {decision_text!r}"
         ) from exc
     outcome = str(decision_payload.get("outcome", "")).strip().lower()
-    if outcome not in {"ready", "revise"}:
-        raise RuntimeError(f"panelist {evaluator.id} returned unrecognized outcome {outcome!r}")
+    if is_final_round:
+        valid = {"ready", "shelve"}
+    else:
+        valid = {"ready", "revise"}
+    if outcome not in valid:
+        # A final-round panelist who returns `revise` despite the brief
+        # is coerced to `shelve` (the conservative final-round default):
+        # the work did not earn a `ready` after two prior revisions and
+        # the institution will not loop further. Anything else is a
+        # malformed response.
+        if is_final_round and outcome == "revise":
+            outcome = "shelve"
+        else:
+            raise RuntimeError(
+                f"panelist {evaluator.id} returned unrecognized outcome "
+                f"{outcome!r} (valid: {sorted(valid)}, final_round={is_final_round})"
+            )
     summary = str(decision_payload.get("summary", "")).strip()
     return outcome, summary, feedback_md
 
@@ -257,6 +365,15 @@ def run(project_id: str) -> None:
         )
         advisor_feedback_path = (
             paths.REVIEWS / project_id / f"advisor-{postulant_row['advisor_id']}.md"
+        )
+        prior_revise_rounds = count_prior_revise_rounds(conn, project_id)
+
+    is_final_round = prior_revise_rounds >= MAX_PANEL_REVISE_ROUNDS
+    if is_final_round:
+        console.print(
+            f"[yellow]Qualifying panel: {prior_revise_rounds} prior revise "
+            f"round(s) (cap {MAX_PANEL_REVISE_ROUNDS}); this convening is final. "
+            "Panelists choose `ready` or `shelve`.[/yellow]"
         )
 
     draft_md = (paths.ROOT / proj["draft_path"]).read_text(encoding="utf-8")
@@ -320,6 +437,7 @@ def run(project_id: str) -> None:
             proposal_md=proposal_md,
             postulant_card=postulant_card,
             advisor_feedback_md=advisor_feedback_md,
+            is_final_round=is_final_round,
         )
         outcomes.append(outcome)
         panel_summaries.append((evaluator.id, role, summary))
@@ -331,17 +449,46 @@ def run(project_id: str) -> None:
         )
 
     ready_count = sum(1 for o in outcomes if o == "ready")
-    target = State.PEER_REVIEWING if ready_count >= 2 else State.REVISING
+    shelve_count = sum(1 for o in outcomes if o == "shelve")
+    if ready_count >= 2:
+        target = State.PEER_REVIEWING
+    elif is_final_round:
+        # Two prior revise rounds already; this convening did not
+        # produce a ready majority. Shelve the project. The
+        # Postulant retains rank and may propose a new qualifying
+        # project on the next cycle.
+        target = State.SHELVED
+    else:
+        target = State.REVISING
 
     decision_body_lines = [
         f"**Postulant:** {postulant_row['name']} (`{postulant_row['id']}`)",
         "",
-        f"**Panel outcomes:** {ready_count}/{len(outcomes)} ready",
+        f"**Panel outcomes:** {ready_count}/{len(outcomes)} ready"
+        + (f", {shelve_count}/{len(outcomes)} shelve" if shelve_count else ""),
+        "",
+        f"**Prior revise rounds:** {prior_revise_rounds} "
+        + ("(final round)" if is_final_round else f"(of {MAX_PANEL_REVISE_ROUNDS} allowed)"),
         "",
     ]
     for pid, role, summary in panel_summaries:
         decision_body_lines.append(f"- **{role}** (`{pid}`): {summary or '(no summary)'}")
-    decision_body_lines.extend(["", f"Project advances to `{target.value}`."])
+    if target == State.SHELVED:
+        decision_body_lines.extend(
+            [
+                "",
+                (
+                    f"Project shelved after {MAX_PANEL_REVISE_ROUNDS} prior "
+                    "rounds of panel-requested revision and a final "
+                    "convening that did not earn a majority `ready`. The "
+                    f"Postulant ({postulant_row['name']}) retains their rank "
+                    "and may propose a new qualifying project. The shelved "
+                    "draft and all panel feedback remain in the archive."
+                ),
+            ]
+        )
+    else:
+        decision_body_lines.extend(["", f"Project advances to `{target.value}`."])
     decision = decisions.Decision(
         kind="qualifying_panel",
         title=f"Qualifying-project panel: {proj['title']}",

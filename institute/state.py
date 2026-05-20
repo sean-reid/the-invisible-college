@@ -32,6 +32,11 @@ class State(StrEnum):
     PUBLISHED = "published"
     REJECTED = "rejected"
     ABANDONED = "abandoned"  # Fellow withdrew with honest lesson
+    # Qualifying project shelved after the panel exhausted its
+    # revision rounds without converging. Terminal for the project;
+    # the Postulant retains rank and may propose a new qualifying
+    # project.
+    SHELVED = "shelved"
 
 
 # The single next action that follows each state. Terminal states map to None.
@@ -51,6 +56,7 @@ NEXT_ACTION: dict[State, str | None] = {
     State.PUBLISHED: None,
     State.REJECTED: None,
     State.ABANDONED: None,
+    State.SHELVED: None,
 }
 
 
@@ -93,6 +99,7 @@ ALLOWED_TRANSITIONS: dict[State, set[State]] = {
         State.REVISING,
         State.REJECTED,
         State.ABANDONED,
+        State.SHELVED,
     },
     State.PEER_REVIEWING: {
         State.PEER_REVIEWING,
@@ -133,6 +140,7 @@ ALLOWED_TRANSITIONS: dict[State, set[State]] = {
     # unanimous. The petition workflow enforces the unanimity check.
     State.REJECTED: {State.EDITORIAL_REVIEW},
     State.ABANDONED: set(),
+    State.SHELVED: set(),
 }
 
 
@@ -158,6 +166,7 @@ TERMINAL_STATE_VALUES: tuple[str, ...] = (
     State.PUBLISHED.value,
     State.REJECTED.value,
     State.ABANDONED.value,
+    State.SHELVED.value,
 )
 
 
