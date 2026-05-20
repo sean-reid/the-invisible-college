@@ -104,32 +104,48 @@ def run(fellow_id: str) -> str:
 
     postulant = Genome.from_file(fellow_mod.genome_path(fellow_id))
     workspace = workspaces.workspace_for(fellow_id, f"curriculum-{item.id}")
-    workspaces.stage_input(workspace, "item.md", _render_item(item))
-    workspaces.stage_input(workspace, "curriculum.md", curriculum.render_markdown(items))
-    # Clear any prior response.md so the model's "Done." cannot refer
-    # to old content from a re-run.
-    stale = workspace / "response.md"
-    if stale.exists():
-        stale.unlink()
 
-    console.print(
-        f"[dim]Asking {postulant.name} to engage `{item.id}` "
-        f"({item.layer}). This will take a minute or two...[/dim]"
-    )
-    claude_runner.invoke(
-        FellowTask(
-            genome=postulant,
-            project_id=f"curriculum:{fellow_id}",
-            step=f"curriculum-response:{item.id}",
-            brief=RESPONSE_BRIEF,
-            workspace=workspace,
-            extra_dirs=(paths.DOCS, paths.ARCHIVE),
+    # Resumability: a prior invocation may have written a complete
+    # response.md before its Claude CLI session returned non-zero
+    # (the runner can raise on `is_error: true` even after Claude
+    # has flushed the output file to disk). If we see a substantive
+    # response file already in the workspace, skip the re-invoke and
+    # promote it. Otherwise clear it and run a fresh invocation.
+    existing = workspace / "response.md"
+    response_md: str | None = None
+    if existing.is_file():
+        text = existing.read_text(encoding="utf-8").strip()
+        if len(text) >= 300:
+            response_md = text
+            console.print(
+                f"[dim]Found a complete response.md from a prior attempt; "
+                f"promoting it without re-invoking {postulant.name}.[/dim]"
+            )
+
+    if response_md is None:
+        workspaces.stage_input(workspace, "item.md", _render_item(item))
+        workspaces.stage_input(workspace, "curriculum.md", curriculum.render_markdown(items))
+        if existing.exists():
+            existing.unlink()
+
+        console.print(
+            f"[dim]Asking {postulant.name} to engage `{item.id}` "
+            f"({item.layer}). This will take a minute or two...[/dim]"
         )
-    )
+        claude_runner.invoke(
+            FellowTask(
+                genome=postulant,
+                project_id=f"curriculum:{fellow_id}",
+                step=f"curriculum-response:{item.id}",
+                brief=RESPONSE_BRIEF,
+                workspace=workspace,
+                extra_dirs=(paths.DOCS, paths.ARCHIVE),
+            )
+        )
+        response_md = workspaces.require_output(workspace, "response.md", min_chars=300).strip()
 
     from institute.safe_io import atomic_write
 
-    response_md = workspaces.require_output(workspace, "response.md", min_chars=300).strip()
     final_path = curriculum.response_path(fellow_id, item.id)
     atomic_write(final_path, response_md.rstrip() + "\n")
 
