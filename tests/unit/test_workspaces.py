@@ -56,3 +56,14 @@ def test_optional_output_returns_text_when_present(fellows_root: Path) -> None:
     ws = workspaces.workspace_for("h", "x")
     (ws / "abstract.txt").write_text("A short summary.\n")
     assert workspaces.optional_output(ws, "abstract.txt") == "A short summary."
+
+
+def test_stage_input_creates_nested_parent_dir(fellows_root: Path) -> None:
+    """`stage_input` must mkdir the parent for nested filenames like
+    `contributions/<id>.md`. Otherwise the atomic temp-write fails
+    with FileNotFoundError."""
+    ws = workspaces.workspace_for("h", "x")
+    path = workspaces.stage_input(ws, "contributions/pierre-bayle.md", "hello")
+    assert path.is_file()
+    assert path.read_text() == "hello"
+    assert path.parent.name == "contributions"

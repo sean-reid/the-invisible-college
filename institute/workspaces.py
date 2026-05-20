@@ -31,8 +31,14 @@ def workspace_for(fellow_id: str, scope: str) -> Path:
 
 
 def stage_input(workspace: Path, filename: str, content: str) -> Path:
-    """Write `content` to `workspace/filename`. Atomic. Returns the path."""
+    """Write `content` to `workspace/filename`. Atomic. Returns the path.
+
+    `filename` may contain forward slashes for nested layouts (e.g.
+    `contributions/<collab-id>.md`). The parent directory is created
+    if missing so callers don't have to mkdir before every stage.
+    """
     path = workspace / filename
+    path.parent.mkdir(parents=True, exist_ok=True)
     tmp = path.with_suffix(path.suffix + ".tmp")
     tmp.write_text(content, encoding="utf-8")
     tmp.replace(path)

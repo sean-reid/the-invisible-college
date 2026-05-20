@@ -89,24 +89,39 @@ order, each as a level-2 heading:
 
 
 def _pick_reviewer(conn: sqlite3.Connection, project_id: str) -> Genome:
-    """Pick any active Fellow other than the lead."""
+    """Pick any active Fellow who is neither the lead nor a collaborator.
+
+    A Fellow who is co-authoring the proposal cannot review it without
+    a conflict of interest. Chapter 7's CoI rules apply at proposal
+    review as well as peer review; the previous implementation only
+    excluded the lead, so a collaborator could end up reviewing a
+    paper they were about to put their own name on.
+    """
     row = conn.execute("SELECT lead_fellow_id FROM projects WHERE id = ?", (project_id,)).fetchone()
     if row is None:
         raise SystemExit(f"No such project: {project_id}")
     lead = row["lead_fellow_id"]
 
-    # Prefer Fellows whose specialization includes "critic" or "review";
-    # otherwise pick any active Fellow other than the lead.
+    from institute import collaborators as collaborators_mod
+
+    collab_ids = {c.fellow_id for c in collaborators_mod.for_project(conn, project_id)}
+    excluded = collab_ids | {lead}
+
+    placeholders = ",".join("?" for _ in excluded)
     rows = list(
         conn.execute(
             "SELECT id, specialization FROM fellows "
-            "WHERE retired_at IS NULL AND id != ? "
+            "WHERE retired_at IS NULL "
+            f"AND id NOT IN ({placeholders}) "
             "ORDER BY rank DESC, name",
-            (lead,),
+            tuple(excluded),
         )
     )
     if not rows:
-        raise SystemExit("No Fellow available to review (only the lead exists).")
+        raise SystemExit(
+            "No Fellow available to review this proposal: every active "
+            "Fellow is either the lead or a collaborator."
+        )
 
     critics = [
         r
