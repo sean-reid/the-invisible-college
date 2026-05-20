@@ -7,6 +7,8 @@ src/content/posts/
 src/content/notebooks/
 src/content/reviews/
 src/content/decisions/
+src/content/preprints/
+src/content/departments/
 
 # Astro build output and caches.
 dist/

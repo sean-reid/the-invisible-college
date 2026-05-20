@@ -58,6 +58,7 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
         <nav class="meta footer-nav">
           <a href={`${import.meta.env.BASE_URL}/about`}>About</a>
           <a href={`${import.meta.env.BASE_URL}/fellows`}>Fellows</a>
+          <a href={`${import.meta.env.BASE_URL}/departments`}>Departments</a>
           <a href={`${import.meta.env.BASE_URL}/agenda`}>Agenda</a>
           <a href={`${import.meta.env.BASE_URL}/records`}>Records</a>
           <a href={`${import.meta.env.BASE_URL}/corrections`}>Corrections</a>
@@ -70,20 +71,19 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
 </html>
 
 <style>
-  /* Footer nav: 3x2 grid on narrow screens (avoids the orphaned wrap
-     when six items don't fit on one line); single bullet-separated
-     row on wider screens, matching the rest of the site's meta lines. */
+  /* Footer nav: centered flex-wrap on narrow screens so a tail row of
+     1-2 items reads as deliberate rather than orphaned; single
+     bullet-separated row on wider screens, matching the rest of the
+     site's meta lines. */
   .footer-nav {
-    display: grid;
-    grid-template-columns: repeat(3, max-content);
+    display: flex;
+    flex-wrap: wrap;
     justify-content: center;
     column-gap: 1.5rem;
     row-gap: 0.25rem;
   }
   @media (min-width: 640px) {
     .footer-nav {
-      display: flex;
-      justify-content: center;
       column-gap: 0;
     }
     .footer-nav > a + a::before {

@@ -1,0 +1,81 @@
+---
+import Base from '../../layouts/Base.astro';
+import { getCollection } from 'astro:content';
+import ArticleHeader from '../../components/ArticleHeader.astro';
+
+const departments = (await getCollection('departments')).sort((a, b) =>
+  a.data.name.localeCompare(b.data.name),
+);
+
+const fellows = await getCollection('fellows');
+const fellowById = new Map(fellows.map((f) => [f.id, f]));
+---
+
+<Base
+  title="Departments"
+  description="The five departments of the Invisible College: who chairs each, who belongs, and what each department studies."
+>
+  <article>
+    <ArticleHeader
+      eyebrow="Departments"
+      title="Departments"
+      size="section"
+      spacing="tight"
+      ruleMargin="mt-8"
+      showRule={false}
+    >
+      <p class="meta mt-4 max-w-prose">
+        Long-lived gatherings of Fellows whose work shares a methodology or subject.
+        Each department has a chair who convenes the seminar and signs off on
+        cross-departmental collaborations. Fellows may belong to more than one
+        department.
+      </p>
+      <hr class="rule mt-8" />
+    </ArticleHeader>
+
+    <section aria-labelledby="departments-list">
+      <h2 id="departments-list" class="runninghead mb-4">The five departments</h2>
+      <hr class="rule mb-6" />
+      <ol class="not-prose space-y-8 list-none pl-0">
+        {
+          departments.map((dept) => {
+            const chair = dept.data.chair
+              ? (fellowById.get(dept.data.chair) ?? null)
+              : null;
+            const memberCount = dept.data.members.length;
+            return (
+              <li>
+                <a
+                  href={`${import.meta.env.BASE_URL}/departments/${dept.id}`}
+                  class="block text-xl font-medium leading-tight no-underline hover:underline"
+                >
+                  {dept.data.name}
+                </a>
+                <p class="meta mt-1 flex flex-wrap items-baseline gap-x-2">
+                  <span>
+                    Chair:{' '}
+                    {chair ? (
+                      <a href={`${import.meta.env.BASE_URL}/fellows/${chair.id}`}>
+                        {chair.data.name}
+                      </a>
+                    ) : (
+                      <span class="italic text-ink-soft">vacant</span>
+                    )}
+                  </span>
+                  <span class="text-rule-strong">·</span>
+                  <span class="tabular">
+                    {memberCount === 0
+                      ? 'no members yet'
+                      : memberCount === 1
+                        ? '1 member'
+                        : `${memberCount} members`}
+                  </span>
+                </p>
+              </li>
+            );
+          })
+        }
+      </ol>
+    </section>
+  </article>
+</Base>

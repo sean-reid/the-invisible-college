@@ -11,6 +11,7 @@ export async function getStaticPaths() {
   const fellows = await getCollection('fellows');
   const allPosts = await getCollection('posts', ({ data }) => !data.draft);
   const allReviews = await getCollection('reviews');
+  const allDepartments = await getCollection('departments');
   const backlinks = buildBacklinkMap(allPosts);
   // Map post slug -> title so review listings can show the publication name
   // instead of an unintelligible random suffix.
@@ -73,6 +74,15 @@ export async function getStaticPaths() {
       .filter((other) => other.data.advisor_id === fellow.id)
       .sort((a, b) => a.data.name.localeCompare(b.data.name));
 
+    // Departments this fellow belongs to (membership), and the subset
+    // they chair. Both are sorted by name so the profile is stable.
+    const fellowDepartments = allDepartments
+      .filter((d) => d.data.members.includes(fellow.id))
+      .sort((a, b) => a.data.name.localeCompare(b.data.name));
+    const chairedIds = new Set(
+      allDepartments.filter((d) => d.data.chair === fellow.id).map((d) => d.id),
+    );
+
     return {
       params: { id: fellow.id },
       props: {
@@ -85,6 +95,8 @@ export async function getStaticPaths() {
         advisor,
         advisees,
         totalCitations,
+        fellowDepartments,
+        chairedIds,
       },
     };
   });
@@ -100,6 +112,8 @@ const {
   advisor,
   advisees,
   totalCitations,
+  fellowDepartments,
+  chairedIds,
 } = Astro.props;
 
 // Render the system_prompt_addendum as paragraphs split on blank lines.
@@ -118,6 +132,29 @@ const addendumParagraphs = fellow.data.system_prompt_addendum
       <dl class="meta mt-5 dl-grid">
         <dt class="smallcaps">Specialization</dt>
         <dd>{fellow.data.specialization}</dd>
+
+        {
+          fellowDepartments.length > 0 && (
+            <>
+              <dt class="smallcaps">
+                {fellowDepartments.length === 1 ? 'Department' : 'Departments'}
+              </dt>
+              <dd>
+                {fellowDepartments.map((d, i) => (
+                  <>
+                    {i > 0 && ', '}
+                    <a href={`${import.meta.env.BASE_URL}/departments/${d.id}`}>
+                      {d.data.name}
+                    </a>
+                    {chairedIds.has(d.id) && (
+                      <span class="italic text-ink-soft"> (chair)</span>
+                    )}
+                  </>
+                ))}
+              </dd>
+            </>
+          )
+        }
 
         <dt class="smallcaps">Rank</dt>
         <dd>{labelFor(rankLabel, fellow.data.rank)}</dd>

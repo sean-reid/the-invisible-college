@@ -2210,3 +2210,32 @@ def diff_classify(repo: Path, from_file: Path | None) -> None:
     # output is byte-stable across runs (handy for diffing in tests
     # and for the daemon's log).
     click.echo(json.dumps(result.as_dict(), sort_keys=True))
+
+
+# ---------------------------------------------------------------------------
+# departments: export the DB's department records as archive markdown
+# ---------------------------------------------------------------------------
+
+
+@main.group()
+def departments() -> None:
+    """Inspect and export the College's department structure."""
+
+
+@departments.command("export")
+def departments_export() -> None:
+    """Write one markdown file per open department to archive/departments/.
+
+    The orchestrator calls this whenever the department table changes
+    (today: the bootstrap migration). It is also safe to run by hand
+    — the operation is idempotent and overwrites only the files it
+    produces.
+    """
+    from institute import db
+    from institute import departments as departments_mod
+
+    with db.connection() as conn:
+        written = departments_mod.export_to_archive(conn)
+    click.echo(f"Exported {len(written)} department(s) to archive/departments/.")
+    for slug in written:
+        click.echo(f"  - {slug}")

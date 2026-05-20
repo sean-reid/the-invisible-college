@@ -1,0 +1,100 @@
+---
+import Base from '../../layouts/Base.astro';
+import { getCollection, render } from 'astro:content';
+import ArticleHeader from '../../components/ArticleHeader.astro';
+import { rankLabel, labelFor } from '../../lib/labels';
+
+type DepartmentEntry = Awaited<ReturnType<typeof getCollection<'departments'>>>[number];
+type FellowEntry = Awaited<ReturnType<typeof getCollection<'fellows'>>>[number];
+
+export async function getStaticPaths() {
+  const departments = await getCollection('departments');
+  const fellows = await getCollection('fellows');
+  const fellowById = new Map(fellows.map((f) => [f.id, f]));
+  return departments.map((dept) => {
+    const chair = dept.data.chair ? (fellowById.get(dept.data.chair) ?? null) : null;
+    const members = dept.data.members
+      .map((id) => fellowById.get(id))
+      .filter((f): f is FellowEntry => Boolean(f))
+      .sort((a, b) => a.data.name.localeCompare(b.data.name));
+    return {
+      params: { id: dept.id },
+      props: { entry: dept, chair, members },
+    };
+  });
+}
+
+interface Props {
+  entry: DepartmentEntry;
+  chair: FellowEntry | null;
+  members: FellowEntry[];
+}
+
+const { entry, chair, members } = Astro.props as Props;
+const { Content } = await render(entry);
+---
+
+<Base
+  title={entry.data.name}
+  description={`The ${entry.data.name} department of the Invisible College: chair, members, and scope of inquiry.`}
+>
+  <article>
+    <ArticleHeader eyebrow="Department" title={entry.data.name}>
+      <dl class="meta mt-5 dl-grid">
+        <dt class="smallcaps">Chair</dt>
+        <dd>
+          {
+            chair ? (
+              <a href={`${import.meta.env.BASE_URL}/fellows/${chair.id}`}>
+                {chair.data.name}
+              </a>
+            ) : (
+              <span class="italic text-ink-soft">vacant</span>
+            )
+          }
+        </dd>
+
+        <dt class="smallcaps">Members</dt>
+        <dd class="tabular">{members.length}</dd>
+      </dl>
+    </ArticleHeader>
+
+    <section class="prose mb-16">
+      <Content />
+    </section>
+
+    <section class="not-prose">
+      <h2 class="text-xl font-medium mb-4">Members</h2>
+      <hr class="rule mb-4" />
+      {
+        members.length === 0 ? (
+          <p class="meta italic">
+            No active members yet. This department anchors where future admissions in
+            this area will land.
+          </p>
+        ) : (
+          <ol class="space-y-5 list-none pl-0">
+            {members.map((fellow) => (
+              <li>
+                <a
+                  href={`${import.meta.env.BASE_URL}/fellows/${fellow.id}`}
+                  class="block font-medium text-base text-ink leading-snug no-underline hover:underline"
+                >
+                  {fellow.data.name}
+                  {chair && fellow.id === chair.id && (
+                    <span class="ml-2 meta italic text-ink-soft">(chair)</span>
+                  )}
+                </a>
+                <p class="meta mt-1 flex flex-wrap items-baseline gap-x-2">
+                  <span>{fellow.data.specialization}</span>
+                  <span class="mx-2 text-rule-strong">·</span>
+                  <span>{labelFor(rankLabel, fellow.data.rank)}</span>
+                </p>
+              </li>
+            ))}
+          </ol>
+        )
+      }
+    </section>
+  </article>
+</Base>

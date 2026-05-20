@@ -21,6 +21,9 @@ import sqlite3
 from dataclasses import dataclass
 from datetime import UTC, datetime
 
+from institute import paths
+from institute.safe_io import atomic_write
+
 
 @dataclass(frozen=True)
 class Department:
@@ -196,3 +199,66 @@ def close(conn: sqlite3.Connection, department_id: str) -> None:
         "UPDATE departments SET closed_at = ? WHERE id = ? AND closed_at IS NULL",
         (now, department_id),
     )
+
+
+def render_archive_markdown(
+    *,
+    department: Department,
+    members: list[str],
+) -> str:
+    """Render a department as the archive's canonical markdown form.
+
+    Pure function so tests can pin the shape without touching disk.
+    Frontmatter mirrors the rest of the archive (decisions, preprints):
+    YAML between `---` fences, one key per line, no nested structures
+    beyond a flat member list.
+
+    The body carries ONLY the human-written description so the blog
+    can render it cleanly with `<Content />`. Chair, members, and
+    cross-links are taken from frontmatter and rendered by the page
+    itself, which lets the Astro layer apply the GitHub Pages base
+    URL to every internal link.
+    """
+    lines = ["---", f"id: {department.id}", f"name: {_yaml_string(department.name)}"]
+    if department.chair_fellow_id:
+        lines.append(f"chair: {department.chair_fellow_id}")
+    lines.append(f"created_at: {department.created_at}")
+    if department.closed_at:
+        lines.append(f"closed_at: {department.closed_at}")
+    if members:
+        lines.append("members:")
+        for fid in members:
+            lines.append(f"  - {fid}")
+    else:
+        lines.append("members: []")
+    lines.append("---")
+    lines.append("")
+    lines.append(department.description.strip())
+    lines.append("")
+    return "\n".join(lines)
+
+
+def export_to_archive(conn: sqlite3.Connection) -> list[str]:
+    """Write one markdown file per open department to archive/departments/.
+
+    The file is the public face of the department: it gets synced into
+    the blog as a content collection. Closed departments are skipped;
+    their record stays in SQLite for audit but does not appear in the
+    institutional roster.
+
+    Returns the list of slugs written, in name order.
+    """
+    paths.DEPARTMENTS.mkdir(parents=True, exist_ok=True)
+    written: list[str] = []
+    for dept in list_all(conn):
+        members = member_ids(conn, dept.id)
+        body = render_archive_markdown(department=dept, members=members)
+        atomic_write(paths.DEPARTMENTS / f"{dept.id}.md", body)
+        written.append(dept.id)
+    return written
+
+
+def _yaml_string(value: str) -> str:
+    """Quote a value as a safe single-line YAML scalar."""
+    escaped = value.replace("\\", "\\\\").replace('"', '\\"').replace("\n", " ")
+    return f'"{escaped}"'

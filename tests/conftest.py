@@ -38,6 +38,7 @@ def isolated(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
     code_dir = archive / "code"
     reading_groups = archive / "reading-groups"
     preprints = archive / "preprints"
+    departments_dir = archive / "departments"
     blog = tmp_path / "blog"
     blog_content = blog / "src" / "content"
     blog_posts = blog_content / "posts"
@@ -66,6 +67,7 @@ def isolated(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
         code_dir,
         reading_groups,
         preprints,
+        departments_dir,
         blog_posts,
         blog_notebooks,
         blog_reviews,
@@ -92,6 +94,7 @@ def isolated(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
     monkeypatch.setattr(paths, "CODE", code_dir)
     monkeypatch.setattr(paths, "READING_GROUPS", reading_groups)
     monkeypatch.setattr(paths, "PREPRINTS", preprints)
+    monkeypatch.setattr(paths, "DEPARTMENTS", departments_dir)
     monkeypatch.setattr(paths, "BLOG", blog)
     monkeypatch.setattr(paths, "BLOG_CONTENT", blog_content)
     monkeypatch.setattr(paths, "BLOG_POSTS", blog_posts)

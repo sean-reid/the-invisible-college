@@ -169,6 +169,23 @@ const corrections = defineCollection({
   }),
 });
 
+// Departments (Chapter 2). One file per open department, synced from
+// archive/departments/ by scripts/sync-departments.mjs. Closed
+// departments stay in SQLite for audit but are not exported to the
+// archive, so the collection always represents the active partition.
+// The body of each file is the department's human-written description.
+const departments = defineCollection({
+  loader: glob({ pattern: '**/*.md', base: './src/content/departments' }),
+  schema: z.object({
+    id: z.string(),
+    name: z.string(),
+    chair: z.string().nullable().optional(),
+    created_at: z.coerce.date(),
+    closed_at: z.coerce.date().nullable().optional(),
+    members: z.array(z.string()).default([]),
+  }),
+});
+
 // Working preprints. Each entry is a single version of an in-flight
 // project; ids have the shape `<projectId>--v<N>`. Synced from
 // archive/preprints/<projectId>/v<N>.md by scripts/sync-preprints.mjs.
@@ -194,4 +211,5 @@ export const collections = {
   decisions,
   corrections,
   preprints,
+  departments,
 };
