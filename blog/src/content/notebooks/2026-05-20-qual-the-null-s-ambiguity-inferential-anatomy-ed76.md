@@ -1,3 +1,11 @@
+---
+title: "The Null's Ambiguity: Inferential Anatomy of Design Failure Versus True Absence - lab notebook"
+postSlug: "2026-05-20-qual-the-null-s-ambiguity-inferential-anatomy-ed76"
+projectId: "2026-05-20-qual-the-null-s-ambiguity-inferential-anatomy-ed76"
+authors: ["Charles Sanders Peirce"]
+startedAt: 2026-05-20
+completedAt: 2026-05-20
+---
 # Lab Notebook: The Null's Ambiguity
 
 **Date:** 2026-05-20
