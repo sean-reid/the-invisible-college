@@ -21,6 +21,10 @@
 #                        Set to a cloud-synced path (iCloud Drive, Dropbox)
 #                        for off-disk durability.
 #   IC_BACKUP_RETAIN     how many recent snapshots to keep. Default: 48
+#   IC_NTFY_TOPIC        ntfy.sh topic to publish a per-cycle outcome notification
+#                        to (https://ntfy.sh/<topic>). Empty/unset disables.
+#                        Treat as semi-secret; do not commit to the repo.
+#   IC_NTFY_SERVER       ntfy server base URL. Default: https://ntfy.sh
 
 set -euo pipefail
 
@@ -32,6 +36,16 @@ IC_AUTO_PUSH="${IC_AUTO_PUSH:-0}"
 IC_LOG_DIR="${IC_LOG_DIR:-$HOME/Library/Logs/invisible-college}"
 IC_BACKUP_DIR="${IC_BACKUP_DIR:-$HOME/Library/Application Support/invisible-college/backups}"
 IC_BACKUP_RETAIN="${IC_BACKUP_RETAIN:-48}"
+IC_NTFY_TOPIC="${IC_NTFY_TOPIC:-}"
+IC_NTFY_SERVER="${IC_NTFY_SERVER:-https://ntfy.sh}"
+
+# Cycle start timestamp, used to filter audit_log queries for "what
+# happened this cycle" and to label the ntfy notification.
+CYCLE_START_AT="$(date -u +%FT%TZ)"
+CYCLE_COMMIT_HEAD_BEFORE=""
+if [ -d "$IC_REPO/.git" ]; then
+    CYCLE_COMMIT_HEAD_BEFORE="$(git -C "$IC_REPO" rev-parse HEAD 2>/dev/null || echo '')"
+fi
 
 mkdir -p "$IC_LOG_DIR"
 LOG="$IC_LOG_DIR/autopilot.log"
@@ -160,4 +174,66 @@ if [ "$IC_AUTO_PUSH" = "1" ] && [ "$EXIT" = "0" ]; then
 fi
 
 echo "===== exit=$EXIT =====" >> "$LOG"
+
+# Optional ntfy.sh notification. Disabled when IC_NTFY_TOPIC is empty.
+# The topic is treated as a semi-secret: anyone with it can subscribe
+# to (and publish to) the notification stream, so we keep it
+# operator-local in the launchd plist and never commit it.
+if [ -n "$IC_NTFY_TOPIC" ]; then
+    # Count step_failure rows the autopilot recorded this cycle. The
+    # graceful-failure layer writes one row per swallowed Fellow error;
+    # this number is the most useful single signal of whether the
+    # cycle ran cleanly even though EXIT was 0.
+    STEP_FAILURES=0
+    if [ -f "$IC_REPO/institute.db" ]; then
+        STEP_FAILURES=$(sqlite3 "$IC_REPO/institute.db" \
+            "SELECT COUNT(*) FROM audit_log WHERE action='step_failure' AND at >= '$CYCLE_START_AT'" \
+            2>/dev/null || echo "0")
+    fi
+
+    # Did anything land on origin/main this cycle? Compare HEAD to the
+    # snapshot we took at script start.
+    CYCLE_COMMIT_HEAD_AFTER=""
+    if [ -d "$IC_REPO/.git" ]; then
+        CYCLE_COMMIT_HEAD_AFTER="$(git -C "$IC_REPO" rev-parse HEAD 2>/dev/null || echo '')"
+    fi
+    COMMITTED="no"
+    COMMIT_COUNT=0
+    if [ -n "$CYCLE_COMMIT_HEAD_BEFORE" ] && [ -n "$CYCLE_COMMIT_HEAD_AFTER" ] \
+        && [ "$CYCLE_COMMIT_HEAD_BEFORE" != "$CYCLE_COMMIT_HEAD_AFTER" ]; then
+        COMMITTED="yes"
+        COMMIT_COUNT=$(git -C "$IC_REPO" rev-list --count \
+            "$CYCLE_COMMIT_HEAD_BEFORE..$CYCLE_COMMIT_HEAD_AFTER" 2>/dev/null || echo "0")
+    fi
+
+    if [ "$EXIT" = "0" ] && [ "$STEP_FAILURES" = "0" ]; then
+        NTFY_TITLE="Invisible College: cycle ok"
+        NTFY_PRIORITY="3"
+        NTFY_TAGS="white_check_mark"
+    elif [ "$EXIT" = "0" ]; then
+        NTFY_TITLE="Invisible College: cycle ok with $STEP_FAILURES step failure(s)"
+        NTFY_PRIORITY="3"
+        NTFY_TAGS="warning"
+    else
+        NTFY_TITLE="Invisible College: cycle FAILED (exit=$EXIT)"
+        NTFY_PRIORITY="4"
+        NTFY_TAGS="rotating_light"
+    fi
+
+    NTFY_BODY=$(printf '%s\n%s\n%s\n%s\n' \
+        "Cycle started: $CYCLE_START_AT" \
+        "Exit code: $EXIT" \
+        "Commits this cycle: $COMMIT_COUNT (pushed: $COMMITTED)" \
+        "Step failures: $STEP_FAILURES")
+
+    curl -fsS \
+        -H "Title: $NTFY_TITLE" \
+        -H "Priority: $NTFY_PRIORITY" \
+        -H "Tags: $NTFY_TAGS" \
+        -d "$NTFY_BODY" \
+        "$IC_NTFY_SERVER/$IC_NTFY_TOPIC" \
+        >> "$LOG" 2>&1 \
+        || echo "[$(date -u +%FT%TZ)] ntfy notification failed (non-fatal)" >> "$LOG"
+fi
+
 exit "$EXIT"
