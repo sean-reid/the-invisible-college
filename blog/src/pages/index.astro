@@ -73,50 +73,43 @@ for (const post of posts) {
               <h3 class="smallcaps text-ink-soft mb-3">{group.label}</h3>
               <ol class="space-y-7 list-none pl-0">
                 {group.posts.map((post) => (
-                  <li class="grid grid-cols-[auto_1fr] gap-x-4 items-baseline">
-                    <span class="meta tabular tabular-nums w-8 text-right">
-                      {post.data.issueNumber
-                        ? String(post.data.issueNumber).padStart(2, '0')
-                        : ''}
-                    </span>
-                    <div>
-                      <a
-                        href={`${import.meta.env.BASE_URL}/posts/${post.id}`}
-                        class="block text-xl font-medium leading-tight no-underline hover:underline"
-                      >
-                        {post.data.title}
-                      </a>
-                      <p class="meta mt-1">
-                        <span class="tabular">
-                          {dateFormatter.format(post.data.publishedAt)}
-                        </span>
-                        <span class="mx-2 text-rule-strong">·</span>
-                        <span>
-                          {post.data.authors.map((name, i) => {
-                            const id = fellowByName.get(name);
-                            return (
-                              <>
-                                {i > 0 && ', '}
-                                {id ? (
-                                  <a
-                                    href={`${import.meta.env.BASE_URL}/fellows/${id}`}
-                                  >
-                                    {name}
-                                  </a>
-                                ) : (
-                                  name
-                                )}
-                              </>
-                            );
-                          })}
-                        </span>
+                  <li>
+                    <a
+                      href={`${import.meta.env.BASE_URL}/posts/${post.id}`}
+                      class="block text-xl font-medium leading-tight no-underline hover:underline"
+                    >
+                      {post.data.title}
+                    </a>
+                    <p class="meta mt-1">
+                      <span class="tabular">
+                        {dateFormatter.format(post.data.publishedAt)}
+                      </span>
+                      <span class="mx-2 text-rule-strong">·</span>
+                      <span>
+                        {post.data.authors.map((name, i) => {
+                          const id = fellowByName.get(name);
+                          return (
+                            <>
+                              {i > 0 && ', '}
+                              {id ? (
+                                <a
+                                  href={`${import.meta.env.BASE_URL}/fellows/${id}`}
+                                >
+                                  {name}
+                                </a>
+                              ) : (
+                                name
+                              )}
+                            </>
+                          );
+                        })}
+                      </span>
+                    </p>
+                    {post.data.description && (
+                      <p class="mt-2 text-ink-soft leading-relaxed">
+                        {post.data.description}
                       </p>
-                      {post.data.description && (
-                        <p class="mt-2 text-ink-soft leading-relaxed">
-                          {post.data.description}
-                        </p>
-                      )}
-                    </div>
+                    )}
                   </li>
                 ))}
               </ol>
