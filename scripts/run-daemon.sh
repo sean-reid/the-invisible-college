@@ -106,18 +106,19 @@ else
 fi
 
 if [ "$IC_AUTO_PUSH" = "1" ] && [ "$EXIT" = "0" ]; then
-    # Identify which files (if any) had unstaged modifications BEFORE
-    # this chain of daemon cycles started. Those are user edits and
-    # must be preserved. Files newly modified since are daemon output
-    # and should be committed even if a prior cycle left them behind.
+    # Identify which files (if any) had unstaged modifications OR were
+    # untracked-but-present BEFORE this chain of daemon cycles started.
+    # Those are user edits and must be preserved. Files newly modified
+    # or newly created since are daemon output and should be committed
+    # even if a prior cycle left them behind.
     #
-    # Untracked files (?? in porcelain) are always daemon output: the
-    # user is not expected to create new files in daemon paths. Only
-    # the unstaged-modification codes (M/A/R/C/D in column 2) are
-    # treated as potential user edits.
-    PRE_FILES=$(awk '/^.[MARCD]/ { print $2 }' "$PRE_STATUS_FILE" 2>/dev/null | sort -u)
+    # We include `?` (untracked) in addition to M/A/R/C/D so a file the
+    # operator hand-creates in a daemon path before the daemon starts
+    # is preserved across the auto-commit. Files only appearing in POST
+    # (not in PRE) are treated as daemon output.
+    PRE_FILES=$(awk '/^.[MARCD?]/ { print $2 }' "$PRE_STATUS_FILE" 2>/dev/null | sort -u)
     POST_FILES=$(git status --porcelain -- archive/ blog/src/content/ genomes/ 2>/dev/null \
-        | awk '/^.[MARCD]/ { print $2 }' | sort -u)
+        | awk '/^.[MARCD?]/ { print $2 }' | sort -u)
     USER_EDIT_FILES=$(comm -12 <(printf '%s\n' "$PRE_FILES") <(printf '%s\n' "$POST_FILES"))
 
     if [ -n "$USER_EDIT_FILES" ]; then
