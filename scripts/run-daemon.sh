@@ -36,6 +36,21 @@ IC_BACKUP_RETAIN="${IC_BACKUP_RETAIN:-48}"
 mkdir -p "$IC_LOG_DIR"
 LOG="$IC_LOG_DIR/autopilot.log"
 
+# Pre-cycle baseline of the daemon-managed paths' working-tree state.
+# Captured at the start of an uncommitted work chain so the auto-commit
+# step at the end can distinguish user edits (present before this chain
+# of cycles began) from daemon output (everything new since).
+#
+# Why persist across cycles: if a cycle exits with uncommitted work
+# still on disk — autopilot hit its cost cap mid-step, was killed by
+# the OS, or the operator pulled the plug — the next cycle should be
+# able to identify that uncommitted state as the prior daemon's work,
+# not as user edits. Reusing the baseline from the prior cycle gives
+# that signal without a separate sentinel: the baseline anchors to
+# "what the tree looked like when this daemon work chain started,"
+# regardless of how many cycles since.
+PRE_STATUS_FILE="$IC_REPO/.daemon-cycle.pre-status"
+
 # launchd starts with a near-empty PATH. We need `uv`, `claude`, and `git`
 # resolvable. Set PATH explicitly here rather than sourcing ~/.zshrc:
 # launchd runs this under bash, and .zshrc is full of zsh-only commands
@@ -50,6 +65,18 @@ cd "$IC_REPO"
     echo "===== $(date -u +%FT%TZ): autopilot wake-up ====="
     echo "budget=\$$IC_MAX_BUDGET, max-steps=$IC_MAX_STEPS, daily=\$$IC_DAILY_BUDGET_USD, auto-push=$IC_AUTO_PUSH"
 } >> "$LOG"
+
+# Capture the pre-cycle baseline ONLY if not already captured. A prior
+# cycle that didn't reach its auto-commit step left its baseline in
+# place; reusing it means this cycle's auto-commit can still tell
+# pre-existing edits apart from daemon-produced ones.
+if [ ! -f "$PRE_STATUS_FILE" ]; then
+    git status --porcelain -- archive/ blog/src/content/ genomes/ 2>/dev/null \
+        > "$PRE_STATUS_FILE" || true
+    echo "[$(date -u +%FT%TZ)] captured pre-cycle baseline" >> "$LOG"
+else
+    echo "[$(date -u +%FT%TZ)] reusing pre-cycle baseline from prior interrupted cycle" >> "$LOG"
+fi
 
 set +e
 uv run institute autopilot \
@@ -79,41 +106,56 @@ else
 fi
 
 if [ "$IC_AUTO_PUSH" = "1" ] && [ "$EXIT" = "0" ]; then
-    # Skip the auto-commit if there are user-edited tracked files under
-    # the paths the daemon writes — i.e., a file the user has modified
-    # in place but not committed yet. Otherwise the daemon would sweep
-    # up half-finished work in progress and ship it to origin.
+    # Identify which files (if any) had unstaged modifications BEFORE
+    # this chain of daemon cycles started. Those are user edits and
+    # must be preserved. Files newly modified since are daemon output
+    # and should be committed even if a prior cycle left them behind.
     #
-    # Untracked files (?? in porcelain output) do NOT count: those are
-    # the daemon's own fresh output we want to commit. Only the M/A/R/C/D
-    # codes in column 2 (unstaged side) indicate a tracked file edited
-    # in the working tree, which is the user-edit signal.
-    USER_EDITS=$(git status --porcelain -- archive/ blog/src/content/ genomes/ 2>/dev/null \
-        | awk '/^.[MARCD]/ { print }')
-    if [ -n "$USER_EDITS" ]; then
-        echo "[$(date -u +%FT%TZ)] user edits present under daemon paths; skipping auto-commit:" >> "$LOG"
-        echo "$USER_EDITS" >> "$LOG"
-    else
-        # Stage every artifact the daemon may have produced this wake-up.
-        # If something changed, commit and push. The push includes
-        # everything: publications, decision records, curriculum responses,
-        # advisor feedback, genome rank updates. The repo stays clean and
-        # the remote stays in sync.
+    # Untracked files (?? in porcelain) are always daemon output: the
+    # user is not expected to create new files in daemon paths. Only
+    # the unstaged-modification codes (M/A/R/C/D in column 2) are
+    # treated as potential user edits.
+    PRE_FILES=$(awk '/^.[MARCD]/ { print $2 }' "$PRE_STATUS_FILE" 2>/dev/null | sort -u)
+    POST_FILES=$(git status --porcelain -- archive/ blog/src/content/ genomes/ 2>/dev/null \
+        | awk '/^.[MARCD]/ { print $2 }' | sort -u)
+    USER_EDIT_FILES=$(comm -12 <(printf '%s\n' "$PRE_FILES") <(printf '%s\n' "$POST_FILES"))
+
+    if [ -n "$USER_EDIT_FILES" ]; then
+        echo "[$(date -u +%FT%TZ)] preserving pre-existing user edits:" >> "$LOG"
+        printf '%s\n' "$USER_EDIT_FILES" >> "$LOG"
+    fi
+
+    # Stage everything in daemon paths, then back out the user-edited
+    # files. Anything that remains staged is daemon output — files the
+    # daemon either created fresh this chain of cycles or modified
+    # from a state already committed at the time of the baseline.
+    git add -- archive/ blog/src/content/ genomes/ 2>/dev/null || true
+    if [ -n "$USER_EDIT_FILES" ]; then
+        while IFS= read -r f; do
+            [ -z "$f" ] && continue
+            git restore --staged -- "$f" 2>/dev/null || true
+        done <<< "$USER_EDIT_FILES"
+    fi
+
+    if ! git diff --staged --quiet; then
+        # Build a short summary of what changed for the commit message.
+        SUMMARY=$(git diff --staged --name-only \
+            | awk -F/ '{print $1"/"$2}' | sort -u | head -3 | tr '\n' ' ')
+        echo "[$(date -u +%FT%TZ)] daemon produced changes; committing + pushing" >> "$LOG"
         # `-c commit.gpgsign=false` disables signing for this commit even
         # if global git config has it enabled — the daemon runs without
         # a TTY and would otherwise block on gpg-agent's pinentry.
-        git add archive/ blog/src/content/ genomes/ 2>/dev/null || true
-        if ! git diff --staged --quiet; then
-            # Build a short summary of what changed for the commit message.
-            SUMMARY=$(git diff --staged --name-only \
-                | awk -F/ '{print $1"/"$2}' | sort -u | head -3 | tr '\n' ' ')
-            echo "[$(date -u +%FT%TZ)] daemon produced changes; committing + pushing" >> "$LOG"
-            git -c commit.gpgsign=false commit -m "Autopilot $(date -u +%FT%TZ): ${SUMMARY}" >> "$LOG" 2>&1 || true
-            git push origin main >> "$LOG" 2>&1 || true
-        else
-            echo "[$(date -u +%FT%TZ)] nothing changed this wake-up; no commit" >> "$LOG"
-        fi
+        git -c commit.gpgsign=false commit -m "Autopilot $(date -u +%FT%TZ): ${SUMMARY}" >> "$LOG" 2>&1 || true
+        git push origin main >> "$LOG" 2>&1 || true
+    else
+        echo "[$(date -u +%FT%TZ)] nothing changed this wake-up; no commit" >> "$LOG"
     fi
+
+    # Clear the baseline now that the auto-commit step has run. The
+    # next cycle will snapshot a fresh baseline from the current
+    # working tree (which still holds any preserved user edits, plus
+    # whatever the daemon and/or operator do between now and then).
+    rm -f "$PRE_STATUS_FILE"
 fi
 
 echo "===== exit=$EXIT =====" >> "$LOG"

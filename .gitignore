@@ -4,6 +4,7 @@ institute.db
 institute.db-shm
 institute.db-wal
 .autopilot.lock
+.daemon-cycle.pre-status
 *.log
 bootstrap-failed-output.txt
 archive/lab-notebooks/*/raw-research-output.txt
