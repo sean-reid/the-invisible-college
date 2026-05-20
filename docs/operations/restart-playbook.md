@@ -97,7 +97,7 @@ mechanism.
 
 ```sh
 ls -t "$IC_BACKUP_DIR"/institute-*.db | head
-cp <chosen-snapshot> /Users/seanreid/sandbox/the-invisible-college/institute.db
+cp <chosen-snapshot> "$(git rev-parse --show-toplevel)/institute.db"
 ```
 
 Then re-run the migration:
