@@ -60,17 +60,43 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
 
       <footer class="mt-24 sm:mt-32">
         <hr class="rule mb-4" />
-        <p class="meta text-center">
+        <nav class="meta footer-nav">
           <a href={`${import.meta.env.BASE_URL}/about`}>About</a>
-          <span class="mx-1.5 text-rule-strong">·</span>
           <a href={`${import.meta.env.BASE_URL}/fellows`}>Fellows</a>
-          <span class="mx-1.5 text-rule-strong">·</span>
+          <a href={`${import.meta.env.BASE_URL}/agenda`}>Agenda</a>
           <a href={`${import.meta.env.BASE_URL}/records`}>Records</a>
-          <span class="mx-1.5 text-rule-strong">·</span>
           <a href={`${import.meta.env.BASE_URL}/corrections`}>Corrections</a>
-        </p>
+          <a href={`${import.meta.env.BASE_URL}/rss.xml`}>RSS</a>
+        </nav>
         <p class="meta text-center mt-2 tabular">founded 2026</p>
       </footer>
     </div>
   </body>
 </html>
+
+<style>
+  /* Footer nav: 3x2 grid on narrow screens (avoids the orphaned wrap
+     when six items don't fit on one line); single bullet-separated
+     row on wider screens, matching the rest of the site's meta lines. */
+  .footer-nav {
+    display: grid;
+    grid-template-columns: repeat(3, max-content);
+    justify-content: center;
+    column-gap: 1.5rem;
+    row-gap: 0.25rem;
+  }
+  @media (min-width: 640px) {
+    .footer-nav {
+      display: flex;
+      justify-content: center;
+      column-gap: 0;
+    }
+    .footer-nav > a + a::before {
+      content: '·';
+      color: var(--color-rule-strong);
+      margin: 0 0.5rem;
+      display: inline-block;
+      text-decoration: none;
+    }
+  }
+</style>
