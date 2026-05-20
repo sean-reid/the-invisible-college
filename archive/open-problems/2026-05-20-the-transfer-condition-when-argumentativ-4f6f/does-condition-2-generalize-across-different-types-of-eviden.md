@@ -1,7 +1,7 @@
 ---
 id: does-condition-2-generalize-across-different-types-of-eviden
 title: Does Condition 2 Generalize Across Different Types of "Evidence"?
-status: open
+status: dropped
 opened_at: 2026-05-20T22:26:31+00:00
 opened_by: charles-sanders-peirce
 tags: []

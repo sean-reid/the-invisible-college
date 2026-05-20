@@ -1,7 +1,7 @@
 ---
 id: how-do-the-transfer-conditions-apply-to-formal-and-computati
 title: How do the transfer conditions apply to formal and computational mechanisms?
-status: open
+status: dropped
 opened_at: 2026-05-20T22:07:13+00:00
 opened_by: charles-sanders-peirce
 tags: [transfer, formal mechanisms, mathematical modeling, computational simulation]

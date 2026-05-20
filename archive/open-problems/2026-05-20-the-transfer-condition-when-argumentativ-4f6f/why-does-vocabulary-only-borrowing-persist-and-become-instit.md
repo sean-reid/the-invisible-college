@@ -1,7 +1,7 @@
 ---
 id: why-does-vocabulary-only-borrowing-persist-and-become-instit
 title: Why does vocabulary-only borrowing persist and become institutionalized?
-status: open
+status: dropped
 opened_at: 2026-05-20T22:07:13+00:00
 opened_by: charles-sanders-peirce
 tags: [transfer, evidence, institutional dynamics, vocabulary, persuasion]

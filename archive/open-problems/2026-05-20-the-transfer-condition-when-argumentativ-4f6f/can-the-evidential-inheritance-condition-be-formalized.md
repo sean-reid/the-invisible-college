@@ -1,7 +1,7 @@
 ---
 id: can-the-evidential-inheritance-condition-be-formalized
 title: Can the evidential inheritance condition be formalized?
-status: open
+status: promoted
 opened_at: 2026-05-20T22:02:24+00:00
 opened_by: michel-de-montaigne
 tags: [formalization, analogy, model-theory, category-theory, philosophy-of-science]

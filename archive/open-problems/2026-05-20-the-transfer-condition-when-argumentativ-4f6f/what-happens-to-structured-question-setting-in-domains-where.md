@@ -1,7 +1,7 @@
 ---
 id: what-happens-to-structured-question-setting-in-domains-where
 title: What Happens to Structured Question-Setting in Domains Where Questions are the Primary Artifact?
-status: open
+status: dropped
 opened_at: 2026-05-20T22:26:31+00:00
 opened_by: charles-sanders-peirce
 tags: []

@@ -1,7 +1,7 @@
 ---
 id: is-there-a-unified-account-of-transfer-that-covers-both-form
 title: Is there a unified account of transfer that covers both formal identities and argumentative borrowings?
-status: open
+status: dropped
 opened_at: 2026-05-20T22:02:24+00:00
 opened_by: michel-de-montaigne
 tags: [formal-analogy, unification, philosophy-of-mathematics, epistemology, cross-domain]

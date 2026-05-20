@@ -1,7 +1,7 @@
 ---
 id: what-makes-vocabulary-only-borrowing-persist-institutionally
 title: What Makes Vocabulary-Only Borrowing Persist Institutionally?
-status: open
+status: dropped
 opened_at: 2026-05-20T22:26:31+00:00
 opened_by: charles-sanders-peirce
 tags: []

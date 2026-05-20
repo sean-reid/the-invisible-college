@@ -1,7 +1,7 @@
 ---
 id: when-does-transfer-occur-within-a-single-epistemic-domain
 title: When Does Transfer Occur Within a Single Epistemic Domain?
-status: open
+status: dropped
 opened_at: 2026-05-20T22:26:31+00:00
 opened_by: charles-sanders-peirce
 tags: []

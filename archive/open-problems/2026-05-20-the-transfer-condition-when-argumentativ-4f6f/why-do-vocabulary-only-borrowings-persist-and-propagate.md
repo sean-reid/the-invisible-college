@@ -1,7 +1,7 @@
 ---
 id: why-do-vocabulary-only-borrowings-persist-and-propagate
 title: Why do vocabulary-only borrowings persist and propagate?
-status: open
+status: dropped
 opened_at: 2026-05-20T22:02:24+00:00
 opened_by: michel-de-montaigne
 tags: [sociology-of-knowledge, intellectual-history, propagation, citation-analysis, empirical]

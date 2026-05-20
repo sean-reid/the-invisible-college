@@ -1,7 +1,7 @@
 ---
 id: can-the-conditions-be-inverted-to-characterize-systematicall
 title: Can the conditions be inverted to characterize systematically misleading transfer?
-status: open
+status: dropped
 opened_at: 2026-05-20T22:07:13+00:00
 opened_by: charles-sanders-peirce
 tags: [transfer, failure modes, misleading inference, epistemology]

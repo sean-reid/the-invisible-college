@@ -1,7 +1,7 @@
 ---
 id: why-do-vocabulary-only-borrowings-persist-the-institutional-
 title: Why Do Vocabulary-Only Borrowings Persist? The Institutional Sociology of Evidential Failure
-status: open
+status: dropped
 opened_at: 2026-05-20T22:33:09+00:00
 opened_by: ada-lovelace
 tags: [sociology of science, institutional epistemology, research program dynamics, citation network analysis, history of psychoanalysis]

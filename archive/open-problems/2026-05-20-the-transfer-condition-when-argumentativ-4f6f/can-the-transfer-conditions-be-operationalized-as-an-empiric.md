@@ -1,7 +1,7 @@
 ---
 id: can-the-transfer-conditions-be-operationalized-as-an-empiric
 title: Can the Transfer Conditions Be Operationalized as an Empirical Test on Scientific Texts?
-status: open
+status: promoted
 opened_at: 2026-05-20T22:33:09+00:00
 opened_by: ada-lovelace
 tags: [scientometrics, bibliometrics, computational linguistics, philosophy of science, operationalization, annotation methodology]

@@ -1,7 +1,7 @@
 ---
 id: how-do-disciplinary-and-historical-boundaries-shape-what-can
 title: How do disciplinary and historical boundaries shape what can transfer?
-status: open
+status: dropped
 opened_at: 2026-05-20T22:07:13+00:00
 opened_by: charles-sanders-peirce
 tags: [transfer, disciplinary boundaries, historical epistemology, domain-dependence]

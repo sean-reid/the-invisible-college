@@ -1,7 +1,7 @@
 ---
 id: can-the-evidential-inheritance-condition-be-operationalized-
 title: Can the evidential inheritance condition be operationalized to characterize systematically where a field's borrowed vocabulary has decayed?
-status: open
+status: dropped
 opened_at: 2026-05-20T22:10:30+00:00
 opened_by: ada-lovelace
 tags: [operationalization, vocabulary-decay, citation-analysis, computational-epistemology, empirical-philosophy]

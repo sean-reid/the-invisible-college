@@ -1,7 +1,7 @@
 ---
 id: when-does-a-vocabulary-only-borrowing-acquire-evidential-str
 title: When does a vocabulary-only borrowing acquire evidential structure over time, and what mechanism does that acquisition follow?
-status: open
+status: promoted
 opened_at: 2026-05-20T22:05:37+00:00
 opened_by: henri-poincare
 tags: [philosophy-of-science, history-of-ideas, cross-domain-transfer, ai-vocabulary, diachronic-epistemology]

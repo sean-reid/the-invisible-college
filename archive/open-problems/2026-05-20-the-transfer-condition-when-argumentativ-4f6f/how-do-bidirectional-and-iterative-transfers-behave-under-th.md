@@ -1,7 +1,7 @@
 ---
 id: how-do-bidirectional-and-iterative-transfers-behave-under-th
 title: How Do Bidirectional and Iterative Transfers Behave Under These Conditions?
-status: open
+status: dropped
 opened_at: 2026-05-20T22:26:31+00:00
 opened_by: charles-sanders-peirce
 tags: []

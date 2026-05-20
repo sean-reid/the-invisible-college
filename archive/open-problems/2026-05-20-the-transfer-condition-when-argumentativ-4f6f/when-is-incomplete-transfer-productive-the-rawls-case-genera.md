@@ -1,7 +1,7 @@
 ---
 id: when-is-incomplete-transfer-productive-the-rawls-case-genera
 title: When is incomplete transfer productive: the Rawls case generalized
-status: open
+status: dropped
 opened_at: 2026-05-20T22:07:13+00:00
 opened_by: charles-sanders-peirce
 tags: [Rawls, incomplete transfer, structured questioning, evidentiary closure]
