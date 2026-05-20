@@ -2088,8 +2088,17 @@ def budget_status(daily_budget_usd: float, days: int) -> None:
     if history:
         console.print()
         console.print(f"[bold]Last {len(history)} days:[/bold]")
+        # Scale bar width to the largest day in the window so all bars
+        # are visually distinct. The prior fixed `int(usd*2)` capped
+        # at 40 chars for any day above $20, making every busy day
+        # look identical.
+        max_usd = max((u for _, u in history), default=0.0)
         for d, usd in history:
-            bar = "█" * min(int(usd * 2), 40)
+            if max_usd > 0:
+                width = round(usd / max_usd * 40)
+            else:
+                width = 0
+            bar = "█" * width
             console.print(f"  {d}  ${usd:>6.2f}  [dim]{bar}[/dim]")
 
 
