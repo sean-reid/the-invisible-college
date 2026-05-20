@@ -42,13 +42,17 @@ class OpenProblem:
     slug: str  # filename stem under archive/open-problems/
     title: str
     body: str
-    status: str  # 'open' or 'resolved'
+    status: str  # 'open', 'resolved', or 'promoted' (moved into a paper footer)
     opened_at: str
     opened_by: str  # 'founder', 'orchestrator', or a fellow id
     tags: list[str]
     resolved_at: str | None = None
     resolved_by_project: str | None = None
     resolved_by_fellow: str | None = None
+    # Project this problem was first raised in. Set when a Fellow's
+    # revise step registers follow-up questions. Used by the editorial
+    # pass at publish-time to pull every candidate for that paper.
+    source_project_id: str | None = None
 
     @property
     def path(self) -> Path:
@@ -109,6 +113,8 @@ def _render_frontmatter(problem: OpenProblem) -> str:
         f"opened_by: {problem.opened_by}",
         f"tags: [{', '.join(problem.tags)}]",
     ]
+    if problem.source_project_id:
+        lines.append(f"source_project_id: {problem.source_project_id}")
     if problem.resolved_at:
         lines.append(f"resolved_at: {problem.resolved_at}")
     if problem.resolved_by_project:
@@ -157,6 +163,7 @@ def _load_path(path: Path) -> OpenProblem:
         resolved_at=str(fields.get("resolved_at") or "").strip() or None,
         resolved_by_project=str(fields.get("resolved_by_project") or "").strip() or None,
         resolved_by_fellow=str(fields.get("resolved_by_fellow") or "").strip() or None,
+        source_project_id=str(fields.get("source_project_id") or "").strip() or None,
     )
 
 
@@ -173,6 +180,7 @@ def add(
     body: str,
     opened_by: str = "founder",
     tags: list[str] | None = None,
+    source_project_id: str | None = None,
 ) -> OpenProblem:
     """Create a new open problem on disk. Raises if the slug collides."""
     slug = _slugify(title)
@@ -194,9 +202,64 @@ def add(
         opened_at=now,
         opened_by=opened_by,
         tags=list(tags or []),
+        source_project_id=source_project_id,
     )
     _write(problem)
     return problem
+
+
+def for_project(project_id: str) -> list[OpenProblem]:
+    """All open problems whose source_project_id matches.
+
+    Used by the publish-time editorial pass to find candidate
+    follow-ups raised by the paper that's about to ship.
+    """
+    return [p for p in load_all() if p.source_project_id == project_id]
+
+
+def mark_promoted(slug: str) -> None:
+    """Flip an open problem to status='promoted' (moved into a paper
+    footer). The file is kept so the historical record is intact, but
+    it no longer surfaces in `open_problems()`."""
+    existing = get(slug)
+    if existing is None:
+        return
+    updated = OpenProblem(
+        slug=existing.slug,
+        title=existing.title,
+        body=existing.body,
+        status="promoted",
+        opened_at=existing.opened_at,
+        opened_by=existing.opened_by,
+        tags=existing.tags,
+        resolved_at=existing.resolved_at,
+        resolved_by_project=existing.resolved_by_project,
+        resolved_by_fellow=existing.resolved_by_fellow,
+        source_project_id=existing.source_project_id,
+    )
+    _write(updated)
+
+
+def discard(slug: str) -> None:
+    """Flip an open problem to status='dropped' (not promoted to a
+    paper footer). Same lifecycle reason as `mark_promoted`."""
+    existing = get(slug)
+    if existing is None:
+        return
+    updated = OpenProblem(
+        slug=existing.slug,
+        title=existing.title,
+        body=existing.body,
+        status="dropped",
+        opened_at=existing.opened_at,
+        opened_by=existing.opened_by,
+        tags=existing.tags,
+        resolved_at=existing.resolved_at,
+        resolved_by_project=existing.resolved_by_project,
+        resolved_by_fellow=existing.resolved_by_fellow,
+        source_project_id=existing.source_project_id,
+    )
+    _write(updated)
 
 
 def resolve(slug: str, *, project_id: str, fellow_id: str) -> OpenProblem:

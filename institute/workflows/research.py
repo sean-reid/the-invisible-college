@@ -457,7 +457,13 @@ def _register_follow_up_questions(*, workspace: Path, author_id: str, project_id
         if not title or not body:
             continue
         try:
-            problem = open_problems.add(title=title, body=body, opened_by=author_id, tags=tags)
+            problem = open_problems.add(
+                title=title,
+                body=body,
+                opened_by=author_id,
+                tags=tags,
+                source_project_id=project_id,
+            )
             added.append(problem.slug)
         except ValueError as exc:
             console.print(

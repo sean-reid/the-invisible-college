@@ -601,6 +601,7 @@ def _register_follow_up_questions(
                 body=body,
                 opened_by=author_id,
                 tags=tags,
+                source_project_id=project_id,
             )
             added.append(problem.slug)
         except ValueError as exc:

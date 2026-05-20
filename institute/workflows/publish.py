@@ -27,7 +27,7 @@ from typing import Any
 
 from rich.console import Console
 
-from institute import collaborators, db, decisions, episodic, paths, state
+from institute import collaborators, db, decisions, editorial_followups, episodic, paths, state
 from institute import fellow as fellow_mod
 from institute.state import State
 
@@ -260,6 +260,24 @@ def run(project_id: str) -> None:
     reviewer_names = [g.name for g in reviewer_genomes]
     issue_number = _next_issue_number()
 
+    # Editorial pass: a Senior Fellow (not lead, not collaborator, not
+    # reviewer) reads the draft and the candidate follow-up questions
+    # the research/peer-review workflows captured, picks at most three,
+    # and the rest are dropped. The selected ones are spliced into the
+    # body above `## References`. Done before composing the publication
+    # so the rendered artifact carries the editor's selection.
+    with db.connection() as conn:
+        editorial_result = editorial_followups.run(
+            conn=conn,
+            project_id=project_id,
+            draft_md=draft_md,
+            lead_id=lead.id,
+            collaborator_ids=[g.id for g in collaborator_genomes],
+            reviewer_ids=[g.id for g in reviewer_genomes],
+        )
+    if editorial_result.footer_md:
+        body = editorial_followups.splice_above_references(body, editorial_result.footer_md)
+
     # Compose publication artifact (archive + blog content)
     publication_md = _publication_markdown(
         title=title,
@@ -320,6 +338,17 @@ def run(project_id: str) -> None:
     decision_body_lines.extend(
         [
             f"**Reviewers:** {', '.join(reviewer_names) if reviewer_names else 'none'}",
+        ]
+    )
+    if editorial_result.editor is not None:
+        decision_body_lines.append(
+            f"**Follow-ups editor:** {editorial_result.editor.name} "
+            f"(`{editorial_result.editor.id}`) — promoted "
+            f"{len(editorial_result.promoted)}, discarded "
+            f"{len(editorial_result.discarded)}"
+        )
+    decision_body_lines.extend(
+        [
             "",
             f"**Publication:** [{publication_archive_path.relative_to(paths.ROOT)}]"
             f"({publication_archive_path.relative_to(paths.ROOT)})",
@@ -330,16 +359,19 @@ def run(project_id: str) -> None:
             + ("Includes dissenting review(s)." if has_dissent else "Reviews were unanimous."),
         ]
     )
+    actors = [
+        "editorial-board",
+        lead.id,
+        *(g.id for g in collaborator_genomes),
+        *(g.id for g in reviewer_genomes),
+    ]
+    if editorial_result.editor is not None and editorial_result.editor.id not in actors:
+        actors.append(editorial_result.editor.id)
     decision = decisions.Decision(
         kind="publication",
         title=f"Published: {title}",
         body="\n".join(decision_body_lines),
-        actors=[
-            "editorial-board",
-            lead.id,
-            *(g.id for g in collaborator_genomes),
-            *(g.id for g in reviewer_genomes),
-        ],
+        actors=actors,
         related_project=project_id,
     )
 
@@ -382,6 +414,12 @@ def run(project_id: str) -> None:
     console.print(f"[bold green]Published.[/bold green] Title: {title}")
     console.print(f"[green]Archive:[/green]   {publication_archive_path.relative_to(paths.ROOT)}")
     console.print(f"[green]Blog post:[/green] {publication_blog_path.relative_to(paths.ROOT)}")
+    if editorial_result.editor is not None:
+        console.print(
+            f"[green]Follow-ups editor:[/green] {editorial_result.editor.name} "
+            f"(promoted {len(editorial_result.promoted)}, "
+            f"discarded {len(editorial_result.discarded)})"
+        )
     if has_dissent:
         console.print("[yellow]Includes dissenting review(s).[/yellow]")
     if is_qualifying:
