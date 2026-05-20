@@ -27,11 +27,15 @@ tests/       Unit and integration tests.
 Requires Python 3.12+, Node 20+, and `claude` (Claude Code CLI) on PATH.
 
 ```sh
-make setup                            # install Python + Node deps
-uv run institute init                 # create the SQLite registry
-uv run institute bootstrap            # orchestrator drafts the founding cohort
-uv run institute schedule install     # launchd agent runs autopilot on a cadence
+make setup                                          # install Python + Node deps
+uv run institute init                               # create the SQLite registry
+uv run institute bootstrap                          # orchestrator drafts the founding cohort
+uv run institute schedule install --auto-push       # launchd agent + auto-commit + push to main
 ```
+
+(Drop `--auto-push` if you'd rather review and push each cycle's
+artifacts manually. The daemon never force-pushes; a refused push
+surfaces in the autopilot log for the operator to resolve.)
 
 After `schedule install` the daemon takes over: proposes new pieces,
 walks them through peer review, publishes them, runs admissions and
