@@ -358,6 +358,29 @@ def admit_open_call(
         console.print(f"  orientations:    {', '.join(call.orientations)}")
 
 
+@admit.command("assess")
+@click.option(
+    "--auto",
+    is_flag=True,
+    help="Approve the orchestrator's recommendation without prompting.",
+)
+def admit_assess(auto: bool) -> None:
+    """Run a Recruitment Needs Assessment and open a cohort call.
+
+    The orchestrator analyzes cohort composition, archive coverage,
+    open problems, and recent publication trends, then drafts a call
+    targeting under-served specializations and model backends. The
+    Founder reviews the recommendation in the terminal and either
+    approves (the call opens) or aborts (nothing happens; the
+    recommendation is still recorded as a decision for the trail).
+    Skips if a call is already open.
+    """
+    _check_kill_switch()
+    from institute.workflows import needs_assessment
+
+    needs_assessment.run(auto=auto)
+
+
 @admit.command("close-call")
 @click.option(
     "--reason",
