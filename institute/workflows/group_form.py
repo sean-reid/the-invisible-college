@@ -331,10 +331,9 @@ def archive_invitations_md(project_id: str, invitations: list[Invitation]) -> Pa
     """Write a human-readable invitations log next to the proposal."""
     if not invitations:
         return None
+    from institute.safe_io import atomic_write
+
     summary = render_invitations_md(invitations).lstrip("\n")
     path = paths.PROPOSALS / project_id / "invitations" / "summary.md"
-    path.parent.mkdir(parents=True, exist_ok=True)
-    tmp = path.with_suffix(path.suffix + ".tmp")
-    tmp.write_text(summary + "\n", encoding="utf-8")
-    tmp.replace(path)
+    atomic_write(path, summary + "\n")
     return path

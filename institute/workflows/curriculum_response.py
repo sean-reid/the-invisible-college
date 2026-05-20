@@ -127,12 +127,11 @@ def run(fellow_id: str) -> str:
         )
     )
 
+    from institute.safe_io import atomic_write
+
     response_md = workspaces.require_output(workspace, "response.md", min_chars=300).strip()
     final_path = curriculum.response_path(fellow_id, item.id)
-    final_path.parent.mkdir(parents=True, exist_ok=True)
-    tmp = final_path.with_suffix(final_path.suffix + ".tmp")
-    tmp.write_text(response_md.rstrip() + "\n", encoding="utf-8")
-    tmp.replace(final_path)
+    atomic_write(final_path, response_md.rstrip() + "\n")
 
     now = datetime.now(UTC).isoformat(timespec="seconds")
     decision = decisions.Decision(

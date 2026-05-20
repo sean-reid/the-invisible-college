@@ -173,11 +173,11 @@ def design_for(
     if not items:
         raise RuntimeError("Curriculum design produced no valid items after filtering.")
 
+    from institute.safe_io import atomic_write
+
     curriculum.save_items(postulant.id, items)
     md_path = curriculum.curriculum_md_path(postulant.id)
-    tmp = md_path.with_suffix(md_path.suffix + ".tmp")
-    tmp.write_text(curriculum.render_markdown(items), encoding="utf-8")
-    tmp.replace(md_path)
+    atomic_write(md_path, curriculum.render_markdown(items))
 
     now = datetime.now(UTC).isoformat(timespec="seconds")
     with db.connection() as conn, db.transaction(conn):
@@ -189,7 +189,6 @@ def design_for(
 
 
 def _stage(path: Path, content: str) -> None:
-    path.parent.mkdir(parents=True, exist_ok=True)
-    tmp = path.with_suffix(path.suffix + ".tmp")
-    tmp.write_text(content, encoding="utf-8")
-    tmp.replace(path)
+    from institute.safe_io import atomic_write
+
+    atomic_write(path, content)

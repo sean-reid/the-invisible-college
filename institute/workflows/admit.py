@@ -261,10 +261,9 @@ def _read_cohort_summary() -> str:
 
 
 def _atomic_write(path: Path, content: str) -> None:
-    path.parent.mkdir(parents=True, exist_ok=True)
-    tmp = path.with_suffix(path.suffix + ".tmp")
-    tmp.write_text(content, encoding="utf-8")
-    tmp.replace(path)
+    from institute.safe_io import atomic_write
+
+    atomic_write(path, content)
 
 
 def _propose_candidate(

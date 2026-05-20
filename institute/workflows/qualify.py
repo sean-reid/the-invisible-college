@@ -294,7 +294,6 @@ def _slugify(text: str) -> str:
 
 
 def _write_atomically(path, content: str) -> None:
-    path.parent.mkdir(parents=True, exist_ok=True)
-    tmp = path.with_suffix(path.suffix + ".tmp")
-    tmp.write_text(content, encoding="utf-8")
-    tmp.replace(path)
+    from institute.safe_io import atomic_write
+
+    atomic_write(path, content)

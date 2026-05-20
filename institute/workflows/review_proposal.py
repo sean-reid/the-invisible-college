@@ -159,11 +159,10 @@ def run(project_id: str) -> None:
     recommendation = _parse_recommendation(review_md)
 
     # Write the proposal review under the project's proposal directory.
+    from institute.safe_io import atomic_write
+
     review_path = paths.PROPOSALS / project_id / f"review-by-{reviewer.id}.md"
-    review_path.parent.mkdir(parents=True, exist_ok=True)
-    tmp = review_path.with_suffix(".md.tmp")
-    tmp.write_text(review_md.rstrip() + "\n", encoding="utf-8")
-    tmp.replace(review_path)
+    atomic_write(review_path, review_md.rstrip() + "\n")
 
     target_state = State.PROPOSAL_REVIEWED if recommendation != "reject" else State.REJECTED
 

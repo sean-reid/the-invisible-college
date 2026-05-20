@@ -225,11 +225,10 @@ def resolve(slug: str, *, project_id: str, fellow_id: str) -> OpenProblem:
 
 def _write(problem: OpenProblem) -> None:
     """Atomic write of a single problem file."""
-    paths.OPEN_PROBLEMS.mkdir(parents=True, exist_ok=True)
+    from institute.safe_io import atomic_write
+
     text = _render_frontmatter(problem) + problem.body.rstrip() + "\n"
-    tmp = problem.path.with_suffix(problem.path.suffix + ".tmp")
-    tmp.write_text(text, encoding="utf-8")
-    tmp.replace(problem.path)
+    atomic_write(problem.path, text)
 
 
 def render_summary_md() -> str:
