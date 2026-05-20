@@ -29,6 +29,18 @@
 set -euo pipefail
 
 : "${IC_REPO:?IC_REPO must be set to the repository path}"
+
+# Source operator-local secrets from an optional .env file at the repo
+# root. This is the home for values the operator does not want to put
+# in the launchd plist (e.g. IC_NTFY_TOPIC). The .env file is
+# gitignored; ./.env.example documents the supported keys.
+if [ -f "$IC_REPO/.env" ]; then
+    set -a
+    # shellcheck disable=SC1091
+    . "$IC_REPO/.env"
+    set +a
+fi
+
 IC_MAX_BUDGET="${IC_MAX_BUDGET:-10}"
 IC_MAX_STEPS="${IC_MAX_STEPS:-30}"
 IC_DAILY_BUDGET_USD="${IC_DAILY_BUDGET_USD:-0}"

@@ -42,8 +42,16 @@ def render_plist(
     max_steps: int,
     auto_push: bool,
     daily_budget_usd: float = DEFAULT_DAILY_BUDGET,
+    ntfy_topic: str | None = None,
+    ntfy_server: str | None = None,
 ) -> bytes:
-    """Render the launchd plist as bytes ready to write to disk."""
+    """Render the launchd plist as bytes ready to write to disk.
+
+    `ntfy_topic` is operator-local and treated as semi-secret. When
+    non-empty, it lands in EnvironmentVariables so the daemon script
+    can post a per-cycle notification. It is never set to a default;
+    if the caller omits it, no `IC_NTFY_TOPIC` key is emitted.
+    """
     # PATH must include the locations where `uv`, `claude`, and `git` live.
     # The daemon script also re-exports PATH as a fallback. Common tool
     # locations in priority order:
@@ -62,6 +70,10 @@ def render_plist(
         "HOME": home,
         "PATH": f"{home}/.local/bin:/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin",
     }
+    if ntfy_topic:
+        env["IC_NTFY_TOPIC"] = ntfy_topic
+    if ntfy_server:
+        env["IC_NTFY_SERVER"] = ntfy_server
     plist: dict[str, object] = {
         "Label": LABEL,
         "ProgramArguments": ["/bin/bash", str(daemon_script())],
@@ -92,6 +104,27 @@ def is_loaded() -> bool:
     return result.returncode == 0
 
 
+def _existing_env_value(key: str) -> str | None:
+    """Read an EnvironmentVariables value from the on-disk plist.
+
+    Used so re-running `install` preserves operator-set values
+    (e.g. the ntfy topic) without forcing the operator to re-pass
+    them on every install.
+    """
+    path = plist_path()
+    if not path.exists():
+        return None
+    try:
+        data = plistlib.loads(path.read_bytes())
+    except Exception:
+        return None
+    env = data.get("EnvironmentVariables")
+    if not isinstance(env, dict):
+        return None
+    value = env.get(key)
+    return value if isinstance(value, str) and value else None
+
+
 def install(
     *,
     interval_hours: int = DEFAULT_INTERVAL_HOURS,
@@ -99,12 +132,30 @@ def install(
     max_steps: int = DEFAULT_MAX_STEPS,
     auto_push: bool = False,
     daily_budget_usd: float = DEFAULT_DAILY_BUDGET,
+    ntfy_topic: str | None = None,
+    ntfy_server: str | None = None,
 ) -> Path:
-    """Write the plist and load it via launchctl. Returns the plist path."""
+    """Write the plist and load it via launchctl. Returns the plist path.
+
+    `ntfy_topic` and `ntfy_server` are operator-local. If the caller
+    leaves either as None, the value is preserved from the existing
+    on-disk plist (so re-running `install` to bump the interval does
+    not blow away the topic). Pass an empty string to explicitly
+    clear a previously-set value.
+    """
     if shutil.which("launchctl") is None:
         raise RuntimeError("`launchctl` not on PATH. macOS-only feature.")
     PLIST_DIR.mkdir(parents=True, exist_ok=True)
     LOG_DIR.mkdir(parents=True, exist_ok=True)
+
+    if ntfy_topic is None:
+        ntfy_topic = _existing_env_value("IC_NTFY_TOPIC")
+    elif ntfy_topic == "":
+        ntfy_topic = None
+    if ntfy_server is None:
+        ntfy_server = _existing_env_value("IC_NTFY_SERVER")
+    elif ntfy_server == "":
+        ntfy_server = None
 
     body = render_plist(
         interval_hours=interval_hours,
@@ -112,6 +163,8 @@ def install(
         max_steps=max_steps,
         auto_push=auto_push,
         daily_budget_usd=daily_budget_usd,
+        ntfy_topic=ntfy_topic,
+        ntfy_server=ntfy_server,
     )
     path = plist_path()
     tmp = path.with_suffix(path.suffix + ".tmp")

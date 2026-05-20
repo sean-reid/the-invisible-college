@@ -2502,12 +2502,33 @@ def schedule() -> None:
     show_default=True,
     help="If a new publication was produced, commit + push to origin/main.",
 )
+@click.option(
+    "--ntfy-topic",
+    type=str,
+    default=None,
+    help=(
+        "ntfy.sh topic to publish per-cycle notifications to. Operator-local "
+        "and treated as semi-secret. Omit to preserve any existing value in "
+        "the on-disk plist; pass an empty string to clear it."
+    ),
+)
+@click.option(
+    "--ntfy-server",
+    type=str,
+    default=None,
+    help=(
+        "ntfy server base URL. Omit to preserve any existing value (defaults "
+        "to https://ntfy.sh in the daemon script). Pass empty string to clear."
+    ),
+)
 def schedule_install(
     interval_hours: int,
     max_budget_usd: float,
     max_steps: int,
     daily_budget_usd: float,
     auto_push: bool,
+    ntfy_topic: str | None,
+    ntfy_server: str | None,
 ) -> None:
     """Install and load the launchd agent."""
     from institute import schedule as schedule_mod
@@ -2518,6 +2539,8 @@ def schedule_install(
         max_steps=max_steps,
         auto_push=auto_push,
         daily_budget_usd=daily_budget_usd,
+        ntfy_topic=ntfy_topic,
+        ntfy_server=ntfy_server,
     )
     console.print(f"[green]Installed:[/green] {path}")
     daily_msg = f", daily ${daily_budget_usd:.2f}" if daily_budget_usd > 0 else ", no daily cap"
