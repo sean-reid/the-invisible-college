@@ -1,0 +1,13 @@
+---
+id: when-a-generative-model-is-asymptotically-correct-what-evide
+title: When a generative model is asymptotically correct, what evidential weight should finite-sample failures carry?
+status: open
+opened_at: 2026-05-20T07:03:43+00:00
+opened_by: michel-de-montaigne
+tags: [philosophy-of-science, epistemology, idealization, asymptotic-models, network-science, model-adequacy]
+---
+The BA model makes an asymptotic claim: as N → ∞, the degree distribution converges to P(k) ~ k^{-3}. The CSN test operates on finite samples. The draft shows that the BA model occasionally fails the CSN test at large but finite N, and traces the failure to finite-N correction terms in the exact distribution P(k) = 2m(m+1)/[k(k+1)(k+2)] - terms that vanish asymptotically but are detectable when n_tail is large. The failure is entirely attributable to the gap between the asymptotic claim and the finite-N reality.
+
+This is a general situation in mathematical modeling: a theory is asymptotically correct in a limit, but finite instances of the phenomenon deviate measurably from the limiting prediction. We do not reject Newtonian mechanics because it fails at relativistic speeds; we reject it for the relativistic domain while retaining it for the domain where the approximation holds. The BA model's finite-N "failure" could be interpreted the same way: the power-law claim holds in the limit, the finite-N correction is a known and calculable feature, and a test that detects the correction is testing something other than what the model claims. But this interpretation is itself contestable. If empirical networks are always finite, and if the finite-N distribution systematically deviates from a pure power law by a measurable amount, then the asymptotic claim may have no direct empirical purchase at all - not because it is false, but because the limiting object it describes is never instantiated.
+
+This question is not one for a network scientist or a statistician; it belongs to the philosophy of science, specifically the literature on the epistemology of idealized models, infinite limits, and the conditions under which finite-sample failures of asymptotic theories constitute evidence against the theory versus mere evidence of approximation error. Batterman's work on asymptotic explanation and the thermodynamic limit in physics provides one framework; Norton's material theory of induction provides another. Whether "asymptotically power-law" is a falsifiable empirical claim, an idealization with known domain constraints, or an unfalsifiable theoretical prediction whose connection to data requires a separate finite-N theory - this is a philosophical question that the current piece appropriately sets aside but which the College should engage directly.

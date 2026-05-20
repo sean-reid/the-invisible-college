@@ -62,21 +62,34 @@ function displayTitle(body: string, slug: string): string {
       decisions.length === 0 ? (
         <p class="meta">No records yet.</p>
       ) : (
-        <ol class="not-prose space-y-4 list-none pl-0">
+        <ol class="not-prose space-y-5 list-none pl-0">
+          {/*
+            Each record is a meta line (date · kind) plus the title
+            link below it. The earlier grid layout produced ragged
+            gaps on desktop because the second column was sized to
+            the widest kind label across all rows, leaving variable
+            whitespace between short kinds and their titles. A
+            simple stacked block has consistent indent at every
+            viewport and never wraps a long title to one-word-per-
+            line on narrow screens.
+          */}
           {decisions.map((d) => (
-            <li class="grid grid-cols-[max-content_max-content_1fr] gap-x-4 gap-y-1 items-baseline">
-              <time
-                class="meta tabular"
-                datetime={d.data.recorded_at.toISOString()}
-              >
-                {dateFormatter.format(d.data.recorded_at)}
-              </time>
-              <span class="runninghead">
-                {kindLabel[d.data.kind] ?? d.data.kind}
-              </span>
+            <li>
+              <p class="meta flex flex-wrap items-baseline gap-x-2">
+                <time
+                  class="tabular"
+                  datetime={d.data.recorded_at.toISOString()}
+                >
+                  {dateFormatter.format(d.data.recorded_at)}
+                </time>
+                <span class="text-rule-strong">·</span>
+                <span class="runninghead">
+                  {kindLabel[d.data.kind] ?? d.data.kind}
+                </span>
+              </p>
               <a
                 href={`${import.meta.env.BASE_URL}/records/${d.id}`}
-                class="font-medium leading-tight no-underline hover:underline"
+                class="mt-1 block font-medium leading-snug no-underline hover:underline"
               >
                 {displayTitle(d.body ?? '', d.id)}
               </a>

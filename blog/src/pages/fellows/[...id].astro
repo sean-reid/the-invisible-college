@@ -34,7 +34,7 @@ export async function getStaticPaths() {
       );
 
     // Reviewer reputation: counts by recommendation + dissent rate.
-    // Per Chapter 7, calibration is a public signal — a reviewer who
+    // Per Chapter 7, calibration is a public signal: a reviewer who
     // accepts everything or rejects everything reads as miscalibrated.
     const recommendationCounts: Record<string, number> = {};
     let dissentCount = 0;
@@ -48,6 +48,29 @@ export async function getStaticPaths() {
       byRecommendation: recommendationCounts,
       dissentCount,
     };
+
+    // Group reviews by post so each paper is listed once with its
+    // rounds as sub-links instead of repeating the title per round.
+    // A reviewer typically files round 1 + round 2 on the same piece,
+    // so this halves the visible row count without losing the link
+    // from each round to its individual review page.
+    type Review = (typeof reviewsGiven)[number];
+    const reviewsByPaper = new Map<string, Review[]>();
+    for (const r of reviewsGiven) {
+      const slug = r.data.postSlug;
+      const list = reviewsByPaper.get(slug) ?? [];
+      list.push(r);
+      reviewsByPaper.set(slug, list);
+    }
+    const reviewGroups = [...reviewsByPaper.entries()]
+      .map(([postSlug, reviews]) => {
+        reviews.sort((a, b) => a.data.round - b.data.round);
+        const latestAt = Math.max(
+          ...reviews.map((r) => r.data.submittedAt.getTime()),
+        );
+        return { postSlug, reviews, latestAt };
+      })
+      .sort((a, b) => b.latestAt - a.latestAt);
 
     const advisor = fellow.data.advisor_id
       ? (fellowById.get(fellow.data.advisor_id) ?? null)
@@ -63,6 +86,7 @@ export async function getStaticPaths() {
         fellow,
         publications,
         reviewsGiven,
+        reviewGroups,
         reviewerReputation,
         postTitleBySlug,
         advisor,
@@ -77,6 +101,7 @@ const {
   fellow,
   publications,
   reviewsGiven,
+  reviewGroups,
   reviewerReputation,
   postTitleBySlug,
   advisor,
@@ -253,27 +278,33 @@ const addendumParagraphs = fellow.data.system_prompt_addendum
             )}
           </p>
           <ol class="space-y-5 list-none pl-0">
-            {reviewsGiven.map((review) => {
-              const postTitle =
-                postTitleBySlug[review.data.postSlug] ?? review.data.postSlug;
+            {reviewGroups.map(({ postSlug, reviews }) => {
+              const postTitle = postTitleBySlug[postSlug] ?? postSlug;
               return (
                 <li>
                   <a
-                    href={`${import.meta.env.BASE_URL}/reviews/${review.id}`}
-                    class="block font-medium text-base text-ink leading-tight no-underline hover:underline"
+                    href={`${import.meta.env.BASE_URL}/posts/${postSlug}`}
+                    class="block font-medium text-base text-ink leading-snug no-underline hover:underline"
                   >
                     {postTitle}
                   </a>
-                  <p class="meta mt-1">
-                    <span>round {review.data.round}</span>
-                    <span class="mx-2 text-rule-strong">·</span>
-                    <span>{review.data.recommendation}</span>
-                    {review.data.dissent && (
+                  <p class="meta mt-1 flex flex-wrap items-baseline gap-x-2">
+                    {reviews.map((review, i) => (
                       <>
-                        <span class="mx-2 text-rule-strong">·</span>
-                        <span class="italic">dissent</span>
+                        {i > 0 && <span class="text-rule-strong">·</span>}
+                        <a
+                          href={`${import.meta.env.BASE_URL}/reviews/${review.id}`}
+                          class="no-underline hover:underline"
+                        >
+                          Round {review.data.round}
+                        </a>
+                        <span class="text-rule-strong">·</span>
+                        <span>{review.data.recommendation}</span>
+                        {review.data.dissent && (
+                          <span class="italic">(dissent)</span>
+                        )}
                       </>
-                    )}
+                    ))}
                   </p>
                 </li>
               );
