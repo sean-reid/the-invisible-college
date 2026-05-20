@@ -632,6 +632,15 @@ def _split_follow_up_blocks(text: str) -> list[tuple[str, str, list[str]]]:
         body = text[body_start:body_end].strip()
         tags: list[str] = []
         body_lines = body.splitlines()
+        # Strip trailing empty lines and `---` block separators that
+        # Fellows sometimes leave at the end of a block. Without this,
+        # a `Tags: ...` line above a trailing `---` separator is
+        # missed by the last-line check, and BOTH the Tags line and
+        # the `---` end up baked into the body — which later leaks
+        # into the published "Questions this leaves open" footer
+        # rendered from this body.
+        while body_lines and (not body_lines[-1].strip() or body_lines[-1].strip() == "---"):
+            body_lines.pop()
         # Pop the trailing `Tags: ...` line if present.
         if body_lines:
             last = body_lines[-1].strip()
@@ -639,7 +648,8 @@ def _split_follow_up_blocks(text: str) -> list[tuple[str, str, list[str]]]:
             if m:
                 tag_str = m.group(1).strip()
                 tags = [t.strip() for t in tag_str.split(",") if t.strip()]
-                body = "\n".join(body_lines[:-1]).rstrip()
+                body_lines.pop()
+        body = "\n".join(body_lines).rstrip()
         blocks.append((title, body, tags))
     return blocks
 

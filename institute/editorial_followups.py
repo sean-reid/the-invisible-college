@@ -170,12 +170,23 @@ def _stage(path: Path, content: str) -> None:
     atomic_write(path, content)
 
 
+_TRAILING_TAGS_OR_SEP_RE = re.compile(
+    r"(?:\s*\n\s*-{3,}\s*)?(?:\s*\n\s*[Tt]ags\s*:[^\n]*)?(?:\s*\n\s*-{3,}\s*)?\s*\Z",
+)
+
+
 def _render_footer(items: list[open_problems.OpenProblem]) -> str:
     if not items:
         return ""
     lines = ["## Questions this leaves open", ""]
     for p in items:
-        body = p.body.strip().replace("\n", " ")
+        # Defensive strip: even with the upstream parser fixed, an
+        # open-problem body filed before that fix may still carry a
+        # trailing `Tags: ...` line and/or `---` separator. Strip them
+        # here so the footer never leaks the source-file scaffolding
+        # into the published markdown.
+        body = _TRAILING_TAGS_OR_SEP_RE.sub("", p.body).strip()
+        body = body.replace("\n", " ")
         body = re.sub(r"\s+", " ", body)
         lines.append(f"- **{p.title}.** {body}")
     return "\n".join(lines) + "\n"

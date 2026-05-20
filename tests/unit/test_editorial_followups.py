@@ -201,6 +201,28 @@ def test_render_footer_empty_returns_empty() -> None:
     assert editorial_followups._render_footer([]) == ""
 
 
+def test_render_footer_strips_trailing_tags_and_separator() -> None:
+    """An open-problem body filed before the upstream parser fix may
+    still carry a trailing `Tags: ...` line and/or `---` separator.
+    The footer renderer must strip these so they don't leak into the
+    published Questions section."""
+    item = _make_problem(
+        "q",
+        "Title",
+        (
+            "Real body paragraph one.\n\n"
+            "Real body paragraph two.\n\n"
+            "Tags: epistemology, philosophy of science\n\n"
+            "---"
+        ),
+    )
+    out = editorial_followups._render_footer([item])
+    assert "Tags:" not in out
+    assert "---" not in out
+    assert "Real body paragraph one." in out
+    assert "Real body paragraph two." in out
+
+
 def test_render_footer_collapses_internal_whitespace() -> None:
     items = [_make_problem("q", "Title", "Line 1\n\nLine 2\n\tLine 3")]
     out = editorial_followups._render_footer(items)
