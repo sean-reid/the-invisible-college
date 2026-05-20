@@ -52,9 +52,9 @@ def _render_lesson_md(
 ) -> str:
     lines = [
         "---",
-        f"projectId: \"{project_id}\"",
-        f"title: \"{title.replace(chr(34), chr(39))}\"",
-        f"leadFellow: \"{lead_name} ({lead_id})\"",
+        f'projectId: "{project_id}"',
+        f'title: "{title.replace(chr(34), chr(39))}"',
+        f'leadFellow: "{lead_name} ({lead_id})"',
         f"lastState: {last_state}",
         f"abandonedAt: {abandoned_at}",
         "---",
@@ -158,6 +158,5 @@ def run(
         decisions.record(conn, decision)
 
     console.print(
-        f"[yellow]Abandoned.[/yellow] Lesson written to "
-        f"{lesson_path.relative_to(paths.ROOT)}."
+        f"[yellow]Abandoned.[/yellow] Lesson written to {lesson_path.relative_to(paths.ROOT)}."
     )

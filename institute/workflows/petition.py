@@ -50,8 +50,7 @@ def _all_reviews_were_reject(conn: sqlite3.Connection, project_id: str) -> bool:
     final_round = row["final_round"]
     rows = list(
         conn.execute(
-            "SELECT recommendation FROM reviews "
-            "WHERE project_id = ? AND round = ?",
+            "SELECT recommendation FROM reviews WHERE project_id = ? AND round = ?",
             (project_id, final_round),
         )
     )
@@ -103,9 +102,7 @@ def run(project_id: str, *, reason: str) -> None:
     with db.connection() as conn, db.transaction(conn):
         state.transition(conn, project_id, State.EDITORIAL_REVIEW)
         decisions.record(conn, decision)
-        conn.execute(
-            "UPDATE projects SET updated_at = ? WHERE id = ?", (now, project_id)
-        )
+        conn.execute("UPDATE projects SET updated_at = ? WHERE id = ?", (now, project_id))
 
     console.print(
         f"[yellow]Petition filed.[/yellow] {proj['title']} -> editorial_review. "

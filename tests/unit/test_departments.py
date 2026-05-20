@@ -42,12 +42,8 @@ def isolated(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
 
 def test_create_idempotent(isolated: Path) -> None:
     with db.connection() as conn, db.transaction(conn):
-        d1 = departments.create(
-            conn, name="Mathematics", description="Pure math + formal methods"
-        )
-        d2 = departments.create(
-            conn, name="Mathematics", description="Updated description"
-        )
+        d1 = departments.create(conn, name="Mathematics", description="Pure math + formal methods")
+        d2 = departments.create(conn, name="Mathematics", description="Updated description")
     assert d1.id == d2.id == "mathematics"
     assert d2.description == "Updated description"
 
@@ -103,16 +99,12 @@ def test_same_department(isolated: Path) -> None:
         departments.add_member(conn, department_id="bio", fellow_id="michel")
     with db.connection() as conn:
         assert departments.same_department(conn, fellow_a="ada", fellow_b="henri")
-        assert not departments.same_department(
-            conn, fellow_a="ada", fellow_b="michel"
-        )
+        assert not departments.same_department(conn, fellow_a="ada", fellow_b="michel")
 
 
 def test_same_department_false_when_uninitialized(isolated: Path) -> None:
     with db.connection() as conn:
-        assert not departments.same_department(
-            conn, fellow_a="ada", fellow_b="henri"
-        )
+        assert not departments.same_department(conn, fellow_a="ada", fellow_b="henri")
 
 
 def test_create_rejects_empty(isolated: Path) -> None:

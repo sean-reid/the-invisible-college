@@ -45,10 +45,7 @@ class CohortCall:
             return False
         if not self.applications_open_at:
             return True
-        return (
-            datetime.fromisoformat(self.applications_open_at)
-            <= datetime.now(UTC)
-        )
+        return datetime.fromisoformat(self.applications_open_at) <= datetime.now(UTC)
 
 
 def _split(value: str | None) -> list[str]:
@@ -77,9 +74,7 @@ def _row_to_call(row: sqlite3.Row) -> CohortCall:
         closed_reason=row["closed_reason"],
         admits_count=int(row["admits_count"]),
         applications_open_at=(
-            row["applications_open_at"]
-            if "applications_open_at" in row.keys()
-            else None
+            row["applications_open_at"] if "applications_open_at" in row.keys() else None
         ),
     )
 
@@ -122,9 +117,9 @@ def open_call(
         now = now_dt.isoformat(timespec="seconds")
         apps_open_at: str | None = None
         if comment_window_hours > 0:
-            apps_open_at = (
-                now_dt + timedelta(hours=comment_window_hours)
-            ).isoformat(timespec="seconds")
+            apps_open_at = (now_dt + timedelta(hours=comment_window_hours)).isoformat(
+                timespec="seconds"
+            )
         conn.execute(
             """
             INSERT INTO cohort_calls

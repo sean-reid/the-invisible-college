@@ -191,9 +191,7 @@ def kill_switch_on(reason: str) -> None:
     with db.connection() as conn, db.transaction(conn):
         tripwires.fire(conn, reason=reason, triggered_by="founder")
     console.print("[red]Kill switch engaged.[/red] All operations halted.")
-    console.print(
-        "[dim]Snapshot at ~/Library/Logs/invisible-college/killswitch-*.md[/dim]"
-    )
+    console.print("[dim]Snapshot at ~/Library/Logs/invisible-college/killswitch-*.md[/dim]")
 
 
 @kill_switch.command("off")
@@ -381,9 +379,7 @@ def admit_open_call(
     if call.orientations:
         console.print(f"  orientations:    {', '.join(call.orientations)}")
     if call.applications_open_at:
-        console.print(
-            f"  comment window:  applications open at {call.applications_open_at}"
-        )
+        console.print(f"  comment window:  applications open at {call.applications_open_at}")
 
 
 @admit.command("assess")
@@ -846,9 +842,7 @@ def fellow_set_research(fellow_id: str, statement: str) -> None:
     updated = genome.model_copy(update={"current_research": cleaned})
     updated.write(path)
     if cleaned:
-        console.print(
-            f"[green]{fellow_id}.current_research[/green] = {cleaned!r}"
-        )
+        console.print(f"[green]{fellow_id}.current_research[/green] = {cleaned!r}")
     else:
         console.print(f"[yellow]{fellow_id}.current_research cleared.[/yellow]")
 
@@ -881,9 +875,7 @@ def departments_create(name: str, description: str, chair: str | None) -> None:
     from institute import departments as departments_mod
 
     with db.connection() as conn, db.transaction(conn):
-        d = departments_mod.create(
-            conn, name=name, description=description, chair_fellow_id=chair
-        )
+        d = departments_mod.create(conn, name=name, description=description, chair_fellow_id=chair)
     console.print(f"[green]Department created:[/green] {d.name} (`{d.id}`)")
 
 
@@ -931,9 +923,7 @@ def departments_set_chair(department: str, fellow: str | None) -> None:
     from institute import departments as departments_mod
 
     with db.connection() as conn, db.transaction(conn):
-        departments_mod.set_chair(
-            conn, department_id=department, fellow_id=fellow
-        )
+        departments_mod.set_chair(conn, department_id=department, fellow_id=fellow)
     if fellow:
         console.print(f"[green]{fellow}[/green] chairs {department}")
     else:
@@ -959,12 +949,8 @@ def centers_open(name: str, motivation: str, term_days: int) -> None:
     from institute import centers as centers_mod
 
     with db.connection() as conn, db.transaction(conn):
-        c = centers_mod.open_center(
-            conn, name=name, motivation=motivation, term_days=term_days
-        )
-    console.print(
-        f"[green]Center opened:[/green] {c.name} (`{c.id}`), closes {c.closes_at}"
-    )
+        c = centers_mod.open_center(conn, name=name, motivation=motivation, term_days=term_days)
+    console.print(f"[green]Center opened:[/green] {c.name} (`{c.id}`), closes {c.closes_at}")
 
 
 @centers.command("add-member")
@@ -976,9 +962,7 @@ def centers_add_member(center_id: str, fellow: str, role: str) -> None:
     from institute import centers as centers_mod
 
     with db.connection() as conn, db.transaction(conn):
-        centers_mod.add_member(
-            conn, center_id=center_id, fellow_id=fellow, role=role
-        )
+        centers_mod.add_member(conn, center_id=center_id, fellow_id=fellow, role=role)
     console.print(f"[green]{fellow}[/green] -> {center_id} ({role})")
 
 
@@ -1044,12 +1028,8 @@ def peer_review_decline(fellow: str, reason: str, project: str | None) -> None:
     from institute import review_declines
 
     with db.connection() as conn, db.transaction(conn):
-        rid = review_declines.record(
-            conn, fellow_id=fellow, project_id=project, reason=reason
-        )
-    console.print(
-        f"[yellow]Recorded review decline #{rid}[/yellow] for {fellow}."
-    )
+        rid = review_declines.record(conn, fellow_id=fellow, project_id=project, reason=reason)
+    console.print(f"[yellow]Recorded review decline #{rid}[/yellow] for {fellow}.")
 
 
 # ---------------------------------------------------------------------------
@@ -1377,9 +1357,7 @@ def next_cmd(project: str | None) -> None:
             if project is not None:
                 console.print(f"[red]No such project: {project}[/red]")
                 sys.exit(1)
-            console.print(
-                "[dim]No in-flight projects. Start one with `institute propose`.[/dim]"
-            )
+            console.print("[dim]No in-flight projects. Start one with `institute propose`.[/dim]")
             return
         _dispatch_step(row["id"], row["state"])
 
@@ -1893,7 +1871,9 @@ def audit_reviews(limit: int) -> None:
     # Per-reviewer aggregate signals across the recent window.
     counts: dict[str, dict[str, int]] = {}
     for r in rows:
-        agg = counts.setdefault(r["reviewer_id"], {"total": 0, "accept": 0, "reject": 0, "dissent": 0})
+        agg = counts.setdefault(
+            r["reviewer_id"], {"total": 0, "accept": 0, "reject": 0, "dissent": 0}
+        )
         agg["total"] += 1
         if r["recommendation"] == "accept":
             agg["accept"] += 1
@@ -1970,16 +1950,14 @@ def audit_committees(limit: int) -> None:
         return
     console.print()
     console.print(
-        f"[bold]Recent {len(rows)} committee decisions[/bold] "
-        "(Editorial Board + Tenure Committee):"
+        f"[bold]Recent {len(rows)} committee decisions[/bold] (Editorial Board + Tenure Committee):"
     )
     by_kind: dict[str, int] = {}
     for r in rows:
         by_kind[r["action"]] = by_kind.get(r["action"], 0) + 1
         actor_short = (r["actor"] or "")[:60]
         console.print(
-            f"  {r['at']:<25}  {r['action']:<20}  "
-            f"{r['project_id'] or '-':<45}  {actor_short}"
+            f"  {r['at']:<25}  {r['action']:<20}  {r['project_id'] or '-':<45}  {actor_short}"
         )
     console.print()
     console.print("[bold]Breakdown:[/bold]")
@@ -2414,9 +2392,7 @@ def _autopilot_locked(
 
         removed = _ws.gc_terminal_projects()
         if removed:
-            console.print(
-                f"[dim]Reclaimed {removed} terminal-project workspace(s).[/dim]"
-            )
+            console.print(f"[dim]Reclaimed {removed} terminal-project workspace(s).[/dim]")
     except Exception as exc:  # pragma: no cover - best-effort cleanup
         console.print(f"[dim]Workspace GC skipped: {exc}[/dim]")
 

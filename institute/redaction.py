@@ -56,8 +56,7 @@ _PATTERNS: list[tuple[re.Pattern[str], str, str]] = [
     # "run cost: $X" / "run cost = $X of $Y"
     (
         re.compile(
-            r"\brun\s+cost\s*[:=]\s*\$?\s*\d[\d,._]*(?:\s*of\s*\$?\s*\d[\d,._]*)?"
-            + _NOT_LATEX,
+            r"\brun\s+cost\s*[:=]\s*\$?\s*\d[\d,._]*(?:\s*of\s*\$?\s*\d[\d,._]*)?" + _NOT_LATEX,
             re.IGNORECASE,
         ),
         _COST_MARKER,

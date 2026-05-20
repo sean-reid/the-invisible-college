@@ -62,9 +62,7 @@ def record(
     )
 
 
-def list_for_department(
-    conn: sqlite3.Connection, department_id: str
-) -> list[Seminar]:
+def list_for_department(conn: sqlite3.Connection, department_id: str) -> list[Seminar]:
     rows = conn.execute(
         "SELECT id, department_id, held_at, presenter_id, topic, minutes_path "
         "FROM department_seminars WHERE department_id = ? "

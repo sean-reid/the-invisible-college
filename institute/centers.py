@@ -137,8 +137,7 @@ def close(
     """Close a Center. Records a final report path if provided."""
     now = datetime.now(UTC).isoformat(timespec="seconds")
     conn.execute(
-        "UPDATE centers SET closed_at = ?, report_path = ? "
-        "WHERE id = ? AND closed_at IS NULL",
+        "UPDATE centers SET closed_at = ?, report_path = ? WHERE id = ? AND closed_at IS NULL",
         (now, report_path, center_id),
     )
 

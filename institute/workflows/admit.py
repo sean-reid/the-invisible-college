@@ -999,9 +999,7 @@ def run(
                 advisor_id=advisor_id,
             )
         except Exception as exc:  # pragma: no cover
-            console.print(
-                f"[yellow]Onboarding kickoff write failed: {exc}.[/yellow]"
-            )
+            console.print(f"[yellow]Onboarding kickoff write failed: {exc}.[/yellow]")
 
     console.print()
     if admitted:

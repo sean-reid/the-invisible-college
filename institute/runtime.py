@@ -61,9 +61,7 @@ def _check_tripwires() -> None:
     with db.connection() as conn, db.transaction(conn):
         for finding in findings:
             tripwires.fire(conn, reason=str(finding), triggered_by="tripwire")
-    _console.print(
-        f"[red]Tripwire fired:[/red] {'; '.join(str(f) for f in findings)}"
-    )
+    _console.print(f"[red]Tripwire fired:[/red] {'; '.join(str(f) for f in findings)}")
 
 
 def _check_kill_switch_active() -> None:

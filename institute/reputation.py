@@ -163,9 +163,7 @@ def has_cross_disciplinary_authorship(
         for other_id in other_ids:
             if use_departments:
                 # Department non-overlap is the cross-disciplinary signal.
-                if not departments.same_department(
-                    conn, fellow_a=fellow_id, fellow_b=other_id
-                ):
+                if not departments.same_department(conn, fellow_a=fellow_id, fellow_b=other_id):
                     return (True, project_id)
                 continue
             spec_row = conn.execute(

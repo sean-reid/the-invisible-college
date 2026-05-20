@@ -117,10 +117,7 @@ def gc_terminal_projects() -> int:
             # Scopes are sometimes suffixed (e.g. <project>-review-r1);
             # match any prefix against the terminal-project set.
             scope_name = scope_dir.name
-            if any(
-                scope_name == pid or scope_name.startswith(f"{pid}-")
-                for pid in terminal_ids
-            ):
+            if any(scope_name == pid or scope_name.startswith(f"{pid}-") for pid in terminal_ids):
                 shutil.rmtree(scope_dir, ignore_errors=True)
                 removed += 1
     return removed

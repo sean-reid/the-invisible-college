@@ -139,13 +139,9 @@ def _pick_panel(
     outside: str | None = None
     for fid in eligible_ids:
         if use_departments:
-            shares = departments.same_department(
-                conn, fellow_a=candidate_id, fellow_b=fid
-            )
+            shares = departments.same_department(conn, fellow_a=candidate_id, fellow_b=fid)
         else:
-            row = conn.execute(
-                "SELECT specialization FROM fellows WHERE id = ?", (fid,)
-            ).fetchone()
+            row = conn.execute("SELECT specialization FROM fellows WHERE id = ?", (fid,)).fetchone()
             other_spec = (row["specialization"] or "").strip().lower()
             shares = bool(candidate_spec) and other_spec == candidate_spec
         if shares and same_dept is None:
@@ -180,9 +176,7 @@ def _read_cached_panel_feedback(path) -> tuple[str, str] | None:
     outcome_match = re.search(r"\*\*Outcome:\*\*\s*`(ready|revise)`", text)
     if not outcome_match:
         return None
-    summary_match = re.search(
-        r"## Summary\s*\n+(.+?)(?=\n## |\Z)", text, re.DOTALL
-    )
+    summary_match = re.search(r"## Summary\s*\n+(.+?)(?=\n## |\Z)", text, re.DOTALL)
     summary = summary_match.group(1).strip() if summary_match else ""
     return (outcome_match.group(1), summary)
 
@@ -198,9 +192,7 @@ def _run_evaluator(
     advisor_feedback_md: str,
 ) -> tuple[str, str, str]:
     """Run one panelist. Returns (outcome, summary, feedback_md)."""
-    workspace = workspaces.workspace_for(
-        evaluator.id, f"panel-{project_id}-{role}"
-    )
+    workspace = workspaces.workspace_for(evaluator.id, f"panel-{project_id}-{role}")
     workspaces.stage_input(workspace, "draft.md", draft_md)
     workspaces.stage_input(workspace, "proposal.md", proposal_md)
     workspaces.stage_input(workspace, "postulant.md", postulant_card)
@@ -220,9 +212,7 @@ def _run_evaluator(
             extra_dirs=(paths.DOCS, paths.ARCHIVE),
         )
     )
-    feedback_md = workspaces.require_output(
-        workspace, "feedback.md", min_chars=150
-    ).strip()
+    feedback_md = workspaces.require_output(workspace, "feedback.md", min_chars=150).strip()
     decision_text = workspaces.require_output(workspace, "decision.json", min_chars=10)
     try:
         decision_payload = json.loads(decision_text)
@@ -232,9 +222,7 @@ def _run_evaluator(
         ) from exc
     outcome = str(decision_payload.get("outcome", "")).strip().lower()
     if outcome not in {"ready", "revise"}:
-        raise RuntimeError(
-            f"panelist {evaluator.id} returned unrecognized outcome {outcome!r}"
-        )
+        raise RuntimeError(f"panelist {evaluator.id} returned unrecognized outcome {outcome!r}")
     summary = str(decision_payload.get("summary", "")).strip()
     return outcome, summary, feedback_md
 
@@ -250,17 +238,14 @@ def run(project_id: str) -> None:
         if proj is None:
             raise SystemExit(f"No such project: {project_id}")
         if proj["kind"] != "qualifying":
-            raise SystemExit(
-                f"Project {project_id} is kind=`{proj['kind']}`, not qualifying."
-            )
+            raise SystemExit(f"Project {project_id} is kind=`{proj['kind']}`, not qualifying.")
         if proj["state"] != State.AWAITING_QUALIFYING_PANEL.value:
             raise SystemExit(
                 f"Project {project_id} is in state {proj['state']}, expected "
                 "awaiting_qualifying_panel."
             )
         postulant_row = conn.execute(
-            "SELECT id, name, model, specialization, advisor_id "
-            "FROM fellows WHERE id = ?",
+            "SELECT id, name, model, specialization, advisor_id FROM fellows WHERE id = ?",
             (proj["lead_fellow_id"],),
         ).fetchone()
         if postulant_row is None:
@@ -270,7 +255,9 @@ def run(project_id: str) -> None:
             candidate_id=postulant_row["id"],
             advisor_id=postulant_row["advisor_id"],
         )
-        advisor_feedback_path = paths.REVIEWS / project_id / f"advisor-{postulant_row['advisor_id']}.md"
+        advisor_feedback_path = (
+            paths.REVIEWS / project_id / f"advisor-{postulant_row['advisor_id']}.md"
+        )
 
     draft_md = (paths.ROOT / proj["draft_path"]).read_text(encoding="utf-8")
     proposal_md = (paths.ROOT / proj["proposal_path"]).read_text(encoding="utf-8")
@@ -303,9 +290,7 @@ def run(project_id: str) -> None:
             )
             outcomes.append("ready")
             continue
-        feedback_path = (
-            paths.REVIEWS / project_id / f"panel-{role}-{evaluator.id}.md"
-        )
+        feedback_path = paths.REVIEWS / project_id / f"panel-{role}-{evaluator.id}.md"
         # Resume guard: if a previous run already invoked this
         # evaluator and persisted their verdict, re-parse the file
         # instead of paying for the call again. The outcome lives
@@ -346,11 +331,7 @@ def run(project_id: str) -> None:
         )
 
     ready_count = sum(1 for o in outcomes if o == "ready")
-    target = (
-        State.PEER_REVIEWING
-        if ready_count >= 2
-        else State.REVISING
-    )
+    target = State.PEER_REVIEWING if ready_count >= 2 else State.REVISING
 
     decision_body_lines = [
         f"**Postulant:** {postulant_row['name']} (`{postulant_row['id']}`)",
@@ -360,9 +341,7 @@ def run(project_id: str) -> None:
     ]
     for pid, role, summary in panel_summaries:
         decision_body_lines.append(f"- **{role}** (`{pid}`): {summary or '(no summary)'}")
-    decision_body_lines.extend(
-        ["", f"Project advances to `{target.value}`."]
-    )
+    decision_body_lines.extend(["", f"Project advances to `{target.value}`."])
     decision = decisions.Decision(
         kind="qualifying_panel",
         title=f"Qualifying-project panel: {proj['title']}",

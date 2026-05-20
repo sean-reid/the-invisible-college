@@ -112,9 +112,7 @@ def list_all(conn: sqlite3.Connection, *, include_closed: bool = False) -> list[
     return [_row_to_department(r) for r in rows]
 
 
-def add_member(
-    conn: sqlite3.Connection, *, department_id: str, fellow_id: str
-) -> None:
+def add_member(conn: sqlite3.Connection, *, department_id: str, fellow_id: str) -> None:
     """Add a Fellow to a Department. Idempotent."""
     now = datetime.now(UTC).isoformat(timespec="seconds")
     conn.execute(
@@ -125,19 +123,14 @@ def add_member(
     )
 
 
-def remove_member(
-    conn: sqlite3.Connection, *, department_id: str, fellow_id: str
-) -> None:
+def remove_member(conn: sqlite3.Connection, *, department_id: str, fellow_id: str) -> None:
     conn.execute(
-        "DELETE FROM department_memberships "
-        "WHERE department_id = ? AND fellow_id = ?",
+        "DELETE FROM department_memberships WHERE department_id = ? AND fellow_id = ?",
         (department_id, fellow_id),
     )
 
 
-def set_chair(
-    conn: sqlite3.Connection, *, department_id: str, fellow_id: str | None
-) -> None:
+def set_chair(conn: sqlite3.Connection, *, department_id: str, fellow_id: str | None) -> None:
     """Assign or clear the chair. The chair is also added as a member."""
     conn.execute(
         "UPDATE departments SET chair_fellow_id = ? WHERE id = ?",
@@ -162,8 +155,7 @@ def for_fellow(conn: sqlite3.Connection, fellow_id: str) -> list[Department]:
 
 def member_ids(conn: sqlite3.Connection, department_id: str) -> list[str]:
     rows = conn.execute(
-        "SELECT fellow_id FROM department_memberships "
-        "WHERE department_id = ? ORDER BY joined_at",
+        "SELECT fellow_id FROM department_memberships WHERE department_id = ? ORDER BY joined_at",
         (department_id,),
     ).fetchall()
     return [r["fellow_id"] for r in rows]
@@ -176,9 +168,7 @@ def is_initialized(conn: sqlite3.Connection) -> bool:
     return row is not None and row[0] > 0
 
 
-def same_department(
-    conn: sqlite3.Connection, *, fellow_a: str, fellow_b: str
-) -> bool:
+def same_department(conn: sqlite3.Connection, *, fellow_a: str, fellow_b: str) -> bool:
     """Do two Fellows share at least one department?
 
     Returns False when departments aren't initialized (fall-back path

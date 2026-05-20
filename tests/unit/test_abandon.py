@@ -21,9 +21,7 @@ def isolated(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
     monkeypatch.setattr(decisions, "DECISIONS", tmp_path / "archive" / "decisions")
     monkeypatch.setattr(paths, "GENOMES", tmp_path / "genomes")
     monkeypatch.setattr(paths, "FELLOWS", tmp_path / "fellows")
-    monkeypatch.setattr(
-        abandon, "ABANDONMENT_DIR", tmp_path / "archive" / "abandonments"
-    )
+    monkeypatch.setattr(abandon, "ABANDONMENT_DIR", tmp_path / "archive" / "abandonments")
     monkeypatch.setattr(fellow_mod, "GENOMES", tmp_path / "genomes")
     monkeypatch.setattr(fellow_mod, "FELLOWS", tmp_path / "fellows")
     (tmp_path / "genomes").mkdir()
@@ -73,9 +71,9 @@ def test_abandon_writes_lesson_and_transitions(isolated: Path) -> None:
     assert "Honest lesson" in text
     assert "unanswerable" in text
     with db.connection() as conn:
-        state = conn.execute(
-            "SELECT state FROM projects WHERE id = ?", (project_id,)
-        ).fetchone()["state"]
+        state = conn.execute("SELECT state FROM projects WHERE id = ?", (project_id,)).fetchone()[
+            "state"
+        ]
     assert state == "abandoned"
 
 
@@ -95,7 +93,7 @@ def test_abandon_records_decision(isolated: Path) -> None:
     project_id = _seed_project_and_lead()
     abandon.run(project_id, reason="r", lesson="A real lesson goes here.")
     with db.connection() as conn:
-        n = conn.execute(
-            "SELECT COUNT(*) FROM audit_log WHERE action = 'abandonment'"
-        ).fetchone()[0]
+        n = conn.execute("SELECT COUNT(*) FROM audit_log WHERE action = 'abandonment'").fetchone()[
+            0
+        ]
     assert n == 1

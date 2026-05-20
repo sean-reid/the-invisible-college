@@ -66,9 +66,7 @@ def end(conn: sqlite3.Connection, *, fellow_id: str) -> None:
 
 
 def on_sabbatical(conn: sqlite3.Connection, fellow_id: str) -> bool:
-    row = conn.execute(
-        "SELECT sabbatical_until FROM fellows WHERE id = ?", (fellow_id,)
-    ).fetchone()
+    row = conn.execute("SELECT sabbatical_until FROM fellows WHERE id = ?", (fellow_id,)).fetchone()
     if row is None or row["sabbatical_until"] is None:
         return False
     return row["sabbatical_until"] > _now_iso()

@@ -19,9 +19,7 @@ def isolated(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
 
 def test_first_append_uses_empty_prev_hash(isolated: Path) -> None:
     with db.connection() as conn, db.transaction(conn):
-        rowid = audit.append(
-            conn, at="2026-05-19T00:00:00Z", actor="orch", action="promotion"
-        )
+        rowid = audit.append(conn, at="2026-05-19T00:00:00Z", actor="orch", action="promotion")
     assert rowid > 0
     with db.connection() as conn:
         row = conn.execute(
@@ -36,11 +34,7 @@ def test_chain_links_successive_rows(isolated: Path) -> None:
         audit.append(conn, at="t1", actor="a", action="x")
         audit.append(conn, at="t2", actor="b", action="y")
     with db.connection() as conn:
-        rows = list(
-            conn.execute(
-                "SELECT id, prev_hash, hash FROM audit_log ORDER BY id"
-            )
-        )
+        rows = list(conn.execute("SELECT id, prev_hash, hash FROM audit_log ORDER BY id"))
     assert len(rows) == 2
     # row 2's prev_hash matches row 1's hash
     assert rows[1]["prev_hash"] == rows[0]["hash"]

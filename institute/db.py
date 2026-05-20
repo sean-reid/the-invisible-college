@@ -873,8 +873,7 @@ def _migrate_18_to_19(conn: sqlite3.Connection) -> None:
     conn.execute("BEGIN IMMEDIATE")
     try:
         conn.execute(
-            "CREATE INDEX IF NOT EXISTS idx_centers_open_closes "
-            "ON centers(closed_at, closes_at)"
+            "CREATE INDEX IF NOT EXISTS idx_centers_open_closes ON centers(closed_at, closes_at)"
         )
         conn.execute(
             "CREATE INDEX IF NOT EXISTS idx_dept_membership_dept_joined "
@@ -1024,8 +1023,7 @@ def _migrate_12_to_13(conn: sqlite3.Connection) -> None:
             "FOREIGN KEY (fellow_id) REFERENCES fellows(id))"
         )
         conn.execute(
-            "CREATE INDEX IF NOT EXISTS idx_review_declines_fellow "
-            "ON review_declines(fellow_id)"
+            "CREATE INDEX IF NOT EXISTS idx_review_declines_fellow ON review_declines(fellow_id)"
         )
         _stamp_version(conn, 13)
         conn.execute("COMMIT")
@@ -1072,8 +1070,7 @@ def _migrate_10_to_11(conn: sqlite3.Connection) -> None:
         # Chain over any rows that don't yet have a hash. Resume from
         # the most recently-hashed row to keep the chain continuous.
         last = conn.execute(
-            "SELECT hash FROM audit_log "
-            "WHERE hash IS NOT NULL ORDER BY id DESC LIMIT 1"
+            "SELECT hash FROM audit_log WHERE hash IS NOT NULL ORDER BY id DESC LIMIT 1"
         ).fetchone()
         prev = last["hash"] if last else ""
 

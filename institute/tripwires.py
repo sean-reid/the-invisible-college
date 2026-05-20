@@ -88,9 +88,7 @@ class TripwireFinding:
 
 def _baseline_sha(conn: sqlite3.Connection) -> str | None:
     """Return the Charter-SHA baseline stored in the DB, or None."""
-    row = conn.execute(
-        "SELECT value FROM tripwire_baseline WHERE key = 'charter_sha'"
-    ).fetchone()
+    row = conn.execute("SELECT value FROM tripwire_baseline WHERE key = 'charter_sha'").fetchone()
     return row["value"] if row else None
 
 
@@ -134,9 +132,7 @@ def check_charter_integrity(conn: sqlite3.Connection) -> TripwireFinding | None:
 
 
 def _audit_marker(conn: sqlite3.Connection) -> tuple[int, str] | None:
-    row = conn.execute(
-        "SELECT value FROM tripwire_baseline WHERE key = 'audit_head'"
-    ).fetchone()
+    row = conn.execute("SELECT value FROM tripwire_baseline WHERE key = 'audit_head'").fetchone()
     if row is None or not row["value"]:
         return None
     raw = row["value"]
@@ -149,9 +145,7 @@ def _audit_marker(conn: sqlite3.Connection) -> tuple[int, str] | None:
         return None
 
 
-def _set_audit_marker(
-    conn: sqlite3.Connection, *, row_id: int, row_hash: str
-) -> None:
+def _set_audit_marker(conn: sqlite3.Connection, *, row_id: int, row_hash: str) -> None:
     conn.execute(
         "INSERT INTO tripwire_baseline (key, value) VALUES ('audit_head', ?) "
         "ON CONFLICT(key) DO UPDATE SET value = excluded.value",
@@ -180,9 +174,7 @@ def check_audit_chain(conn: sqlite3.Connection) -> TripwireFinding | None:
         return None
 
     since_id, since_hash = marker
-    result = audit.verify_chain_since(
-        conn, since_id=since_id, expected_prev_hash=since_hash
-    )
+    result = audit.verify_chain_since(conn, since_id=since_id, expected_prev_hash=since_hash)
     if result is not None:
         return _to_finding(result)
     head = audit.head(conn)

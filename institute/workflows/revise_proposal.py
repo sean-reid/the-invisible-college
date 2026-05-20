@@ -70,9 +70,7 @@ When the file exists and is complete, reply with the single word
 """
 
 
-def _load_lead_and_review(
-    conn: sqlite3.Connection, project_id: str
-) -> tuple[Genome, str]:
+def _load_lead_and_review(conn: sqlite3.Connection, project_id: str) -> tuple[Genome, str]:
     proj = conn.execute(
         "SELECT lead_fellow_id, proposal_path FROM projects WHERE id = ?",
         (project_id,),
@@ -91,9 +89,7 @@ def _load_lead_and_review(
         reverse=True,
     )
     if not review_files:
-        raise SystemExit(
-            f"No proposal review found under {review_dir}; cannot resolve hold."
-        )
+        raise SystemExit(f"No proposal review found under {review_dir}; cannot resolve hold.")
     review_md = review_files[0].read_text(encoding="utf-8")
     return lead, review_md
 
@@ -115,9 +111,7 @@ def run(project_id: str) -> None:
         lead, review_md = _load_lead_and_review(conn, project_id)
         prior_proposal = (paths.ROOT / proj["proposal_path"]).read_text(encoding="utf-8")
 
-    console.print(
-        f"[dim]Asking {lead.name} ({lead.id}) to redraft the held proposal...[/dim]"
-    )
+    console.print(f"[dim]Asking {lead.name} ({lead.id}) to redraft the held proposal...[/dim]")
 
     workspace = workspaces.workspace_for(lead.id, project_id)
     workspaces.stage_input(workspace, "prior-proposal.md", prior_proposal)
@@ -147,9 +141,7 @@ def run(project_id: str) -> None:
 
     from institute.safe_io import atomic_write
 
-    new_proposal_md = workspaces.require_output(
-        workspace, "proposal.md", min_chars=200
-    )
+    new_proposal_md = workspaces.require_output(workspace, "proposal.md", min_chars=200)
 
     # Preserve the prior version FIRST (additive, version-stamped).
     # The canonical proposal.md overwrite happens only after the

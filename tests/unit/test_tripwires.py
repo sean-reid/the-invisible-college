@@ -39,9 +39,7 @@ def test_charter_check_detects_modification(isolated: Path) -> None:
     with db.connection() as conn, db.transaction(conn):
         tripwires.check_charter_integrity(conn)
     # Now overwrite the Charter.
-    paths.CHARTER_FILE.write_text(
-        "# Charter\n\n(maliciously altered)\n", encoding="utf-8"
-    )
+    paths.CHARTER_FILE.write_text("# Charter\n\n(maliciously altered)\n", encoding="utf-8")
     with db.connection() as conn, db.transaction(conn):
         finding = tripwires.check_charter_integrity(conn)
     assert finding is not None
@@ -102,9 +100,7 @@ def test_fire_is_idempotent(isolated: Path) -> None:
     with db.connection() as conn, db.transaction(conn):
         tripwires.fire(conn, reason="second")
     with db.connection() as conn:
-        row = conn.execute(
-            "SELECT reason FROM kill_switch WHERE id = 1"
-        ).fetchone()
+        row = conn.execute("SELECT reason FROM kill_switch WHERE id = 1").fetchone()
         # First trip's reason wins (COALESCE keeps earliest).
         assert row["reason"] == "first"
         # Both trips audited.

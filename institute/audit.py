@@ -91,9 +91,7 @@ def append(
     transaction (e.g. `decisions.record`) get the row included in
     their transaction's commit.
     """
-    last = conn.execute(
-        "SELECT hash FROM audit_log ORDER BY id DESC LIMIT 1"
-    ).fetchone()
+    last = conn.execute("SELECT hash FROM audit_log ORDER BY id DESC LIMIT 1").fetchone()
     prev = (last["hash"] if last and last["hash"] is not None else "") if last else ""
     h = _hash(prev, at, actor, action, project_id, detail)
     cur = conn.execute(
@@ -201,8 +199,7 @@ def verify_chain_since(
 def head(conn: sqlite3.Connection) -> tuple[int, str] | None:
     """Return (id, hash) of the most recent hashed row, or None."""
     row = conn.execute(
-        "SELECT id, hash FROM audit_log "
-        "WHERE hash IS NOT NULL ORDER BY id DESC LIMIT 1"
+        "SELECT id, hash FROM audit_log WHERE hash IS NOT NULL ORDER BY id DESC LIMIT 1"
     ).fetchone()
     if row is None:
         return None

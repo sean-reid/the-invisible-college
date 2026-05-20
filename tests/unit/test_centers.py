@@ -104,9 +104,7 @@ def test_expired_unclosed(isolated: Path) -> None:
     with db.connection() as conn, db.transaction(conn):
         c = centers.open_center(conn, name="Xyz", motivation="y")
         # Directly age its closes_at into the past.
-        conn.execute(
-            "UPDATE centers SET closes_at = ? WHERE id = ?", (past, c.id)
-        )
+        conn.execute("UPDATE centers SET closes_at = ? WHERE id = ?", (past, c.id))
     with db.connection() as conn:
         expired = centers.expired_unclosed(conn)
     assert [e.id for e in expired] == [c.id]

@@ -84,9 +84,7 @@ def test_petition_advances_unanimous_reject_to_editorial(isolated: Path) -> None
     pid = _seed_project(State.REJECTED.value, ["reject", "reject", "reject"])
     petition.run(pid, reason="Reviewers conflated two distinct concerns.")
     with db.connection() as conn:
-        s = conn.execute(
-            "SELECT state FROM projects WHERE id = ?", (pid,)
-        ).fetchone()["state"]
+        s = conn.execute("SELECT state FROM projects WHERE id = ?", (pid,)).fetchone()["state"]
     assert s == State.EDITORIAL_REVIEW.value
 
 

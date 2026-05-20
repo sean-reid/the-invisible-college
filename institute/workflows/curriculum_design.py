@@ -199,9 +199,7 @@ def design_for(
     # The orchestrator marks the item with `out_of_specialization=True`;
     # we check the raw payload, since CurriculumItem doesn't carry it.
     has_cross = any(
-        bool(raw.get("out_of_specialization"))
-        for raw in raw_items
-        if isinstance(raw, dict)
+        bool(raw.get("out_of_specialization")) for raw in raw_items if isinstance(raw, dict)
     )
     if not has_cross:
         raise RuntimeError(
