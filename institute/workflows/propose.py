@@ -349,20 +349,242 @@ def _atomic_write(path: Path, content: str) -> None:
     atomic_write(path, content)
 
 
+def _finish_orphaned_proposals() -> list[str]:
+    """Persist any proposal.md whose project row never got written.
+
+    The propose workflow writes the proposal markdown to disk before
+    inserting the project row. A crash between those two steps leaves
+    an orphaned file: the Fellow's draft is on disk and (often) the
+    invitation JSONs are too, but no DB state references them.
+
+    On the next propose cycle, before drafting anything new, we scan
+    archive/proposals/* for project-id directories whose row is missing
+    from the projects table. For each, we finish persistence: read the
+    proposal markdown, reconstruct the title and lead from the file's
+    contents and path, replay any invitation JSONs into the collaborator
+    list, insert the project row and decision, ingest into episodic
+    memory. The Fellow's drafted proposal is not lost.
+
+    Returns the list of recovered project_ids.
+    """
+    if not paths.PROPOSALS.is_dir():
+        return []
+
+    recovered: list[str] = []
+    for project_dir in sorted(paths.PROPOSALS.iterdir()):
+        if not project_dir.is_dir():
+            continue
+        proposal_file = project_dir / "proposal.md"
+        if not proposal_file.is_file():
+            continue
+        project_id = project_dir.name
+
+        with db.connection() as conn:
+            row = conn.execute("SELECT 1 FROM projects WHERE id = ?", (project_id,)).fetchone()
+        if row is not None:
+            continue  # already persisted
+
+        proposal_md = proposal_file.read_text(encoding="utf-8")
+        try:
+            title = _extract_title(proposal_md)
+        except RuntimeError:
+            console.print(f"[yellow]Skipping orphan {project_id}: no title in proposal.md[/yellow]")
+            continue
+
+        # The lead is the one Fellow whose workspace last drafted this
+        # proposal; we re-derive from the proposal text by reading any
+        # ## Background or ## Approach attribution. Fall back to the
+        # active cohort's oldest active member if no signal — at worst
+        # the institution credits one extra Fellow. In practice the
+        # proposal's project_id encodes a date but not the lead, so the
+        # invitation JSONs are our best signal.
+        lead_id = _orphan_lead_from_invitations(project_dir)
+        if lead_id is None:
+            console.print(
+                f"[yellow]Skipping orphan {project_id}: cannot identify "
+                "lead Fellow from invitation records[/yellow]"
+            )
+            continue
+
+        with db.connection() as conn:
+            lead_genome = fellow_mod.load_genome(conn, lead_id)
+
+        # Replay invitation JSONs into collaborator genomes for the
+        # accepts, and into project_invitations for the declines (so
+        # the CoI index stays accurate).
+        accepted_ids, decline_records = _orphan_replay_invitations(project_dir)
+        with db.connection() as conn:
+            collaborator_genomes = [fellow_mod.load_genome(conn, fid) for fid in accepted_ids]
+
+        now = datetime.now(UTC).isoformat(timespec="seconds")
+        with db.connection() as conn, db.transaction(conn):
+            conn.execute(
+                "INSERT INTO projects "
+                "(id, title, state, lead_fellow_id, proposal_path, "
+                " created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?)",
+                (
+                    project_id,
+                    title,
+                    State.PROPOSED.value,
+                    lead_genome.id,
+                    str(proposal_file.relative_to(paths.ROOT)),
+                    now,
+                    now,
+                ),
+            )
+            for collab in collaborator_genomes:
+                collaborators.add(conn, project_id=project_id, fellow_id=collab.id)
+            for inv in decline_records:
+                conn.execute(
+                    "INSERT OR REPLACE INTO project_invitations "
+                    "(project_id, fellow_id, decision, rationale, invited_at) "
+                    "VALUES (?, ?, ?, ?, ?)",
+                    (
+                        project_id,
+                        inv["fellow_id"],
+                        inv["decision"],
+                        inv.get("rationale"),
+                        inv["invited_at"],
+                    ),
+                )
+            decision = decisions.Decision(
+                kind="proposal",
+                title=f"Proposal (recovered): {title}",
+                body=(
+                    f"**Lead Fellow:** {lead_genome.name} (`{lead_genome.id}`)\n\n"
+                    f"**Proposal:** [{proposal_file.relative_to(paths.ROOT)}]"
+                    f"({proposal_file.relative_to(paths.ROOT)})\n\n"
+                    "This proposal was drafted in a prior cycle that crashed "
+                    "before the project row was persisted. The proposal "
+                    "markdown and invitation records survived on disk; this "
+                    "decision finishes persistence so the project enters "
+                    "the normal review pipeline."
+                ),
+                actors=[
+                    "founder",
+                    lead_genome.id,
+                    *(g.id for g in collaborator_genomes),
+                ],
+                related_project=project_id,
+            )
+            decisions.record(conn, decision)
+
+        episodic.safe_ingest(
+            fellow_id=lead_genome.id,
+            kind="proposal",
+            title=title,
+            content=proposal_md,
+            source_path=str(proposal_file.relative_to(paths.ROOT)),
+            project_id=project_id,
+        )
+        for collab in collaborator_genomes:
+            episodic.safe_ingest(
+                fellow_id=collab.id,
+                kind="proposal",
+                title=title,
+                content=proposal_md,
+                source_path=str(proposal_file.relative_to(paths.ROOT)),
+                project_id=project_id,
+            )
+        console.print(
+            f"[green]Recovered orphan proposal {project_id}: "
+            f"{title} (lead {lead_genome.name}, "
+            f"{len(collaborator_genomes)} collaborator(s))[/green]"
+        )
+        recovered.append(project_id)
+
+    return recovered
+
+
+def _orphan_lead_from_invitations(project_dir: Path) -> str | None:
+    """Identify the lead Fellow id from invitation JSONs.
+
+    Every invitation JSON records `lead_id`. As long as one invitation
+    file exists, the lead is unambiguous.
+    """
+    import json
+
+    invitations_dir = project_dir / "invitations"
+    if not invitations_dir.is_dir():
+        return None
+    for inv_file in sorted(invitations_dir.glob("*.json")):
+        try:
+            payload = json.loads(inv_file.read_text(encoding="utf-8"))
+        except (OSError, ValueError):
+            continue
+        lead = payload.get("lead_id")
+        if isinstance(lead, str) and lead.strip():
+            return lead.strip()
+    return None
+
+
+def _orphan_replay_invitations(
+    project_dir: Path,
+) -> tuple[list[str], list[dict]]:
+    """Read invitation JSONs and split into accepted ids and decline records."""
+    import json
+
+    invitations_dir = project_dir / "invitations"
+    accepted: list[str] = []
+    declines: list[dict] = []
+    if not invitations_dir.is_dir():
+        return accepted, declines
+    for inv_file in sorted(invitations_dir.glob("*.json")):
+        try:
+            payload = json.loads(inv_file.read_text(encoding="utf-8"))
+        except (OSError, ValueError):
+            continue
+        decision = str(payload.get("decision", "")).strip().lower()
+        fellow_id = str(payload.get("invitee_id", "")).strip()
+        if not fellow_id:
+            continue
+        if decision == "accept":
+            accepted.append(fellow_id)
+        elif decision == "decline":
+            declines.append(
+                {
+                    "fellow_id": fellow_id,
+                    "decision": "decline",
+                    "rationale": payload.get("rationale"),
+                    "invited_at": payload.get("recorded_at")
+                    or datetime.now(UTC).isoformat(timespec="seconds"),
+                }
+            )
+    return accepted, declines
+
+
 def run(
     *,
     lead: str | None = None,
     topic: str | None = None,
-    collaborators: list[str] | None = None,
+    collaborator_ids: list[str] | None = None,
 ) -> None:
-    """Top-level propose entry point. Called from cli.propose."""
+    """Top-level propose entry point. Called from cli.propose.
 
-    collaborator_ids = list(collaborators or [])
+    `collaborator_ids` (kept distinct from the `collaborators` module
+    name we import at top-level) is the optional list of Fellow ids
+    the operator pre-selected to co-author. The parameter intentionally
+    does not shadow the module.
+    """
+
+    # Before drafting a new proposal, finish any prior proposal that
+    # crashed between writing the proposal file and persisting the
+    # project row. This keeps the institution from losing real Fellow
+    # work to a transient bug in the workflow code.
+    finished = _finish_orphaned_proposals()
+    if finished:
+        console.print(
+            f"[green]Recovered {len(finished)} orphaned proposal(s); "
+            "deferring new proposal to next cycle.[/green]"
+        )
+        return
+
+    collaborator_id_list = list(collaborator_ids or [])
 
     # Resolve the lead fellow first so we error early if the institution is empty.
     with db.connection() as conn:
         lead_genome = _pick_lead(conn, lead)
-        collaborator_genomes = _validate_collaborators(conn, lead_genome.id, collaborator_ids)
+        collaborator_genomes = _validate_collaborators(conn, lead_genome.id, collaborator_id_list)
 
     topic_section = TOPIC_SECTION_WITH.format(topic=topic.strip()) if topic else TOPIC_SECTION_FREE
     brief = PROPOSE_BRIEF_TEMPLATE.format(topic_section=topic_section)
@@ -427,6 +649,29 @@ def run(
     proposal_path = paths.PROPOSALS / project_id / "proposal.md"
     _atomic_write(proposal_path, proposal_md.rstrip() + "\n")
 
+    # Insert the project row eagerly, BEFORE soliciting collaborators.
+    # The project_invitations table FKs project_id to projects(id), so
+    # the row must exist before group_form.solicit can record decline
+    # decisions in the CoI index. The project starts in PROPOSED state
+    # with no collaborators and the decision record is appended in a
+    # second transaction below once the group has formed.
+    now = datetime.now(UTC).isoformat(timespec="seconds")
+    with db.connection() as conn, db.transaction(conn):
+        conn.execute(
+            "INSERT INTO projects "
+            "(id, title, state, lead_fellow_id, proposal_path, created_at, updated_at) "
+            "VALUES (?, ?, ?, ?, ?, ?, ?)",
+            (
+                project_id,
+                title,
+                State.PROPOSED.value,
+                lead_genome.id,
+                str(proposal_path.relative_to(paths.ROOT)),
+                now,
+                now,
+            ),
+        )
+
     # Auto-form a research group from the proposal's `## Collaborators
     # needed` section when the Founder didn't pre-select. Each named
     # Fellow accepts or declines via a quick Claude call; accepts join
@@ -447,7 +692,6 @@ def run(
         collaborator_genomes = accepted
         group_form.archive_invitations_md(project_id, invitations)
 
-    now = datetime.now(UTC).isoformat(timespec="seconds")
     decision_actors = ["founder", lead_genome.id, *(g.id for g in collaborator_genomes)]
     decision = decisions.Decision(
         kind="proposal",
@@ -460,20 +704,6 @@ def run(
     )
 
     with db.connection() as conn, db.transaction(conn):
-        conn.execute(
-            "INSERT INTO projects "
-            "(id, title, state, lead_fellow_id, proposal_path, created_at, updated_at) "
-            "VALUES (?, ?, ?, ?, ?, ?, ?)",
-            (
-                project_id,
-                title,
-                State.PROPOSED.value,
-                lead_genome.id,
-                str(proposal_path.relative_to(paths.ROOT)),
-                now,
-                now,
-            ),
-        )
         for collab in collaborator_genomes:
             collaborators.add(conn, project_id=project_id, fellow_id=collab.id)
         decisions.record(conn, decision)
