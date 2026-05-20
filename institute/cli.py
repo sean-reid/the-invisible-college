@@ -1985,6 +1985,18 @@ def _advance_loop(
                 ),
             )
 
+            # Editorial-checkpoint preprint: when a project transitions
+            # into EDITORIAL for the first time, the lead posts a
+            # preprint snapshot of the work, and one non-author Fellow
+            # files an auto-comment. Costs 2 Claude calls per
+            # publication, deliberately bounded.
+            _guarded(
+                "editorial-preprint",
+                lambda row_id=row["id"], prev=prev_state: _maybe_post_editorial_preprint(
+                    row_id, prev
+                ),
+            )
+
             if run_cost >= max_budget_usd:
                 console.print(
                     f"[red]Budget cap of ${max_budget_usd:.2f} reached "
@@ -2721,6 +2733,12 @@ def _autopilot_locked(
         # manually.
         _guarded("admit", _maybe_trigger_admissions)
 
+        # Periodic reading group: a rotating convener proposes a text
+        # (a College publication not their own) and a 3-Fellow group
+        # cross-reads it. Cadence is roughly one session per
+        # _READING_GROUP_CADENCE_PUBLICATIONS publications.
+        _guarded("reading-group", _maybe_convene_reading_group)
+
         if start_new_if_idle:
             from institute.state import TERMINAL_STATE_VALUES
 
@@ -2827,6 +2845,126 @@ def _maybe_start_qualifying_project() -> None:
 # commitment: a new Postulant + advisor pairing + curriculum + a
 # qualifying project on the queue.
 _ADMISSIONS_CADENCE_PUBLICATIONS = 5
+
+
+# Reading groups are cadenced against publications rather than calendar
+# time. Roughly one session for every N publications keeps reading
+# tied to active institutional output. With the cohort currently
+# producing roughly one paper per day, 7 publications ≈ a weekly session.
+_READING_GROUP_CADENCE_PUBLICATIONS = 7
+
+
+def _maybe_convene_reading_group() -> None:
+    """If enough publications have landed since the last reading group,
+    convene a new session with a rotating convener.
+
+    Cadence: at least _READING_GROUP_CADENCE_PUBLICATIONS publications
+    must have shipped since the most recent `reading_group` audit row
+    (or since institution genesis, if none).
+    """
+    from institute.workflows import reading_group as reading_group_workflow
+
+    with db.connection() as conn:
+        last_session_at = conn.execute(
+            "SELECT MAX(at) FROM audit_log WHERE action = 'reading_group'"
+        ).fetchone()[0]
+        pubs_since = conn.execute(
+            "SELECT COUNT(*) FROM projects WHERE state = 'published' AND updated_at > ?",
+            (last_session_at or "",),
+        ).fetchone()[0]
+    if pubs_since < _READING_GROUP_CADENCE_PUBLICATIONS:
+        return
+
+    console.rule(
+        f"[bold]Reading group: {pubs_since} publication(s) since last session[/bold]",
+        align="left",
+        style="dim",
+    )
+    reading_group_workflow.convene_with_rotating_leader()
+
+
+def _maybe_post_editorial_preprint(project_id: str, prev_state: str) -> None:
+    """If a project just transitioned into EDITORIAL for the first
+    time, post a preprint snapshot. Public checkpoint of the work
+    right before formal publication.
+
+    Skipped if a preprint is already on file for this project.
+    """
+    if prev_state == "editorial":
+        return  # not a transition; ignore
+    with db.connection() as conn:
+        row = conn.execute("SELECT state FROM projects WHERE id = ?", (project_id,)).fetchone()
+    if row is None or row["state"] != "editorial":
+        return
+
+    # Skip if a preprint already exists for this project.
+    preprint_dir = paths.PREPRINTS / project_id
+    if preprint_dir.is_dir() and any(
+        f.name.startswith("v") and f.name.endswith(".md") for f in preprint_dir.iterdir()
+    ):
+        return
+
+    from institute.workflows import preprint as preprint_workflow
+
+    console.print(f"[dim]Posting editorial-checkpoint preprint for `{project_id}`...[/dim]")
+    version_path = preprint_workflow.post(project_id)
+
+    # Auto-comment: pick one non-author Fellow (least-recently-commented)
+    # and have them file a single reaction. Cheap institutional signal.
+    _maybe_auto_comment_on_preprint(project_id, version_path)
+
+
+def _maybe_auto_comment_on_preprint(project_id: str, version_path: Path) -> None:
+    """Pick one eligible Fellow and have them file a comment on the
+    just-posted preprint version. Best-effort: failures are swallowed
+    so a comment hiccup doesn't drag down the publish cycle."""
+    import re
+
+    m = re.match(r"v(\d+)\.md$", version_path.name)
+    if not m:
+        return
+    version = int(m.group(1))
+
+    with db.connection() as conn:
+        proj = conn.execute(
+            "SELECT lead_fellow_id FROM projects WHERE id = ?", (project_id,)
+        ).fetchone()
+        if proj is None:
+            return
+        lead_id = proj["lead_fellow_id"]
+
+        # Pick: least-recently-commented active Fellow other than the lead.
+        rows = list(
+            conn.execute(
+                "SELECT id FROM fellows WHERE retired_at IS NULL AND id != ?",
+                (lead_id,),
+            )
+        )
+        if not rows:
+            return
+        last_comment_at: dict[str, str] = {}
+        for r in conn.execute(
+            "SELECT at, actor FROM audit_log WHERE action = 'preprint_comment' ORDER BY at ASC"
+        ):
+            for actor in r["actor"].split(","):
+                actor = actor.strip()
+                if actor and actor != "orchestrator":
+                    last_comment_at[actor] = r["at"]
+
+        def sort_key(fellow_id: str) -> tuple[int, str]:
+            if fellow_id not in last_comment_at:
+                return (0, "")
+            return (1, last_comment_at[fellow_id])
+
+        eligible = sorted([r["id"] for r in rows], key=sort_key)
+        commenter_id = eligible[0]
+
+    try:
+        from institute.workflows import preprint as preprint_workflow
+
+        preprint_workflow.comment(project_id, commenter_id=commenter_id, version=version)
+    except Exception as exc:
+        console.print(f"[yellow]Auto-comment skipped: {exc}[/yellow]")
 
 
 def _maybe_trigger_admissions() -> None:
