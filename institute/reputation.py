@@ -105,29 +105,31 @@ def has_cross_disciplinary_authorship(
     conn: sqlite3.Connection, fellow_id: str
 ) -> tuple[bool, str | None]:
     """Did this Fellow co-author a publication with someone from another
-    specialization? Per Chapter 5, this is a precondition for promotion
+    department? Per Chapter 5, this is a precondition for promotion
     from Junior Fellow to Fellow.
 
     Returns (eligible, evidence_project_id). When eligible=False the
     second item is None; otherwise it's the id of one project that
     satisfies the criterion (the first one found, for the audit trail).
 
-    Definition of "another specialization": the candidate's
-    `specialization` string is not identical to the other author's.
-    This is a coarse proxy for the "another department" language in
-    Chapter 5 — departments aren't implemented yet. When departments
-    arrive, the predicate moves to department equality. The proxy
-    catches the case the design cares about: an apprentice generalist
-    who has never engaged a Fellow from a different tradition has not
-    yet earned Fellow rank.
+    When the departments table is populated, "another department" is
+    department non-overlap (the candidate and the other author share
+    zero departments). When it isn't, we fall back to specialization-
+    string inequality so the predicate still catches the case the
+    Charter cares about: an apprentice generalist who has never
+    engaged a Fellow from a different tradition has not yet earned
+    Fellow rank.
     """
+    from institute import departments
+
     candidate = conn.execute(
         "SELECT specialization FROM fellows WHERE id = ?", (fellow_id,)
     ).fetchone()
     if candidate is None:
         return (False, None)
     candidate_spec = (candidate["specialization"] or "").strip().lower()
-    if not candidate_spec:
+    use_departments = departments.is_initialized(conn)
+    if not use_departments and not candidate_spec:
         return (False, None)
 
     rows = list(
@@ -149,7 +151,7 @@ def has_cross_disciplinary_authorship(
         project_id = row["project_id"]
         lead_id = row["lead_fellow_id"]
         # Gather every other author on this project (lead + non-self
-        # collaborators) and compare specializations to the candidate's.
+        # collaborators) and compare departments / specializations.
         other_ids = []
         if lead_id and lead_id != fellow_id:
             other_ids.append(lead_id)
@@ -159,6 +161,13 @@ def has_cross_disciplinary_authorship(
         ):
             other_ids.append(c_row["fellow_id"])
         for other_id in other_ids:
+            if use_departments:
+                # Department non-overlap is the cross-disciplinary signal.
+                if not departments.same_department(
+                    conn, fellow_a=fellow_id, fellow_b=other_id
+                ):
+                    return (True, project_id)
+                continue
             spec_row = conn.execute(
                 "SELECT specialization FROM fellows WHERE id = ?", (other_id,)
             ).fetchone()

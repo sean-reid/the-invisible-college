@@ -15,7 +15,7 @@ from pathlib import Path
 
 from institute.paths import DB_PATH as DB_PATH  # re-exported for tests to patch
 
-SCHEMA_VERSION = 13
+SCHEMA_VERSION = 14
 
 SCHEMA = """
 CREATE TABLE IF NOT EXISTS schema_version (
@@ -218,6 +218,36 @@ CREATE TABLE IF NOT EXISTS kill_switch (
 
 INSERT OR IGNORE INTO kill_switch (id, active) VALUES (1, 0);
 
+-- Departments (Chapter 2). A Department is a long-lived gathering of
+-- Fellows whose work shares a methodology or subject matter. A
+-- Department Chair (a Senior Fellow) is the convening authority.
+-- A Fellow may belong to multiple Departments (e.g., a methodologist
+-- whose tools are used in both empirical natural science and pure
+-- math). When no departments are populated, downstream code that
+-- needs "another department" falls back to specialization-string
+-- inequality (existing behavior).
+CREATE TABLE IF NOT EXISTS departments (
+    id              TEXT PRIMARY KEY,
+    name            TEXT NOT NULL,
+    description     TEXT NOT NULL,
+    chair_fellow_id TEXT,
+    created_at      TEXT NOT NULL,
+    closed_at       TEXT,
+    FOREIGN KEY (chair_fellow_id) REFERENCES fellows(id)
+);
+
+CREATE TABLE IF NOT EXISTS department_memberships (
+    department_id TEXT NOT NULL,
+    fellow_id     TEXT NOT NULL,
+    joined_at     TEXT NOT NULL,
+    PRIMARY KEY (department_id, fellow_id),
+    FOREIGN KEY (department_id) REFERENCES departments(id),
+    FOREIGN KEY (fellow_id) REFERENCES fellows(id)
+);
+
+CREATE INDEX IF NOT EXISTS idx_dept_membership_fellow
+    ON department_memberships(fellow_id);
+
 -- Trusted baselines for the Charter integrity tripwire. The Founder
 -- amends the Charter and updates the baseline in the same operation,
 -- so any mid-flight mutation to docs/01-charter.md by a Fellow is
@@ -337,6 +367,9 @@ def _run_migrations(conn: sqlite3.Connection, from_version: int, to_version: int
         elif version == 12:
             _migrate_12_to_13(conn)
             version = 13
+        elif version == 13:
+            _migrate_13_to_14(conn)
+            version = 14
         else:
             raise RuntimeError(f"No migration path from version {version}.")
         # Each migration is responsible for stamping its own version
@@ -753,6 +786,40 @@ def _migrate_11_to_12(conn: sqlite3.Connection) -> None:
             "key TEXT PRIMARY KEY, value TEXT NOT NULL)"
         )
         _stamp_version(conn, 12)
+        conn.execute("COMMIT")
+    except Exception:
+        conn.execute("ROLLBACK")
+        raise
+
+
+def _migrate_13_to_14(conn: sqlite3.Connection) -> None:
+    """Add departments + department_memberships (Chapter 2)."""
+    conn.execute("BEGIN IMMEDIATE")
+    try:
+        conn.execute(
+            "CREATE TABLE IF NOT EXISTS departments ("
+            "id TEXT PRIMARY KEY, "
+            "name TEXT NOT NULL, "
+            "description TEXT NOT NULL, "
+            "chair_fellow_id TEXT, "
+            "created_at TEXT NOT NULL, "
+            "closed_at TEXT, "
+            "FOREIGN KEY (chair_fellow_id) REFERENCES fellows(id))"
+        )
+        conn.execute(
+            "CREATE TABLE IF NOT EXISTS department_memberships ("
+            "department_id TEXT NOT NULL, "
+            "fellow_id TEXT NOT NULL, "
+            "joined_at TEXT NOT NULL, "
+            "PRIMARY KEY (department_id, fellow_id), "
+            "FOREIGN KEY (department_id) REFERENCES departments(id), "
+            "FOREIGN KEY (fellow_id) REFERENCES fellows(id))"
+        )
+        conn.execute(
+            "CREATE INDEX IF NOT EXISTS idx_dept_membership_fellow "
+            "ON department_memberships(fellow_id)"
+        )
+        _stamp_version(conn, 14)
         conn.execute("COMMIT")
     except Exception:
         conn.execute("ROLLBACK")

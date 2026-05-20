@@ -773,6 +773,93 @@ def terminate(fellow: str, kind: str, reason: str) -> None:
 
 
 # ---------------------------------------------------------------------------
+# departments: organize Fellows into long-lived Departments (Chapter 2)
+# ---------------------------------------------------------------------------
+
+
+@main.group()
+def departments() -> None:
+    """Manage the College's Departments (Chapter 2)."""
+
+
+@departments.command("create")
+@click.option("--name", required=True, help="Department name (human-readable).")
+@click.option(
+    "--description",
+    required=True,
+    help="One-sentence description of the Department's scope.",
+)
+@click.option(
+    "--chair",
+    default=None,
+    help="Fellow id of the Department Chair (Senior Fellow).",
+)
+def departments_create(name: str, description: str, chair: str | None) -> None:
+    """Create or update a Department."""
+    _check_kill_switch()
+    from institute import departments as departments_mod
+
+    with db.connection() as conn, db.transaction(conn):
+        d = departments_mod.create(
+            conn, name=name, description=description, chair_fellow_id=chair
+        )
+    console.print(f"[green]Department created:[/green] {d.name} (`{d.id}`)")
+
+
+@departments.command("list")
+def departments_list_cmd() -> None:
+    """List all open Departments."""
+    from institute import departments as departments_mod
+
+    with db.connection() as conn:
+        items = departments_mod.list_all(conn)
+        if not items:
+            console.print("[dim]No departments yet.[/dim]")
+            return
+        for d in items:
+            members = departments_mod.member_ids(conn, d.id)
+            chair = d.chair_fellow_id or "(no chair)"
+            console.print(
+                f"[bold]{d.name}[/bold] (`{d.id}`)\n  chair: {chair}\n"
+                f"  members: {', '.join(members) if members else '(none)'}\n"
+                f"  {d.description}"
+            )
+
+
+@departments.command("add-member")
+@click.option("--department", required=True, help="Department id.")
+@click.option("--fellow", required=True, help="Fellow id to add.")
+def departments_add_member(department: str, fellow: str) -> None:
+    _check_kill_switch()
+    from institute import departments as departments_mod
+
+    with db.connection() as conn, db.transaction(conn):
+        departments_mod.add_member(conn, department_id=department, fellow_id=fellow)
+    console.print(f"[green]{fellow}[/green] -> {department}")
+
+
+@departments.command("set-chair")
+@click.option("--department", required=True)
+@click.option(
+    "--fellow",
+    default=None,
+    help="Fellow id; omit to clear the chair.",
+)
+def departments_set_chair(department: str, fellow: str | None) -> None:
+    _check_kill_switch()
+    from institute import departments as departments_mod
+
+    with db.connection() as conn, db.transaction(conn):
+        departments_mod.set_chair(
+            conn, department_id=department, fellow_id=fellow
+        )
+    if fellow:
+        console.print(f"[green]{fellow}[/green] chairs {department}")
+    else:
+        console.print(f"[yellow]{department} chair cleared.[/yellow]")
+
+
+# ---------------------------------------------------------------------------
 # peer-review: manual operations on the peer-review subsystem
 # ---------------------------------------------------------------------------
 
