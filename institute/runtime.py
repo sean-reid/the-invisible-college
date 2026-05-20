@@ -20,7 +20,7 @@ import sys
 
 from rich.console import Console
 
-from institute import db
+from institute import db, tripwires
 
 _console = Console()
 
@@ -42,10 +42,6 @@ def check_kill_switch() -> None:
 
 
 def _check_tripwires() -> None:
-    # Local import to avoid an import cycle between runtime and
-    # tripwires (which imports db, audit, paths).
-    from institute import tripwires
-
     # The checks themselves are read-only — chain verification walks
     # only the rows added since the last clean check, and the Charter
     # SHA comparison hits one indexed row. Do NOT wrap them in
