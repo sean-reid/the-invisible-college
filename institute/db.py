@@ -15,7 +15,7 @@ from pathlib import Path
 
 from institute.paths import DB_PATH as DB_PATH  # re-exported for tests to patch
 
-SCHEMA_VERSION = 15
+SCHEMA_VERSION = 16
 
 SCHEMA = """
 CREATE TABLE IF NOT EXISTS schema_version (
@@ -117,7 +117,12 @@ CREATE TABLE IF NOT EXISTS cohort_calls (
     status                  TEXT    NOT NULL,
     closed_at               TEXT,
     closed_reason           TEXT,
-    admits_count            INTEGER NOT NULL DEFAULT 0
+    admits_count            INTEGER NOT NULL DEFAULT 0,
+    -- Comment window (Chapter 4): "Anyone may comment during a brief
+    -- window before applications open." Until this timestamp passes,
+    -- admit refuses to admit against the call. Default NULL means
+    -- applications open immediately on call open.
+    applications_open_at    TEXT
 );
 CREATE INDEX IF NOT EXISTS idx_cohort_calls_status ON cohort_calls(status);
 
@@ -401,6 +406,9 @@ def _run_migrations(conn: sqlite3.Connection, from_version: int, to_version: int
         elif version == 14:
             _migrate_14_to_15(conn)
             version = 15
+        elif version == 15:
+            _migrate_15_to_16(conn)
+            version = 16
         else:
             raise RuntimeError(f"No migration path from version {version}.")
         # Each migration is responsible for stamping its own version
@@ -817,6 +825,20 @@ def _migrate_11_to_12(conn: sqlite3.Connection) -> None:
             "key TEXT PRIMARY KEY, value TEXT NOT NULL)"
         )
         _stamp_version(conn, 12)
+        conn.execute("COMMIT")
+    except Exception:
+        conn.execute("ROLLBACK")
+        raise
+
+
+def _migrate_15_to_16(conn: sqlite3.Connection) -> None:
+    """Add cohort_calls.applications_open_at (Chapter 4 comment window)."""
+    conn.execute("BEGIN IMMEDIATE")
+    try:
+        cols = {row["name"] for row in conn.execute("PRAGMA table_info(cohort_calls)")}
+        if "applications_open_at" not in cols:
+            conn.execute("ALTER TABLE cohort_calls ADD COLUMN applications_open_at TEXT")
+        _stamp_version(conn, 16)
         conn.execute("COMMIT")
     except Exception:
         conn.execute("ROLLBACK")

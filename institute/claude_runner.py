@@ -75,6 +75,47 @@ def _claude_executable() -> str:
     return path
 
 
+# Per Chapter 3, tool access varies by rank. Postulants and Novices have
+# restricted sets that prevent them from writing artifacts the institution
+# would treat as final, mutating state in shared paths, or running shell
+# commands. The genome's `allowed_tools` is treated as a request; the
+# rank ceiling is the institutional floor that subtracts anything beyond
+# what the rank earns.
+_RANK_TOOL_CEILING: dict[str, set[str]] = {
+    "postulant": {"Read", "Glob", "Grep", "WebFetch", "WebSearch"},
+    "novice": {"Read", "Glob", "Grep", "Write", "WebFetch", "WebSearch"},
+    "junior_fellow": {
+        "Read",
+        "Glob",
+        "Grep",
+        "Write",
+        "Edit",
+        "WebFetch",
+        "WebSearch",
+        "TaskCreate",
+        "TaskUpdate",
+        "TaskList",
+    },
+    # Fellow and above carry full tool access. We omit them from the
+    # dict so any new rank inherits an unrestricted default via the
+    # `_effective_tools_for` fallback.
+}
+
+
+def _effective_tools_for(genome: Genome) -> list[str]:
+    """Intersect the genome's requested tools with the rank ceiling.
+
+    Tools the genome did not request are never added. Ranks not in
+    `_RANK_TOOL_CEILING` (Fellow, Senior Fellow, Emeritus) get the
+    genome's full request.
+    """
+    requested = list(genome.allowed_tools)
+    ceiling = _RANK_TOOL_CEILING.get(genome.rank)
+    if ceiling is None:
+        return requested
+    return [t for t in requested if t in ceiling]
+
+
 def _system_prompt_for(genome: Genome) -> str:
     return (
         charter.header()
@@ -242,7 +283,7 @@ def invoke(task: FellowTask) -> FellowResult:
         "--model",
         task.genome.model,
         "--allowed-tools",
-        ",".join(task.genome.allowed_tools),
+        ",".join(_effective_tools_for(task.genome)),
         "--permission-mode",
         "bypassPermissions",
         "--output-format",

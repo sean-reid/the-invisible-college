@@ -338,12 +338,24 @@ def admit(ctx: click.Context, hint: str | None, sponsorship_id: str | None) -> N
     show_default=True,
     help="Who's opening this call.",
 )
+@click.option(
+    "--comment-window-hours",
+    type=int,
+    default=0,
+    show_default=True,
+    help=(
+        "Chapter 4 comment window: the call is visible immediately but "
+        "applications cannot be admitted until this many hours have passed. "
+        "0 = open applications immediately."
+    ),
+)
 def admit_open_call(
     target_size: int,
     specializations: tuple[str, ...],
     models: tuple[str, ...],
     orientations: tuple[str, ...],
     opened_by: str,
+    comment_window_hours: int,
 ) -> None:
     """Open a new cohort call for applications."""
     from institute import cohort_calls
@@ -355,6 +367,7 @@ def admit_open_call(
             target_models=list(models),
             orientations=list(orientations),
             opened_by=opened_by,
+            comment_window_hours=comment_window_hours,
         )
     except ValueError as exc:
         console.print(f"[red]{exc}[/red]")
@@ -367,6 +380,10 @@ def admit_open_call(
         console.print(f"  models:          {', '.join(call.target_models)}")
     if call.orientations:
         console.print(f"  orientations:    {', '.join(call.orientations)}")
+    if call.applications_open_at:
+        console.print(
+            f"  comment window:  applications open at {call.applications_open_at}"
+        )
 
 
 @admit.command("assess")

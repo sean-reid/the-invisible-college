@@ -484,6 +484,7 @@ def _apply_release(
     payload: dict,
     actors: list[str],
     panel_votes: list[dict] | None,
+    trigger_reason: str | None = None,
 ) -> Path:
     """Retire the Fellow: set retired_at, keep the genome and the record."""
     now = datetime.now(UTC).isoformat(timespec="seconds")
@@ -497,17 +498,23 @@ def _apply_release(
         "",
         f"**Recorded:** {now}",
         "",
-        "**Reputation snapshot at time of decision:**",
-        f"- publications: {rep.author.publications}",
-        f"- reviews given: {rep.reviewer.reviews_given}",
-        f"- sticky round-1 majors: {rep.reviewer.sticky_majors}",
-        "",
-        "The Fellow's genome stays in `genomes/` and the published work "
-        "stays in the Archive. Future workflows will no longer pick this "
-        "Fellow as a lead author, reviewer, advisor, or panelist; the "
-        "row is preserved with `retired_at` set so historical context is "
-        "not lost.",
     ]
+    if trigger_reason:
+        body_lines.extend([f"**Trigger:** {trigger_reason}", ""])
+    body_lines.extend(
+        [
+            "**Reputation snapshot at time of decision:**",
+            f"- publications: {rep.author.publications}",
+            f"- reviews given: {rep.reviewer.reviews_given}",
+            f"- sticky round-1 majors: {rep.reviewer.sticky_majors}",
+            "",
+            "The Fellow's genome stays in `genomes/` and the published work "
+            "stays in the Archive. Future workflows will no longer pick this "
+            "Fellow as a lead author, reviewer, advisor, or panelist; the "
+            "row is preserved with `retired_at` set so historical context is "
+            "not lost.",
+        ]
+    )
     rationale = str(payload.get("rationale", "")).strip()
     if rationale:
         body_lines.extend(["", "## Orchestrator rationale", "", rationale])
@@ -713,7 +720,32 @@ def _finalize(
         return "released"
 
     if outcome is None or outcome == rep.rank:
+        # Chapter 3: two consecutive promotion-review holds with no
+        # rank change in between mean the Fellow no longer warrants a
+        # seat. Convert the second hold into an automatic release.
+        # `_log_review_attempt` writes a hold-style row, so we count
+        # holds AFTER recording this one. Held + counted == 2 means
+        # we just landed a second consecutive hold; escalate.
         _log_review_attempt(rep, payload, f"{label} held", actors, panel_votes)
+        with db.connection() as conn:
+            streak = reputation.consecutive_holds(conn, rep.fellow_id)
+        if streak >= 2:
+            console.print(
+                f"[bold red]Second consecutive hold for {rep.name}.[/bold red] "
+                "Escalating to automatic release per Chapter 3."
+            )
+            decision_path = _apply_release(
+                rep,
+                payload,
+                actors=[*actors, "auto-release"],
+                panel_votes=panel_votes,
+                trigger_reason=(
+                    "two_consecutive_holds: per Chapter 3, two failed "
+                    "promotion reviews in a row trigger automatic release."
+                ),
+            )
+            console.print(f"  Decision: {decision_path.relative_to(paths.ROOT)}")
+            return "released"
         console.print(f"[dim]{label.capitalize()} held: rank unchanged at {rep.rank}.[/dim]")
         return "held"
 

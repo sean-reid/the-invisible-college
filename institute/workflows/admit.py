@@ -41,7 +41,7 @@ from rich.syntax import Syntax
 
 from institute import claude_runner, db, decisions, parsing, paths, workspaces
 from institute import fellow as fellow_mod
-from institute.admissions.problems import load_problems
+from institute.admissions.problems import for_candidate as _problems_for_candidate
 from institute.claude_runner import FellowTask
 from institute.fellow import Genome
 
@@ -404,8 +404,13 @@ def _candidate_workspace(candidate: Genome) -> Path:
 
 
 def _invoke_candidate_for_problems(candidate: Genome) -> dict[str, str]:
-    """Have the candidate write responses to all qualifying problems."""
-    problems = load_problems()
+    """Have the candidate write responses to a rotated qualifying-problem subset.
+
+    Each candidate sees a deterministic subset of the pool (Chapter 4
+    rotation) so the cohort isn't all answering the same five
+    questions.
+    """
+    problems = _problems_for_candidate(candidate.id)
     if not problems:
         raise RuntimeError("No qualifying problems defined.")
 
@@ -442,7 +447,10 @@ def _evaluate_candidate(candidate: Genome, responses: dict[str, str]) -> dict:
     eval_dir.mkdir(parents=True, exist_ok=True)
 
     workspaces.stage_input(eval_dir, "candidate.md", _render_candidate_markdown(candidate))
-    for problem in load_problems():
+    # Only stage the problems the candidate actually saw, so the
+    # evaluator doesn't expect responses to questions the candidate
+    # was never given.
+    for problem in _problems_for_candidate(candidate.id):
         workspaces.stage_input(eval_dir, f"{problem.id}.md", problem.text)
     for problem_id, response in responses.items():
         workspaces.stage_input(eval_dir, f"response-{problem_id}.md", response)
@@ -573,6 +581,12 @@ def _pick_advisor(candidate_specialization: str) -> str | None:
 
     from institute.workflows.peer_review import _similarity  # local import: avoid cycle
 
+    # Per Chapter 4, advisors carry a load cap. Filter out anyone at
+    # capacity before scoring.
+    eligible = [r for r in eligible if r["advisee_count"] < _advisor_cap(r["rank"])]
+    if not eligible:
+        return None
+
     # Rank ordering: senior_fellow > fellow. SQL returns text rank; we
     # bucket explicitly so the preference is unambiguous.
     rank_priority = {"senior_fellow": 0, "fellow": 1}
@@ -587,6 +601,15 @@ def _pick_advisor(candidate_specialization: str) -> str | None:
     ]
     scored.sort()
     return scored[0][3]
+
+
+def _advisor_cap(rank: str) -> int:
+    """Per Chapter 4: Senior Fellow caps 3 advisees, Fellow caps 1."""
+    if rank == "senior_fellow":
+        return 3
+    if rank == "fellow":
+        return 1
+    return 0
 
 
 def _register_fellow(candidate: Genome, advisor_id: str | None) -> None:
@@ -660,7 +683,7 @@ def _panel_vote_admission(
         ws = paths.FELLOWS / panelist.id / "workspace" / f"admit-{candidate.id}"
         ws.mkdir(parents=True, exist_ok=True)
         workspaces.stage_input(ws, "candidate.md", _render_candidate_markdown(candidate))
-        for problem in load_problems():
+        for problem in _problems_for_candidate(candidate.id):
             workspaces.stage_input(ws, f"{problem.id}.md", problem.text)
         for problem_id, response in responses.items():
             workspaces.stage_input(ws, f"response-{problem_id}.md", response)
@@ -741,6 +764,16 @@ def run(
     active_call = cohort_calls.current_call()
     call_body_md: str | None = None
     if active_call is not None:
+        # Chapter 4 comment window: applications are not accepted until
+        # the comment-window deadline passes. Honor it here even if
+        # nothing else gates the workflow.
+        if not active_call.is_accepting_applications():
+            console.print(
+                f"[yellow]Call `{active_call.id}` is in its comment window "
+                f"until {active_call.applications_open_at}. "
+                "Applications cannot be admitted yet.[/yellow]"
+            )
+            return "skipped"
         call_body_md = cohort_calls.render_for_admit(active_call)
         console.print(
             f"[dim]Admitting against open call `{active_call.id}` "

@@ -17,7 +17,7 @@ from __future__ import annotations
 import secrets
 import sqlite3
 from dataclasses import dataclass
-from datetime import UTC, date, datetime
+from datetime import UTC, date, datetime, timedelta
 
 from institute import db
 
@@ -35,6 +35,20 @@ class CohortCall:
     closed_at: str | None
     closed_reason: str | None
     admits_count: int
+    # When applications open (Chapter 4 comment window). NULL means
+    # applications opened immediately on call open.
+    applications_open_at: str | None = None
+
+    def is_accepting_applications(self) -> bool:
+        """True if the call is open AND past the comment window."""
+        if self.status != "open":
+            return False
+        if not self.applications_open_at:
+            return True
+        return (
+            datetime.fromisoformat(self.applications_open_at)
+            <= datetime.now(UTC)
+        )
 
 
 def _split(value: str | None) -> list[str]:
@@ -62,6 +76,11 @@ def _row_to_call(row: sqlite3.Row) -> CohortCall:
         closed_at=row["closed_at"],
         closed_reason=row["closed_reason"],
         admits_count=int(row["admits_count"]),
+        applications_open_at=(
+            row["applications_open_at"]
+            if "applications_open_at" in row.keys()
+            else None
+        ),
     )
 
 
@@ -76,10 +95,19 @@ def open_call(
     target_models: list[str] | None = None,
     orientations: list[str] | None = None,
     opened_by: str = "founder",
+    comment_window_hours: int = 0,
 ) -> CohortCall:
-    """Open a new cohort call. Raises if another call is already open."""
+    """Open a new cohort call. Raises if another call is already open.
+
+    `comment_window_hours` introduces a Chapter 4 comment window: the
+    call is publicly visible immediately, but applications cannot be
+    admitted against it until the window elapses. Default 0 keeps
+    legacy behavior (applications open immediately).
+    """
     if target_size <= 0:
         raise ValueError(f"target_size must be ≥ 1 (got {target_size}).")
+    if comment_window_hours < 0:
+        raise ValueError("comment_window_hours cannot be negative.")
     with db.connection() as conn, db.transaction(conn):
         existing = conn.execute(
             "SELECT id FROM cohort_calls WHERE status = 'open' LIMIT 1"
@@ -90,14 +118,21 @@ def open_call(
                 "first with `institute admit close-call` before opening another."
             )
         call_id = _new_id()
-        now = datetime.now(UTC).isoformat(timespec="seconds")
+        now_dt = datetime.now(UTC)
+        now = now_dt.isoformat(timespec="seconds")
+        apps_open_at: str | None = None
+        if comment_window_hours > 0:
+            apps_open_at = (
+                now_dt + timedelta(hours=comment_window_hours)
+            ).isoformat(timespec="seconds")
         conn.execute(
             """
             INSERT INTO cohort_calls
                 (id, opened_at, opened_by, target_size,
                  target_specializations, target_models, orientations,
-                 status, closed_at, closed_reason, admits_count)
-            VALUES (?, ?, ?, ?, ?, ?, ?, 'open', NULL, NULL, 0)
+                 status, closed_at, closed_reason, admits_count,
+                 applications_open_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, 'open', NULL, NULL, 0, ?)
             """,
             (
                 call_id,
@@ -107,6 +142,7 @@ def open_call(
                 _join(target_specializations),
                 _join(target_models),
                 _join(orientations),
+                apps_open_at,
             ),
         )
         row = conn.execute("SELECT * FROM cohort_calls WHERE id = ?", (call_id,)).fetchone()
