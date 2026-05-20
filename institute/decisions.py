@@ -67,15 +67,15 @@ def record(
     _atomic_write(path, body_text)
 
     try:
-        conn.execute(
-            "INSERT INTO audit_log (at, actor, action, project_id, detail) VALUES (?, ?, ?, ?, ?)",
-            (
-                now.isoformat(timespec="seconds"),
-                ",".join(decision.actors),
-                decision.kind,
-                decision.related_project,
-                str(path.relative_to(DECISIONS.parent.parent)),
-            ),
+        from institute import audit
+
+        audit.append(
+            conn,
+            at=now.isoformat(timespec="seconds"),
+            actor=",".join(decision.actors),
+            action=decision.kind,
+            project_id=decision.related_project,
+            detail=str(path.relative_to(DECISIONS.parent.parent)),
         )
     except Exception:
         # Drop the just-written markdown so we never leave an orphan

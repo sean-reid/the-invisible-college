@@ -15,7 +15,7 @@ from pathlib import Path
 
 from institute.paths import DB_PATH as DB_PATH  # re-exported for tests to patch
 
-SCHEMA_VERSION = 10
+SCHEMA_VERSION = 11
 
 SCHEMA = """
 CREATE TABLE IF NOT EXISTS schema_version (
@@ -176,8 +176,21 @@ CREATE TABLE IF NOT EXISTS audit_log (
     actor      TEXT    NOT NULL,
     action     TEXT    NOT NULL,
     project_id TEXT,
-    detail     TEXT
+    detail     TEXT,
+    prev_hash  TEXT,
+    hash       TEXT
 );
+
+-- audit_log is append-only. Triggers below abort any UPDATE or DELETE
+-- attempt at the SQLite engine level, so a compromised Fellow that
+-- acquires raw DB access still cannot rewrite history.
+CREATE TRIGGER IF NOT EXISTS audit_log_no_update
+    BEFORE UPDATE ON audit_log
+    BEGIN SELECT RAISE(ABORT, 'audit_log is append-only'); END;
+
+CREATE TRIGGER IF NOT EXISTS audit_log_no_delete
+    BEFORE DELETE ON audit_log
+    BEGIN SELECT RAISE(ABORT, 'audit_log is append-only'); END;
 
 CREATE TABLE IF NOT EXISTS kill_switch (
     id             INTEGER PRIMARY KEY CHECK (id = 1),
@@ -290,6 +303,9 @@ def _run_migrations(conn: sqlite3.Connection, from_version: int, to_version: int
         elif version == 9:
             _migrate_9_to_10(conn)
             version = 10
+        elif version == 10:
+            _migrate_10_to_11(conn)
+            version = 11
         else:
             raise RuntimeError(f"No migration path from version {version}.")
         # Each migration is responsible for stamping its own version
@@ -695,3 +711,87 @@ def transaction(conn: sqlite3.Connection) -> Iterator[sqlite3.Connection]:
     except Exception:
         conn.execute("ROLLBACK")
         raise
+
+
+def _migrate_10_to_11(conn: sqlite3.Connection) -> None:
+    """Make audit_log append-only and hash-chained.
+
+    Adds `prev_hash` and `hash` columns, computes the chain over any
+    existing rows (in id order), then installs BEFORE UPDATE and
+    BEFORE DELETE triggers that abort tampering at the engine level.
+
+    Restart-safe: re-running on a partially-migrated DB picks up only
+    rows whose `hash` is still NULL.
+    """
+    import hashlib  # local import to keep top of module clean
+
+    def _hash(prev, at, actor, action, pid, detail):
+        canonical = "\x1f".join(
+            [
+                prev or "",
+                at or "",
+                actor or "",
+                action or "",
+                pid or "",
+                detail or "",
+            ]
+        )
+        return hashlib.sha256(canonical.encode("utf-8")).hexdigest()
+
+    conn.execute("PRAGMA foreign_keys = OFF")
+    try:
+        conn.execute("BEGIN IMMEDIATE")
+
+        cols = {row["name"] for row in conn.execute("PRAGMA table_info(audit_log)")}
+        if "prev_hash" not in cols:
+            conn.execute("ALTER TABLE audit_log ADD COLUMN prev_hash TEXT")
+        if "hash" not in cols:
+            conn.execute("ALTER TABLE audit_log ADD COLUMN hash TEXT")
+
+        # Chain over any rows that don't yet have a hash. Resume from
+        # the most recently-hashed row to keep the chain continuous.
+        last = conn.execute(
+            "SELECT hash FROM audit_log "
+            "WHERE hash IS NOT NULL ORDER BY id DESC LIMIT 1"
+        ).fetchone()
+        prev = last["hash"] if last else ""
+
+        rows = conn.execute(
+            "SELECT id, at, actor, action, project_id, detail "
+            "FROM audit_log WHERE hash IS NULL ORDER BY id"
+        ).fetchall()
+        for row in rows:
+            h = _hash(
+                prev,
+                row["at"],
+                row["actor"],
+                row["action"],
+                row["project_id"],
+                row["detail"],
+            )
+            conn.execute(
+                "UPDATE audit_log SET prev_hash = ?, hash = ? WHERE id = ?",
+                (prev, h, row["id"]),
+            )
+            prev = h
+
+        # Install triggers AFTER the backfill UPDATEs land. Once these
+        # exist, the engine itself rejects any further mutation.
+        conn.execute(
+            "CREATE TRIGGER IF NOT EXISTS audit_log_no_update "
+            "BEFORE UPDATE ON audit_log "
+            "BEGIN SELECT RAISE(ABORT, 'audit_log is append-only'); END"
+        )
+        conn.execute(
+            "CREATE TRIGGER IF NOT EXISTS audit_log_no_delete "
+            "BEFORE DELETE ON audit_log "
+            "BEGIN SELECT RAISE(ABORT, 'audit_log is append-only'); END"
+        )
+
+        _stamp_version(conn, 11)
+        conn.execute("COMMIT")
+    except Exception:
+        conn.execute("ROLLBACK")
+        raise
+    finally:
+        conn.execute("PRAGMA foreign_keys = ON")
