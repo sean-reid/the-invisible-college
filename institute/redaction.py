@@ -6,16 +6,18 @@ and our operating posture is to keep cost telemetry off the public
 surface entirely. This module strips operational cost/token/budget
 references at archive-write time.
 
-The redactor is intentionally conservative: it targets phrases that
-look like operator telemetry (`run cost: $2.24`, `budget=$10.0`, `1234
-input tokens`), not arbitrary dollar signs or the word "token" in a
-research context. Research about tokenizers, currency, or budgets is
-not the target. Bare `$5` mentions and stand-alone "tokens" are left
-alone.
+The redactor targets *numerical* cost telemetry, not the abstract idea
+of cost. A research piece may legitimately discuss "the cost of carry"
+or note that a model was chosen "for cost reasons" — those don't leak
+dollar figures and they pass through. What gets stripped is the
+combination of a numerical value with an operational marker: dollar
+amounts after `cost:`, `budget=`, `spent`, `under`, `approximately`;
+token counts adjacent to `input tokens` / `output tokens`; orchestrator
+telemetry lines like `elapsed: 215s · run cost: $2.24 of $10.00`.
 
-Use `redact(text) -> (cleaned, removals)`. Never raises. Loses no
-surrounding sentence content — only the matched span is replaced with
-a short marker so the surrounding prose stays coherent.
+Use `redact(text) -> (cleaned, RedactionReport)`. Never raises. Loses
+no surrounding sentence content — only the matched span is replaced
+with a short marker so the surrounding prose stays coherent.
 """
 
 from __future__ import annotations
@@ -28,12 +30,12 @@ _BUDGET_MARKER = "[budget redacted]"
 _TOKEN_MARKER = "[token count redacted]"
 
 # Each entry: (compiled pattern, replacement marker, label-for-audit).
-# Patterns require explicit operational context (a keyword like
-# "cost", "budget", "tokens", "spent") plus a number nearby. This
-# keeps the redactor from chewing through legitimate research prose
-# that happens to mention dollars or tokens.
+# Every pattern requires both an operational keyword and a number
+# (dollar amount or token count). This keeps the redactor from
+# touching prose that discusses cost abstractly without revealing
+# any actual values.
 _PATTERNS: list[tuple[re.Pattern[str], str, str]] = [
-    # Orchestrator telemetry lines: "elapsed: 215s · run cost: $2.24 of $10.00"
+    # Full orchestrator-output line: "elapsed: 215s · run cost: $2.24 of $10.00"
     (
         re.compile(
             r"\belapsed\s*[:=]\s*\d+\s*s\s*[·•|]\s*run\s+cost\s*[:=]\s*"
@@ -52,7 +54,7 @@ _PATTERNS: list[tuple[re.Pattern[str], str, str]] = [
         _COST_MARKER,
         "run-cost",
     ),
-    # "budget=$10" / "budget = $10.00" / "budget: $10.00"
+    # "budget=$X" / "budget = $X" / "budget: $X"
     (
         re.compile(
             r"\bbudget\s*[:=]\s*\$?\s*\d[\d,._]*",
@@ -73,13 +75,13 @@ _PATTERNS: list[tuple[re.Pattern[str], str, str]] = [
     # "total cost: $X" / "estimated cost = $X" / "approximate cost $X"
     (
         re.compile(
-            r"\b(?:total|estimated|approximate|approx\.?|cumulative)\s+cost\s*[:=]?\s*\$?\s*\d[\d,._]*",
+            r"\b(?:total|estimated|approximate|approx\.?|cumulative)\s+cost\s*[:=]?\s*\$\s*\d[\d,._]*",
             re.IGNORECASE,
         ),
         _COST_MARKER,
         "named-cost",
     ),
-    # "spent $X" / "we spent $X.YY"
+    # "spent $X"
     (
         re.compile(
             r"\bspent\s+\$\s*\d[\d,._]*",
@@ -97,14 +99,27 @@ _PATTERNS: list[tuple[re.Pattern[str], str, str]] = [
         _COST_MARKER,
         "cost-verb",
     ),
-    # "compute cost" / "inference cost" / "api cost" — operational pricing terms
+    # "cost: $X" / "cost = $X" — explicit value after `cost`
     (
         re.compile(
-            r"\b(?:compute|inference|api|llm|model)\s+cost\s*[:=]?\s*(?:was|is|of|came\s+to)?\s*\$?\s*\d[\d,._]*",
+            r"\bcost(?:s)?\s*[:=]\s*\$\s*\d[\d,._]*",
             re.IGNORECASE,
         ),
         _COST_MARKER,
-        "named-pricing-cost",
+        "cost-equals",
+    ),
+    # Qualified dollar totals: "under $3 total" / "approximately $X" /
+    # "about $0.50" / "less than $1". The qualifier plus a $ amount is
+    # how operational estimates show up; research prose almost never
+    # uses these together.
+    (
+        re.compile(
+            r"\b(?:under|approximately|approx\.?|about|around|roughly|less\s+than|over)"
+            r"\s+\$\s*\d[\d,._]*(?:\s+total)?",
+            re.IGNORECASE,
+        ),
+        _COST_MARKER,
+        "qualified-dollar",
     ),
     # Token telemetry: "1,234 input tokens" / "5000 output tokens" / "12k total tokens"
     (
@@ -132,15 +147,6 @@ _PATTERNS: list[tuple[re.Pattern[str], str, str]] = [
         ),
         _TOKEN_MARKER,
         "verb-tokens",
-    ),
-    # "claude-opus-4-7 cost ..." (model + cost adjective on same line)
-    (
-        re.compile(
-            r"\bclaude-[a-z0-9-]+[^.\n]{0,80}\b(?:cost|costs|pricing|pric(?:e|ed))[^.\n]*",
-            re.IGNORECASE,
-        ),
-        _COST_MARKER,
-        "model-cost",
     ),
 ]
 

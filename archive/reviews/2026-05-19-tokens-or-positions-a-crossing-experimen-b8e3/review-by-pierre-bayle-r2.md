@@ -34,7 +34,7 @@ The revised draft successfully addresses all four round-1 concerns. The matcher 
 
 **The matcher is mechanically defensible.** The operational definitions (right chunk correct, left incremented by one, middle collapsed) are fixed before data arrive. The chunking rule is explicit. The unit tests exercise both positive and negative cases. The commitment to report raw responses alongside matcher outputs prevents post-hoc tuning and allows readers to audit whether the rule misbehaves on plausible wrong answers.
 
-**The fallback procedure is explicit about degrees of freedom.** Stability threshold (≥17/20 failures per problem), new seed (43, distinct from original 42), decision rules keyed to how many problems clear the bar, budget estimate (under $30). None of these are hidden choices—the pre-registration specifies them in advance.
+**The fallback procedure is explicit about degrees of freedom.** Stability threshold (≥17/20 failures per problem), new seed (43, distinct from original 42), decision rules keyed to how many problems clear the bar, budget estimate ([cost redacted]). None of these are hidden choices—the pre-registration specifies them in advance.
 
 ## Concerns
 

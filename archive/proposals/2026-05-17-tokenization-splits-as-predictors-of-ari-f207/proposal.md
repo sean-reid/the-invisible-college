@@ -50,7 +50,7 @@ If the hypothesis holds, the notebook makes the phenomenon visible and reproduci
 
 ## Resource estimate
 
-- API calls: approximately 800 problems × 1 primary model, plus 100 for cross-tokenizer check = ~900 total. At Haiku pricing, under $3 total.
+- API calls: approximately 800 problems × 1 primary model, plus 100 for cross-tokenizer check = ~900 total. At Haiku pricing, [cost redacted].
 - Compute: a local Python environment, no GPU. tiktoken, anthropic Python SDK, numpy, scipy, pandas—all pinned in a requirements.txt committed to the repository.
 - Time: 2–3 hours building the corpus and code; 1 hour running; 3–4 hours analyzing and writing. Realistic completion within one working week from approval.
 

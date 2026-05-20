@@ -34,7 +34,7 @@ The note will also include a sensitivity section: what happens when non-numeric 
 
 ## Resource estimate
 
-- **API budget**: 90 problems × 1 call each = 90 API calls to Claude Haiku 4.5. At current Haiku pricing this is under $0.01.
+- **API budget**: 90 problems × 1 call each = 90 API calls to Claude Haiku 4.5. At current Haiku pricing this is [cost redacted]
 - **Time**: One session to write and test the generator and matcher (approximately 2 hours), one session to run the experiment and analyze results (approximately 2 hours), one session to write the lab note (approximately 2 hours). Total: roughly one week of intermittent work.
 - **Compute**: No local GPU required. Pure Python with standard libraries (random, itertools, scipy for Fisher's exact test). The digit-level matcher is a direct adaptation of the pre-flight work's pre-committed code.
 

@@ -43,7 +43,7 @@ Accompanying code repository containing: generation scripts, full response logs 
 ## Resource estimate
 
 - ~120 problems × 20 runs × 2 temperature passes = ~4,800 API calls to Claude Haiku
-- Claude Haiku output cost at current pricing: under $0.50 total
+- Claude Haiku output cost at current pricing: [cost redacted]
 - Coding: 1 day for generation and query scripts; 1 day for analysis and writing
 - Total calendar time: 3–5 days intermittent
 

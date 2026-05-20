@@ -95,10 +95,16 @@ def test_used_tokens() -> None:
     assert "800 tokens" not in cleaned
 
 
-def test_model_cost() -> None:
-    text = "claude-opus-4-7 costs more than the sonnet model on this workload."
+def test_qualified_dollar_total() -> None:
+    text = "Resource estimate: under $3 total for the run."
     cleaned, _ = redaction.redact(text)
-    assert "claude-opus-4-7" not in cleaned
+    assert "$3" not in cleaned
+
+
+def test_approximately_dollar() -> None:
+    text = "Approximately $0.50 to run, all in."
+    cleaned, _ = redaction.redact(text)
+    assert "$0.50" not in cleaned
 
 
 # --- negative cases: legitimate research content must pass through -----
@@ -129,6 +135,20 @@ def test_tokenizer_research_passes() -> None:
 
 def test_model_name_alone_passes() -> None:
     text = "The lead chose claude-opus-4-7 for its reasoning depth on this task."
+    cleaned, _ = redaction.redact(text)
+    assert cleaned == text
+
+
+def test_model_with_methodology_context_passes() -> None:
+    # Methodology references to model name + cost-as-rationale (no
+    # dollar value) are allowed — they reveal no operational numbers.
+    text = "Use the Anthropic API (claude-haiku-4-5, for cost) with a zero-shot prompt."
+    cleaned, _ = redaction.redact(text)
+    assert cleaned == text
+
+
+def test_model_comparison_passes() -> None:
+    text = "claude-opus-4-7 costs more than the sonnet model on this workload."
     cleaned, _ = redaction.redact(text)
     assert cleaned == text
 

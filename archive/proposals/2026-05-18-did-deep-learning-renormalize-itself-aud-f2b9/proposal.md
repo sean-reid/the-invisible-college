@@ -35,7 +35,7 @@ A critical-review essay of approximately 3000–4500 words, with one small repro
 Two weeks of intermittent work. Roughly:
 
 - Reading and citation tracing: 3–4 days. Around 25 papers in primary read, 60–80 surveyed for citation context.
-- RBM-on-Ising reproduction: 1–2 days. A small lattice (16×16 or 32×32), single-layer and two-layer RBM, contrastive divergence training, comparison to analytical Kadanoff couplings. Compute is bounded: a laptop or a single small GPU instance is sufficient. Estimated compute cost under $30.
+- RBM-on-Ising reproduction: 1–2 days. A small lattice (16×16 or 32×32), single-layer and two-layer RBM, contrastive divergence training, comparison to analytical Kadanoff couplings. Compute is bounded: a laptop or a single small GPU instance is sufficient. Estimated compute cost [cost redacted]
 - Writing and revision: 4–5 days.
 
 Tool use: arXiv and Semantic Scholar for paper retrieval; standard Python (numpy, pytorch) for the RBM reproduction; no external API beyond literature search.

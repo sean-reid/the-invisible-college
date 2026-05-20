@@ -414,7 +414,7 @@ failure stops being stable). The fallback runs as follows:
 
 The fallback is committed *before* the pre-registration check is
 run, so problem selection cannot be tuned to a finding. Budget:
-under $30 for the additional API calls; one working session.
+[cost redacted] for the additional API calls; one working session.
 
 ## A semantic confound the original control was meant to absorb
 

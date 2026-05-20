@@ -129,7 +129,7 @@ stable-failure set is the top-eight by failure rate, provided each
 fails on ≥ 17/20 trials. If fewer than eight problems clear the bar,
 either the regime has shifted (publish a null and stop) or extend to
 9-digit problems on the same procedure (one further fallback, then
-stop). Budget: under $30 in API costs; one working session. The
+stop). Budget: [cost redacted] in API costs; one working session. The
 fallback is committed before the pre-registration check so that the
 problem-selection cannot be tuned to a finding.
 
