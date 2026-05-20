@@ -82,14 +82,34 @@ def _claude_executable() -> str:
 # rank ceiling is the institutional floor that subtracts anything beyond
 # what the rank earns.
 _RANK_TOOL_CEILING: dict[str, set[str]] = {
-    "postulant": {"Read", "Glob", "Grep", "WebFetch", "WebSearch"},
-    "novice": {"Read", "Glob", "Grep", "Write", "WebFetch", "WebSearch"},
+    # Postulants produce curriculum responses, qualifying-project
+    # drafts, and lab notebooks. Write is required for those; we
+    # withhold Edit (no in-place mutation of published artifacts) and
+    # Bash (no shell access for ranks that haven't earned it).
+    "postulant": {
+        "Read",
+        "Glob",
+        "Grep",
+        "Write",
+        "WebFetch",
+        "WebSearch",
+    },
+    "novice": {
+        "Read",
+        "Glob",
+        "Grep",
+        "Write",
+        "Edit",
+        "WebFetch",
+        "WebSearch",
+    },
     "junior_fellow": {
         "Read",
         "Glob",
         "Grep",
         "Write",
         "Edit",
+        "Bash",
         "WebFetch",
         "WebSearch",
         "TaskCreate",
