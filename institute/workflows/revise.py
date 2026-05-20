@@ -86,7 +86,11 @@ Use the Write tool to create FOUR files in your current working directory:
 
 2. `draft.md` - the full revised draft. This replaces the previous draft
    as the publishable artifact. Markdown. Include References as a list
-   under a `## References` heading if you cite external work.
+   under a `## References` heading if you cite external work. When you
+   reference another College publication, cite by its **title** with a
+   markdown link (`[*Title*](posts/<slug>/)`). Never cite by an issue
+   number like `#04` or `[#11]` - the publication list has no stable
+   visible numbering, so `#NN` references do not resolve.
 
 3. `response.md` - response to reviewers. Markdown. Address each named
    reviewer's concerns explicitly. Use level-3 headings:

@@ -28,6 +28,7 @@ from typing import Any
 from rich.console import Console
 
 from institute import (
+    citation_lint,
     code_artifacts,
     collaborators,
     db,
@@ -259,6 +260,12 @@ def run(project_id: str) -> None:
     title, body = _strip_title_heading(draft_md)
     if not title:
         title = proj["title"]
+
+    # Refuse drafts that cite other publications by number. The home
+    # page has no stable visible numbering, so `#NN` references do
+    # not resolve. The writing briefs already forbid this; this is
+    # the hard tripwire.
+    citation_lint.check(body)
 
     now = datetime.now(UTC)
     started = datetime.fromisoformat(proj["created_at"])

@@ -107,6 +107,16 @@ in your current working directory. They must have these exact filenames:
   malformed or unanswerable, write about that honestly in the notebook
   and produce a draft that reports the honest negative result.
 
+# Citing other College publications
+
+When you reference another piece the College has published, cite it
+by its **title** with a markdown link, e.g.
+`[*Title of the Other Piece*](posts/<slug>/)`. Do NOT cite by an
+issue number like `#04` or `[#11]`. The publication list is ordered
+reverse-chronologically and has no stable visible numbering, so a
+`#NN` reference does not point at anything a reader can resolve.
+Cite by name, link by slug.
+
 # Tool use: do not background poll loops
 
 If you run shell commands, do NOT background a wait-on-file pattern
