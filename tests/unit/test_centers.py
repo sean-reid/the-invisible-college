@@ -67,7 +67,7 @@ def test_open_with_custom_term(isolated: Path) -> None:
 
 def test_add_member_and_member_ids(isolated: Path) -> None:
     with db.connection() as conn, db.transaction(conn):
-        c = centers.open_center(conn, name="X", motivation="y")
+        c = centers.open_center(conn, name="Xyz", motivation="y")
         centers.add_member(conn, center_id=c.id, fellow_id="ada", role="convener")
         centers.add_member(conn, center_id=c.id, fellow_id="henri")
     with db.connection() as conn:
@@ -77,7 +77,7 @@ def test_add_member_and_member_ids(isolated: Path) -> None:
 
 def test_close_records_report(isolated: Path) -> None:
     with db.connection() as conn, db.transaction(conn):
-        c = centers.open_center(conn, name="X", motivation="y")
+        c = centers.open_center(conn, name="Xyz", motivation="y")
         centers.close(
             conn,
             center_id=c.id,
@@ -91,8 +91,8 @@ def test_close_records_report(isolated: Path) -> None:
 
 def test_list_open_omits_closed(isolated: Path) -> None:
     with db.connection() as conn, db.transaction(conn):
-        a = centers.open_center(conn, name="A", motivation="a")
-        b = centers.open_center(conn, name="B", motivation="b")
+        a = centers.open_center(conn, name="Ax", motivation="a")
+        b = centers.open_center(conn, name="Bx", motivation="b")
         centers.close(conn, center_id=a.id)
     with db.connection() as conn:
         listed = [c.id for c in centers.list_open(conn)]
@@ -102,7 +102,7 @@ def test_list_open_omits_closed(isolated: Path) -> None:
 def test_expired_unclosed(isolated: Path) -> None:
     past = (datetime.now(UTC) - timedelta(days=10)).isoformat(timespec="seconds")
     with db.connection() as conn, db.transaction(conn):
-        c = centers.open_center(conn, name="X", motivation="y")
+        c = centers.open_center(conn, name="Xyz", motivation="y")
         # Directly age its closes_at into the past.
         conn.execute(
             "UPDATE centers SET closes_at = ? WHERE id = ?", (past, c.id)
@@ -117,6 +117,6 @@ def test_open_validates_empty_inputs(isolated: Path) -> None:
         with pytest.raises(ValueError):
             centers.open_center(conn, name="", motivation="x")
         with pytest.raises(ValueError):
-            centers.open_center(conn, name="x", motivation="")
+            centers.open_center(conn, name="xy", motivation="")
         with pytest.raises(ValueError):
-            centers.open_center(conn, name="x", motivation="y", term_days=0)
+            centers.open_center(conn, name="xy", motivation="y", term_days=0)

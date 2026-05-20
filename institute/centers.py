@@ -41,7 +41,9 @@ class Center:
     report_path: str | None
 
 
-_ID_RE = re.compile(r"^[a-z][a-z0-9-]{0,40}$")
+# Same shape as institute.departments._ID_RE - minimum two chars so
+# single-letter ids that would shadow real slugs don't sneak through.
+_ID_RE = re.compile(r"^[a-z][a-z0-9-]{1,40}$")
 
 
 def _slugify(name: str) -> str:

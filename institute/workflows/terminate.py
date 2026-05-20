@@ -69,7 +69,18 @@ def run(
     if not reason.strip():
         raise ValueError("reason must be non-empty.")
 
-    with db.connection() as conn:
+    from institute.state import TERMINAL_STATE_VALUES
+
+    placeholders = ",".join("?" * len(TERMINAL_STATE_VALUES))
+    now = datetime.now(UTC).isoformat(timespec="seconds")
+    orphaned_advisees: list[dict] = []
+
+    # All reads and writes share a single transaction so a concurrent
+    # terminate / state-mutation cannot drop a row out of in_flight
+    # between the SELECT and the force-REJECT, and so two terminates
+    # racing on the same Fellow can't both write the
+    # charter_violation_termination decision.
+    with db.connection() as conn, db.transaction(conn):
         row = conn.execute(
             "SELECT id, name, rank, retired_at FROM fellows WHERE id = ?",
             (fellow_id,),
@@ -82,9 +93,6 @@ def run(
                 f"[yellow]{row['name']} is already retired (at {row['retired_at']}).[/yellow]"
             )
             return False
-        from institute.state import TERMINAL_STATE_VALUES
-
-        placeholders = ",".join("?" * len(TERMINAL_STATE_VALUES))
         in_flight = list(
             conn.execute(
                 f"SELECT id, title, state FROM projects "
@@ -94,29 +102,25 @@ def run(
             )
         )
 
-    now = datetime.now(UTC).isoformat(timespec="seconds")
+        body = _format_decision_body(
+            fellow_id=fellow_id,
+            fellow_name=row["name"],
+            rank=row["rank"],
+            kind=kind,
+            reason=reason,
+            in_flight=in_flight,
+            now=now,
+            triggered_by=triggered_by,
+            related_project=related_project,
+        )
+        decision = decisions.Decision(
+            kind="charter_violation_termination",
+            title=f"Terminated: {row['name']} ({kind})",
+            body=body,
+            actors=[triggered_by, fellow_id],
+            related_project=related_project,
+        )
 
-    body = _format_decision_body(
-        fellow_id=fellow_id,
-        fellow_name=row["name"],
-        rank=row["rank"],
-        kind=kind,
-        reason=reason,
-        in_flight=in_flight,
-        now=now,
-        triggered_by=triggered_by,
-        related_project=related_project,
-    )
-    decision = decisions.Decision(
-        kind="charter_violation_termination",
-        title=f"Terminated: {row['name']} ({kind})",
-        body=body,
-        actors=[triggered_by, fellow_id],
-        related_project=related_project,
-    )
-
-    orphaned_advisees: list[dict] = []
-    with db.connection() as conn, db.transaction(conn):
         conn.execute(
             "UPDATE fellows SET retired_at = ? WHERE id = ?",
             (now, fellow_id),

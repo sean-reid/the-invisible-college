@@ -687,7 +687,13 @@ def run(project_id: str) -> None:
     Each invocation handles a single reviewer. Re-running `institute next`
     works through the remaining reviewers until all are done.
     """
-    with db.connection() as conn:
+    # Slot selection + persistence runs inside a single BEGIN IMMEDIATE
+    # so concurrent peer_review invocations under different leads (or
+    # the same lead and the daemon) cannot both compute a panel from
+    # an in-between state of `reviewer_marks`. The picker's own cache
+    # (reviewer_slots table) makes the second invocation a no-op once
+    # the first has committed.
+    with db.connection() as conn, db.transaction(conn):
         proj = conn.execute(
             "SELECT id, title, state, draft_path, lead_fellow_id, review_round "
             "FROM projects WHERE id = ?",
