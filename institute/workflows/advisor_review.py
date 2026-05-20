@@ -29,6 +29,26 @@ from institute.state import State
 console = Console()
 
 
+# The advisor may request `revise` up to this many times. On the next
+# revise vote after the cap, the workflow routes the project to the
+# qualifying panel regardless of the advisor's vote. The advisor's
+# substantive feedback is still filed; only the routing is overridden.
+# Mirrors the analogous cap on the panel's revise rounds — both layers
+# need their own bound or a stuck loop can persist at either level.
+MAX_ADVISOR_REVISE_ROUNDS = 3
+
+
+def _count_prior_revisions(conn, project_id: str) -> int:
+    """Count revision rows filed for a qualifying project. Each
+    revision implies the advisor previously said `revise`, so this is
+    a stable proxy for advisor-revise rounds."""
+    row = conn.execute(
+        "SELECT COUNT(*) AS n FROM audit_log WHERE action = 'revision' AND project_id = ?",
+        (project_id,),
+    ).fetchone()
+    return int(row["n"]) if row else 0
+
+
 ADVISOR_BRIEF = """\
 You are the advisor for a Postulant's qualifying project. The
 Postulant has produced a draft. Read it carefully and give
@@ -181,21 +201,59 @@ def run(project_id: str) -> None:
     # qualifying_panel workflow to get the other two votes. `revise`
     # short-circuits straight back to REVISING because the advisor's
     # named concerns are blocking on their own.
+    #
+    # Cap: after MAX_ADVISOR_REVISE_ROUNDS prior revisions, an advisor
+    # `revise` vote is overridden and the project still routes to the
+    # qualifying panel. The advisor's feedback stands as institutional
+    # record; the routing reflects that the institution does not let
+    # one advisor hold a project in revision indefinitely. The panel
+    # has its own cap and shelve mechanism.
+    with db.connection() as conn:
+        prior_revisions = _count_prior_revisions(conn, project_id)
+    advisor_overridden = False
     if outcome == "ready":
         target = State.AWAITING_QUALIFYING_PANEL
+    elif prior_revisions >= MAX_ADVISOR_REVISE_ROUNDS:
+        target = State.AWAITING_QUALIFYING_PANEL
+        advisor_overridden = True
+        console.print(
+            f"[yellow]Advisor returned `revise` after {prior_revisions} prior "
+            f"revisions (cap {MAX_ADVISOR_REVISE_ROUNDS}); overriding to "
+            "route the project to the qualifying panel.[/yellow]"
+        )
     else:
         target = State.REVISING
+    body_lines = [
+        f"**Advisor:** {advisor.name} (`{advisor.id}`)",
+        "",
+        f"**Postulant:** {postulant_row['name']} (`{postulant_row['id']}`)",
+        "",
+        f"**Outcome:** `{outcome}` → state `{target.value}`",
+        "",
+        f"**Summary:** {summary}",
+        "",
+        f"**Feedback:** [{feedback_path.relative_to(paths.ROOT)}]"
+        f"({feedback_path.relative_to(paths.ROOT)})",
+    ]
+    if advisor_overridden:
+        body_lines.extend(
+            [
+                "",
+                (
+                    f"**Routing override:** the advisor voted `revise` after "
+                    f"{prior_revisions} prior revisions on this project "
+                    f"(cap {MAX_ADVISOR_REVISE_ROUNDS}). The institution "
+                    "does not permit unbounded advisor revision requests; "
+                    "the project routes to the qualifying panel anyway, "
+                    "which will choose `ready`, `revise` (its own cap "
+                    "applies), or `shelve`."
+                ),
+            ]
+        )
     decision = decisions.Decision(
         kind="advisor_review",
         title=f"Advisor review ({outcome}): {proj['title']}",
-        body=(
-            f"**Advisor:** {advisor.name} (`{advisor.id}`)\n\n"
-            f"**Postulant:** {postulant_row['name']} (`{postulant_row['id']}`)\n\n"
-            f"**Outcome:** `{outcome}` → state `{target.value}`\n\n"
-            f"**Summary:** {summary}\n\n"
-            f"**Feedback:** [{feedback_path.relative_to(paths.ROOT)}]"
-            f"({feedback_path.relative_to(paths.ROOT)})"
-        ),
+        body="\n".join(body_lines),
         actors=[advisor.id, postulant_row["id"]],
         related_project=project_id,
     )

@@ -110,6 +110,14 @@ Reply with `Done.` when both files exist.
 MAX_PANEL_REVISE_ROUNDS = 2
 
 
+# If a qualifying project has been through this many revisions before
+# the panel even sees it (e.g., it spent its loops at the advisor
+# layer), the panel's first convening is treated as final. The
+# institution does not need the panel to ask for yet more revisions
+# on work that has already been revised heavily; render a verdict.
+MAX_REVISIONS_BEFORE_PANEL_IS_FINAL = 5
+
+
 PANEL_BRIEF_FINAL = """\
 You are serving as a panel evaluator on the qualifying project of a
 Postulant of the Invisible College. **This is the final convening of
@@ -367,12 +375,28 @@ def run(project_id: str) -> None:
             paths.REVIEWS / project_id / f"advisor-{postulant_row['advisor_id']}.md"
         )
         prior_revise_rounds = count_prior_revise_rounds(conn, project_id)
+        prior_revisions = conn.execute(
+            "SELECT COUNT(*) AS n FROM audit_log WHERE action = 'revision' AND project_id = ?",
+            (project_id,),
+        ).fetchone()["n"]
 
-    is_final_round = prior_revise_rounds >= MAX_PANEL_REVISE_ROUNDS
+    # Two paths to final-round mode:
+    #   - the panel has already requested revisions MAX_PANEL_REVISE_ROUNDS times
+    #   - the project has been revised many times already (typically because
+    #     the loop was stuck at the advisor layer); the panel needs to render
+    #     a verdict rather than asking for more revision.
+    is_final_round = (
+        prior_revise_rounds >= MAX_PANEL_REVISE_ROUNDS
+        or prior_revisions >= MAX_REVISIONS_BEFORE_PANEL_IS_FINAL
+    )
     if is_final_round:
+        reason = (
+            f"{prior_revise_rounds} prior panel revise round(s)"
+            if prior_revise_rounds >= MAX_PANEL_REVISE_ROUNDS
+            else f"{prior_revisions} prior revisions (heavy revision history)"
+        )
         console.print(
-            f"[yellow]Qualifying panel: {prior_revise_rounds} prior revise "
-            f"round(s) (cap {MAX_PANEL_REVISE_ROUNDS}); this convening is final. "
+            f"[yellow]Qualifying panel ({reason}); this convening is final. "
             "Panelists choose `ready` or `shelve`.[/yellow]"
         )
 
