@@ -39,6 +39,42 @@ from institute.paths import AUDIT_LOG
 DEFAULT_INVOKE_TIMEOUT_SECONDS = 90 * 60
 
 
+class FellowInvocationError(RuntimeError):
+    """A `claude` invocation for a Fellow did not produce a valid result.
+
+    Distinct from a generic RuntimeError so the autopilot loop can
+    catch only this class and continue the cycle on transient Claude
+    failures (network blips, timeouts, rare CLI crashes) without
+    crashing the whole daemon. Workflow callers that don't want to
+    handle the failure are still free to let it propagate.
+
+    Subclasses RuntimeError for backward compatibility: existing
+    `except RuntimeError` sites keep working.
+    """
+
+    def __init__(
+        self,
+        *,
+        fellow_id: str,
+        step: str,
+        project_id: str,
+        returncode: int,
+        is_error: bool,
+        stderr: str,
+    ) -> None:
+        self.fellow_id = fellow_id
+        self.step = step
+        self.project_id = project_id
+        self.returncode = returncode
+        self.is_error = is_error
+        self.stderr = stderr
+        super().__init__(
+            f"Fellow {fellow_id} failed step {step}: "
+            f"returncode={returncode}, is_error={is_error}, "
+            f"stderr={stderr}"
+        )
+
+
 @dataclass(frozen=True)
 class FellowTask:
     """Everything claude_runner needs to invoke a Fellow once."""
@@ -326,10 +362,13 @@ def invoke(task: FellowTask) -> FellowResult:
     _audit(task, session_id, raw, proc.returncode, proc.stderr)
 
     if proc.returncode != 0 or is_error:
-        raise RuntimeError(
-            f"Fellow {task.genome.id} failed step {task.step}: "
-            f"returncode={proc.returncode}, is_error={is_error}, "
-            f"stderr={proc.stderr.strip()[:500]}"
+        raise FellowInvocationError(
+            fellow_id=task.genome.id,
+            step=task.step,
+            project_id=task.project_id,
+            returncode=proc.returncode,
+            is_error=is_error,
+            stderr=proc.stderr.strip()[:500],
         )
 
     return FellowResult(

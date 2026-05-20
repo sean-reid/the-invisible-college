@@ -20,7 +20,7 @@ import click
 from rich.console import Console
 from rich.table import Table
 
-from institute import __version__, db, paths
+from institute import __version__, claude_runner, db, paths
 from institute import fellow as fellow_mod
 
 console = Console()
@@ -1396,15 +1396,85 @@ def next_cmd(project: str | None) -> None:
         _dispatch_step(row["id"], row["state"])
 
 
-def _pick_in_flight_project(project: str | None) -> sqlite3.Row | None:
-    """Return the row to advance next, or None if there is nothing to do."""
+def _record_step_failure(
+    *,
+    project_id: str,
+    state: str,
+    fellow_id: str,
+    step: str,
+    returncode: int,
+    stderr: str,
+) -> None:
+    """Record a transient Fellow invocation failure as an institutional
+    decision. The daemon retries on the next cycle; this row exists so
+    the record shows the attempt rather than silently skipping it."""
+    from datetime import UTC, datetime
+
+    from institute import decisions
+
+    now = datetime.now(UTC).isoformat(timespec="seconds")
+    body_lines = [
+        f"**Project:** `{project_id}` (state: `{state}`)",
+        f"**Fellow:** `{fellow_id}`",
+        f"**Step:** `{step}`",
+        f"**Returncode:** {returncode}",
+        f"**Recorded:** {now}",
+        "",
+        (
+            "The Fellow's Claude invocation returned non-zero. The "
+            "autopilot loop caught the failure, recorded this row, and "
+            "skipped the project for the rest of the cycle. The next "
+            "cycle will retry the same step. No state was changed."
+        ),
+    ]
+    if stderr:
+        body_lines.extend(["", "## stderr (truncated)", "", "```", stderr, "```"])
+    decision = decisions.Decision(
+        kind="step_failure",
+        title=f"Step failure: {fellow_id} on {project_id}",
+        body="\n".join(body_lines),
+        actors=["orchestrator", fellow_id],
+        related_project=project_id,
+    )
+    try:
+        with db.connection() as conn, db.transaction(conn):
+            decisions.record(conn, decision)
+    except Exception:  # pragma: no cover - best-effort
+        # Never let the audit write itself crash the loop.
+        pass
+
+
+def _pick_in_flight_project(
+    project: str | None,
+    *,
+    exclude_ids: set[str] | None = None,
+) -> sqlite3.Row | None:
+    """Return the row to advance next, or None if there is nothing to do.
+
+    `exclude_ids` lets the autopilot loop skip projects that already
+    failed earlier in the same cycle, so a transient Claude error on
+    one project does not pin the loop to the same project until budget
+    exhaustion.
+    """
     from institute.state import TERMINAL_STATE_VALUES
 
     placeholders = ",".join("?" * len(TERMINAL_STATE_VALUES))
+    exclude_ids = exclude_ids or set()
     with db.connection() as conn:
         if project is not None:
+            if project in exclude_ids:
+                return None
             return conn.execute(
                 "SELECT id, state FROM projects WHERE id = ?", (project,)
+            ).fetchone()
+        if exclude_ids:
+            exclude_placeholders = ",".join("?" * len(exclude_ids))
+            return conn.execute(
+                f"SELECT id, state FROM projects "
+                f"WHERE state NOT IN ({placeholders}) "
+                f"  AND id NOT IN ({exclude_placeholders}) "
+                f"ORDER BY updated_at ASC LIMIT 1",
+                (*TERMINAL_STATE_VALUES, *exclude_ids),
             ).fetchone()
         return conn.execute(
             f"SELECT id, state FROM projects "
@@ -1735,6 +1805,12 @@ def _advance_loop(
 
     audit_cost = _AuditCostTracker.from_now()
 
+    # Projects whose step raised a FellowInvocationError this cycle.
+    # The loop excludes them from `_pick_in_flight_project` so a
+    # transient Claude failure on one project doesn't pin the loop to
+    # the same project until the budget runs out.
+    failed_this_cycle: set[str] = set()
+
     stop_requested = {"flag": False}
 
     def _on_sigint(_signum: int, _frame: object) -> None:
@@ -1767,12 +1843,25 @@ def _advance_loop(
                     )
                     return
 
-            row = _pick_in_flight_project(project)
+            row = _pick_in_flight_project(project, exclude_ids=failed_this_cycle)
             if row is None:
                 if project is not None:
+                    if project in failed_this_cycle:
+                        console.print(
+                            f"[yellow]Project {project} failed earlier this "
+                            "cycle; halting.[/yellow]"
+                        )
+                        return
                     console.print(f"[red]No such project: {project}[/red]")
                     sys.exit(1)
-                console.print("[dim]No in-flight projects. Done.[/dim]")
+                if failed_this_cycle:
+                    console.print(
+                        f"[yellow]No in-flight projects remaining "
+                        f"({len(failed_this_cycle)} skipped due to earlier "
+                        "failures this cycle). Done.[/yellow]"
+                    )
+                else:
+                    console.print("[dim]No in-flight projects. Done.[/dim]")
                 return
             if row["state"] in ("published", "rejected"):
                 console.print(f"[green]Project {row['id']} is {row['state']}. Done.[/green]")
@@ -1781,7 +1870,53 @@ def _advance_loop(
             console.rule(f"[bold]Step {step}[/bold]", align="left", style="dim")
             start = time.monotonic()
             prev_state = row["state"]
-            _dispatch_step(row["id"], row["state"])
+            try:
+                _dispatch_step(row["id"], row["state"])
+            except claude_runner.FellowInvocationError as exc:
+                # Transient Claude CLI failure on a single Fellow
+                # invocation. Don't crash the cycle - record the
+                # failure, mark the project as failed-this-cycle so
+                # the loop doesn't immediately re-pick it, and
+                # continue to other in-flight work.
+                console.print(
+                    f"[yellow]Step on {row['id']} failed: Fellow "
+                    f"{exc.fellow_id} ({exc.step}) returned "
+                    f"returncode={exc.returncode}. Skipping for this "
+                    "cycle; the next cycle will retry.[/yellow]"
+                )
+                _record_step_failure(
+                    project_id=row["id"],
+                    state=row["state"],
+                    fellow_id=exc.fellow_id,
+                    step=exc.step,
+                    returncode=exc.returncode,
+                    stderr=exc.stderr,
+                )
+                failed_this_cycle.add(row["id"])
+                continue
+            except Exception as exc:
+                # Catch-all for workflow-level failures (e.g. publish
+                # citation lint, parsing errors, malformed JSON). The
+                # cycle keeps going; the project is skipped for the
+                # rest of this cycle and the next cycle retries unless
+                # the operator intervenes. Genuine code bugs surface
+                # as the recorded decision; the operator decides
+                # whether to fix the code or revise the draft.
+                console.print(
+                    f"[yellow]Step on {row['id']} failed: "
+                    f"{type(exc).__name__}: {exc}. Skipping for this "
+                    "cycle; the next cycle will retry.[/yellow]"
+                )
+                _record_step_failure(
+                    project_id=row["id"],
+                    state=row["state"],
+                    fellow_id="orchestrator",
+                    step=row["state"],
+                    returncode=1,
+                    stderr=f"{type(exc).__name__}: {exc}",
+                )
+                failed_this_cycle.add(row["id"])
+                continue
             elapsed = time.monotonic() - start
             run_cost = audit_cost.delta()
             console.print(
