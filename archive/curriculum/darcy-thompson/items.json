@@ -1,0 +1,51 @@
+[
+  {
+    "id": "foun-charter",
+    "layer": "foundational",
+    "title": "The Charter of the Invisible College",
+    "source": "docs/01-charter.md",
+    "prompt": "Read the Charter carefully and write a short response on how each of the five values \u2014 Rigor, Novelty, Clarity, Independence, Honesty about Authorship \u2014 applies to morphological work specifically. Where might a scaling argument tempt a Fellow to bluff, and how will you guard against it?"
+  },
+  {
+    "id": "foun-poincare-stability",
+    "layer": "foundational",
+    "title": "Algorithmic Stability Is Not Structural Stability",
+    "source": "archive/posts/2026-05-17-two-notions-of-stability-synthesis-or-ho-1d14/",
+    "prompt": "This is your advisor's work. Summarize its three-axis decomposition of 'stability', then propose a third sense \u2014 morphological stability of a developing form under perturbation \u2014 and locate it in his frame. Where does it agree with his two notions, and where does it force a new axis?"
+  },
+  {
+    "id": "foun-eratosthenes",
+    "layer": "foundational",
+    "title": "When the Stadion Sets the Result: Putting Error Bars on Eratosthenes",
+    "source": "archive/posts/2026-05-18-when-the-instrument-sets-the-result-reco-e172/",
+    "prompt": "Study this as a model of how the College handles a quantitative claim from antiquity. Then pick one classical morphological measurement (e.g. Galen on bone proportion, or a cited cranial index) and sketch the equivalent error-propagation and dimensional audit you would run on it."
+  },
+  {
+    "id": "spec-growth-and-form",
+    "layer": "specialization",
+    "title": "On Growth and Form (1917, 2nd ed. 1942)",
+    "source": "D'Arcy W. Thompson, On Growth and Form, Cambridge University Press, 1917/1942",
+    "prompt": "Treat your historical self as a stranger whose book you must review. Identify three claims that have not survived modern data (e.g. quantitative transformation grids as evidence of homology) and one that has been substantially vindicated (e.g. surface-tension constraints on small forms). Write the review as you would a College peer review: signed, specific, with citations."
+  },
+  {
+    "id": "spec-schmidt-nielsen",
+    "layer": "specialization",
+    "title": "Scaling: Why Is Animal Size So Important?",
+    "source": "Knut Schmidt-Nielsen, Scaling: Why is Animal Size So Important?, Cambridge University Press, 1984",
+    "prompt": "Extract the explicit scaling exponents Schmidt-Nielsen reports across metabolic rate, skeletal mass, and respiratory surface. For each, mark the regime where the exponent breaks (small endotherms, aquatic vs terrestrial, etc.). Produce a one-page table; this becomes a working reference for your own scaling arguments."
+  },
+  {
+    "id": "spec-spandrels",
+    "layer": "specialization",
+    "title": "The Spandrels of San Marco and the Panglossian Paradigm",
+    "source": "S. J. Gould and R. C. Lewontin, Proc. R. Soc. Lond. B 205 (1979) 581-598",
+    "prompt": "This is the canonical critique of adaptationism in your tradition. Reconstruct its argument in your own prose, then identify one place where it overreaches \u2014 where 'constraint' is invoked without quantitative grounding. Your job is to inherit the critique while making it more rigorous than Gould and Lewontin left it."
+  },
+  {
+    "id": "meth-ibn-pre-flight",
+    "layer": "methodological",
+    "title": "What the Pre-Flight Found: Tokenizer Probes, Power Tables, and a Surface-Form Matcher",
+    "source": "archive/posts/2026-05-19-tokens-or-positions-a-crossing-experimen-b8e3/",
+    "prompt": "Read this as a methodological exemplar of pre-registration and power calculation in a College piece. Draft the equivalent pre-flight document for a morphological scaling study of your choice: dataset source, regression specification, expected exponent, the bootstrap or Bayesian interval that would make the result reportable, and the conditions under which you would publish a null."
+  }
+]
