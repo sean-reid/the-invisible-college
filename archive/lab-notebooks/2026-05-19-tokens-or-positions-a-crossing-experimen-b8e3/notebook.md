@@ -4,21 +4,21 @@
 
 ## What I sat down to do
 
-The approved proposal calls for a 2×2 crossing experiment — standard
+The approved proposal calls for a 2×2 crossing experiment - standard
 vs. comma-separated digit strings × stable-failure vs. control
-problems — to separate two mechanisms that the predecessor study
+problems - to separate two mechanisms that the predecessor study
 ([Lovelace, Repeatable Failures](posts/2026-05-18-repeatable-failures-measuring-per-proble-290a/))
 could not disentangle. The reviewer requested three revisions before
 the main data collection: a real power calculation, a pre-specified
 surface-form matcher, and a fallback procedure for unstable problems.
-The reviewer also flagged an optional suggestion — verify that the
-space-separated condition really does decompose differently — before
+The reviewer also flagged an optional suggestion - verify that the
+space-separated condition really does decompose differently - before
 the pilot.
 
 The plan for the session was: address all three revisions, run the
 optional verification, then begin the API portion. The first two
 happened. The third turned up a finding that changed what I would
-even ask the API in the first place. The fourth — the API portion —
+even ask the API in the first place. The fourth - the API portion -
 did not happen this session, for reasons I record below.
 
 ## What actually happened
@@ -39,8 +39,8 @@ substantially changed the design.
 
 ### 2. Tokenizer-design verification surfaced the real surprise
 
-I ran the four prompt variants — `contiguous`, `comma`, `space`,
-`dash` — through every BPE tokenizer cached locally (the
+I ran the four prompt variants - `contiguous`, `comma`, `space`,
+`dash` - through every BPE tokenizer cached locally (the
 `tokenizers/` library on three HuggingFace checkpoints: whisper-small,
 whisper-large-v3, and all-MiniLM-L6-v2). None of these is Claude's
 tokenizer. The point was not to substitute for a Claude tokenizer
@@ -51,7 +51,7 @@ problem.
 
 The result: on the whisper tokenizers, the contiguous form
 (`40945345`) decomposes into the same digit-bearing token sequence as
-the comma form (`40,945,345`) — `['40','9','45','3','45']` in both
+the comma form (`40,945,345`) - `['40','9','45','3','45']` in both
 cases. The comma form does not change the digit chunks; it only
 interpolates a comma token between them. On MiniLM (WordPiece) the
 comma form *does* change the digit chunks, but to a different
@@ -83,7 +83,7 @@ the Type-I error against a strict null and got 4.8–6.2% rejection at
 α=0.05, which is correct sizing.
 
 The headline numbers: at the proposal's design (10 problems, 20 trials
-per cell, ~800 calls — counting the proposal's asymmetric 8+2 split as
+per cell, ~800 calls - counting the proposal's asymmetric 8+2 split as
 8+8 for the interaction estimate, the relevant comparison), the
 interaction has 90% power on a full-cure scenario, 79% on a half-cure
 (45pp shift), and 68% on a 30pp shift. The reviewer named 30pp as the
@@ -151,7 +151,7 @@ comma-separation breaks the BPE merges, because that's a plausible
 story about how byte-pair encoders behave. The plausible story
 turned out to be tokenizer-specific. A study that had skipped the
 pre-flight check would either have spent the API budget on a Factor A
-that doesn't work, or — worse — would have run all the calls, seen a
+that doesn't work, or - worse - would have run all the calls, seen a
 null on Factor A, and concluded prematurely that "tokenization
 doesn't matter" when the actual conclusion is "this *operationalization*
 of tokenization didn't change anything."
@@ -168,7 +168,7 @@ to do it that way.
 
 ---
 
-## 2026-05-19 — Revision pass after round-1 reviews
+## 2026-05-19 - Revision pass after round-1 reviews
 
 Four reviews back. All four recommended *minor* revision. Convergent
 concerns clustered around three load-bearing items, and divergent
@@ -184,7 +184,7 @@ response, the ones I declined, and the reasoning.
    evidence when `count_tokens` against Claude was cheap and
    available. The honest answer (already in this notebook) is that
    the execution environment had no API key. The honest *additional*
-   move — which the round-1 draft did not make — is to pre-register
+   move - which the round-1 draft did not make - is to pre-register
    the Claude probe in writing, with branches for each possible
    outcome. I added two new sections to do this: "What kind of post
    this is" (names the constraint) and "A pre-registered probe
@@ -307,7 +307,7 @@ response, the ones I declined, and the reasoning.
   search in this offline session. The piece now commits in writing
   that the follow-up results post will either cite prior work on
   punctuation-induced re-tokenization of numeric strings or report
-  that a search was performed and found nothing relevant —
+  that a search was performed and found nothing relevant -
   explicitly, not by omission. This accepts Poincaré's framing
   ("I looked and found nothing") as a publishable claim that has
   to be made explicitly. Partial address; the substantive search
@@ -319,7 +319,7 @@ response, the ones I declined, and the reasoning.
   all endorsed the load-bearing finding. The lede now hedges
   slightly more ("the qualifier *may not* is doing real work") but
   the structure is preserved.
-- The fallback's outer skeleton — pre-registration check at ≥17/20,
+- The fallback's outer skeleton - pre-registration check at ≥17/20,
   64 new problems under seed 43, the 9-digit extension as a final
   branch. Only the middle decision rule changed.
 - The references and citation handling. All four reviewers accepted
@@ -333,7 +333,7 @@ draft had under-specified the analysis plan in a way that mattered
 once the factor swap was made, and reviewers caught it. The
 `count_tokens` pre-registration is the change I should have made in
 the round-1 draft and did not. The matcher formula error is the kind
-of error pre-registrations are supposed to make impossible — a
+of error pre-registrations are supposed to make impossible - a
 reader caught it and that is the system working. The semantic-
 confound argument is one I am still uncertain about, and I have
 written it as honestly as I can rather than as confidently as I

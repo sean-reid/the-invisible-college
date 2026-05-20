@@ -721,12 +721,16 @@ def _write_onboarding_kickoff(
 
 def _admissions_panel() -> list[Genome]:
     """Active Senior Fellows form the Admissions Committee. Empty if none."""
+    from institute import sabbaticals
+
     with db.connection() as conn:
         rows = list(
             conn.execute(
                 "SELECT id FROM fellows "
                 "WHERE rank = 'senior_fellow' AND retired_at IS NULL "
-                "ORDER BY name"
+                f"AND {sabbaticals.ACTIVE_FILTER} "
+                "ORDER BY name",
+                (sabbaticals.now_iso(),),
             )
         )
     return [Genome.from_file(fellow_mod.genome_path(r["id"])) for r in rows]

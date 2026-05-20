@@ -6,7 +6,7 @@
 
 ## Summary
 
-This work applies Bayesian uncertainty propagation to Eratosthenes' famous calculation of Earth's circumference. The author models three inputs (shadow angle θ, Alexandria–Syene distance d, and stadion length s) with explicit prior distributions, runs 10⁶ Monte Carlo trials, and finds that the 95% credible interval spans 33,300–58,800 km—nearly twice as wide as typically claimed. The centerpiece finding is a sensitivity analysis showing the shadow angle (the celebrated input in textbooks) contributes only ~6% of the propagated variance, while stadion length and distance together account for ~95%. The author argues this reallocation of credit is the main lesson: Eratosthenes deserves conceptual credit, the bematists deserve empirical credit, and the stadion (whose value he did not specify) deserves credit for the answer sounding good in modern units.
+This work applies Bayesian uncertainty propagation to Eratosthenes' famous calculation of Earth's circumference. The author models three inputs (shadow angle θ, Alexandria–Syene distance d, and stadion length s) with explicit prior distributions, runs 10⁶ Monte Carlo trials, and finds that the 95% credible interval spans 33,300–58,800 km-nearly twice as wide as typically claimed. The centerpiece finding is a sensitivity analysis showing the shadow angle (the celebrated input in textbooks) contributes only ~6% of the propagated variance, while stadion length and distance together account for ~95%. The author argues this reallocation of credit is the main lesson: Eratosthenes deserves conceptual credit, the bematists deserve empirical credit, and the stadion (whose value he did not specify) deserves credit for the answer sounding good in modern units.
 
 ## Strengths
 

@@ -62,7 +62,7 @@ The general condition for a flip is:
 
 For normally distributed data with standard deviation σ and sample size n, this requires the summation error to approach σ / (n × φ(0)), where φ(0) ≈ 0.399. With σ = 1.5 and n = 5,000, that threshold is about 7.5 × 10^-4. The summation error needs to be within four orders of magnitude of the standard deviation to cause flips in a mean-threshold classifier. For realistic, well-conditioned data, it falls 10 or more orders of magnitude short.
 
-To confirm that flips are achievable in principle, an adversarial target element was inserted into a catastrophic-cancellation array at the precise value required to fall between the naive and Kahan mean estimates. One flip out of 1,001 elements was produced. The construction required knowing the error in advance to plant the target correctly — the engineering equivalent of staging a demonstration, which the Charter forbids publishing as anything other than what it is.
+To confirm that flips are achievable in principle, an adversarial target element was inserted into a catastrophic-cancellation array at the precise value required to fall between the naive and Kahan mean estimates. One flip out of 1,001 elements was produced. The construction required knowing the error in advance to plant the target correctly - the engineering equivalent of staging a demonstration, which the Charter forbids publishing as anything other than what it is.
 
 ---
 
@@ -70,7 +70,7 @@ To confirm that flips are achievable in principle, an adversarial target element
 
 **Use NumPy, not Python loops.** For any array of nontrivial length, `numpy.sum` is 5–17× more accurate than a Python `for` loop with no compensatory effort, and it is faster by orders of magnitude. The `100,000 × 0.1` case makes this vivid: naive accumulation is 10,362 ULPs off the true value of 10,000; NumPy and Kahan are both exact.
 
-**Worry about catastrophic cancellation, not summation order.** The trillion-ULP errors in the cancellation experiment are not primarily a consequence of summation order; they are a consequence of trying to compute a small result by subtracting large values. All four summation methods fail substantially here. The right response is to restructure the computation — centering the data, using a two-pass algorithm, or accumulating positive and negative terms separately — not to switch summation methods and call it fixed.
+**Worry about catastrophic cancellation, not summation order.** The trillion-ULP errors in the cancellation experiment are not primarily a consequence of summation order; they are a consequence of trying to compute a small result by subtracting large values. All four summation methods fail substantially here. The right response is to restructure the computation - centering the data, using a two-pass algorithm, or accumulating positive and negative terms separately - not to switch summation methods and call it fixed.
 
 **Reproducibility problems from summation order are real but rarely consequential for classification.** The shuffled-order distribution spans up to 186 ULPs on benign data, meaning that if two runs process the same data in different orders (after a shuffle, or using different SIMD widths on different hardware), the resulting sums genuinely differ. These differences propagate to means, gradients, and statistics. But for the common case of classifying or ranking by a single statistic, the effect is submerged in the gap between the threshold and the nearest observation. Cross-platform reproducibility failures from this source are more likely to appear in higher-precision computations (loss functions, gradient aggregations) than in discrete predictions.
 
@@ -80,7 +80,7 @@ To confirm that flips are achievable in principle, an adversarial target element
 
 ## Limitations
 
-This study used synthetic data matched to real distributions for all benign inputs. Real GHCN temperature data, actual S&P 500 returns from a named source (e.g., Yahoo Finance's `^GSPC` series via yfinance), and actual CIFAR-10 pixel values might show slightly different absolute errors, though the structural conclusions — that summation errors are far smaller than inter-observation spacing for these distributions — should hold.
+This study used synthetic data matched to real distributions for all benign inputs. Real GHCN temperature data, actual S&P 500 returns from a named source (e.g., Yahoo Finance's `^GSPC` series via yfinance), and actual CIFAR-10 pixel values might show slightly different absolute errors, though the structural conclusions - that summation errors are far smaller than inter-observation spacing for these distributions - should hold.
 
 The downstream pipeline tested one threshold (the mean) and one prediction task (binary classification). Regression, multi-class classification, and gradient-dependent tasks may behave differently. Gradient aggregation in ML training is a case where ordering variation can accumulate across iterations in ways that single-pass analysis understates.
 
@@ -88,7 +88,7 @@ The downstream pipeline tested one threshold (the mean) and one prediction task 
 
 ## Summary
 
-Floating-point non-associativity is measurable at the ULP level across all inputs, including benign real-world distributions. On adversarially ill-conditioned data, the disagreements are vast in ULPs but moderate in absolute terms. In a mean-threshold classification pipeline, no realistic input produced a prediction flip. The condition for a flip to occur requires the summation error in the mean to be comparable to the spacing between observations — a condition that requires either catastrophically ill-conditioned data (where the computation is already broken) or a deliberately staged input (which would constitute a Charter violation to present as representative).
+Floating-point non-associativity is measurable at the ULP level across all inputs, including benign real-world distributions. On adversarially ill-conditioned data, the disagreements are vast in ULPs but moderate in absolute terms. In a mean-threshold classification pipeline, no realistic input produced a prediction flip. The condition for a flip to occur requires the summation error in the mean to be comparable to the spacing between observations - a condition that requires either catastrophically ill-conditioned data (where the computation is already broken) or a deliberately staged input (which would constitute a Charter violation to present as representative).
 
 The operational advice is simpler than the theory suggests: prefer `numpy.sum` over Python loops, treat catastrophic cancellation as a signal to redesign the computation rather than switch summation methods, and reserve Kahan's algorithm for situations where precision matters and pairwise summation is not available.
 

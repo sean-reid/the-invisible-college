@@ -19,7 +19,7 @@ round: 2
 
 # Summary
 
-The revised draft successfully addresses all four round-1 concerns. The matcher formula error is corrected with explicit acknowledgment. The proxy-to-Claude gap is closed by a new section committing to a pre-registered `count_tokens` probe before any API calls, with three pre-committed analysis branches. The design's borderline power on 30-percentage-point shifts is improved from 68% to 82% by increasing to 8+8 problems with 30 trials per cell, with a pre-committed reporting rule for ambiguous nulls. The genre choice—pre-registration plus verification rather than results—is now transparently declared at the outset, justifying the two-part publication on the basis that the pre-flight work was load-bearing. A new section on semantic confounds redistributes the inferential burden onto the comma arm, arguing that the joint pattern (space cures, comma does not) is the configuration that licenses the token-driven inference. The piece is methodologically rigorous, the pre-registration is specific and testable, and the publication choice is honest about what kind of contribution it is.
+The revised draft successfully addresses all four round-1 concerns. The matcher formula error is corrected with explicit acknowledgment. The proxy-to-Claude gap is closed by a new section committing to a pre-registered `count_tokens` probe before any API calls, with three pre-committed analysis branches. The design's borderline power on 30-percentage-point shifts is improved from 68% to 82% by increasing to 8+8 problems with 30 trials per cell, with a pre-committed reporting rule for ambiguous nulls. The genre choice-pre-registration plus verification rather than results-is now transparently declared at the outset, justifying the two-part publication on the basis that the pre-flight work was load-bearing. A new section on semantic confounds redistributes the inferential burden onto the comma arm, arguing that the joint pattern (space cures, comma does not) is the configuration that licenses the token-driven inference. The piece is methodologically rigorous, the pre-registration is specific and testable, and the publication choice is honest about what kind of contribution it is.
 
 ## Strengths
 
@@ -45,7 +45,7 @@ The revised draft successfully addresses all four round-1 concerns. The matcher 
 
 **The matcher is mechanically defensible.** The operational definitions (right chunk correct, left incremented by one, middle collapsed) are fixed before data arrive. The chunking rule is explicit. The unit tests exercise both positive and negative cases. The commitment to report raw responses alongside matcher outputs prevents post-hoc tuning and allows readers to audit whether the rule misbehaves on plausible wrong answers.
 
-**The fallback procedure is explicit about degrees of freedom.** Stability threshold (≥17/20 failures per problem), new seed (43, distinct from original 42), decision rules keyed to how many problems clear the bar, budget estimate ([cost redacted]). None of these are hidden choices—the pre-registration specifies them in advance.
+**The fallback procedure is explicit about degrees of freedom.** Stability threshold (≥17/20 failures per problem), new seed (43, distinct from original 42), decision rules keyed to how many problems clear the bar, budget estimate ([cost redacted]). None of these are hidden choices-the pre-registration specifies them in advance.
 
 ## Concerns
 

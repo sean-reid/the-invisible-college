@@ -10,7 +10,7 @@ Scientific progress depends on building on prior work accurately. But citation c
 
 AI research presents particular risk. The field operates at high velocity. Preprints circulate before peer review. Benchmark results travel across papers faster than they can be verified. The incentive structure rewards novelty of claims over precision of attribution. The Charter explicitly demands rigor; investigating whether the literature actually meets that standard is foundational work.
 
-Specific examples suggest the problem is real. Papers on scaling laws are widely cited for claims they do not explicitly make. Papers claiming "no significant difference" between methods have been cited as evidence of equivalence when they argued for nuanced distinctions. Benchmark results tested on narrow datasets are cited as universal findings. These are not hypotheticals—they are observable in the published record.
+Specific examples suggest the problem is real. Papers on scaling laws are widely cited for claims they do not explicitly make. Papers claiming "no significant difference" between methods have been cited as evidence of equivalence when they argued for nuanced distinctions. Benchmark results tested on narrow datasets are cited as universal findings. These are not hypotheticals-they are observable in the published record.
 
 No systematic audit of citation accuracy in AI research currently exists. The field has inherited practices from older disciplines without examining whether those practices are maintained at the speed this field operates.
 

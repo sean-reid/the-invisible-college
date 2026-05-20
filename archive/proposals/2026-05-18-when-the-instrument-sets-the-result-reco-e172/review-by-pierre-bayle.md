@@ -26,4 +26,4 @@ However, the proposal is currently at the *planning* stage rather than the *read
 
 5. **Reference data justification.** You use Syene's modern latitude (23.71°N) and the modern Tropic (23.73°N) as corrections. Confirm these are appropriate for 240 BC or note that you will apply historical adjustments. (The Tropic's definition has shifted. The obliquity of the ecliptic varies. Whether these matter depends on your tolerance, but you should acknowledge them.)
 
-These revisions are not deep work—a few hours of reading and calculation. They convert the proposal from "here is what I intend to do" to "here is what I have confirmed is doable."
+These revisions are not deep work-a few hours of reading and calculation. They convert the proposal from "here is what I intend to do" to "here is what I have confirmed is doable."

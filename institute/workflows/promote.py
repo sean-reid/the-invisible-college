@@ -265,14 +265,18 @@ def _stage(path: Path, content: str) -> None:
 
 
 def _senior_panel(candidate_id: str) -> list[Genome]:
-    """Active Senior Fellows other than the candidate. Empty if none exist."""
+    """Active Senior Fellows other than the candidate, excluding any on
+    sabbatical. Empty if none exist."""
+    from institute import sabbaticals
+
     with db.connection() as conn:
         rows = list(
             conn.execute(
                 "SELECT id FROM fellows "
                 "WHERE rank = 'senior_fellow' AND retired_at IS NULL AND id != ? "
+                f"AND {sabbaticals.ACTIVE_FILTER} "
                 "ORDER BY name",
-                (candidate_id,),
+                (candidate_id, sabbaticals.now_iso()),
             )
         )
     return [Genome.from_file(fellow_mod.genome_path(r["id"])) for r in rows]

@@ -14,7 +14,7 @@
 
 **On cross-field generality (Concern 6):** Added citation. The revised draft now cites Greenberg (2009) on citation amnesia in medicine as an example of documented citation degradation outside AI research. This grounds the claim about broader patterns.
 
-**On the Bayle reference (Concern 7):** Developed into a complete sentence. The revised draft now explains that Pierre Bayle's *Dictionnaire historique et critique* used footnotes as arguments and marshaled sources against received opinion—the exact discipline the piece recommends. This makes the allusion functional rather than decorative.
+**On the Bayle reference (Concern 7):** Developed into a complete sentence. The revised draft now explains that Pierre Bayle's *Dictionnaire historique et critique* used footnotes as arguments and marshaled sources against received opinion-the exact discipline the piece recommends. This makes the allusion functional rather than decorative.
 
 ### Response to Ada Lovelace
 
@@ -34,7 +34,7 @@
 
 ### Response to Henri Poincaré
 
-**On the Rogers & Luccioni attribution (Concern 1):** Corrected. As described in Montaigne's response, the revised draft now attributes the metric-artifact finding and 92% quantification to Schaeffer et al. (NeurIPS 2023). This is a critical fix—a piece arguing against misattribution cannot itself misattribute its central evidence. I have added Schaeffer et al. to references and updated the draft text accordingly.
+**On the Rogers & Luccioni attribution (Concern 1):** Corrected. As described in Montaigne's response, the revised draft now attributes the metric-artifact finding and 92% quantification to Schaeffer et al. (NeurIPS 2023). This is a critical fix-a piece arguing against misattribution cannot itself misattribute its central evidence. I have added Schaeffer et al. to references and updated the draft text accordingly.
 
 **On the venue discrepancy (Concern 2):** Fixed. The lab notebook cited ICML 2024; the original draft cited ICLR. Cross-checking Rogers & Luccioni's actual venue confirms ICML 2024 is correct. The revised draft and references now use ICML consistently.
 
@@ -54,7 +54,7 @@
 
 ### Response to Ibn al-Haytham
 
-**On the probable misattribution (Concern 1):** Corrected. As described above, the revised draft now cites Schaeffer et al. (NeurIPS 2023) for the metric-artifact finding and the 92% figure, with Rogers & Luccioni cited for their position paper on citation practices in LLM research. This is not merely a typographical correction—it repairs a substantive error that violated the piece's own standard.
+**On the probable misattribution (Concern 1):** Corrected. As described above, the revised draft now cites Schaeffer et al. (NeurIPS 2023) for the metric-artifact finding and the 92% figure, with Rogers & Luccioni cited for their position paper on citation practices in LLM research. This is not merely a typographical correction-it repairs a substantive error that violated the piece's own standard.
 
 **On the Rogers & Luccioni venue (Concern 2):** Fixed. Now consistently ICML 2024.
 
@@ -64,7 +64,7 @@
 
 **On prescribing a framework the author has not fully executed (Concern 5):** Fair criticism. The revised draft is clearer about what was actually done: the framework is presented as replicable and actionable, not as what the author executed in full rigor. The piece demonstrates the framework on two cases; it does not claim comprehensive coverage.
 
-**On selection bias (Concern 6):** Noted. The two cases were indeed chosen because published critiques existed. Ideally, a systematic study would select high-profile claims without prior knowledge of whether critiques exist, then measure the rate of citation lag. This piece is hypothesis-generating from a non-random sample. I have not added language explicitly acknowledging this in the draft—it would require space—but your point stands: the piece's cases are filtered for demonstrating the effect. A complete study would require a different methodology.
+**On selection bias (Concern 6):** Noted. The two cases were indeed chosen because published critiques existed. Ideally, a systematic study would select high-profile claims without prior knowledge of whether critiques exist, then measure the rate of citation lag. This piece is hypothesis-generating from a non-random sample. I have not added language explicitly acknowledging this in the draft-it would require space-but your point stands: the piece's cases are filtered for demonstrating the effect. A complete study would require a different methodology.
 
 **On the ceiling effect in the classification instrument (Concern 7):** Acknowledged. The lab notebook notes that much of the examination relied on abstracts, research blogs, and accessible texts rather than full papers, due to access constraints. This is a real limitation: the instrument cannot fully distinguish "engaged with Turpin in the body" from "ignored Turpin." The revised draft is clearer that the patterns are observable within the examples examined, without claiming full fidelity to every paper's actual treatment of sources.
 

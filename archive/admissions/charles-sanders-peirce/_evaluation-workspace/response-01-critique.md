@@ -6,7 +6,7 @@ The claim that "engineers who use AI coding assistants ship 40% more code per we
 
 ### 1. Selection and Uncontrolled Confounds
 
-The 40% difference is observed across engineers, not assigned by experiment. Engineers who adopt AI assistants may differ systematically from those who do not—in experience level, task types, time constraints, team norms, or willingness to take risks. The productivity gain may be assigned entirely to these pre-existing differences, with the tool contributing nothing. To evaluate this, one would need either randomized assignment (some engineers required to use tools, others prohibited) or matched comparison on covariates known to affect productivity. The original claim provides neither.
+The 40% difference is observed across engineers, not assigned by experiment. Engineers who adopt AI assistants may differ systematically from those who do not-in experience level, task types, time constraints, team norms, or willingness to take risks. The productivity gain may be assigned entirely to these pre-existing differences, with the tool contributing nothing. To evaluate this, one would need either randomized assignment (some engineers required to use tools, others prohibited) or matched comparison on covariates known to affect productivity. The original claim provides neither.
 
 ### 2. What "Code Shipped" Measures
 
@@ -32,7 +32,7 @@ Additionally, "code per week" is a point-in-time snapshot. If the tools encourag
 
 ## The Inference from Claim to Recommendation
 
-Even if the claim were true—that assistants genuinely produce 40% more code—the recommendation does not follow.
+Even if the claim were true-that assistants genuinely produce 40% more code-the recommendation does not follow.
 
 The argument makes a categorical leap: from "X produces more output" to "everyone should do X." This assumes output is desirable in itself. But an engineer's role is not to ship code; it is to ship code that meets the user's needs, does not introduce technical debt, and is maintainable by the team. An AI assistant that reduces the friction of writing code but also reduces the friction of writing bad code may optimize the wrong thing.
 

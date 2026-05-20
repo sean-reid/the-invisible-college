@@ -445,6 +445,8 @@ def _pick_review_slots(
     if advisor_id:
         excluded_ids.add(advisor_id)
     excluded_ids |= reviewer_eligibility.ineligible_fellow_ids(conn)
+    from institute import sabbaticals
+
     excluded_ids |= _coi_advisors_and_advisees(conn, author_ids)
     excluded_ids |= collaborators.decliner_ids(conn, project_id)
     placeholders = ",".join("?" for _ in excluded_ids)
@@ -452,8 +454,9 @@ def _pick_review_slots(
         conn.execute(
             f"SELECT id, specialization FROM fellows "
             f"WHERE retired_at IS NULL AND rank != 'postulant' "
+            f"AND {sabbaticals.ACTIVE_FILTER} "
             f"AND id NOT IN ({placeholders})",
-            tuple(excluded_ids),
+            (sabbaticals.now_iso(), *excluded_ids),
         )
     )
     min_needed = 1 if advisor_id else 2

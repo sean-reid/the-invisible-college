@@ -23,7 +23,7 @@ This revision substantially strengthens the piece through three key additions: a
 
 ## What Improved
 
-**The "Where the bias lives" section is now the load-bearing contribution.** The author computes A1+A2+A3 structural bias per stadion (−1.5% / +15.5% / +30.7%), explains the geometric coincidence that makes Attic stadia cancel, and thereby answers the luck question quantitatively. This is not just a response to reviewer feedback—it is materially better analysis than the original.
+**The "Where the bias lives" section is now the load-bearing contribution.** The author computes A1+A2+A3 structural bias per stadion (−1.5% / +15.5% / +30.7%), explains the geometric coincidence that makes Attic stadia cancel, and thereby answers the luck question quantitatively. This is not just a response to reviewer feedback-it is materially better analysis than the original.
 
 **Variance decomposition is now doubly verified.** The analytical formula var(log C) = var(log θ) + var(log d) + var(log s) is derived and shown to match the Monte Carlo output (5%/45%/50%), converting the headline from "trust the simulation" to "verify the simulation." This is framework-independent, strengthening the claim that the finding is not an artifact of Bayesian setup.
 

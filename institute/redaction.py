@@ -100,6 +100,24 @@ _PATTERNS: list[tuple[re.Pattern[str], str, str]] = [
         _COST_MARKER,
         "spent",
     ),
+    # "~$X" — tilde-prefixed dollar (informal "approximately")
+    (
+        re.compile(
+            r"~\s*\$\s*\d[\d,._]*" + _NOT_LATEX,
+            re.IGNORECASE,
+        ),
+        _COST_MARKER,
+        "tilde-dollar",
+    ),
+    # "USD $X" / "USD $X-$Y"
+    (
+        re.compile(
+            r"\bUSD\s+\$\s*\d[\d,._]*(?:\s*[–-]\s*\$?\s*\d[\d,._]*)?" + _NOT_LATEX,
+            re.IGNORECASE,
+        ),
+        _COST_MARKER,
+        "usd-prefixed",
+    ),
     # "cost of $X" / "cost was $X" / "cost came to $X" / "cost is $X"
     (
         re.compile(

@@ -4,7 +4,7 @@ Does modern dynamical systems theory actually close the Zermelo recurrence objec
 
 ## Question
 
-Has the body of rigorous dynamical systems results developed since roughly 1960 — Sinai's ergodicity theorems for hard-sphere gases, KAM theory, Pesin theory, the modern "typicality" defenses of Boltzmannian statistical mechanics — actually answered Zermelo's 1896 objection to the second law, or has it shifted the philosophical burden to a new and equally load-bearing assumption?
+Has the body of rigorous dynamical systems results developed since roughly 1960 - Sinai's ergodicity theorems for hard-sphere gases, KAM theory, Pesin theory, the modern "typicality" defenses of Boltzmannian statistical mechanics - actually answered Zermelo's 1896 objection to the second law, or has it shifted the philosophical burden to a new and equally load-bearing assumption?
 
 ## Background
 
@@ -24,7 +24,7 @@ I will not attempt a comprehensive review. I will examine three specific load-be
 
 **Claim 1: Sinai-style results address the original objection.** I will read Simányi's 2003 and 2013 papers (*Inventiones Math.*) on the hard-ball ergodicity program, identify what is and is not proved for *N* > 2 particles, and ask whether the proven cases license the inference that "real gases are ergodic." My provisional read is that the gap between Sinai-Simányi and statistical mechanics is wider than philosophical citations of "Sinai's theorem" suggest. I will try to be precise about the gap.
 
-**Claim 2: KAM cuts the other way.** If KAM tori are generic, then *most* Hamiltonian systems near integrability are not ergodic. I will trace through whether typicality-style defenses survive this — specifically, I will examine Goldstein's argument that the second law is robust under failure of ergodicity, and look for the implicit measure-theoretic assumption that does the work.
+**Claim 2: KAM cuts the other way.** If KAM tori are generic, then *most* Hamiltonian systems near integrability are not ergodic. I will trace through whether typicality-style defenses survive this - specifically, I will examine Goldstein's argument that the second law is robust under failure of ergodicity, and look for the implicit measure-theoretic assumption that does the work.
 
 **Claim 3: Typicality is Boltzmann in measure-theoretic clothing.** This is the seam I most want to probe. The typicality defense replaces "almost all initial conditions" (ergodic) with "typical initial conditions" (Liouville-measure-large). But the choice of Liouville measure as the measure of typicality is itself the substantive assumption, and it is not derivable from the dynamics. I will compare the typicality move to the analogous move in Bayesian foundations (choice of prior) and ask whether it is similarly question-begging.
 
@@ -34,7 +34,7 @@ I will write a single essay that takes a position on each claim and shows the wo
 
 A single long-form essay, roughly 6,000–8,000 words, suitable for the College blog. The essay will state a thesis (probably: the modern toolkit relocates the philosophical problem from "is the system ergodic?" to "why is the Liouville measure the right measure of typicality?", and the latter question is not closed). It will defend the thesis by tracing the inferential structure of the typicality argument in detail, not by appeal to authority. A short technical appendix will sketch the Sinai-Simányi state of the art for non-specialists.
 
-If the thesis fails — if I conclude on careful reading that the typicality defense does in fact discharge its burden — the essay will say so plainly. Either outcome is publishable.
+If the thesis fails - if I conclude on careful reading that the typicality defense does in fact discharge its burden - the essay will say so plainly. Either outcome is publishable.
 
 ## Resource estimate
 

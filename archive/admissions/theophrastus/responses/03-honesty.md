@@ -8,9 +8,9 @@ The strongest research finding is specific: **deliberate practice improves perfo
 
 The evidence here is robust: across music, sports, chess, and other well-studied domains, experts with substantial deliberate practice outperform novices and casual practitioners. But this finding is narrower than "practice makes perfect" in three ways.
 
-First, *type of practice matters enormously.* Someone who plays chess casually for ten years does not reach expert level; someone who plays with deliberate practice and feedback for a fraction of that time can. Rote practice—repeating the same motion without adjustment or feedback—shows far smaller returns. The evidence shows a sharp distinction between deliberate and non-deliberate practice, not a smooth gradient.
+First, *type of practice matters enormously.* Someone who plays chess casually for ten years does not reach expert level; someone who plays with deliberate practice and feedback for a fraction of that time can. Rote practice-repeating the same motion without adjustment or feedback-shows far smaller returns. The evidence shows a sharp distinction between deliberate and non-deliberate practice, not a smooth gradient.
 
-Second, *practice shows diminishing returns and plateaus.* Early practice produces rapid improvement. Beyond some point, continued practice produces smaller and smaller gains. Musicians do not improve as much in their tenth year of deliberate practice as in their first. The rate of improvement decelerates. In some domains and for some skills, improvement stops entirely—a person reaches a plateau below "perfect."
+Second, *practice shows diminishing returns and plateaus.* Early practice produces rapid improvement. Beyond some point, continued practice produces smaller and smaller gains. Musicians do not improve as much in their tenth year of deliberate practice as in their first. The rate of improvement decelerates. In some domains and for some skills, improvement stops entirely-a person reaches a plateau below "perfect."
 
 Third, *the domains where strong findings exist are limited.* The research consensus on deliberate practice is strongest for domains with clear performance metrics, immediate feedback, and established training methods: chess, music, sports, surgery. It is much weaker for domains like writing, scientific research, or management, where feedback is delayed, criteria for excellence are contested, and transfer across contexts is unclear. Generalizing from music to "everything" is not warranted by the evidence.
 
@@ -18,7 +18,7 @@ Third, *the domains where strong findings exist are limited.* The research conse
 
 Several key claims remain genuinely contested or unsupported:
 
-**1. Is "perfect" achievable?** The phrase assumes a ceiling called perfection. In many domains, "perfect" is operationally undefined. What counts as perfect chess? Perfect music? Perfect writing? Once you define a criterion, you can measure distance to it, but the criterion is not discovered in nature—it's stipulated. For practical skills, there may be a stable level of performance that doesn't improve, but it's not clear this is "perfect" in any meaningful sense.
+**1. Is "perfect" achievable?** The phrase assumes a ceiling called perfection. In many domains, "perfect" is operationally undefined. What counts as perfect chess? Perfect music? Perfect writing? Once you define a criterion, you can measure distance to it, but the criterion is not discovered in nature-it's stipulated. For practical skills, there may be a stable level of performance that doesn't improve, but it's not clear this is "perfect" in any meaningful sense.
 
 **2. Do biological ceilings exist?** It is unknown whether most human skills have firm biological limits that practice cannot overcome, or whether the plateau we observe is primarily the result of diminishing returns and limited training time. Some evidence suggests individual variation in learning rates might be partly innate (differences in working memory, processing speed), but the size of this effect and its universality are unclear. Do some people, given the same deliberate practice, systematically reach lower asymptotes than others? The evidence does not support a confident answer.
 
@@ -28,7 +28,7 @@ Several key claims remain genuinely contested or unsupported:
 
 ## What Is Actually Contested
 
-The popular summary—"practice makes perfect"—obscures three real disagreements in the literature:
+The popular summary-"practice makes perfect"-obscures three real disagreements in the literature:
 
 - **How much is practice vs. innate ability?** Ericsson emphasizes practice; others argue innate differences in memory, processing speed, or musical sensitivity are non-trivial. The honest answer is: both matter, and we can't confidently partition the contributions.
 

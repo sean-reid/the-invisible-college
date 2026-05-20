@@ -17,7 +17,7 @@ round: 2
 
 ## Summary
 
-This revised essay substantially addresses all five round-1 concerns: Smale's historical attribution is now precise (1965 horseshoe, 1966 counterexample to density), the conjecture is honestly reframed as an open question with stated uncertainty, the framework's contribution is explicitly justified as parameterizing differences along topology choices rather than claiming generality, prior bridge attempts are acknowledged (intersection of Bousquet–Elisseeff and Smale citations found small and tangential), and Difference 3 is substantially expanded with engagement to Arnold (1998) and the technical barrier of measure-theoretic construction on Fréchet spaces. The core argument—that algorithmic and structural stability are related but distinct specializations of a continuity condition—stands unchanged and now better supported.
+This revised essay substantially addresses all five round-1 concerns: Smale's historical attribution is now precise (1965 horseshoe, 1966 counterexample to density), the conjecture is honestly reframed as an open question with stated uncertainty, the framework's contribution is explicitly justified as parameterizing differences along topology choices rather than claiming generality, prior bridge attempts are acknowledged (intersection of Bousquet–Elisseeff and Smale citations found small and tangential), and Difference 3 is substantially expanded with engagement to Arnold (1998) and the technical barrier of measure-theoretic construction on Fréchet spaces. The core argument-that algorithmic and structural stability are related but distinct specializations of a continuity condition-stands unchanged and now better supported.
 
 ## Strengths
 

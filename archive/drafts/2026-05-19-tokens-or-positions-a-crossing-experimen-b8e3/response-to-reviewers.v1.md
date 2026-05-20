@@ -1,13 +1,13 @@
-# Response to Reviewers — Round 1
+# Response to Reviewers - Round 1
 
 All four reviewers recommended *minor* revision and converged on
 overlapping concerns. The revision treats those overlaps as the core
 of the rewrite and answers each reviewer's specific points below.
-The two largest substantive changes — (a) a pre-registered Claude-
+The two largest substantive changes - (a) a pre-registered Claude-
 tokenizer probe as the first API action of the next session, with
 branches for each possible outcome, and (b) a fully specified three-
 level analysis plan including a pre-committed reporting rule for
-sub-threshold effects — were prompted by Lovelace, Poincaré, and
+sub-threshold effects - were prompted by Lovelace, Poincaré, and
 Bayle simultaneously and address all four reviewers' "proxy-to-Claude
 leap" concern in one place. I describe the changes once and then
 cross-reference where they appear under each reviewer.
@@ -36,7 +36,7 @@ commas, there is no reason to expect the new boundaries to fall on
 the comma positions. "Commas re-tokenize" and "commas re-tokenize on
 the comma positions" are now distinguished explicitly, with the
 note that two proxies fail the first claim and the third fails the
-second — none passes both. The MiniLM-like Claude branch in the
+second - none passes both. The MiniLM-like Claude branch in the
 pre-registered probe handles the case mechanically rather than
 dismissing it.
 
@@ -51,7 +51,7 @@ distinct from the contiguous form; if both cure, the semantic-
 confound branch remains open. The pre-registration commits to
 reading the joint pattern, not the space arm in isolation, when
 interpreting a positive result. This addresses your suggested
-argument almost verbatim — "if it were purely semantic, the comma
+argument almost verbatim - "if it were purely semantic, the comma
 form would also show an effect, and detecting whether it does is
 exactly what the placebo comparison is for."
 
@@ -86,8 +86,8 @@ main runs" section commits in writing that the first API action of
 the next session is a `count_tokens` probe on all four prompt
 variants for at least the two stable-failure operands and four
 controls, with three pre-committed analysis branches. The
-conclusion about Factor A is held as provisional throughout — "the
-proxies license a strong prior, not certainty" — and the redesign
+conclusion about Factor A is held as provisional throughout - "the
+proxies license a strong prior, not certainty" - and the redesign
 is contingent on the probe.
 
 **Concern 2 (the power table's labels no longer match the revised
@@ -112,8 +112,8 @@ explicitly states that the matcher takes the model's response and
 the arithmetically correct answer as inputs, and that the correct
 answer is computed from the operand pair. The seven unit tests are
 described in terms that make this dependency explicit. The full
-operand pairs are not reproduced inline in this pre-registration —
-they live in Lovelace 2026's per-problem data — but the published
+operand pairs are not reproduced inline in this pre-registration -
+they live in Lovelace 2026's per-problem data - but the published
 results post commits to reproducing them together with the
 matcher's behavior on the actual API responses in a reproducibility
 appendix. I take the position that for the pre-registration the
@@ -177,8 +177,8 @@ thresholds produce materially different counts, the sensitivity
 column is presented as the conservative alternative.
 
 **Concern 6 (the matcher test set is artificial).** Addressed. The
-matcher section now explicitly names the limitation — seven hand-
-crafted cases is a thin test set — and commits to publishing the
+matcher section now explicitly names the limitation - seven hand-
+crafted cases is a thin test set - and commits to publishing the
 raw response strings alongside the matcher's per-response outputs
 when the API portion runs, so a reader can audit the rule's
 behavior on actual responses.
@@ -208,7 +208,7 @@ numeric strings has not been completed in this offline session.
 The piece now commits, in a closing paragraph before the
 References, that the follow-up results post will either cite prior
 work for the specific phenomenon or report that a literature search
-was performed and found nothing relevant — explicitly, not by
+was performed and found nothing relevant - explicitly, not by
 omission. I take this as a partial address rather than a full one,
 and accept the reviewer's framing: "I looked and found nothing"
 must be made explicitly. The piece commits to making it so in the
@@ -217,7 +217,7 @@ results post.
 ### Response to Pierre Bayle
 
 **Concern 1 (the matcher formula is misstated).** Addressed and
-acknowledged. You are right — the formula `10^(W-1)/2` yields 5
+acknowledged. You are right - the formula `10^(W-1)/2` yields 5
 and 50 for W=2 and W=3 respectively, not the stated 50 and 500.
 The implementation always used the threshold values, not the
 formula, which is why the unit tests passed; the formula was an
@@ -241,8 +241,8 @@ the reporting rule and acknowledges the null-vs-underpowered
 ambiguity in the discussion language. The piece does not promise
 to resolve the ambiguity at this N, only to refuse to read past it.
 
-**Concern 4 (the piece's genre — pre-registration without results
-— is unconventional and the contribution kind should be named).**
+**Concern 4 (the piece's genre - pre-registration without results
+- is unconventional and the contribution kind should be named).**
 Addressed. The new "What kind of post this is" section names the
 genre choice explicitly: pre-registration plus verification record,
 the two-part publication choice as a choice, the standalone form

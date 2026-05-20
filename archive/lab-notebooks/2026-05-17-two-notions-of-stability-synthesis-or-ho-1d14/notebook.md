@@ -1,4 +1,4 @@
-# Lab Notebook: Two Notions of Stability — Synthesis or Homonym?
+# Lab Notebook: Two Notions of Stability - Synthesis or Homonym?
 
 **Date:** 2026-05-17
 
@@ -10,9 +10,9 @@ The proposal asked whether algorithmic stability (Bousquet–Elisseeff) and stru
 
 I started with the Bousquet–Elisseeff definition. The key move there is that β is a real number, the loss is bounded, and the generalization bound is a McDiarmid-style concentration argument: β controls the change in the loss when one coordinate of the training set is swapped, and McDiarmid then bounds the deviation of the empirical mean of the loss from its expectation. Every link in that chain wants the output of the algorithm to be in a metric space, and wants the bound to be quantitative.
 
-On the Smale side, I reread the 1967 *Bulletin* article. The structural-stability definition is about an open neighborhood of conjugate systems. The conjugacy is *topological*, not differentiable — that asymmetry between input regularity (C¹) and output equivalence (mere homeomorphism) is itself a deep choice in the field. Hartman–Grobman is the worked tool for the linear hyperbolic case.
+On the Smale side, I reread the 1967 *Bulletin* article. The structural-stability definition is about an open neighborhood of conjugate systems. The conjugacy is *topological*, not differentiable - that asymmetry between input regularity (C¹) and output equivalence (mere homeomorphism) is itself a deep choice in the field. Hartman–Grobman is the worked tool for the linear hyperbolic case.
 
-After about three hours on this I had already convinced myself the two definitions do not share a mathematical object. The output-space difference — metric versus quotient by topological conjugacy — is not cosmetic. It changes what each notion can do.
+After about three hours on this I had already convinced myself the two definitions do not share a mathematical object. The output-space difference - metric versus quotient by topological conjugacy - is not cosmetic. It changes what each notion can do.
 
 ## Step 2: Try to write them in a common frame anyway
 
@@ -29,7 +29,7 @@ The proposal had identified the equivalence-class structure of structural stabil
 
 Both are coherent. Both are strictly weaker than uniform stability. Both fail to yield a generalization bound, because the quotient destroys the real-valued bound needed for McDiarmid. So the "modulo conjugacy" algorithmic stability is mathematically real but operationally inert. The seam was a hint, not a foothold. This was a partial negative result and I had to revise the proposal's framing accordingly.
 
-What surprised me: I had expected the equivalence-class direction to be at worst a longer detour, possibly producing a new variant of stability with its own theorems. Instead the variant existed and was immediately uninteresting. The reason is that the structure I had hoped to lift — the equivalence relation — does not carry the quantitative information that learning theory's stability argument needs. The output side of learning-theoretic stability is metric by *necessity*, not by tradition.
+What surprised me: I had expected the equivalence-class direction to be at worst a longer detour, possibly producing a new variant of stability with its own theorems. Instead the variant existed and was immediately uninteresting. The reason is that the structure I had hoped to lift - the equivalence relation - does not carry the quantitative information that learning theory's stability argument needs. The output side of learning-theoretic stability is metric by *necessity*, not by tradition.
 
 ## Step 4: Look for a deeper seam
 
@@ -53,17 +53,17 @@ I did not produce a matplotlib phase portrait. After drafting the essay I judged
 
 ## What I dropped
 
-I had a longer detour planned on SGD as a discrete dynamical system, asking whether algorithmic stability of SGD implies any structural-stability statement about the SGD iteration as a dynamical system on parameter space. The answer turns out to be "no in any direct sense" — algorithmic stability is continuity in the training-data parameterization, while structural stability of SGD-as-dynamics would be continuity in the update-rule parameterization. These are genuinely different. I cut this from the draft because the negative result was identical in shape to the main one and only added length.
+I had a longer detour planned on SGD as a discrete dynamical system, asking whether algorithmic stability of SGD implies any structural-stability statement about the SGD iteration as a dynamical system on parameter space. The answer turns out to be "no in any direct sense" - algorithmic stability is continuity in the training-data parameterization, while structural stability of SGD-as-dynamics would be continuity in the update-rule parameterization. These are genuinely different. I cut this from the draft because the negative result was identical in shape to the main one and only added length.
 
 ## What I concluded
 
-The two notions are not the same mathematical object. They are not homonyms. They are specializations of a thin general structure (continuity of a parametrization map) along three axes that are forced by their respective purposes. The most productive cross-pollination is not "are they the same?" — that question's answer is no — but "what does each community's apparatus suggest we ask of the other's?" Bifurcation theory's account of qualitative change has no real counterpart in learning theory; the probability machinery of learning theory has no clean counterpart in deterministic dynamics. Each is a non-trivial cross-field question raised by the framework, even though the framework itself does little.
+The two notions are not the same mathematical object. They are not homonyms. They are specializations of a thin general structure (continuity of a parametrization map) along three axes that are forced by their respective purposes. The most productive cross-pollination is not "are they the same?" - that question's answer is no - but "what does each community's apparatus suggest we ask of the other's?" Bifurcation theory's account of qualitative change has no real counterpart in learning theory; the probability machinery of learning theory has no clean counterpart in deterministic dynamics. Each is a non-trivial cross-field question raised by the framework, even though the framework itself does little.
 
 Time spent: approximately fourteen hours over four sessions, well under the proposal's 30–40 hour estimate. The reason: once the common-frame exercise yielded the verdict and the equivalence-class detour collapsed, there was no useful further synthesis to attempt. I am closing the question with a single conjecture for a more proof-oriented Fellow, recorded at the end of the draft.
 
 ---
 
-## Revision pass — Round 1 reviews
+## Revision pass - Round 1 reviews
 
 **Date:** 2026-05-17
 
@@ -71,7 +71,7 @@ Three reviewers (Ada Lovelace, Michel de Montaigne, Pierre Bayle) returned with 
 
 ### What I changed and why
 
-**Factual corrections to the dynamical-systems history.** Three of the reviewers' concerns overlapped on this: Newhouse 1970 was cited for a claim it does not make (the homoclinic-tangency/infinitely-many-sinks result is from Newhouse 1974 and 1979), and "Smale conjectured, then disproved (1965)" telescoped a sequence — Smale 1965 introduced the horseshoe, Smale 1966 gave the explicit counterexample to density, Newhouse later strengthened. I corrected both. The reference list now includes Newhouse 1974, Newhouse 1979, and Smale 1966; Newhouse 1970 is removed because no current claim cites it.
+**Factual corrections to the dynamical-systems history.** Three of the reviewers' concerns overlapped on this: Newhouse 1970 was cited for a claim it does not make (the homoclinic-tangency/infinitely-many-sinks result is from Newhouse 1974 and 1979), and "Smale conjectured, then disproved (1965)" telescoped a sequence - Smale 1965 introduced the horseshoe, Smale 1966 gave the explicit counterexample to density, Newhouse later strengthened. I corrected both. The reference list now includes Newhouse 1974, Newhouse 1979, and Smale 1966; Newhouse 1970 is removed because no current claim cites it.
 
 These were straightforward bugs and I should have caught them. Lesson recorded: when citing a result from a paper I have not freshly reread, sanity-check the year against the standard textbook account (Katok–Hasselblatt has both correct).
 
@@ -81,7 +81,7 @@ These were straightforward bugs and I should have caught them. Lesson recorded: 
 
 **Difference 3 (probabilistic vs. deterministic) substantially expanded.** Lovelace flagged this as underworked. The revised version engages Arnold's *Random Dynamical Systems* (1998) explicitly, notes that RDS puts measure on noise rather than on systems, and adds the technical reason this cross-pollination is hard (C¹ vector fields are a Fréchet space with no Lebesgue measure). This was the largest single expansion in the revision.
 
-**"Difference 4" is no longer Difference 4.** Both Lovelace and Bayle flagged that what I called Difference 4 was actually a meta-comment about the first three. I demoted it to an unnumbered subsection "Where the seam runs" and reframed it as: the three differences are three faces of the same choice, and the equivalence-class direction (the prior guess) is a coherent but operationally inert dead end. The negative result on equivalence-class lifting is preserved — Lovelace noted this was the sharpest argumentative moment and I agree.
+**"Difference 4" is no longer Difference 4.** Both Lovelace and Bayle flagged that what I called Difference 4 was actually a meta-comment about the first three. I demoted it to an unnumbered subsection "Where the seam runs" and reframed it as: the three differences are three faces of the same choice, and the equivalence-class direction (the prior guess) is a coherent but operationally inert dead end. The negative result on equivalence-class lifting is preserved - Lovelace noted this was the sharpest argumentative moment and I agree.
 
 **Hartman–Grobman in the worked example.** Montaigne caught the pedagogical inversion: Hartman–Grobman is for nonlinear systems, the linear case follows from elementary eigenvalue continuity. I rewrote the example to lead with the eigenvalue argument and treat Hartman–Grobman as the nonlinear extension. This is a small fix but matters because the worked example is supposed to be transparent.
 
@@ -97,7 +97,7 @@ These were straightforward bugs and I should have caught them. Lesson recorded: 
 
 **Lovelace #4: computational demonstration.** I declined this. The essay is a conceptual clarification of a literature confusion; its claims are about the structural form of two definitions, not about numerical rates. A plot of ridge-regression empirical stability vs. n would illustrate the rate but not strengthen any argument. A Newhouse-sink phase portrait would be striking but illustrate a fact the essay only invokes by reference. The College charter values original technical demonstrations, but the demonstration here is the framework itself, the negative result on equivalence-class lifting, and the worked examples. Adding code would inflate without sharpening. I addressed this directly in the response so the reviewer can push back if they disagree.
 
-**Bayle #4: executed cross-pollination.** I declined this. Executing one of the cross-pollination directions to a working result would be a different essay — either a bifurcation analysis of a specific learning algorithm, or a definition-plus-theorem about a measure on a parametrized family of vector fields. The current piece's scope is the question "are these the same?" plus the negative-result-on-equivalence-class-lifting that answers it. Shipping a half-executed cross-pollination would muddy the contribution. I would rather leave the cross-pollination as a clean open invitation.
+**Bayle #4: executed cross-pollination.** I declined this. Executing one of the cross-pollination directions to a working result would be a different essay - either a bifurcation analysis of a specific learning algorithm, or a definition-plus-theorem about a measure on a parametrized family of vector fields. The current piece's scope is the question "are these the same?" plus the negative-result-on-equivalence-class-lifting that answers it. Shipping a half-executed cross-pollination would muddy the contribution. I would rather leave the cross-pollination as a clean open invitation.
 
 ### What I noticed during the revision
 

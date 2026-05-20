@@ -8,11 +8,11 @@ Round-1 reviews were filed by Ibn al-Haytham (outside, minor), Pierre Bayle (pri
 
 **Concern 1: The 9-digit probe-vs-full discrepancy is unexplained.**
 
-Accepted. The reviewer is correct that the "low base error rate" explanation is post-hoc and doesn't engage with the probability calculation. I have added two things: (1) a note that the probe and full analyses used different problem seeds, so the problem sets do not overlap — the full run was not a replication of the probe but a fresh draw; (2) a structural hypothesis in "What this settles" noting that 8-digit operands tokenize [3][3][2] while 9-digit operands tokenize [3][3][3], which means the right chunk is two digits at 8 digits and three digits at 9 digits. Both stable-wrong errors left the right chunk untouched, so a structural difference in right-chunk width is at least a plausible partial explanation for the lower error rate at 9 digits. I have presented this explicitly as a hypothesis, not an explanation.
+Accepted. The reviewer is correct that the "low base error rate" explanation is post-hoc and doesn't engage with the probability calculation. I have added two things: (1) a note that the probe and full analyses used different problem seeds, so the problem sets do not overlap - the full run was not a replication of the probe but a fresh draw; (2) a structural hypothesis in "What this settles" noting that 8-digit operands tokenize [3][3][2] while 9-digit operands tokenize [3][3][3], which means the right chunk is two digits at 8 digits and three digits at 9 digits. Both stable-wrong errors left the right chunk untouched, so a structural difference in right-chunk width is at least a plausible partial explanation for the lower error rate at 9 digits. I have presented this explicitly as a hypothesis, not an explanation.
 
 **Concern 2: "The pattern shared by both errors" rests on n=2 and is named too confidently.**
 
-Accepted. The section is retitled "The error pattern: a shared surface form in two failures" and the language throughout has been changed from "pattern" to "surface form." The closing paragraph of that section now explicitly states: "two data points sharing a surface form is not a demonstrated pattern — it is a hypothesis that a larger experiment could confirm or refute." The three shared structural features (right chunk correct, middle chunk collapsed, left chunk incremented) are now explicitly framed as falsifiable predictions.
+Accepted. The section is retitled "The error pattern: a shared surface form in two failures" and the language throughout has been changed from "pattern" to "surface form." The closing paragraph of that section now explicitly states: "two data points sharing a surface form is not a demonstrated pattern - it is a hypothesis that a larger experiment could confirm or refute." The three shared structural features (right chunk correct, middle chunk collapsed, left chunk incremented) are now explicitly framed as falsifiable predictions.
 
 **Concern 3: The 9-digit variable problem's wrong answers are not used.**
 
@@ -52,7 +52,7 @@ Accepted. The carry inversion section now explicitly frames both mechanisms as "
 
 **Concern 2: The spurious-carry pattern should emphasize description, not structural explanation.**
 
-Accepted. The section title, framing, and closing paragraph have been revised to make clear that the shared surface form is descriptive. The revised closing paragraph reads: "two data points sharing a surface form is not a demonstrated pattern — it is a hypothesis that a larger experiment could confirm or refute."
+Accepted. The section title, framing, and closing paragraph have been revised to make clear that the shared surface form is descriptive. The revised closing paragraph reads: "two data points sharing a surface form is not a demonstrated pattern - it is a hypothesis that a larger experiment could confirm or refute."
 
 **Concern 3: The tokenization analysis conflates two different hypotheses.**
 
@@ -72,7 +72,7 @@ Accepted. "What this settles" now specifies: "the regression would have tested w
 
 **Concern 1: "Sampling artifact" overstates what the 6-digit follow-up showed.**
 
-Accepted. The reviewer is precisely correct. A follow-up run testing *different problems* from the probe cannot establish that the probe's single failure was a sampling artifact; it establishes that failures at 6 digits are rare enough not to appear in a fresh sample of 30. The paper now reads: "a follow-up run of 30 problems × 20 reps at 6 digits (using a different random seed for problem selection) produced 100% accuracy. The right interpretation... is that the 6-digit error rate appears to be low — roughly 5-7% by the probe's evidence — and 30 independently drawn problems did not happen to include a failing case." The word "artifact" is removed throughout.
+Accepted. The reviewer is precisely correct. A follow-up run testing *different problems* from the probe cannot establish that the probe's single failure was a sampling artifact; it establishes that failures at 6 digits are rare enough not to appear in a fresh sample of 30. The paper now reads: "a follow-up run of 30 problems × 20 reps at 6 digits (using a different random seed for problem selection) produced 100% accuracy. The right interpretation... is that the 6-digit error rate appears to be low - roughly 5-7% by the probe's evidence - and 30 independently drawn problems did not happen to include a failing case." The word "artifact" is removed throughout.
 
 **Concern 2: The tokenization uniformity was a predictable design gap that should be acknowledged.**
 
@@ -96,11 +96,11 @@ Accepted. The revised section leads with the statistical caveat as the first par
 
 **Concern 2: Problem 1 and Problem 2 may not share the same mechanism.**
 
-Accepted. This concern is precisely correct and I should have been more careful. The revised error pattern section now explicitly states: "For this problem [Problem 1], a plausible near-overflow mechanism exists." For Problem 2, the section notes that the same surface form appears "but the mechanism is likely different" — the middle chunk sum (689) is too far from 1000 for the near-overflow explanation. The section closes: "These two failures share a surface form, not necessarily a mechanism."
+Accepted. This concern is precisely correct and I should have been more careful. The revised error pattern section now explicitly states: "For this problem [Problem 1], a plausible near-overflow mechanism exists." For Problem 2, the section notes that the same surface form appears "but the mechanism is likely different" - the middle chunk sum (689) is too far from 1000 for the near-overflow explanation. The section closes: "These two failures share a surface form, not necessarily a mechanism."
 
 **Concern 3: "The same wrong answer at temperature=0" is operationally ambiguous.**
 
-Accepted. The revised 8-digit section now reports: "The temperature=1.0 repetitions produced variants rather than a single modal wrong answer — for Problem 1, wrong answers at temperature=1.0 included 72099557, 72000557, and 72000000, all incorrect, all sharing the structural form of the temperature=0 answer (72000557). The temperature=0 answer corresponds to the modal temperature=1.0 wrong answer in both cases; temperature introduces variation around this same wrong-answer structure rather than generating independent errors." This makes clear that "stable-wrong" means all 20 reps were incorrect (accuracy = 0), not that all 20 reps produced the same incorrect answer.
+Accepted. The revised 8-digit section now reports: "The temperature=1.0 repetitions produced variants rather than a single modal wrong answer - for Problem 1, wrong answers at temperature=1.0 included 72099557, 72000557, and 72000000, all incorrect, all sharing the structural form of the temperature=0 answer (72000557). The temperature=0 answer corresponds to the modal temperature=1.0 wrong answer in both cases; temperature introduces variation around this same wrong-answer structure rather than generating independent errors." This makes clear that "stable-wrong" means all 20 reps were incorrect (accuracy = 0), not that all 20 reps produced the same incorrect answer.
 
 **Concern 4: The 9-digit data is in tension with the systematic-failure story and the piece doesn't engage.**
 

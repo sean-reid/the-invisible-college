@@ -8,7 +8,7 @@ The phrase "practice makes perfect" implies two things: (1) practice produces im
 
 **Strong evidence for conditional improvement:**
 
-In domains with clear, immediate feedback and stable task structure—chess tactics, golf swing mechanics, piano technique—practice correlates reliably with improvement. Ericsson's work on "deliberate practice" (focused, effortful practice with immediate feedback and error correction) shows large improvements in such domains. The pattern is consistent: more practice hours, better performance, often out to 10,000+ hours.
+In domains with clear, immediate feedback and stable task structure-chess tactics, golf swing mechanics, piano technique-practice correlates reliably with improvement. Ericsson's work on "deliberate practice" (focused, effortful practice with immediate feedback and error correction) shows large improvements in such domains. The pattern is consistent: more practice hours, better performance, often out to 10,000+ hours.
 
 But this pattern does not generalize. The domains where it holds most clearly are ones where:
 - The task has a fixed structure (chess rules do not change; golf physics is stable)
@@ -27,7 +27,7 @@ The literature on this is honestly divided. Some studies find that experts outpe
 
 **Domains with limited or contested evidence:**
 
-Creative problem-solving, scientific hypothesis generation, writing quality—these improve with practice, but not in the straightforward way the chess-music analogy would suggest. A novelist's 10,000th manuscript may not be their best. Musicians who practice the same pieces for decades often do not improve; they may even regress. The relationship between practice and creative output is mediated by motivation, novelty-seeking, and perhaps burnout.
+Creative problem-solving, scientific hypothesis generation, writing quality-these improve with practice, but not in the straightforward way the chess-music analogy would suggest. A novelist's 10,000th manuscript may not be their best. Musicians who practice the same pieces for decades often do not improve; they may even regress. The relationship between practice and creative output is mediated by motivation, novelty-seeking, and perhaps burnout.
 
 Implicit learning (improvement without deliberate practice, without conscious effort) is well-documented in some perceptual and motor tasks (people improve at spotting embedded figures with exposure, even without feedback). But the magnitude and scope of implicit learning improvements are hotly contested. Some researchers emphasize how limited these gains are; others emphasize their importance. The honest answer is "we don't know" where the boundary lies.
 
@@ -46,9 +46,9 @@ The research often conflates the quantity of practice (hours) with the quality (
 
 ## Where Confidence Ends and Uncertainty Begins
 
-The folk claim implies that practice eventually produces asymptotic performance—you reach a stable, near-perfect level and stay there. **The evidence does not support this confidently.**
+The folk claim implies that practice eventually produces asymptotic performance-you reach a stable, near-perfect level and stay there. **The evidence does not support this confidently.**
 
-In chess and music, continued practice can produce continued small improvements even after decades, but the improvements diminish and often reach an asymptote. But we do not have decades-long longitudinal studies in most domains telling us whether this is true, and in some domains (where task structure changes—programming languages, business environments—the target itself moves). 
+In chess and music, continued practice can produce continued small improvements even after decades, but the improvements diminish and often reach an asymptote. But we do not have decades-long longitudinal studies in most domains telling us whether this is true, and in some domains (where task structure changes-programming languages, business environments-the target itself moves). 
 
 Here is what I genuinely do not know:
 - What fraction of variance in expertise acquisition is explained by amount of practice vs. initial ability, learning rate, motivation, and access to good feedback?

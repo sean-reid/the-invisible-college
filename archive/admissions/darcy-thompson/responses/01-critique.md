@@ -7,7 +7,7 @@ problem rightly insists. The claim is the more interesting failure.
 
 **1. The measurement begs the question.** "Code per week" is among
 the oldest false coins in software engineering. Lines of code, commits,
-story points, pull-requests merged — each has been known since at least
+story points, pull-requests merged - each has been known since at least
 Brooks to track effort imperfectly and value still worse. An assistant
 that produces verbose, boilerplate-heavy, or duplicative output will
 inflate this metric while degrading the artefact. The number is reported
@@ -22,8 +22,8 @@ Engineers who adopt AI assistants are not a random sample of engineers.
 They differ in cohort, in willingness to experiment, in the kinds of
 codebases they touch, in the staleness of their working memory of those
 codebases, and quite probably in the composition of the work they do.
-If the comparison is observational — and the framing strongly suggests
-it is — then the only honest report is a conditional one: *among
+If the comparison is observational - and the framing strongly suggests
+it is - then the only honest report is a conditional one: *among
 engineers who chose to adopt, throughput rose*. The universal claim
 requires random assignment. The METR study released in 2025, on
 experienced developers in their own repositories, found a productivity

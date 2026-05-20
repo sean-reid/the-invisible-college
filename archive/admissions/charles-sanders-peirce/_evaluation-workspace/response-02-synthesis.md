@@ -1,6 +1,6 @@
 # Response to Problem 2: Synthesis
 
-These phenomena are superficially similar but driven by different mechanisms. The surface resemblance is real—both involve time-varying intensity that outperforms constant intensity—but the underlying principles are distinct.
+These phenomena are superficially similar but driven by different mechanisms. The surface resemblance is real-both involve time-varying intensity that outperforms constant intensity-but the underlying principles are distinct.
 
 ## The Proposed Mechanism (Superficial Similarity)
 
@@ -38,16 +38,16 @@ Spaced repetition, by contrast, must be adapted to the learner's forgetting curv
 
 Here is a test: **Degrade memory artificially between reviews while preserving the spacing pattern.**
 
-If the true mechanism in spaced repetition is merely "vary input over time," then adding random forgetting events—reviews that occur at the scheduled interval but on material that has been partially corrupted between sessions—should not substantially harm the benefit, as long as the intervals are preserved.
+If the true mechanism in spaced repetition is merely "vary input over time," then adding random forgetting events-reviews that occur at the scheduled interval but on material that has been partially corrupted between sessions-should not substantially harm the benefit, as long as the intervals are preserved.
 
 My prediction: **The spacing benefit degrades significantly with artificial forgetting.** This is because the benefit depends on retrieval effort scaling predictably with time since last review, not simply on the intervals themselves. Inject noise into the memory trajectory, and you break the calibration of retrieval difficulty.
 
-For learning rate schedules, the analogue would be randomly corrupting the loss landscape between gradient steps. Here, my prediction is that the harm would be even more severe, because the schedule makes no commitment to memory dynamics at all—it only commits to a pattern of step sizes. Change the landscape, and the schedule is no longer appropriate.
+For learning rate schedules, the analogue would be randomly corrupting the loss landscape between gradient steps. Here, my prediction is that the harm would be even more severe, because the schedule makes no commitment to memory dynamics at all-it only commits to a pattern of step sizes. Change the landscape, and the schedule is no longer appropriate.
 
 This test could distinguish two scenarios:
-1. Both phenomena are purely about "optimal scheduling independent of mechanism"—then both suffer equally from landscape corruption
-2. Spaced repetition is specifically about calibrated forgetting, not just scheduling—then it suffers more from forgetting noise
-3. Learning rate schedules are specifically about matching step size to loss landscape geometry—then they suffer more from landscape noise
+1. Both phenomena are purely about "optimal scheduling independent of mechanism"-then both suffer equally from landscape corruption
+2. Spaced repetition is specifically about calibrated forgetting, not just scheduling-then it suffers more from forgetting noise
+3. Learning rate schedules are specifically about matching step size to loss landscape geometry-then they suffer more from landscape noise
 
 ## Where This Argument Is Weakest
 
@@ -55,7 +55,7 @@ The hardest question I cannot cleanly answer: **Is there a deeper principle that
 
 Humans show learning curves when studying with spacing (diminishing returns per session). Gradient-descent training shows learning curves (loss decreases, but at diminishing rate, especially if learning rates decay). Both are learning curves. Both involve early gains and later diminishing returns. Both can be described as *matching resource allocation to progress toward mastery*.
 
-But I cannot determine from first principles whether this unification is real or merely a terminological coincidence. It is possible that evolution and gradient descent have converged on similar scheduling strategies for reasons that have nothing to do with deeper shared mechanism—just as wheels are useful for many reasons, but wheels on a bicycle and wheels on pottery share no mechanism, only function.
+But I cannot determine from first principles whether this unification is real or merely a terminological coincidence. It is possible that evolution and gradient descent have converged on similar scheduling strategies for reasons that have nothing to do with deeper shared mechanism-just as wheels are useful for many reasons, but wheels on a bicycle and wheels on pottery share no mechanism, only function.
 
 I also cannot directly test the memory-corruption prediction without running new experiments, and the analogy to learning rate schedules breaks down somewhat: a loss landscape that becomes corrupted is not a realistic perturbation in the way that artificial memory corruption is. So the prediction is more conceptually clarifying than empirically testable as stated.
 

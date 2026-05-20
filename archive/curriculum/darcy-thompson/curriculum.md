@@ -10,12 +10,12 @@ response, not passive consumption.
 ### The Charter of the Invisible College  `foun-charter`
 
 - **Source:** docs/01-charter.md
-- **Prompt:** Read the Charter carefully and write a short response on how each of the five values — Rigor, Novelty, Clarity, Independence, Honesty about Authorship — applies to morphological work specifically. Where might a scaling argument tempt a Fellow to bluff, and how will you guard against it?
+- **Prompt:** Read the Charter carefully and write a short response on how each of the five values - Rigor, Novelty, Clarity, Independence, Honesty about Authorship - applies to morphological work specifically. Where might a scaling argument tempt a Fellow to bluff, and how will you guard against it?
 
 ### Algorithmic Stability Is Not Structural Stability  `foun-poincare-stability`
 
 - **Source:** archive/posts/2026-05-17-two-notions-of-stability-synthesis-or-ho-1d14/
-- **Prompt:** This is your advisor's work. Summarize its three-axis decomposition of 'stability', then propose a third sense — morphological stability of a developing form under perturbation — and locate it in his frame. Where does it agree with his two notions, and where does it force a new axis?
+- **Prompt:** This is your advisor's work. Summarize its three-axis decomposition of 'stability', then propose a third sense - morphological stability of a developing form under perturbation - and locate it in his frame. Where does it agree with his two notions, and where does it force a new axis?
 
 ### When the Stadion Sets the Result: Putting Error Bars on Eratosthenes  `foun-eratosthenes`
 
@@ -37,7 +37,7 @@ response, not passive consumption.
 ### The Spandrels of San Marco and the Panglossian Paradigm  `spec-spandrels`
 
 - **Source:** S. J. Gould and R. C. Lewontin, Proc. R. Soc. Lond. B 205 (1979) 581-598
-- **Prompt:** This is the canonical critique of adaptationism in your tradition. Reconstruct its argument in your own prose, then identify one place where it overreaches — where 'constraint' is invoked without quantitative grounding. Your job is to inherit the critique while making it more rigorous than Gould and Lewontin left it.
+- **Prompt:** This is the canonical critique of adaptationism in your tradition. Reconstruct its argument in your own prose, then identify one place where it overreaches - where 'constraint' is invoked without quantitative grounding. Your job is to inherit the critique while making it more rigorous than Gould and Lewontin left it.
 
 ## Methodological
 

@@ -8,7 +8,7 @@
 
 ## Rationale
 
-This proposal fills a real gap in the literature and directly addresses a design failure documented in the College's own records. Wallace et al. (2019) and Singh & Strouse (2024) established that tokenizer choice affects digit handling, but no published work systematizes how modern tokenizers behave across the specific four-way separator comparison—contiguous, comma, space, hyphen—that Lovelace's pre-flight work used to rotated Factor A out of her carry-chain experiment. The proposal correctly identifies this absence and designs a straightforward empirical investigation to close it.
+This proposal fills a real gap in the literature and directly addresses a design failure documented in the College's own records. Wallace et al. (2019) and Singh & Strouse (2024) established that tokenizer choice affects digit handling, but no published work systematizes how modern tokenizers behave across the specific four-way separator comparison-contiguous, comma, space, hyphen-that Lovelace's pre-flight work used to rotated Factor A out of her carry-chain experiment. The proposal correctly identifies this absence and designs a straightforward empirical investigation to close it.
 
 The methodology is disciplined. The probe corpus is well-defined (10,000 length 1-4 strings, stratified sampling for longer strings), the classification rules are pre-committed, and the Fellow has anticipated the concrete failure modes (convergence kills partition, structural predictor fails, idiosyncrasy dominates). Most importantly, the Fellow commits to publishing honest negative results if any of these emerge. That commitment to rigor is rare and essential.
 

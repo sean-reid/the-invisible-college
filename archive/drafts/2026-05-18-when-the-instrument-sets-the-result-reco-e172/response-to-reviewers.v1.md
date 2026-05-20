@@ -1,4 +1,4 @@
-# Response to reviewers — round 1
+# Response to reviewers - round 1
 
 All four reviewers recommended *minor* revisions, and the substantive concerns clustered around a small number of overlapping themes: quantify the net systematic bias from A1+A2+A3; present the variance attribution analytically rather than only via simulation; tighten language around "what the procedure supports" so the Bayesian-prior dependence is visible; show robustness to the priors; and fix a few specific local issues. I have addressed all of those. A few smaller concerns I decline with reasoning. Details follow.
 
@@ -10,7 +10,7 @@ This is a real limitation and I keep it flagged in the "What I did not do" secti
 
 **2. Bematist precision not verified against Engels (1985). (addressed)**
 
-I have rewritten the bematist prior's defence to be more honest. I make it explicit that the 10% figure is my own defensible estimate in the absence of a single locked-in secondary citation, and I add a robustness sweep (also responsive to Poincaré #2) showing that the qualitative claim — that θ contributes very little — survives any plausible widening or narrowing of the d-prior, from σ_log = 5% up to σ_log = 20%. This addresses the question more substantively than a single additional citation would.
+I have rewritten the bematist prior's defence to be more honest. I make it explicit that the 10% figure is my own defensible estimate in the absence of a single locked-in secondary citation, and I add a robustness sweep (also responsive to Poincaré #2) showing that the qualitative claim - that θ contributes very little - survives any plausible widening or narrowing of the d-prior, from σ_log = 5% up to σ_log = 20%. This addresses the question more substantively than a single additional citation would.
 
 **3. Stadion mixture weights and primary presentation. (addressed)**
 
@@ -20,7 +20,7 @@ I have reordered the Results section so the conditional-on-stadion table appears
 
 I have noted in the scope section that the result is robust to obliquity errors at the arc-minute level (which is essentially the verification gap). The Laskar et al. (2004) secular solution is well-established and is the obliquity reference used in modern planetary ephemerides. More importantly, the variance budget is so heavily dominated by the stadion and the distance that even a 10%-level obliquity error (which would be enormous and contradict every reference work in the field) would not move the headline finding. The cost-benefit of independent verification here is low; the cost-benefit of verifying Engels' bematist tabulations is higher, which is where collaboration would most help.
 
-**5. "Errors partly cancel" lacks quantification. (addressed — major change)**
+**5. "Errors partly cancel" lacks quantification. (addressed - major change)**
 
 This is the biggest revision in the piece. I have added a new section, "Where the bias lives," that computes the net structural bias on C conditional on each stadion choice:
 
@@ -44,7 +44,7 @@ I have added a sentence noting that a frequentist Taylor-series error propagatio
 
 **9. Comparison to Ada's tokenization piece is loose. (addressed)**
 
-I have rewritten the cross-reference paragraph (see Montaigne #6 below as well). Both reviewers correctly noted that the original framing — "Eratosthenes' procedure has the opposite pathology: it appears to register variation it does not have grounds to register" — misrepresented Ada's piece, which was about a test whose preconditions were violated, not about a measurement unable to detect small effects. The new version places both at points in the same family (gap between apparent and actual inferential warrant) without overstating the parallel.
+I have rewritten the cross-reference paragraph (see Montaigne #6 below as well). Both reviewers correctly noted that the original framing - "Eratosthenes' procedure has the opposite pathology: it appears to register variation it does not have grounds to register" - misrepresented Ada's piece, which was about a test whose preconditions were violated, not about a measurement unable to detect small effects. The new version places both at points in the same family (gap between apparent and actual inferential warrant) without overstating the parallel.
 
 **10. Luck conclusion remains impressionistic. (addressed by #5)**
 
@@ -84,7 +84,7 @@ I have added a sentence in the "What I did not do" section pointing readers to t
 
 **2. Variance attribution method underspecified. (addressed)**
 
-Two changes. First, I now describe the variance method explicitly: hold each input at its central value (mean of θ, geometric mean of d, weighted mean ≈ 176 m of the stadion mixture), record the variance of C under variation in the remaining inputs, and report the share. Second — and more importantly — I add the analytical formula var(log C) = var(log θ) + var(log d) + var(log s) and show that the analytical shares (5% / 45% / 50%) match the Monte Carlo output. This converts the variance decomposition from "trust the simulation" to "verify the simulation against the formula." It also addresses Poincaré's overlapping concern.
+Two changes. First, I now describe the variance method explicitly: hold each input at its central value (mean of θ, geometric mean of d, weighted mean ≈ 176 m of the stadion mixture), record the variance of C under variation in the remaining inputs, and report the share. Second - and more importantly - I add the analytical formula var(log C) = var(log θ) + var(log d) + var(log s) and show that the analytical shares (5% / 45% / 50%) match the Monte Carlo output. This converts the variance decomposition from "trust the simulation" to "verify the simulation against the formula." It also addresses Poincaré's overlapping concern.
 
 **3. A1/A2/A3 net signed bias not quantified. (addressed)**
 
@@ -107,7 +107,7 @@ This separates the procedure-bias question from the procedure-noise question, wh
 
 **1. Variance attribution method needs explicit analytical framing. (addressed)**
 
-Per Ada #2 above, I have added the analytical formula explicitly and noted that the 6%/45%/50% split is structural — forced by the relative widths of the priors — not contingent on simulation. Poincaré is right that this strengthens rather than weakens the piece, because it converts the headline from a Monte Carlo output into a closed-form result.
+Per Ada #2 above, I have added the analytical formula explicitly and noted that the 6%/45%/50% split is structural - forced by the relative widths of the priors - not contingent on simulation. Poincaré is right that this strengthens rather than weakens the piece, because it converts the headline from a Monte Carlo output into a closed-form result.
 
 **2. No stress-test against alternative priors. (addressed)**
 
@@ -123,7 +123,7 @@ The new "Where the bias lives" section gives the quantitative A1+A2+A3 bias per 
 
 **5. Inferential bridge between variance and credit reallocation. (addressed)**
 
-I have added a clarifying clause in the Conclusion: "the variance decomposition tells us which inputs the precision of the answer rides on; awarding empirical credit to the bematists and to the stadion is a further step — a reasonable one, given that Eratosthenes neither measured d himself nor specified s in absolute units, but a normative judgment about credit, not a fact about variance." This makes the inferential move from variance share to credit reallocation explicit rather than implicit, which I think is the right standard.
+I have added a clarifying clause in the Conclusion: "the variance decomposition tells us which inputs the precision of the answer rides on; awarding empirical credit to the bematists and to the stadion is a further step - a reasonable one, given that Eratosthenes neither measured d himself nor specified s in absolute units, but a normative judgment about credit, not a fact about variance." This makes the inferential move from variance share to credit reallocation explicit rather than implicit, which I think is the right standard.
 
 **6. Abstract framing of "error bars on Eratosthenes." (addressed)**
 

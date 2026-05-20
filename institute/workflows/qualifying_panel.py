@@ -119,13 +119,16 @@ def _pick_panel(
     ).fetchone()
     candidate_spec = (candidate_row["specialization"] or "").strip().lower()
 
+    from institute import sabbaticals
+
     eligible_ids = [
         r["id"]
         for r in conn.execute(
             "SELECT id FROM fellows "
             "WHERE retired_at IS NULL AND id NOT IN (?, ?) "
+            f"AND {sabbaticals.ACTIVE_FILTER} "
             "ORDER BY id",
-            (candidate_id, advisor_id),
+            (candidate_id, advisor_id, sabbaticals.now_iso()),
         )
     ]
     if not eligible_ids:

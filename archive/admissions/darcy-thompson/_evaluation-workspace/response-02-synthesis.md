@@ -11,7 +11,7 @@ Both are responses to non-stationarity in learning. The optimal update
 at trial *n* is not the optimal update at trial *n + 1*, because the
 state of the learner has changed between them. A constant intensity
 ignores this; a schedule respects it. In both cases the schedule has
-the same gross shape — larger effective updates early, where the
+the same gross shape - larger effective updates early, where the
 learner is far from competence and the gradient signal (or the encoded
 trace) carries the most information about where to go; smaller, more
 consolidative updates later, where the system is near a useful
@@ -27,7 +27,7 @@ The mechanism in spaced repetition runs through *time itself*. Between
 sessions the memory trace decays; consolidation processes (some of
 them available only during sleep) reorganise the trace; the
 re-presentation at the right interval acts on a partially-decayed
-trace, and the act of effortful retrieval — not mere re-exposure —
+trace, and the act of effortful retrieval - not mere re-exposure -
 strengthens it. None of that has an analogue in gradient descent.
 Between updates, time per se does nothing; the parameters sit
 unchanged. There is no decay, no offline consolidation, no retrieval.
@@ -36,10 +36,10 @@ gap*. The schedule in learning-rate decay modulates *what happens at
 the update*. Those are different leverages.
 
 A second disanalogy: spaced repetition's expanding intervals are
-adapted to the learner's state — the trace strengthens, so the next
+adapted to the learner's state - the trace strengthens, so the next
 test can be delayed. Cosine and step decay are fixed at training time
-and ignore the model's state. Adaptive schedules — Adam, Lion,
-learning-rate-on-plateau — are closer in spirit to spaced repetition,
+and ignore the model's state. Adaptive schedules - Adam, Lion,
+learning-rate-on-plateau - are closer in spirit to spaced repetition,
 but the pure decay schedules that the question names are not.
 
 ## The mechanism I would name
@@ -56,15 +56,15 @@ move is small. Beyond that abstraction, the mechanisms diverge.
 If the principle were as deep as "schedules are the same thing,"
 schedules ought to transfer between domains under appropriate
 translation. Concretely: a spaced-repetition-style replay schedule in
-neural training — re-presenting earlier batches at expanding
-intervals — should produce gains over standard sampling of a size
+neural training - re-presenting earlier batches at expanding
+intervals - should produce gains over standard sampling of a size
 comparable to the lift that spacing produces over massed practice in
 human learners (a substantial multiplicative effect on retention, not
 a marginal one). To my knowledge this has been tried in a few small
 studies of curriculum and replay buffers with mixed and modest
 results. If the underlying mechanism were genuinely shared I would
 expect a robust positive effect. The mixed result is evidence that the
-shared principle is real but shallow — a family resemblance rather
+shared principle is real but shallow - a family resemblance rather
 than a single mechanism.
 
 The competing account it distinguishes mine from: a stronger unifier
@@ -74,7 +74,7 @@ theory, in which the Robbins–Monro conditions on step sizes
 under quite general conditions. That account predicts the same gross
 schedule shape but on different grounds. The prediction that
 discriminates: stochastic-approximation theory makes no use of *the
-gap* in spaced repetition — only of the sequence of step sizes. If
+gap* in spaced repetition - only of the sequence of step sizes. If
 spacing in humans turned out to depend on the gap-duration in ways not
 captured by an equivalent reduction in nominal "step size," that would
 favour my mechanism-distinct reading over the unifying one. The

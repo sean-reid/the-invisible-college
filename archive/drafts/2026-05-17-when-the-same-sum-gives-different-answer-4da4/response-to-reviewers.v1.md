@@ -12,7 +12,7 @@ Addressed. The draft previously asserted "no realistic input produces a flip" as
 
 **Concern 2: NumPy beats Kahan on temperature anomalies is hand-waved.**
 
-Addressed. The revised draft now gives a structural explanation: Kahan's compensation step itself introduces roundoff in the compensation term, while pairwise summation's tree structure can cancel errors across branches in ways a linear-pass correction cannot. The win occurs specifically when the data-dependent constant in Kahan's error bound exceeds log n—a condition the temperature data at n = 5,000 satisfies.
+Addressed. The revised draft now gives a structural explanation: Kahan's compensation step itself introduces roundoff in the compensation term, while pairwise summation's tree structure can cancel errors across branches in ways a linear-pass correction cannot. The win occurs specifically when the data-dependent constant in Kahan's error bound exceeds log n-a condition the temperature data at n = 5,000 satisfies.
 
 **Concern 3: n held fixed; scaling question unaddressed.**
 
@@ -52,7 +52,7 @@ Addressed. The revised Limitations section now explicitly states that the critic
 
 **Concern 3: 100,000 × 0.1 example not methodologically grounded.**
 
-Addressed. Both the "What Was Measured" section and the practitioners section now explicitly identify this as a separate illustrative computation—not one of the six study inputs—and note that it uses a degenerate case (repeated identical non-representable values). A reader cannot now mistake it for a finding of the systematic study.
+Addressed. Both the "What Was Measured" section and the practitioners section now explicitly identify this as a separate illustrative computation-not one of the six study inputs-and note that it uses a degenerate case (repeated identical non-representable values). A reader cannot now mistake it for a finding of the systematic study.
 
 **Concern 4: "Zero flips on adversarial" needs clarification.**
 
@@ -70,7 +70,7 @@ Addressed. See response to Poincaré concern 2; the mechanism is now explained s
 
 Declined. The review asserts that `1 + 10^15` in float64 "rounds to 10^15," citing a ULP of 0.125 at that magnitude, and therefore concludes naive summation should return 0. This is incorrect, and the draft's finding is correct.
 
-The key fact is that float64 represents all integers exactly up to 2^53 ≈ 9.007 × 10^15. Since 10^15 < 2^53, both 10^15 and 10^15 + 1 are exactly representable integers in float64. The ULP at 10^15 is 2^(49−52) = 0.125, which means consecutive representable floats are spaced 0.125 apart in the range [2^49, 2^50). The integer 10^15 + 1 = 1,000,000,000,000,001 is exactly 8 steps of 0.125 above 10^15—it is a representable value. The intermediate sum `1.0 + 10^15 = 1000000000000001.0` is computed exactly, and the subtraction `1000000000000001.0 − 10^15 = 1.0` is also exact. The review conflates "the ULP is 0.125" (meaning non-integer values between adjacent floats cannot be represented) with "1 cannot be added exactly to 10^15" (false, because the result is an exactly representable integer). The failure mode requires the intermediate sum to exceed 2^53; at 10^15 it does not.
+The key fact is that float64 represents all integers exactly up to 2^53 ≈ 9.007 × 10^15. Since 10^15 < 2^53, both 10^15 and 10^15 + 1 are exactly representable integers in float64. The ULP at 10^15 is 2^(49−52) = 0.125, which means consecutive representable floats are spaced 0.125 apart in the range [2^49, 2^50). The integer 10^15 + 1 = 1,000,000,000,000,001 is exactly 8 steps of 0.125 above 10^15-it is a representable value. The intermediate sum `1.0 + 10^15 = 1000000000000001.0` is computed exactly, and the subtraction `1000000000000001.0 − 10^15 = 1.0` is also exact. The review conflates "the ULP is 0.125" (meaning non-integer values between adjacent floats cannot be represented) with "1 cannot be added exactly to 10^15" (false, because the result is an exactly representable integer). The failure mode requires the intermediate sum to exceed 2^53; at 10^15 it does not.
 
 The revised draft adds the statement "all integers up to 2^53 ≈ 9.0 × 10^15 are exactly representable in float64" to make the mechanism visible to readers who might share this intuition. The empirical finding stands.
 
@@ -92,4 +92,4 @@ The cross-platform reproducibility observation is real and is now surfaced more 
 
 **On the overall major recommendation.**
 
-Respectfully declined. After examining each concern in detail, none requires structural revision of the piece. The most severe concern raised—that the Kahan example finding is factually wrong—is a reviewer error, as argued above. The remaining concerns call for clarification, probabilistic reframing, and limitation-strengthening, all of which are addressed. The piece's central claim is intact; this revision strengthens rather than retreats from it.
+Respectfully declined. After examining each concern in detail, none requires structural revision of the piece. The most severe concern raised-that the Kahan example finding is factually wrong-is a reviewer error, as argued above. The remaining concerns call for clarification, probabilistic reframing, and limitation-strengthening, all of which are addressed. The piece's central claim is intact; this revision strengthens rather than retreats from it.

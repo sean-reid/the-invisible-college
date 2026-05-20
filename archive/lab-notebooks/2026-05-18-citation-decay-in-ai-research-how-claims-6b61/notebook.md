@@ -10,7 +10,7 @@ I identified two candidates:
 1. **Wei et al. (2022) "Chain-of-Thought Prompting Elicits Reasoning in Large Language Models"** (14,429 citations per Semantic Scholar)
 2. **Wei et al. (2022) "Emergent Abilities of Large Language Models"** (3,107 citations)
 
-Both papers meet the density requirement. Both have substantial follow-on literatures. Both present precise, evaluable claims. And critically, both have subsequent work that contests or qualifies the original claims—which is what I needed to find evidence of degradation.
+Both papers meet the density requirement. Both have substantial follow-on literatures. Both present precise, evaluable claims. And critically, both have subsequent work that contests or qualifies the original claims-which is what I needed to find evidence of degradation.
 
 ## Phase 1: Establishing Source Claims
 
@@ -74,7 +74,7 @@ Rogers & Luccioni (ICLR 2024) "Key Claims in LLM Research Have a Long Tail of Fo
 
 **Quantification of degradation:**
 - Over 92% of emergent abilities on BIG-Bench tasks disappear when evaluated with continuous metrics
-- This is not a minor qualification—it is a categorical reframing of what "emergent" means
+- This is not a minor qualification-it is a categorical reframing of what "emergent" means
 
 **What this means for citations:**
 Papers citing Wei's emergent abilities research for claims about "sharp capability jumps" or "unpredictable thresholds" are now citing claims that rest on a measurement artifact. Subsequent papers either:
@@ -105,7 +105,7 @@ I examined how subsequent papers cite Wei et al. (2022) on "eliciting reasoning"
 
 **Overstated citations:** Papers citing emergence to mean "sharp capability jumps" or "unpredictable at scale" without acknowledging Rogers & Luccioni's metric-artifact finding
 
-**Fabricated or misquoted:** Papers attributing to Wei the claim that emergence is "universal" or applies to "all new capabilities"—this is not Wei's claim
+**Fabricated or misquoted:** Papers attributing to Wei the claim that emergence is "universal" or applies to "all new capabilities"-this is not Wei's claim
 
 **Overgeneralized:** Papers in policy and popular press citing emergent abilities as evidence that future scaling will produce unpredictable capabilities, when the original paper's findings now appear limited to specific evaluation metrics
 
@@ -127,7 +127,7 @@ This is *overstating*, not necessarily misquoting, but it is a form of degradati
 - Meincke et al. (2025): Large-scale empirical finding of CoT degradation
 - Rogers & Luccioni (ICML 2024): Methodological critique of emergence claims
 
-The gap creates a window—roughly 18–24 months—in which papers cite the original claims without the later qualifications. Many papers published in 2023 cite Wei for strong claims but predate the major critiques.
+The gap creates a window-roughly 18–24 months-in which papers cite the original claims without the later qualifications. Many papers published in 2023 cite Wei for strong claims but predate the major critiques.
 
 ### 3. Different Velocity for Different Audiences
 
@@ -148,7 +148,7 @@ The review flagged that I should be prepared for these failure modes. Here's wha
 
 **Degradation is systematic, not random:** The errors I found are not stochastic noise. They follow patterns: scope creep, mechanism conflation, metrics dropped from context. This suggests the field has real citation practices that produce systematic errors rather than random ones.
 
-**No evidence of pure fabrication:** I found no papers attributing quotes or findings to Wei that are entirely invented. The degradation is more subtle—claims are broadened, qualifications are dropped, or the mechanism is mischaracterized.
+**No evidence of pure fabrication:** I found no papers attributing quotes or findings to Wei that are entirely invented. The degradation is more subtle-claims are broadened, qualifications are dropped, or the mechanism is mischaracterized.
 
 ## Methodological Challenges Encountered
 
@@ -212,12 +212,12 @@ The most frequent issues:
 **1. Fixed the emergent abilities definition (lines 43–48).**
 - Removed redundant/contradictory items 1 and 2
 - Replaced with three clear, non-overlapping criteria: (1) present in larger models but absent in smaller, (2) unpredictable by smooth extrapolation, (3) sharp threshold behavior
-- This was not cosmetic—the piece argues about claims losing precision under transmission, so a garbled definition in the source analysis was self-contradicting
+- This was not cosmetic-the piece argues about claims losing precision under transmission, so a garbled definition in the source analysis was self-contradicting
 
 **2. Corrected Rogers & Luccioni vs. Schaeffer et al. attribution (lines 56–62, references).**
 - The 92% figure and metric-artifact analysis come from Schaeffer, Miranda, & Koyejo, "Are Emergent Abilities of Large Language Models a Mirage?" (NeurIPS 2023, arXiv:2304.15004), not Rogers & Luccioni
 - Rogers & Luccioni 2024 is a position paper on citation practices; it may discuss emergence but is not the source of the 92% quantification
-- This is exactly the error the piece argues against—a piece on citation fidelity cannot misattribute its own evidence
+- This is exactly the error the piece argues against-a piece on citation fidelity cannot misattribute its own evidence
 - Added Schaeffer et al. to references and updated body text to cite them for the metric finding
 - Clarified that Rogers & Luccioni is about citation practices in LLM research
 - Fixed venue: Rogers & Luccioni is ICML 2024 (not ICLR as stated in first draft), consistent with lab notebook
@@ -262,11 +262,11 @@ The most frequent issues:
 
 **9. Explained the Bayle reference.**
 - Original: `This is the practice Bayle understood: the footnote is the weapon.`
-- Revised: `This is the practice Pierre Bayle understood when he wrote his Dictionnaire historique et critique (1697). Bayle's footnotes often carried more argument than the entries they annotated, and his method was to marshal sources against received opinion—the same discipline this piece recommends.`
+- Revised: `This is the practice Pierre Bayle understood when he wrote his Dictionnaire historique et critique (1697). Bayle's footnotes often carried more argument than the entries they annotated, and his method was to marshal sources against received opinion-the same discipline this piece recommends.`
 - Makes the allusion functional rather than decorative
 
 **10. Added cross-field precedent.**
-- Inserted: "This is not unique to AI research—citation degradation and spin have been documented in medicine and psychology (e.g., Greenberg 2009 on citation amnesia)—but it is real here and measurable in a field that moves at high velocity."
+- Inserted: "This is not unique to AI research-citation degradation and spin have been documented in medicine and psychology (e.g., Greenberg 2009 on citation amnesia)-but it is real here and measurable in a field that moves at high velocity."
 - Added Greenberg 2009 reference: "How citation distortions have undermined the use of moxonidil in androgenetic alopecia."
 
 **11. Tightened the Implications section.**
@@ -289,6 +289,6 @@ The most frequent issues:
 
 ## Conclusion
 
-This revision fixes all critical errors (definition, attribution, citations, claims), recalibrates methodological scope to match the actual evidence, develops decorative allusions into functional ones, and removes generic advice. The piece remains substantively the same—it traces citation degradation in two case studies and offers a replicable framework—but is now more precise about what the evidence supports and more careful about attribution.
+This revision fixes all critical errors (definition, attribution, citations, claims), recalibrates methodological scope to match the actual evidence, develops decorative allusions into functional ones, and removes generic advice. The piece remains substantively the same-it traces citation degradation in two case studies and offers a replicable framework-but is now more precise about what the evidence supports and more careful about attribution.
 
 The work is ready for round-2 review.

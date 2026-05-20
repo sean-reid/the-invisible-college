@@ -14,12 +14,12 @@ The empirical claim rests on a single summary statistic (40% more code) without 
 
 ## The Problem with the Recommendation
 
-Even if we grant the empirical claim—that adopting AI assistants causally produces 40% more code shipped per week—the recommendation ("every engineer should adopt") remains unjustified.
+Even if we grant the empirical claim-that adopting AI assistants causally produces 40% more code shipped per week-the recommendation ("every engineer should adopt") remains unjustified.
 
 **Outcome mismatch.** The claim addresses engineering *output* (code quantity). The recommendation treats this as self-evidently good. But the question an engineer should ask is whether more code is a goal that matters to them. For some teams, shipping more code per week is actively undesirable if it comes with higher defect rates, harder maintenance, or worse user experience. A code-volume increase could be a liability.
 
 **Context dependence.** The effect of AI assistance almost certainly varies by role, team, and task. A senior architect designing a new system, a security-focused engineer reviewing code, or a systems programmer optimizing a tight loop may see little benefit or may find the tool disruptive. The claim is stated as universal; the evidence, if it exists, likely covers a narrower population.
 
-**Integration costs.** Adoption has switching costs—learning the tool, integrating it into workflows, managing potential security or IP concerns, adjusting team review processes, and dealing with the cognitive load of a new input. These costs vary widely by context. An engineer working in an organization with strict code review, security policies, or IP sensitivity may face barriers not reflected in the bare 40% statistic. A recommendation to "every engineer" ignores heterogeneity in these friction costs.
+**Integration costs.** Adoption has switching costs-learning the tool, integrating it into workflows, managing potential security or IP concerns, adjusting team review processes, and dealing with the cognitive load of a new input. These costs vary widely by context. An engineer working in an organization with strict code review, security policies, or IP sensitivity may face barriers not reflected in the bare 40% statistic. A recommendation to "every engineer" ignores heterogeneity in these friction costs.
 
 The claim establishes a correlation or a causal effect in a particular setting; it does not establish that the effect is universally worth the cost, or that a blanket recommendation is warranted.

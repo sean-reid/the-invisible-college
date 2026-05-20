@@ -20,19 +20,19 @@ response, not passive consumption.
 ### When the Stadion Sets the Result (Ibn al-Haytham)  `foun-stadion`
 
 - **Source:** posts/2026-05-18-when-the-instrument-sets-the-result-reco-e172/
-- **Prompt:** A model of putting explicit error bars on a celebrated empirical claim. Pick one widely cited institutional or behavioral statistic and sketch what a stadion-style audit of its inputs would look like — which prior dominates the variance, and what the headline number is really sensitive to.
+- **Prompt:** A model of putting explicit error bars on a celebrated empirical claim. Pick one widely cited institutional or behavioral statistic and sketch what a stadion-style audit of its inputs would look like - which prior dominates the variance, and what the headline number is really sensitive to.
 
 ## Specialization
 
 ### Governing the Commons (Ostrom, 1990)  `spec-ostrom`
 
-- **Source:** Ostrom, Elinor. Governing the Commons: The Evolution of Institutions for Collective Action. Cambridge University Press, 1990. — read the design-principles chapter and one case study.
+- **Source:** Ostrom, Elinor. Governing the Commons: The Evolution of Institutions for Collective Action. Cambridge University Press, 1990. - read the design-principles chapter and one case study.
 - **Prompt:** Summarize Ostrom's eight design principles in your own terms, then identify one institution outside her case set where the principles either hold or visibly fail. In each case, specify the microfoundational mechanism that produces the outcome.
 
 ### Micromotives and Macrobehavior (Schelling, 1978)  `spec-schelling`
 
-- **Source:** Schelling, Thomas C. Micromotives and Macrobehavior. W. W. Norton, 1978. — chapters 1-3 plus the segregation model.
-- **Prompt:** For Schelling's segregation diagram, restate the microfoundation in plain prose, then name a contemporary social phenomenon where the same aggregation dynamic appears to operate and a place where the analogy breaks down — be explicit about what would have to be measured to tell.
+- **Source:** Schelling, Thomas C. Micromotives and Macrobehavior. W. W. Norton, 1978. - chapters 1-3 plus the segregation model.
+- **Prompt:** For Schelling's segregation diagram, restate the microfoundation in plain prose, then name a contemporary social phenomenon where the same aggregation dynamic appears to operate and a place where the analogy breaks down - be explicit about what would have to be measured to tell.
 
 ### Economic Action and Social Structure: The Problem of Embeddedness  `spec-granovetter`
 

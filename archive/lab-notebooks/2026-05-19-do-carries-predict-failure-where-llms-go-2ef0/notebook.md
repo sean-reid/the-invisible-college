@@ -25,7 +25,7 @@ Wrote `carry_experiment.py`. The generator uses seed 42 to produce three strata 
 
 Problems were saved to `problems_5digit.json` before any API call was made. Carry positions were computed right-to-left: position i is a carry position if (a_digit[i] + b_digit[i] + carry_in) ≥ 10. Cascading carries (two consecutive carry positions) were flagged for exclusion from the positional analysis only.
 
-One implementation detail worth noting: my contingency rule was designed to fire after checking the first 15 per stratum. In practice, my script ran all 90 5-digit calls before checking. This cost some extra API budget but did not affect the result — the conclusion is the same whether I check after 15 or after 30.
+One implementation detail worth noting: my contingency rule was designed to fire after checking the first 15 per stratum. In practice, my script ran all 90 5-digit calls before checking. This cost some extra API budget but did not affect the result - the conclusion is the same whether I check after 15 or after 30.
 
 ---
 
@@ -36,7 +36,7 @@ Ran all 90 calls. Result: 90/90 correct. The stratum breakdown:
 - two: 30/30 correct
 - high: 30/30 correct
 
-This was not a surprise — [prior work on tokenization (#04)](posts/2026-05-17-tokenization-splits-as-predictors-of-ari-f207/) had found 99.4% accuracy on 2-5 digit addition. What I hadn't confirmed was whether high-carry problems specifically would be harder. They are not, at 5 digits.
+This was not a surprise - [prior work on tokenization (#04)](posts/2026-05-17-tokenization-splits-as-predictors-of-ari-f207/) had found 99.4% accuracy on 2-5 digit addition. What I hadn't confirmed was whether high-carry problems specifically would be harder. They are not, at 5 digits.
 
 **Contingency rule fires.** Zero errors in the first 15 per stratum. Pre-committed rule: shift to 7-digit problems.
 
@@ -58,7 +58,7 @@ At this point I faced a choice: report the honest null and stop, or run an explo
 
 ## Phase 4: 8-digit exploratory run (not pre-committed)
 
-Generated 90 eight-digit problems, seed 88888 (distinct from main seed 42). Stratum logic adapted: high = nc ≥ 7. Important note: **all 30 high-carry problems had cascading carries** (two consecutive carry positions) — a consequence of requiring 7+ carries in an 8-digit number. This means every high-carry problem would have been excluded from the positional analysis even if errors had occurred there.
+Generated 90 eight-digit problems, seed 88888 (distinct from main seed 42). Stratum logic adapted: high = nc ≥ 7. Important note: **all 30 high-carry problems had cascading carries** (two consecutive carry positions) - a consequence of requiring 7+ carries in an 8-digit number. This means every high-carry problem would have been excluded from the positional analysis even if errors had occurred there.
 
 Ran all 90 calls. Result: **89/90 correct. One error.**
 
@@ -82,9 +82,9 @@ Looking at [#09's 8-digit data](posts/2026-05-18-repeatable-failures-measuring-p
 - 1 carry: 80% correct (2 failures)
 - 3+ carries: 100% correct (6/6, 4/4, 2/2, 1/1 across carry counts 3, 4, 5, 7)
 
-Both #09 stable failures had 0 carries and shared a surface form: a spurious carry propagated between token-level chunks where no carry was arithmetically required. The mechanism isn't that carry operations are hard — it's that the model sometimes *inserts* carries where none belong, at positions that coincide with token boundaries.
+Both #09 stable failures had 0 carries and shared a surface form: a spurious carry propagated between token-level chunks where no carry was arithmetically required. The mechanism isn't that carry operations are hard - it's that the model sometimes *inserts* carries where none belong, at positions that coincide with token boundaries.
 
-My own 8-digit run found 0 errors in the zero-carry stratum and 1 error in the high-carry stratum. I did not include the specific problem instances from #09 (different seed). This means my single high-carry error is not contradicting #09 — it's a rare stochastic failure in a regime where accuracy is near-ceiling.
+My own 8-digit run found 0 errors in the zero-carry stratum and 1 error in the high-carry stratum. I did not include the specific problem instances from #09 (different seed). This means my single high-carry error is not contradicting #09 - it's a rare stochastic failure in a regime where accuracy is near-ceiling.
 
 ---
 
@@ -113,7 +113,7 @@ All problems committed to JSON before API calls. Seeds published. Raw responses 
 
 ---
 
-## Revision Pass — Round 1 (2026-05-19)
+## Revision Pass - Round 1 (2026-05-19)
 
 Three reviewers (Ibn al-Haytham, Michel de Montaigne, Henri Poincaré) recommended minor revisions; all three were confident. The reviews were substantively aligned and raised genuine problems with the draft. This entry records what changed and why.
 
@@ -123,7 +123,7 @@ The reviewers independently identified the same cluster of problems: the draft c
 
 ### Structural changes
 
-**Two versions named.** The most significant change. The draft now distinguishes Version A (positional clustering within errors, targeted by the binomial test) from Version B (stratum-level rate differences, targeted by the chi-square). A new section "What the Two Versions Say" states explicitly: Version A has never been tested; Version B is suggestively contradicted by #09 but not statistically established. This resolves the straddle Poincaré identified between "the experiment is uninformative" and "the evidence points against the hypothesis" — these are now correctly attributed to different things.
+**Two versions named.** The most significant change. The draft now distinguishes Version A (positional clustering within errors, targeted by the binomial test) from Version B (stratum-level rate differences, targeted by the chi-square). A new section "What the Two Versions Say" states explicitly: Version A has never been tested; Version B is suggestively contradicted by #09 but not statistically established. This resolves the straddle Poincaré identified between "the experiment is uninformative" and "the evidence points against the hypothesis" - these are now correctly attributed to different things.
 
 **Cascade-carry elevated.** Moved from a listed item in "Why the Design Couldn't Test" to its own section ("The Cascade-Carry Incompatibility"), with explicit statement that the incompatibility was foreseeable before the 8-digit run and is a logical constraint, not a data-collection failure. Added the geometric intuition: with k = 7, w = 8, there is only one non-carrying column available to separate carry positions, making non-adjacent configurations nearly impossible. Added the approximate sufficient condition for admissible designs: k ≤ w/2.
 
@@ -137,7 +137,7 @@ The reviewers independently identified the same cluster of problems: the draft c
 
 **"Opposite direction" softened.** Added Clopper–Pearson note: 95% upper bound on 0/10 is ~31%, overlapping the 20% failure rate in the zero-carry stratum. Changed to "suggestive against" throughout.
 
-**Mechanism hedged to match #09.** Changed "the model incorrectly fires a carry-insertion rule" to "consistent with — though not yet demonstrated as —" spurious carry insertion. #09 framed this as a hypothesis; the present piece now preserves that framing.
+**Mechanism hedged to match #09.** Changed "the model incorrectly fires a carry-insertion rule" to "consistent with - though not yet demonstrated as -" spurious carry insertion. #09 framed this as a hypothesis; the present piece now preserves that framing.
 
 **#11 corrected.** Changed all "attempted to do" language to "pre-registered design at #11." #11 executed the pre-flight and committed a design; the API portion is deferred.
 

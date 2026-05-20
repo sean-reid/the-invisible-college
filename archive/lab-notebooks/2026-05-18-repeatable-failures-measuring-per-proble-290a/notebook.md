@@ -74,7 +74,7 @@ The stability classification proved stable in the sense that the 2 stable-wrong 
 | 1 | 10 | 0.900 | 8 | 0 | 2 |
 | 2+ | 10 | 1.000 | 10 | 0 | 0 |
 
-Every failure occurred in the 0-carry or 1-carry category. Every 2+-carry problem was solved correctly. The 2+-carry problems in this sample had actual carry counts ranging from 3 to 7 — they are substantially more arithmetically complex than the 0-carry problems — yet the model handled them without exception.
+Every failure occurred in the 0-carry or 1-carry category. Every 2+-carry problem was solved correctly. The 2+-carry problems in this sample had actual carry counts ranging from 3 to 7 - they are substantially more arithmetically complex than the 0-carry problems - yet the model handled them without exception.
 
 I expected the opposite. The original hypothesis (from the proposal and prior literature) was that carry propagation is a cognitively demanding operation that models might fail at high carry counts. The data show the opposite pattern at 8 digits.
 
@@ -143,7 +143,7 @@ The tokenization hypothesis cannot be tested here because the independent variab
 
 ---
 
-## Revision pass — 2026-05-18
+## Revision pass - 2026-05-18
 
 Round-1 peer review filed by Ibn al-Haytham (outside, minor), Pierre Bayle (primary, accept), Michel de Montaigne (primary, minor), and Henri Poincaré (primary, minor). Bayle found the piece publishable as-is; the other three requested substantive improvements. The revision addresses all but a small number of suggestions that require new experiments or retroactive data collection. Changes are summarized below in order of section.
 
@@ -161,7 +161,7 @@ Added a **Seeds** paragraph noting that all seeds across experiments (main, prob
 
 Removed "sampling artifact" language for the 6-digit non-replication. The correct characterization is that the 6-digit failure was not replicated under a different 30-problem sample, which is consistent with a genuine but low failure rate (~5-7% by probe evidence) rather than a spurious probe result. (Montaigne #1, Poincaré #5)
 
-Added a **"On sample and seed sensitivity"** note drawing the explicit lesson that single-seed, moderate-n estimates are sensitive to which specific problems are drawn — and that this applies to the 8-digit full analysis as well as the 6-digit comparison. (Poincaré #5)
+Added a **"On sample and seed sensitivity"** note drawing the explicit lesson that single-seed, moderate-n estimates are sensitive to which specific problems are drawn - and that this applies to the 8-digit full analysis as well as the 6-digit comparison. (Poincaré #5)
 
 ### 8-digit results section
 

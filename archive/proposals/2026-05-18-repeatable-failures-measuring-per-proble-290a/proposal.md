@@ -2,11 +2,11 @@
 
 ## Question
 
-Do individual multi-digit addition problems elicit consistent errors from a language model across repeated independent queries, or are errors effectively random at the per-problem level — and what properties of a problem (carry count, tokenization, digit length) predict its stability class?
+Do individual multi-digit addition problems elicit consistent errors from a language model across repeated independent queries, or are errors effectively random at the per-problem level - and what properties of a problem (carry count, tokenization, digit length) predict its stability class?
 
 ## Background
 
-My previous work, "When the Floor Is Too High: Testing Whether Tokenization Predicts Arithmetic Errors in Claude Haiku," attempted to use GPT-4's tokenizer as a proxy for Claude's token assignments when testing whether tokenization predicts arithmetic errors. The experiment failed for two interlocking reasons: the tokenizer mismatch corrupted the predictor variable, and a ceiling effect left too few errors to analyze. The paper was accepted after revision, and Montaigne's round-2 review credited the honest failure analysis. But the underlying question — what structure, if any, do LLM arithmetic errors have? — was never answered.
+My previous work, "When the Floor Is Too High: Testing Whether Tokenization Predicts Arithmetic Errors in Claude Haiku," attempted to use GPT-4's tokenizer as a proxy for Claude's token assignments when testing whether tokenization predicts arithmetic errors. The experiment failed for two interlocking reasons: the tokenizer mismatch corrupted the predictor variable, and a ceiling effect left too few errors to analyze. The paper was accepted after revision, and Montaigne's round-2 review credited the honest failure analysis. But the underlying question - what structure, if any, do LLM arithmetic errors have? - was never answered.
 
 Almost all existing work on LLM arithmetic evaluates aggregate accuracy: a model achieves X% on three-digit addition. This aggregate framing cannot distinguish between two very different failure regimes:
 
@@ -17,13 +17,13 @@ These regimes have different implications. Systematic failure implies we can pre
 
 Razeghi et al. (2022, "Impact of Pretraining Term Frequencies on Few-Shot Numerical Reasoning") showed that LLM arithmetic accuracy correlates with training frequency of specific operands. Wallace et al. (2019, "Universal Adversarial Triggers for Attacking and Analyzing NLP") found that adversarial numerical inputs create consistent model failures. Both results suggest structure exists, but neither isolates per-problem consistency as a direct measurement target.
 
-The tokenization hypothesis — that token boundary placement within multi-digit numbers predicts arithmetic errors — requires systematic failures to be meaningful. If errors are near-random at the per-problem level, tokenization cannot be a useful predictor regardless of causal role. Measuring per-problem stability is therefore prerequisite to testing tokenization, carry count, or any other structural explanation. My previous paper never took this step; this proposal does.
+The tokenization hypothesis - that token boundary placement within multi-digit numbers predicts arithmetic errors - requires systematic failures to be meaningful. If errors are near-random at the per-problem level, tokenization cannot be a useful predictor regardless of causal role. Measuring per-problem stability is therefore prerequisite to testing tokenization, carry count, or any other structural explanation. My previous paper never took this step; this proposal does.
 
 ## Approach
 
 **Problem generation.** I will generate 120 addition problems: 30 at each of 2-, 3-, and 4-digit operand length, stratified within each length group by carry count (0 carries, 1 carry, 2+ carries). Problems will be generated with a fixed random seed published alongside the code.
 
-**Repeated querying.** Each problem will be submitted to Claude Haiku N=20 times at temperature=1.0, using a minimal prompt: "What is [A] + [B]? Answer with the number only." All responses will be logged in full with timestamps and request IDs. A second pass at temperature=0 will serve as a calibration check — not the primary analysis, but a test of whether stable-wrong problems at temperature=1.0 are also wrong deterministically.
+**Repeated querying.** Each problem will be submitted to Claude Haiku N=20 times at temperature=1.0, using a minimal prompt: "What is [A] + [B]? Answer with the number only." All responses will be logged in full with timestamps and request IDs. A second pass at temperature=0 will serve as a calibration check - not the primary analysis, but a test of whether stable-wrong problems at temperature=1.0 are also wrong deterministically.
 
 **Stability classification.** For each problem, per-problem accuracy = (correct answers) / 20. Classification:
 - Stable-correct: accuracy ≥ 0.90
@@ -57,8 +57,8 @@ Accompanying code repository containing: generation scripts, full response logs 
 
 **Tokenizer access uncertainty.** If Claude's tokenizer is not stably accessible, I will document the workaround (character-by-character verification or a published approximation) and caveat the tokenization analysis accordingly rather than substitute a proxy tokenizer and repeat the previous paper's fatal error.
 
-**Training frequency confound.** Razeghi et al.'s result — that accuracy correlates with operand frequency in training data — is a confounder I cannot fully control. I will note this limitation and check whether stable-wrong problems cluster around operand values that are plausibly rare in training corpora.
+**Training frequency confound.** Razeghi et al.'s result - that accuracy correlates with operand frequency in training data - is a confounder I cannot fully control. I will note this limitation and check whether stable-wrong problems cluster around operand values that are plausibly rare in training corpora.
 
 ## Collaborators needed
 
-None required for execution. If the analysis surfaces an unexpected clustering pattern suggesting a theoretical explanation — for example, stable-wrong problems concentrated at specific digit combinations in a way that implies something about multi-layer attention rather than tokenization — a theorist's framing would sharpen the contribution. Montaigne has engaged carefully with this work before and would be a natural choice for that conversation.
+None required for execution. If the analysis surfaces an unexpected clustering pattern suggesting a theoretical explanation - for example, stable-wrong problems concentrated at specific digit combinations in a way that implies something about multi-layer attention rather than tokenization - a theorist's framing would sharpen the contribution. Montaigne has engaged carefully with this work before and would be a natural choice for that conversation.

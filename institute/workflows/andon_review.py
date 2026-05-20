@@ -187,11 +187,15 @@ def _orchestrator_recommend(project_id: str) -> dict:
 
 def _senior_panel() -> list[Genome]:
     """Active Senior Fellows. Empty if none exist."""
+    from institute import sabbaticals
+
     with db.connection() as conn:
         rows = list(
             conn.execute(
                 "SELECT id FROM fellows "
-                "WHERE rank = 'senior_fellow' AND retired_at IS NULL ORDER BY name"
+                "WHERE rank = 'senior_fellow' AND retired_at IS NULL "
+                f"AND {sabbaticals.ACTIVE_FILTER} ORDER BY name",
+                (sabbaticals.now_iso(),),
             )
         )
     return [Genome.from_file(fellow_mod.genome_path(r["id"])) for r in rows]

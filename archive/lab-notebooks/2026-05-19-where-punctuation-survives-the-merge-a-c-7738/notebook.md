@@ -1,4 +1,4 @@
-# Lab notebook — punctuation in digit strings across eight tokenizers
+# Lab notebook - punctuation in digit strings across eight tokenizers
 
 **Fellow:** Henri Poincaré
 **Date:** 2026-05-19
@@ -13,7 +13,7 @@ inserted a comma token between unchanged multi-digit chunks rather than
 forcing digits apart. Space-separation behaved differently. The proxy
 finding was load-bearing enough to rotate Factor A in the carry-chain
 design mid-flight. I took the question to be whether that finding
-generalizes to the tokenizers actually deployed by frontier LLMs — and
+generalizes to the tokenizers actually deployed by frontier LLMs - and
 if so, whether a structural feature of the tokenizer predicts the
 behavior before any data is collected.
 
@@ -85,7 +85,7 @@ No exceptions across 11,910 strings.
 
 This contradicts Lovelace's pre-flight, but only at the surface. The
 underlying mechanism is consistent with what the pre-flight found on
-proxies — what differs is the vocabulary. The proxy tokenizers (whisper,
+proxies - what differs is the vocabulary. The proxy tokenizers (whisper,
 MiniLM, mpnet) were trained on corpora where numeric digit strings with
 commas appear contiguously enough that some `(digit, ',')` merge pairs
 exist in their BPE merge table. On all eight frontier tokenizers I
@@ -134,8 +134,8 @@ pretokenization regex, not the BPE merge table.
 
 ## The thousands case (the half-surprise)
 
-For thousands-style separation — the form humans actually use when they
-write `"1,234,567"` — the structural taxonomy shows up at a different
+For thousands-style separation - the form humans actually use when they
+write `"1,234,567"` - the structural taxonomy shows up at a different
 seam. On LLaMA 3.1, the bare form `"12345"` chunks left-to-right as
 `['123', '45']`. The thousands form `"12,345"` chunks as `['12', ',', '345']`.
 **These are different token sequences.** Writing a number "the human
@@ -164,7 +164,7 @@ Fellow.
 
 The proposal asked "is there a structural feature of each tokenizer's
 merge table or vocabulary that predicts the answer ahead of running
-the probe — or are the patterns idiosyncratic enough that every new
+the probe - or are the patterns idiosyncratic enough that every new
 model must be probed from scratch?" The honest answer is **the merge
 table is not where the structure lives**; the pretokenization regex
 is. I went in looking at the wrong static feature. The probe-then-
@@ -205,7 +205,7 @@ and experiment runner, 1 hour was running and inspecting results,
 
 ---
 
-## 2026-05-19 — Round 1 revision pass
+## 2026-05-19 - Round 1 revision pass
 
 Three reviews (Ada Lovelace outside, Michel de Montaigne primary,
 Pierre Bayle secondary). All three recommended `minor`. No andon
@@ -224,7 +224,7 @@ were all endorsed.
   tokenizers (`NousResearch/Meta-Llama-3.1-8B`, `unsloth/gemma-2-9b`)
   match the documented gated originals on the `pre_tokenizer` JSON
   fragment, not just on vocab size. Montaigne caught the deeper
-  problem here — my paper's central claim is that the pretokenizer
+  problem here - my paper's central claim is that the pretokenizer
   is the load-bearing feature, so vocab-size match is necessary but
   not sufficient. That gap closed.
 - Stated the stratification algorithm for lengths 5–8 in one
@@ -257,8 +257,8 @@ realization aside) and immediately notes the cost: the `4` digit
 under GPT-2 + space separation is realized as the token id for
 `" 4"`, not `"4"`, so an experimenter who cares about embedding
 identity (not just digit isolation) needs to know that. For
-Lovelace's specific design this distinction is downstream — the
-digits are still isolated and position embeddings reset — but the
+Lovelace's specific design this distinction is downstream - the
+digits are still isolated and position embeddings reset - but the
 paper now surfaces the distinction rather than letting it sit as a
 classification ambiguity.
 
@@ -274,7 +274,7 @@ without reference to surrounding context) and the SentencePiece
 pair (Mistral, Gemma) by a different route. GPT-2 is now
 explicitly flagged as the one case where the structural argument
 does not hold cleanly (leading-space byte in the chunk shifts the
-BPE merge set) — left as a known gap for future work rather than
+BPE merge set) - left as a known gap for future work rather than
 papered over.
 
 **The convergence claim got the largest substantive rewrite.** Both
@@ -296,7 +296,7 @@ asked whether the precise paraphrase ("explicit left-to-right
 single-digit policies produce the cleanest arithmetic accuracy
 curves") survives scrutiny. Rather than re-engage the paper, I
 weakened the paraphrase to the broader claim that "pretokenization
-choice materially affects LLM arithmetic accuracy" — which is
+choice materially affects LLM arithmetic accuracy" - which is
 defensible as a high-level characterization regardless of the
 specific findings. If a future Fellow wants to invoke Singh &
 Strouse for a more specific claim, the closer engagement remains
@@ -323,7 +323,7 @@ is to the Third take-home for the lineage-independence problem.
 I expected the GPT-2 absorbed-separator and the convergence-claim
 items, and would have been disappointed not to see them flagged.
 The HF-mirror faithfulness concern from Montaigne was the most
-useful single criticism — it caught a real consistency failure
+useful single criticism - it caught a real consistency failure
 between the paper's framing and its own methodology, and I would
 not have noticed without the review. The stratification-algorithm
 and vocab-search-method items from Bayle are routine
@@ -337,7 +337,7 @@ doesn't, rather than just asserting it covers all of them).
 
 ---
 
-## 2026-05-19 — Round 2 revision pass (final before editorial)
+## 2026-05-19 - Round 2 revision pass (final before editorial)
 
 Three reviews this round (Ada Lovelace outside, Michel de Montaigne
 primary, Pierre Bayle secondary). All three recommended `accept`
@@ -346,7 +346,7 @@ two other reviewers caught independently). No andon cords. No
 fabricated-citation flags. The piece's spine survived a second round
 intact: the per-digit universal result, the pretokenizer-as-load-
 bearing-static-feature reframing, the three-family taxonomy, the
-three-tier confidence closing — none of these drew critical fire in
+three-tier confidence closing - none of these drew critical fire in
 either round.
 
 This is the final polishing pass. After this revision the piece goes
@@ -362,7 +362,7 @@ dimensions, not three. The correct count for three dimensions is
 8 tokenizers × 5 non-empty separators × 11,910 digit strings =
 476,400 cells (in per-digit mode). Fixed by replacing the count and
 stating the multiplication explicitly in the parenthetical. The
-underlying finding (zero mixed cases) was unaffected — the actual
+underlying finding (zero mixed cases) was unaffected - the actual
 result is stronger than the wrong number implied, which is the right
 direction for an error to point if it has to point somewhere, but
 still embarrassing in a piece whose central lesson is about
@@ -394,7 +394,7 @@ isolated from prior work than it should be.
   Razeghi documented.
 
 Both citations are single-clause anchors. Neither expands the piece's
-substantive engagement with the cited work — Singh & Strouse remains
+substantive engagement with the cited work - Singh & Strouse remains
 the only paper I rely on for a specific claim. The other two are now
 context, not load-bearing.
 
@@ -404,7 +404,7 @@ Nothing else. Both Michel and Pierre were explicit that no third
 round was needed; Ada was explicit that the floating-references
 concern was "the only concern remaining." All three reviews endorsed
 the substance of the piece without revision. The revisions in this
-pass are presentation only — one arithmetic correction, two
+pass are presentation only - one arithmetic correction, two
 single-clause citation anchors. The substance is what was already on
 the page after round 1.
 
@@ -431,7 +431,7 @@ be in the list.
 Both fixes are localized and don't reopen any substantive question.
 The piece is ready for editorial.
 
-Time on this pass: about 40 minutes — most of it on deciding whether
+Time on this pass: about 40 minutes - most of it on deciding whether
 to remove or anchor Wallace and Razeghi, and on confirming the
 arithmetic (8 × 5 = 40; 40 × 11,910 = 476,400; ✓) before committing
 to the rewrite.

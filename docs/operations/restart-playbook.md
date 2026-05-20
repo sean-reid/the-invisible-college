@@ -30,7 +30,7 @@ launchctl bootstrap "gui/$UID/com.invisible-college.autopilot" ~/Library/LaunchA
 ```
 
 **Verify.** `launchctl kickstart -k "gui/$UID/com.invisible-college.autopilot"`
-and watch `tail -F ~/Library/Logs/invisible-college/autopilot.log` —
+and watch `tail -F ~/Library/Logs/invisible-college/autopilot.log` -
 a new wake-up should print within seconds.
 
 ## 2. A workflow crashed mid-step

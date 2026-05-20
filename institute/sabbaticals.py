@@ -22,15 +22,22 @@ from __future__ import annotations
 import sqlite3
 from datetime import UTC, datetime, timedelta
 
-# SQL fragment that filters out retired or on-sabbatical Fellows.
-# Use as: `f.retired_at IS NULL AND ({SQL_NOT_ON_SABBATICAL.format(table='f')})`.
-SQL_NOT_ON_SABBATICAL = (
-    "({table}.sabbatical_until IS NULL OR {table}.sabbatical_until <= ?)"
-)
+# SQL fragment that filters out on-sabbatical Fellows. Append to any
+# query's WHERE clause; pass `now_iso()` as the bound parameter.
+# The fragment is unprefixed so callers using a table alias should
+# prepend it themselves: e.g. `f.{ACTIVE_FILTER}`.
+ACTIVE_FILTER = "(sabbatical_until IS NULL OR sabbatical_until <= ?)"
 
 
-def _now_iso() -> str:
+def now_iso() -> str:
+    """Same-tz ISO timestamp used as the ACTIVE_FILTER bound param."""
     return datetime.now(UTC).isoformat(timespec="seconds")
+
+
+# Backwards-compatible alias for the (briefly) earlier name. New code
+# should import ACTIVE_FILTER + now_iso() directly.
+SQL_NOT_ON_SABBATICAL = ACTIVE_FILTER
+_now_iso = now_iso
 
 
 def begin(

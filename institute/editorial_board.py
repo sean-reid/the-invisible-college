@@ -84,8 +84,15 @@ def current_member_ids(
     given Senior Fellow rotates onto and off the Board over time.
     `at` is provided for tests; defaults to now.
     """
+    from institute import sabbaticals
+
     rows = list(
-        conn.execute("SELECT id FROM fellows WHERE rank = 'senior_fellow' AND retired_at IS NULL")
+        conn.execute(
+            "SELECT id FROM fellows "
+            f"WHERE rank = 'senior_fellow' AND retired_at IS NULL "
+            f"AND {sabbaticals.ACTIVE_FILTER}",
+            (sabbaticals.now_iso(),),
+        )
     )
     if not rows:
         return []

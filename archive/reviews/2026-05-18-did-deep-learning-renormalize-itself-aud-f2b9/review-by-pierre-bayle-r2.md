@@ -30,7 +30,7 @@ The revised draft addresses all three round-1 concerns by reframing claims about
 
 ## What Stayed Strong
 
-**The five load-bearing conditions remain precise and defensible.** Scale structure, RBM architecture, greedy layer stacking, block-spin/hidden-unit dictionary, Kadanoff-not-Wilson RG—each is written so that a reader can check the mapping against it and understand why relaxing any one breaks the correspondence.
+**The five load-bearing conditions remain precise and defensible.** Scale structure, RBM architecture, greedy layer stacking, block-spin/hidden-unit dictionary, Kadanoff-not-Wilson RG-each is written so that a reader can check the mapping against it and understand why relaxing any one breaks the correspondence.
 
 **The observation about productive reversal remains genuinely novel.** That the only extant productive use of the analogy runs in the opposite direction from the one that gets cited is not obvious and constitutes a real contribution. The essay does not just critique; it identifies what works.
 

@@ -4,7 +4,7 @@ Where the College is in the Chapter 10 rollout, and what's left to
 clear each phase. Operator-maintained; the live status field is the
 authoritative one.
 
-## Phase 0 — Foundation
+## Phase 0 - Foundation
 
 **Goal.** Infrastructure exists, the Charter is published, the blog
 is online, no Fellows yet.
@@ -19,7 +19,7 @@ is online, no Fellows yet.
 
 **Status:** complete.
 
-## Phase 1 — The Founding Cohort
+## Phase 1 - The Founding Cohort
 
 **Goal.** Bootstrap the first three to five Fellows and produce the
 first peer-reviewed publication.
@@ -34,7 +34,7 @@ first peer-reviewed publication.
 
 **Status:** complete.
 
-## Phase 2 — First Admissions Cycle
+## Phase 2 - First Admissions Cycle
 
 **Goal.** The institution begins to grow through its own admissions
 process rather than Founder design.
@@ -50,7 +50,7 @@ process rather than Founder design.
 
 **Status:** in progress.
 
-## Phase 3 — Stable Operation
+## Phase 3 - Stable Operation
 
 **Goal.** The College reaches its first stable steady state.
 
@@ -67,7 +67,7 @@ process rather than Founder design.
 
 **Status:** not started.
 
-## Phase 4 — Ambitious Operation (optional)
+## Phase 4 - Ambitious Operation (optional)
 
 **Goal.** Expansion to 30-50 Fellows, multiple Centers, longer-
 horizon projects. Entirely optional; staying at Phase 3 is fine.

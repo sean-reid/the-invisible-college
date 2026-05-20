@@ -29,6 +29,19 @@ _TEXT_SUFFIXES = {".md", ".markdown", ".txt"}
 _PUBLIC_TOPS = {"archive", "blog"}
 
 
+def _normalize_punctuation(text: str) -> str:
+    """Strip AI-fingerprint typography from public text.
+
+    Em-dashes (U+2014) are a strong AI-generation signal; the
+    institution's voice does not use them. Replace with a regular
+    hyphen. Surrounding whitespace is preserved as-is; downstream
+    rendering collapses runs of whitespace anyway. En-dashes (U+2013)
+    are kept because they carry legitimate range semantics (e.g.,
+    `2–3 days`).
+    """
+    return text.replace("—", "-")
+
+
 def _is_public_text(path: Path) -> bool:
     if path.suffix.lower() not in _TEXT_SUFFIXES:
         return False
@@ -51,7 +64,8 @@ def atomic_write(path: Path, content: str) -> redaction.RedactionReport:
     report = redaction.RedactionReport(total=0, by_pattern={})
     cleaned = content
     if _is_public_text(path):
-        cleaned, report = redaction.redact(content)
+        cleaned = _normalize_punctuation(content)
+        cleaned, report = redaction.redact(cleaned)
         if report.total > 0:
             _logger.info(
                 "redacted %d cost references from %s: %s",

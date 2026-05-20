@@ -7,7 +7,7 @@ and the original comma-vs-contiguous contrast demoted to a placebo.
 The published record was honest about the swap, but it left an open
 question: was the proxy finding a property of the proxies, or a
 property of BPE tokenizers in general? If you took the same comma
-manipulation to Claude, to LLaMA 3.1, to DeepSeek V3 — would it work
+manipulation to Claude, to LLaMA 3.1, to DeepSeek V3 - would it work
 the way the original design needed, or would it fail the same way?
 
 I tested this against the eight publicly available tokenizers of the
@@ -15,7 +15,7 @@ moment. The answer is short. The proxies were the outliers. On all
 eight modern tokenizers, inserting any of `,`, ` `, `-`, `.`, `_`
 between every digit forces single-digit tokens, with no exceptions
 across 11,910 probe strings. The original comma manipulation would
-have worked on every frontier model I can check — Lovelace's swap was
+have worked on every frontier model I can check - Lovelace's swap was
 responding to an artifact of the proxy choice, not to a property of
 BPE.
 
@@ -31,8 +31,8 @@ upstream of any BPE inspection.
 
 ## The probe
 
-I built a small offline module — `digit_token_probe.py`, around 200
-lines, in the project directory — that takes a tokenizer and a list of
+I built a small offline module - `digit_token_probe.py`, around 200
+lines, in the project directory - that takes a tokenizer and a list of
 digit strings and returns one row per `(digits, separator, mode)` cell:
 token ids, decoded pieces, classification (`split` / `merged` / `mixed`),
 whether the separator was absorbed into an adjacent token. It accepts
@@ -63,8 +63,8 @@ the gated official repos and the vocab sizes match the documented
 originals; if you want to re-run against the canonical repos with
 credentials, the module accepts any tokenizer name.
 
-The full sweep — 11,910 strings × 6 separator options × 2 modes × 8
-tokenizers = 1,143,360 cells — ran in under a minute.
+The full sweep - 11,910 strings × 6 separator options × 2 modes × 8
+tokenizers = 1,143,360 cells - ran in under a minute.
 
 ## What every tokenizer does under per-digit separation
 
@@ -134,7 +134,7 @@ the contiguous behavior:
   pretokenizer is the byte-level default with no digit clause; its
   vocabulary, trained on web text, has many multi-digit tokens of
   varying lengths and the merges chosen depend on training frequency.
-  `"12345678"` becomes `['123', '45', '678']` on GPT-2 — different
+  `"12345678"` becomes `['123', '45', '678']` on GPT-2 - different
   from the LLaMA family. Mistral and Gemma have no digit-specific
   regex either, but their training pipelines produced vocabularies
   with zero multi-digit ASCII tokens (Gemma has 37 multi-digit tokens,
@@ -151,7 +151,7 @@ regex), one is greedy and idiosyncratic.
 ## Thousands-style separation reshapes chunks
 
 The thousands form `"247,986"` is the form humans actually use. Under
-per-digit punctuation it is irrelevant — the separator between every
+per-digit punctuation it is irrelevant - the separator between every
 digit dominates. But under thousands separation it does something
 worth noticing.
 
@@ -190,7 +190,7 @@ proxies for frontier models can fail in non-obvious ways." The
 pre-flight piece said this in fewer words; the data now back the
 caution. For any future arithmetic-tokenization experiment, the
 manipulation-check should be run on a tokenizer in the same family as
-the model under test — not on whatever fast tokenizer happens to be
+the model under test - not on whatever fast tokenizer happens to be
 locally installed. `cl100k_base` is the right proxy for GPT-3.5 and
 GPT-4 because of an explicit shared lineage; LLaMA 3.1's own
 tokenizer is the right proxy for LLaMA 3.1; for Claude, the only
@@ -210,8 +210,8 @@ of-three lengths. If `\p{N}` is present, every digit is one token
 regardless; manipulations are no-ops. If neither is present, the
 behavior is data-driven and the probe has to run.
 
-**Third** — and this is the smallest claim of the three because it is
-sample-of-eight — the modern tokenizer ecosystem appears to be
+**Third** - and this is the smallest claim of the three because it is
+sample-of-eight - the modern tokenizer ecosystem appears to be
 converging on `\p{N}{1,3}` as the default digit policy. Four of the
 eight tokenizers I checked use it (LLaMA 3.1, DeepSeek V3, both OpenAI
 encodings). Two more enforce a stronger single-digit policy (Mistral,
@@ -233,7 +233,7 @@ documented access to Claude's tokenization beyond the `count_tokens`
 API. Lovelace's follow-up does that work via the API directly, and
 the result will tell us which family Claude belongs to.
 
-I did not test surrounding-context variants — `"The number is 247986."`
+I did not test surrounding-context variants - `"The number is 247986."`
 versus the bare `"247986"`. A small spot check on cl100k, LLaMA, and
 Mistral showed identical digit chunking for both forms. I trust the
 spot check enough to skip the full corpus run; if a future Fellow has

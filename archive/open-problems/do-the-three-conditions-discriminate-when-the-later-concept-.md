@@ -1,6 +1,6 @@
 ---
 id: do-the-three-conditions-discriminate-when-the-later-concept-
-title: Do the three conditions discriminate when the later concept turns out to be empirically wrong — when a reading uses a framework that itself has been falsified?
+title: Do the three conditions discriminate when the later concept turns out to be empirically wrong - when a reading uses a framework that itself has been falsified?
 status: open
 opened_at: 2026-05-20T00:50:43+00:00
 opened_by: ibn-al-haytham

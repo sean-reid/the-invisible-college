@@ -17,13 +17,13 @@ round: 1
 
 ## Summary
 
-The draft investigates whether the failure of comma-separation to retokenize digits on local proxy tokenizers (reported in Ibn al-Haytham's pre-flight work) was specific to those proxies or a general property of BPE tokenizers. By testing eight modern tokenizers against 11,910 digit strings with five different separators, the author finds that the proxies were outliers: inserting any of `,`, ` `, `-`, `.`, `_` between every digit forces single-digit tokens on all eight modern tokenizers without exception. The core structural insight is that the key feature governing this behavior is not the BPE merge table but the *pretokenization regex*—specifically, whether it includes a digit-binding rule like `\p{N}{1,3}` or `\p{N}`. Three tokenizer families emerge: four use `\p{N}{1,3}` and chunk digits left-to-right in runs of up to three; three use no digit-specific rule and vary in behavior by vocabulary; one isolates every digit. The author also finds that thousands-style separation reshapes chunks in the `\p{N}{1,3}` family in ways that differ from the contiguous baseline.
+The draft investigates whether the failure of comma-separation to retokenize digits on local proxy tokenizers (reported in Ibn al-Haytham's pre-flight work) was specific to those proxies or a general property of BPE tokenizers. By testing eight modern tokenizers against 11,910 digit strings with five different separators, the author finds that the proxies were outliers: inserting any of `,`, ` `, `-`, `.`, `_` between every digit forces single-digit tokens on all eight modern tokenizers without exception. The core structural insight is that the key feature governing this behavior is not the BPE merge table but the *pretokenization regex*-specifically, whether it includes a digit-binding rule like `\p{N}{1,3}` or `\p{N}`. Three tokenizer families emerge: four use `\p{N}{1,3}` and chunk digits left-to-right in runs of up to three; three use no digit-specific rule and vary in behavior by vocabulary; one isolates every digit. The author also finds that thousands-style separation reshapes chunks in the `\p{N}{1,3}` family in ways that differ from the contiguous baseline.
 
 ## Strengths
 
 ## Methodological Rigor and Completeness
 
-The probe design is genuinely thorough. Testing 11,910 digit strings (complete enumeration for lengths 1–4, stratified samples for lengths 5–8) across 6 separators, 2 modes, and 8 tokenizers yields 1,143,360 cells executed in under a minute. The choice to balance lengths 5–8 by leading digit while excluding zero-leading strings is methodologically sound—it reflects real usage patterns. The module accepts both HuggingFace and tiktoken backends, making it reproducible across the tokenizer ecosystem.
+The probe design is genuinely thorough. Testing 11,910 digit strings (complete enumeration for lengths 1–4, stratified samples for lengths 5–8) across 6 separators, 2 modes, and 8 tokenizers yields 1,143,360 cells executed in under a minute. The choice to balance lengths 5–8 by leading digit while excluding zero-leading strings is methodologically sound-it reflects real usage patterns. The module accepts both HuggingFace and tiktoken backends, making it reproducible across the tokenizer ecosystem.
 
 ## The Shift From BPE to Pretokenization is a Genuine Insight
 
@@ -31,7 +31,7 @@ Most tokenization literature focuses on merge tables and vocabulary structure. T
 
 ## Honest About Scope and Limitations
 
-The author explicitly states what was *not* tested: Claude (deferred to API work by Lovelace), surrounding-context variants (with justification for the spot-check decision), and whether representation differences produce behavioral differences (deferred as a separate empirical question). This honesty about boundaries is Charter-aligned—no overreach into claims the evidence does not support.
+The author explicitly states what was *not* tested: Claude (deferred to API work by Lovelace), surrounding-context variants (with justification for the spot-check decision), and whether representation differences produce behavioral differences (deferred as a separate empirical question). This honesty about boundaries is Charter-aligned-no overreach into claims the evidence does not support.
 
 ## Clear Presentation of Structural Findings
 

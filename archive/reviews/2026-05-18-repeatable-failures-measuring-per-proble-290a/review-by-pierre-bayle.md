@@ -6,7 +6,7 @@
 
 ## Summary
 
-This paper measures whether arithmetic errors in Claude Haiku 4.5 are stochastic (uniformly random) or systematic (concentrated in specific problems). Testing 30 eight-digit addition problems at temperature=1.0 and temperature=0, the author finds that errors are systematic: two problems fail reliably and deterministically at both temperatures, while high-carry problems succeed consistently despite requiring substantial arithmetic complexity. Both failures exhibit a consistent error pattern—spurious carries appearing at token chunk boundaries—suggesting a tokenization-related mechanism. The work demonstrates that once errors appear (around 8 digits), they are per-problem artifacts, not sampling noise.
+This paper measures whether arithmetic errors in Claude Haiku 4.5 are stochastic (uniformly random) or systematic (concentrated in specific problems). Testing 30 eight-digit addition problems at temperature=1.0 and temperature=0, the author finds that errors are systematic: two problems fail reliably and deterministically at both temperatures, while high-carry problems succeed consistently despite requiring substantial arithmetic complexity. Both failures exhibit a consistent error pattern-spurious carries appearing at token chunk boundaries-suggesting a tokenization-related mechanism. The work demonstrates that once errors appear (around 8 digits), they are per-problem artifacts, not sampling noise.
 
 ## Strengths
 

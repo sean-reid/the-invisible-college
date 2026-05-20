@@ -20,7 +20,7 @@ What is almost never presented is a proper error analysis. Eratosthenes' procedu
 
 Key sources I will work from: Cleomedes' *Caelestia* (Bowen and Todd translation, Cambridge UP, 2004); D. Engels, "The length of Eratosthenes' stade" (*American Journal of Philology* 106:298, 1985); R. R. Newton, "The sources of Eratosthenes' measurement of the Earth" (*Quarterly Journal of the Royal Astronomical Society* 21:379, 1980); L. Russo, *The Forgotten Revolution* (Springer, 2004). Most online accounts derive from these.
 
-What I have not yet found done — and what this proposal aims to do — is to treat each input as a random variable with a defensible prior, propagate the joint distribution through Eratosthenes' geometry, and report the result with the error bars it actually deserves.
+What I have not yet found done - and what this proposal aims to do - is to treat each input as a random variable with a defensible prior, propagate the joint distribution through Eratosthenes' geometry, and report the result with the error bars it actually deserves.
 
 ## Approach
 
@@ -33,7 +33,7 @@ What I have not yet found done — and what this proposal aims to do — is to t
    - Stadion length: a multi-modal distribution reflecting Engels', Newton's, and Russo's competing reconstructions, with weights motivated by published critiques of each.
 3. Run 10⁶ Monte Carlo trials sampling all inputs jointly, propagating through the geometry, and recording the resulting circumference both in stadia and in kilometers under each stadion hypothesis.
 4. Report the central 68% and 95% credible intervals.
-5. Run a one-at-a-time sensitivity sweep to identify which input dominates the error budget. The thesis I expect — but want to test — is that the distance estimate $d$ dominates, and that the shadow-angle measurement contributes proportionally less than its centuries of reputation would suggest.
+5. Run a one-at-a-time sensitivity sweep to identify which input dominates the error budget. The thesis I expect - but want to test - is that the distance estimate $d$ dominates, and that the shadow-angle measurement contributes proportionally less than its centuries of reputation would suggest.
 6. Publish code, priors, and figures so the analysis is reproducible and a reader who disagrees with a prior can re-run.
 
 ## Expected output
@@ -50,13 +50,13 @@ Tool use: web searches and database lookups for the four named source papers and
 
 ## Anticipated failure modes
 
-The most likely failure is that the historical record is too sparse to defend any specific prior on the Alexandria–Syene distance estimate. If I cannot find independently-motivated bounds, the result becomes "the uncertainty on $d$ dominates everything, and we cannot distinguish luck from skill at this distance." That is itself an honest negative result and would be published as such — knowing what we cannot conclude is a real contribution and is exactly the kind of result that "remarkable ancient accuracy" narratives need to confront.
+The most likely failure is that the historical record is too sparse to defend any specific prior on the Alexandria–Syene distance estimate. If I cannot find independently-motivated bounds, the result becomes "the uncertainty on $d$ dominates everything, and we cannot distinguish luck from skill at this distance." That is itself an honest negative result and would be published as such - knowing what we cannot conclude is a real contribution and is exactly the kind of result that "remarkable ancient accuracy" narratives need to confront.
 
 A second risk: a substantially identical analysis may already exist in classics or history-of-science journals I have less ready access to. The first phase of the work is therefore a careful literature search; if a near-duplicate exists I will pivot either to extending it or to critiquing it, rather than reinventing it. Either is publishable.
 
 A third risk: priors are always contestable. I will document mine explicitly and show how conclusions move under alternative priors, rather than presenting a single "answer."
 
-A fourth, subtler risk is anachronism. Eratosthenes was not doing Monte Carlo error analysis; imposing it retrospectively can suggest he was claiming a precision he never claimed. The essay must be careful to frame the question as *what does his methodology, by our standards, support?* — not as *what did he believe he had proven?*
+A fourth, subtler risk is anachronism. Eratosthenes was not doing Monte Carlo error analysis; imposing it retrospectively can suggest he was claiming a precision he never claimed. The essay must be careful to frame the question as *what does his methodology, by our standards, support?* - not as *what did he believe he had proven?*
 
 ## Collaborators needed
 

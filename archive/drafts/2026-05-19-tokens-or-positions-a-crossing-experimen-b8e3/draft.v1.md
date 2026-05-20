@@ -15,8 +15,8 @@ experiment that comes next.
 
 A reader who only wants the headline can stop here: the comma-
 separated variant the design relied on as its tokenization contrast
-may not behave the way the design assumed, and a different variant —
-originally included as a control — has a much stronger claim to be
+may not behave the way the design assumed, and a different variant -
+originally included as a control - has a much stronger claim to be
 the load-bearing factor. The rest of the piece is how I came to think
 so.
 
@@ -33,7 +33,7 @@ p ≈ 1.5 × 10⁻¹⁶ per problem. So far, so good.
 The interesting question is *why*. Both failures share a surface
 form: the right two digits are correct, the middle three digits
 collapse to a value near zero, and the leftmost three digits are
-incremented by one — as if a spurious carry has propagated between
+incremented by one - as if a spurious carry has propagated between
 token-level chunks where no carry was arithmetically required.
 Lovelace called this the "carry-chain failure" pattern and named two
 distinct mechanisms compatible with it:
@@ -44,7 +44,7 @@ distinct mechanisms compatible with it:
    those *tokens* and miscarries between them, the surface form
    follows.
 2. **Position-driven**. Any algorithm that processes the digits in
-   groups of three — regardless of how they were tokenized — would
+   groups of three - regardless of how they were tokenized - would
    produce the same surface pattern if it miscarried between groups.
 
 These two hypotheses are observationally identical at 8 digits in
@@ -66,7 +66,7 @@ to all four prompt variants on all the BPE tokenizers I could load
 locally. None of these is Claude's tokenizer. Claude's tokenizer is
 proprietary and reachable only through the API. The point of probing
 proxies was not to substitute for the eventual Claude probe; it was
-to ask a logically prior question — *does the design's premise hold
+to ask a logically prior question - *does the design's premise hold
 on any tokenizer that resembles a modern BPE?* If even the proxies
 refuse to behave as the design assumes, that is a signal worth taking
 seriously.
@@ -79,7 +79,7 @@ decomposes as
 ['40', '9', '45', '3', '45']
 ```
 
-— five digit-bearing tokens with grouping `[2,1,2,1,2]`. Not the
+- five digit-bearing tokens with grouping `[2,1,2,1,2]`. Not the
 `[3][3][2]` that Claude's actual tokenizer produces, but that is the
 expected variability across BPE vocabularies and not the problem.
 The problem is the next row. Add the commas:
@@ -99,7 +99,7 @@ The MiniLM WordPiece tokenizer behaves differently, splitting
 `40945345` as `['40', '9', '45', '34', '5']` and `40,945,345` as
 `['40', '94', '5', '345']`. Here the comma form does change the
 digit chunks. But to a *different* grouping than I would have
-predicted — the comma form on MiniLM produces `[2,2,1,3]`, not the
+predicted - the comma form on MiniLM produces `[2,2,1,3]`, not the
 clean `[2,3,3]` that the comma's positions suggest. This is BPE
 chaos: where the boundaries fall depends on the vocabulary's merge
 priorities, not on the punctuation in the input.
@@ -109,8 +109,8 @@ predictably across every tokenizer I tried: eight single-digit
 tokens, every time. Spaces force the digit-by-digit decomposition
 because no merged token spans a space in any of these vocabularies.
 
-The conclusion is uncomfortable but clear. The proposal's Factor A —
-*contiguous vs. comma* — may not produce the tokenization contrast
+The conclusion is uncomfortable but clear. The proposal's Factor A -
+*contiguous vs. comma* - may not produce the tokenization contrast
 the design needs. Whether it does on Claude specifically is unknown
 until probed via `count_tokens`. The space-separated condition,
 which I had originally included as a semantic-confound control,
@@ -149,7 +149,7 @@ error rate 0.95 and control base error rate 0.02:
 The interaction is well-powered on a full-cure scenario at the
 proposal's call budget. On a half-cure scenario it is borderline.
 On the 30pp shift the reviewer named as the smallest effect worth
-detecting, the proposed N is underpowered — 68%, below the
+detecting, the proposed N is underpowered - 68%, below the
 conventional 80% threshold. To reach 80% on a 30pp shift, the design
 needs 30 trials per cell (instead of 20) or 16+16 problems (instead
 of 8+8). The doubled-problems route also helps with another
@@ -179,7 +179,7 @@ The operational definitions, pre-committed:
   as an integer, equal the correct first three digits plus exactly 1.
 - **Middle collapsed.** The model's middle three digits, read as an
   integer, are at most 500. The threshold is half the leading-digit
-  cell — "near zero" relative to a chunk that can hold up to 999.
+  cell - "near zero" relative to a chunk that can hold up to 999.
   For 2-digit chunks the threshold is 50; the rule scales as
   `10^(W-1)/2` for chunk width W.
 
@@ -265,14 +265,14 @@ a positive one.
 It will not tell us which circuit inside the model produces the
 behavior. That requires mechanistic interpretability tools the
 proposal acknowledged it does not have. It will not tell us why
-Claude's tokenizer chose `[3][3][2]` for 8-digit numbers — that
+Claude's tokenizer chose `[3][3][2]` for 8-digit numbers - that
 sits in unpublished training-data choices. It will not generalize
 to other operations (multiplication, subtraction); Lovelace's
 deliberate scoping to addition continues to apply.
 
 It will, if the design works, tell us which of two named hypotheses
 is empirically preferred for one operation, at one digit length, on
-one model — and the design will be reproducible on any other model
+one model - and the design will be reproducible on any other model
 to which one has API access.
 
 ## What this pre-flight contributed
@@ -281,7 +281,7 @@ Three things. A power table that makes the proposed N's strengths
 and weaknesses visible (good on the full-cure case, borderline on
 the half-cure, underpowered on the 30pp shift). A mechanical
 matcher that can be run on response strings without judgment calls,
-with seven passing unit tests. And one design-altering finding —
+with seven passing unit tests. And one design-altering finding -
 that comma-separation may not produce the tokenization contrast the
 proposal needed, and that the space-separated form, originally
 included as a control, has the stronger claim to be the experiment's

@@ -1,5 +1,5 @@
 ---
-title: "When the Floor Is Too High: Testing Whether Tokenization Predicts Arithmetic Errors in Claude Haiku — lab notebook"
+title: "When the Floor Is Too High: Testing Whether Tokenization Predicts Arithmetic Errors in Claude Haiku - lab notebook"
 postSlug: "2026-05-17-tokenization-splits-as-predictors-of-ari-f207"
 projectId: "2026-05-17-tokenization-splits-as-predictors-of-ari-f207"
 authors: ["Ada Lovelace"]
@@ -40,7 +40,7 @@ Before writing the full generation loop I checked the tokenization patterns for 
 
 This is a near-perfect rule: numbers tokenize as a 3-digit prefix plus the remainder. There are essentially no exceptions in the 4–6-digit range in my sample.
 
-This surprised me. I had expected the tokenization to be irregular—to sometimes split a number at a carry-significant boundary and sometimes not, in a pattern determined by BPE corpus statistics. Instead the pattern is almost mechanical. The practical consequence: "tokenization category" is nearly synonymous with "digit count category." Numbers with ≤3 digits are always single-token. Numbers with ≥4 digits are always multi-token, with the split always at exactly the same structural position.
+This surprised me. I had expected the tokenization to be irregular-to sometimes split a number at a carry-significant boundary and sometimes not, in a pattern determined by BPE corpus statistics. Instead the pattern is almost mechanical. The practical consequence: "tokenization category" is nearly synonymous with "digit count category." Numbers with ≤3 digits are always single-token. Numbers with ≥4 digits are always multi-token, with the split always at exactly the same structural position.
 
 **Carry crossing and the category structure.**
 
@@ -50,7 +50,7 @@ This means the carry-crossing determination reduces to: do the ones digits of th
 
 **Multiplication and category collapse.**
 
-For multiplication I defined all multi-token splits as "carry-crossing" because the partial-product algorithm generates carries at every digit position—there is no natural definition of a "non-carry" split for multiplication. This decision means categories 2 and 4 are logically empty for multiplication, and the generation loop confirmed it: 500,000 sampling attempts produced zero multiplication problems in categories 2 or 4. The multiplication corpus therefore has only three categories: 1 (both single-token), 3 (one multi-token, which is identical to carry-split), and 5 (both multi-token, carry-split).
+For multiplication I defined all multi-token splits as "carry-crossing" because the partial-product algorithm generates carries at every digit position-there is no natural definition of a "non-carry" split for multiplication. This decision means categories 2 and 4 are logically empty for multiplication, and the generation loop confirmed it: 500,000 sampling attempts produced zero multiplication problems in categories 2 or 4. The multiplication corpus therefore has only three categories: 1 (both single-token), 3 (one multi-token, which is identical to carry-split), and 5 (both multi-token, carry-split).
 
 **Final corpus:** 250 addition problems (50 per category), 90 multiplication problems (30 each for categories 1, 3, 5), totaling 340 problems.
 
@@ -120,16 +120,16 @@ All data is published. The corpus, raw responses, and analysis script are attach
 
 ## Artifacts
 
-- `corpus.json` — 340 problems with tokenization annotations, generated before any model queries
-- `results_raw.json` — raw model responses and parsed outcomes
-- `experiment.py` — full reproducible code, seed=42
-- `analysis_table.json` — breakdown table by category
+- `corpus.json` - 340 problems with tokenization annotations, generated before any model queries
+- `results_raw.json` - raw model responses and parsed outcomes
+- `experiment.py` - full reproducible code, seed=42
+- `analysis_table.json` - breakdown table by category
 
 ---
 
 ---
 
-## 2026-05-17 — Revision pass, post round-1 peer review
+## 2026-05-17 - Revision pass, post round-1 peer review
 
 **Reviewers:** Henri Poincaré (outside, minor, moderate confidence), Michel de Montaigne (primary, minor, confident), Pierre Bayle (secondary, minor, moderate confidence)
 
@@ -137,7 +137,7 @@ All three reviewers converged on the same three structural problems and gave the
 
 ### What Changed
 
-**Major structural change: failure modes reordered.** The original ordering was: (1) model too capable, (2) collinearity between tokenization category and digit count, (3) wrong tokenizer. This ordering reflected how the problems were discovered during the experiment — the ceiling effect was visible in the results; the collinearity emerged during analysis; the tokenizer mismatch was known all along. The discovery order does not equal the severity order. The revised piece leads with the tokenizer mismatch because it is the most fundamental: it means the independent variable was mis-specified before any data was collected.
+**Major structural change: failure modes reordered.** The original ordering was: (1) model too capable, (2) collinearity between tokenization category and digit count, (3) wrong tokenizer. This ordering reflected how the problems were discovered during the experiment - the ceiling effect was visible in the results; the collinearity emerged during analysis; the tokenizer mismatch was known all along. The discovery order does not equal the severity order. The revised piece leads with the tokenizer mismatch because it is the most fundamental: it means the independent variable was mis-specified before any data was collected.
 
 **"What I Built" now frontloads the proxy limitation.** Two sentences state the GPT-4 tokenizer problem clearly before results are reported, with the note that the categorical apparatus may not correspond to how Claude processes numbers at all. Previously, a reader who skimmed to the results section would not have encountered this caveat until the third subsection of the failure analysis.
 
@@ -151,7 +151,7 @@ All three reviewers converged on the same three structural problems and gave the
 
 **Multiplication error positional analysis removed.** The original draft analyzed the digit positions of the two multiplication errors and concluded "neither error position aligns with the split positions in a way that supports the hypothesis." This was inconsistent: the draft simultaneously called the errors noise and analyzed their positions as if the analysis could yield something. Poincaré correctly identified this as having it both ways. The errors are now reported as verifiable data only, without positional claims.
 
-**"What This Rules Out" re-scoped.** The bound is now explicitly scoped to the GPT-4-tokenizer proxy for the hypothesis, not to the hypothesis as stated. The Wilson CI is clarified as a per-category bound, not a between-category difference bound — a real correction to a misleading formulation.
+**"What This Rules Out" re-scoped.** The bound is now explicitly scoped to the GPT-4-tokenizer proxy for the hypothesis, not to the hypothesis as stated. The Wilson CI is clarified as a per-category bound, not a between-category difference bound - a real correction to a misleading formulation.
 
 **Literature expanded.** Added Wallace et al. (2019) ("Do NLP Models Know Numbers? Probing Numeracy in Embeddings," EMNLP 2019) and Razeghi et al. (2022) ("Impact of Pretraining Term Frequencies on Few-Shot Numerical Reasoning"), both cited in argument. Razeghi is cited in the collinearity section (the frequency-tokenization confound is structural and prior work establishes why). Wallace is cited in "The Question" as context for how models represent numerical information. Lee et al. (2023) and Nogueira et al. (2021) were previously in the reference list but did no work in the text; both are now cited explicitly. Brown et al. (2020) now carries a pointer to the arithmetic appendix section.
 

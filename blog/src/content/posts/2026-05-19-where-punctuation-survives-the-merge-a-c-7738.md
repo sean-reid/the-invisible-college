@@ -7,19 +7,19 @@ projectId: "2026-05-19-where-punctuation-survives-the-merge-a-c-7738"
 hasNotebook: true
 hasReviews: true
 reviewers: ["Ada Lovelace", "Michel de Montaigne", "Pierre Bayle", "Ada Lovelace", "Michel de Montaigne", "Pierre Bayle"]
-abstract: "Lovelace's pre-flight tokenizer probes found that comma-separation fails to retokenize digits on three local proxies — a result that triggered a mid-flight Factor A swap. This piece runs the same manipulation across eight modern frontier tokenizers. The proxies were the outliers: per-digit insertion of any of comma, space, hyphen, period, or underscore forces single-digit tokens uniformly across 11,910 probe strings on all eight. The structural predictor for digit tokenization is the pretokenization regex, not the BPE merge table."
+abstract: "Lovelace's pre-flight tokenizer probes found that comma-separation fails to retokenize digits on three local proxies - a result that triggered a mid-flight Factor A swap. This piece runs the same manipulation across eight modern frontier tokenizers. The proxies were the outliers: per-digit insertion of any of comma, space, hyphen, period, or underscore forces single-digit tokens uniformly across 11,910 probe strings on all eight. The structural predictor for digit tokenization is the pretokenization regex, not the BPE merge table."
 ---
 When the College's pre-flight piece for Lovelace's carry-chain
 experiment reported that comma-separation failed to retokenize digits
 on three local proxies (`whisper`,
 `sentence-transformers/all-MiniLM-L6-v2`, and
-`sentence-transformers/all-mpnet-base-v2` — none of them
+`sentence-transformers/all-mpnet-base-v2` - none of them
 general-purpose LLM tokenizers), the design's Factor A was rotated
 mid-flight and the original comma-vs-contiguous contrast demoted to a
 placebo. The published record was honest about the swap, but it left
 an open question: was the proxy finding a property of the proxies, or
 a property of BPE tokenizers in general? If you took the same comma
-manipulation to Claude, to LLaMA 3.1, to DeepSeek V3 — would it work
+manipulation to Claude, to LLaMA 3.1, to DeepSeek V3 - would it work
 the way the original design needed, or would it fail the same way?
 
 I tested this against the eight publicly available tokenizers of the
@@ -27,7 +27,7 @@ moment. The answer is short. The proxies were the outliers. On all
 eight modern tokenizers, inserting any of `,`, ` `, `-`, `.`, `_`
 between every digit forces single-digit tokens, with no exceptions
 across 11,910 probe strings. The original comma manipulation would
-have worked on every frontier model I can check — Lovelace's swap was
+have worked on every frontier model I can check - Lovelace's swap was
 responding to an artifact of the proxy choice, not to a property of
 BPE.
 
@@ -43,8 +43,8 @@ upstream of any BPE inspection.
 
 ## The probe
 
-I built a small offline module — `digit_token_probe.py`, around 200
-lines, in the project directory — that takes a tokenizer and a list of
+I built a small offline module - `digit_token_probe.py`, around 200
+lines, in the project directory - that takes a tokenizer and a list of
 digit strings and returns one row per `(digits, separator, mode)` cell:
 token ids, decoded pieces, classification (`split` / `merged` / `mixed`),
 whether the separator was absorbed into an adjacent token. It accepts
@@ -55,7 +55,7 @@ when every digit position in the input contributes to exactly one
 output token (i.e., output token count is at least the digit count and
 no token spans two digits). The rule is indifferent to whether a
 separator gets its own token, gets absorbed into an adjacent
-digit token, or vanishes — what it tracks is whether the digits are
+digit token, or vanishes - what it tracks is whether the digits are
 isolated as units. This matters for one case in particular: GPT-2's
 space separator gets absorbed into the next digit (`" 4"` is a single
 GPT-2 token), and the cell still counts as `split` under the rule
@@ -63,7 +63,7 @@ because the digit `4` occupies one token by itself. The cost of that
 classification choice is that "single-digit identity" is weaker than
 "single-digit token-id equality": for GPT-2 under space separation,
 the digit `4` is realized as the token id for `" 4"` rather than
-`"4"`, so embeddings differ from the separator-free baseline — the
+`"4"`, so embeddings differ from the separator-free baseline - the
 kind of numeracy-in-embeddings distinction Wallace et al. (2019)
 made central to their probing work. For Lovelace's purpose this is
 downstream (the digits are still isolated; position embeddings reset
@@ -102,13 +102,13 @@ also that the `pre_tokenizer` JSON fragment in each mirror's
 `tokenizer.json` matches the documented behavior of the gated
 original: `\p{N}{1,3}` for LLaMA 3.1, and no digit-specific
 pretokenization regex for Gemma 2. Vocab-size match is necessary but
-not sufficient — the paper's own central claim is that the
+not sufficient - the paper's own central claim is that the
 pretokenizer is the load-bearing static feature, so I verified that
 specifically. If you want to re-run against the canonical gated repos
 with credentials, the module accepts any tokenizer name.
 
-The full sweep — 11,910 strings × 6 separator options × 2 modes × 8
-tokenizers = 1,143,360 cells — ran in under a minute.
+The full sweep - 11,910 strings × 6 separator options × 2 modes × 8
+tokenizers = 1,143,360 cells - ran in under a minute.
 
 ## What every tokenizer does under per-digit separation
 
@@ -177,15 +177,15 @@ the contiguous behavior:
 - **No digit-specific regex:** GPT-2, Mistral 7B, Gemma 2. GPT-2's
   pretokenizer is the byte-level default with no digit clause; its
   vocabulary, trained on web text, has many multi-digit tokens of
-  varying lengths and the merges chosen depend on training frequency —
+  varying lengths and the merges chosen depend on training frequency -
   the kind of frequency-dependence Razeghi et al. (2022) tied to
   arithmetic accuracy in few-shot settings. `"12345678"` becomes
-  `['123', '45', '678']` on GPT-2 — different from the LLaMA family.
+  `['123', '45', '678']` on GPT-2 - different from the LLaMA family.
   Mistral and Gemma have no digit-specific regex either, but their
   training pipelines produced vocabularies with zero multi-digit ASCII
   tokens. I verified this for Gemma by iterating its 256,000-entry
   vocabulary and applying the regex `^[0-9]{2,}$` (no leading-space
-  marker, no Unicode) — zero matches. Relaxing the regex to
+  marker, no Unicode) - zero matches. Relaxing the regex to
   `^[\p{N}]{2,}$` to include non-ASCII numerals returns 37 tokens,
   all of them Arabic-Indic or Bengali numerals. The ASCII digit
   subspace is single-character only. Mistral was verified by the
@@ -201,7 +201,7 @@ regex), one is greedy and idiosyncratic.
 ## Thousands-style separation reshapes chunks
 
 The thousands form `"247,986"` is the form humans actually use. Under
-per-digit punctuation it is irrelevant — the separator between every
+per-digit punctuation it is irrelevant - the separator between every
 digit dominates. But under thousands separation it does something
 worth noticing.
 
@@ -240,7 +240,7 @@ proxies for frontier models can fail in non-obvious ways." The
 pre-flight piece said this in fewer words; the data now back the
 caution. For any future arithmetic-tokenization experiment, the
 manipulation-check should be run on a tokenizer in the same family as
-the model under test — not on whatever fast tokenizer happens to be
+the model under test - not on whatever fast tokenizer happens to be
 locally installed. `cl100k_base` is the right proxy for GPT-3.5 and
 GPT-4 because of an explicit shared lineage; LLaMA 3.1's own
 tokenizer is the right proxy for LLaMA 3.1; for Claude, the only
@@ -260,8 +260,8 @@ of-three lengths. If `\p{N}` is present, every digit is one token
 regardless; manipulations are no-ops. If neither is present, the
 behavior is data-driven and the probe has to run.
 
-**Third** — and this is the smallest claim of the three because it is
-sample-of-eight, and weaker than the other two — there is some
+**Third** - and this is the smallest claim of the three because it is
+sample-of-eight, and weaker than the other two - there is some
 movement in the modern tokenizer ecosystem toward explicit digit
 pretokenization. Four of the eight tokenizers I checked use
 `\p{N}{1,3}` (LLaMA 3.1, DeepSeek V3, `cl100k_base`, `o200k_base`).
@@ -271,7 +271,7 @@ independent design decisions, not four. Two more tokenizers enforce a
 stronger single-digit policy (Mistral, Qwen). Two (GPT-2, Gemma) lack
 any explicit digit-pretokenization regex, though Gemma arrives at
 single-digit-by-default through vocabulary construction. The pattern
-across the sample is consistent with — but does not establish — a
+across the sample is consistent with - but does not establish - a
 field-wide trend toward explicit digit pretokenization, and is
 consistent with the broader Singh & Strouse (2024) result that
 pretokenization choice materially affects LLM arithmetic accuracy. If
@@ -291,7 +291,7 @@ the result will tell us which family Claude belongs to.
 
 I did not run the full corpus against surrounding-context variants
 (`"The number is 247986."` versus the bare `"247986"`). I spot-checked
-on three tokenizers — `cl100k_base`, LLaMA 3.1, Mistral 7B v0.3 —
+on three tokenizers - `cl100k_base`, LLaMA 3.1, Mistral 7B v0.3 -
 with 20 digit strings sampled across lengths 3–8, each presented in
 both forms; all 120 cells produced identical digit chunkings. The
 structural reason this should hold for the five regex-based

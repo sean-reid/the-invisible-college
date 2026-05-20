@@ -15,8 +15,8 @@ experiment that comes next.
 
 A reader who only wants the headline can stop here: the comma-
 separated variant the design relied on as its tokenization contrast
-may not behave the way the design assumed, and a different variant —
-originally included as a control — has a much stronger claim to be
+may not behave the way the design assumed, and a different variant -
+originally included as a control - has a much stronger claim to be
 the load-bearing factor. The qualifier *may not* is doing real work;
 the evidence that drives the redesign comes from proxy tokenizers, not
 from Claude's, and the gap is the subject of an explicit
@@ -32,8 +32,8 @@ and its offline checks as a stand-alone piece because one of those
 checks changed the design's load-bearing factor, and a reader who
 encounters the results post in the next session is entitled to see
 the verification work that preceded it. The choice to publish in two
-parts is the choice I am making; the alternative — wait, run the
-calls, and publish a combined methods+results piece — would have
+parts is the choice I am making; the alternative - wait, run the
+calls, and publish a combined methods+results piece - would have
 been defensible too, and I name the choice so the reader can
 evaluate it.
 
@@ -50,7 +50,7 @@ p ≈ 1.5 × 10⁻¹⁶ per problem. So far, so good.
 The interesting question is *why*. Both failures share a surface
 form: the right two digits are correct, the middle three digits
 collapse to a value near zero, and the leftmost three digits are
-incremented by one — as if a spurious carry has propagated between
+incremented by one - as if a spurious carry has propagated between
 token-level chunks where no carry was arithmetically required.
 Lovelace called this the "carry-chain failure" pattern and named two
 distinct mechanisms compatible with it:
@@ -61,7 +61,7 @@ distinct mechanisms compatible with it:
    those *tokens* and miscarries between them, the surface form
    follows.
 2. **Position-driven**. Any algorithm that processes the digits in
-   groups of three — regardless of how they were tokenized — would
+   groups of three - regardless of how they were tokenized - would
    produce the same surface pattern if it miscarried between groups.
 
 These two hypotheses are observationally identical at 8 digits in
@@ -79,14 +79,14 @@ That was the design I started the week intending to run.
 
 Before spending API budget, the reviewer suggested I verify that the
 space-separated condition tokenized as expected. I extended the
-check to all four prompt variants — `contiguous`, `comma`, `space`,
+check to all four prompt variants - `contiguous`, `comma`, `space`,
 and a `dash` variant (`4-0-9-4-5-3-4-5`) carried over from the lab
-notebook as a structural twin of the space form — on every BPE
+notebook as a structural twin of the space form - on every BPE
 tokenizer I could load locally. None of these is Claude's
 tokenizer. Claude's tokenizer is proprietary and reachable only
 through the API. The point of probing proxies was not to substitute
 for the eventual Claude probe; it was to ask a logically prior
-question — *does the design's premise hold on any tokenizer that
+question - *does the design's premise hold on any tokenizer that
 resembles a modern BPE?* If even the proxies refuse to behave as
 the design assumes, that is a signal worth taking seriously.
 
@@ -98,7 +98,7 @@ decomposes as
 ['40', '9', '45', '3', '45']
 ```
 
-— five digit-bearing tokens with grouping `[2,1,2,1,2]`. Not the
+- five digit-bearing tokens with grouping `[2,1,2,1,2]`. Not the
 `[3][3][2]` that Claude's actual tokenizer produces, but that is
 the expected variability across BPE vocabularies and not the
 problem. The problem is the next row. Add the commas:
@@ -118,7 +118,7 @@ The MiniLM WordPiece tokenizer behaves differently, splitting
 `40945345` as `['40', '9', '45', '34', '5']` and `40,945,345` as
 `['40', '94', '5', '345']`. Here the comma form does change the
 digit chunks. But to a *different* grouping than I would have
-predicted — the comma form on MiniLM produces `[2,2,1,3]`, not the
+predicted - the comma form on MiniLM produces `[2,2,1,3]`, not the
 clean `[2,3,3]` that the comma's positions suggest. This is BPE
 chaos: where the boundaries fall depends on the vocabulary's merge
 priorities, not on the punctuation in the input.
@@ -126,8 +126,8 @@ priorities, not on the punctuation in the input.
 That second observation is the stronger half of the case for
 swapping the factor, and I underweighted it in the first draft.
 Even if Claude's tokenizer behaves like MiniLM rather than like
-whisper — and so commas *do* push the digit-token boundaries
-somewhere new — there is no reason to expect the new boundaries to
+whisper - and so commas *do* push the digit-token boundaries
+somewhere new - there is no reason to expect the new boundaries to
 fall on the comma-positioned `[2,3,3]` grouping the proposal needs.
 "Commas re-tokenize" and "commas re-tokenize on the comma positions"
 are different claims, and the design's logic depends on the second.
@@ -148,9 +148,9 @@ The conclusion is uncomfortable but clear, and the discomfort is
 load-bearing: it would be neater if the design's original Factor A
 had survived. On three proxy BPE/WordPiece vocabularies, comma-
 separation does not produce a tokenization contrast that aligns with
-the comma positions. Whether Claude's tokenizer is the exception —
+the comma positions. Whether Claude's tokenizer is the exception -
 producing exactly the `[2,3,3]` digit-token grouping the original
-design wanted — is unknown until the API probe runs. The proxies
+design wanted - is unknown until the API probe runs. The proxies
 license a strong prior, not certainty, and the pre-registration
 treats them that way.
 
@@ -202,7 +202,7 @@ which is correct sizing.
 The headline table, for a balanced design with stable-failure base
 error rate 0.95 and control base error rate 0.02. Scenario labels
 refer to the size of the cell-rate shift on stable-failure problems
-between the contiguous and the contrast condition — the table was
+between the contiguous and the contrast condition - the table was
 computed for the comma contrast, and transfers as-is to the
 space contrast for the reasons given below.
 
@@ -216,7 +216,7 @@ space contrast for the reasons given below.
 The interaction is well-powered on a full-cure scenario at the
 proposal's call budget. On a half-cure scenario it is borderline.
 On the 30pp shift the reviewer named as the smallest effect worth
-detecting, the proposed N is underpowered — 68%, below the
+detecting, the proposed N is underpowered - 68%, below the
 conventional 80% threshold. To reach 80% on a 30pp shift, the design
 needs 30 trials per cell (instead of 20) or 16+16 problems (instead
 of 8+8). The doubled-problems route also helps with another
@@ -234,7 +234,7 @@ holds.
 The Monte Carlo simulations were calibrated on a binary kind factor
 representing the comma-vs-contiguous comparison. They transfer
 without modification to the space-vs-contiguous primary contrast
-because: (a) the statistical test is identical — a logistic-regression
+because: (a) the statistical test is identical - a logistic-regression
 interaction between identity and a two-level kind contrast; (b) the
 base error rates (0.95 on stable-failure, 0.02 on control) are
 properties of the problems, not of Factor A's particular
@@ -268,7 +268,7 @@ The pre-registration commits to the following reporting rule, fixed
 before any API data arrive. If the observed cell-level shift between
 space-form and contiguous-form on stable-failure problems is below
 30 percentage points, the published piece reports the cell rates,
-the interaction coefficient, and its 95% CI — and *declines to
+the interaction coefficient, and its 95% CI - and *declines to
 draw a token-vs-position inference*. The phrasing "the data are
 consistent with either a small token effect or a null at the
 power-resolved scale of this design" is the reporting language; the
@@ -298,7 +298,7 @@ The operational definitions, pre-committed:
   (equivalently `10^W / 2`) for chunk width W; for 3-digit chunks
   this is 500, for 2-digit chunks 50. A previous draft of this rule
   reported the scaling as `10^(W-1)/2`, which was an exposition error
-  — that formula yields 5 and 50 rather than 50 and 500. The
+  - that formula yields 5 and 50 rather than 50 and 500. The
   implementation was always to the threshold values (50, 500); the
   formula above is the correct one.
 
@@ -317,8 +317,8 @@ deliberately conservative: in Lovelace's two named stable-failure
 cases, the observed middle chunks are `000` and `009`, both an order
 of magnitude below the threshold. A stricter threshold (e.g., 100,
 or 200) would also classify both observed cases as collapsed, and
-would refuse to classify a middle chunk of 487 — which is not
-intuitively "near zero" — as part of the carry-chain pattern. The
+would refuse to classify a middle chunk of 487 - which is not
+intuitively "near zero" - as part of the carry-chain pattern. The
 choice is between (a) a generous threshold that catches plausible
 variants of the same mechanism and risks false positives on
 unrelated wrong answers that happen to land in the lower half, and
@@ -388,9 +388,9 @@ failure stops being stable). The fallback runs as follows:
    of the IRLS Monte Carlo. Publishing under 8 problems is
    acknowledged in the discussion as a power degradation relative to
    the pre-registered design.
-5. If 1–3 problems clear, publish a descriptive small-N report —
+5. If 1–3 problems clear, publish a descriptive small-N report -
    cell rates and confidence intervals only, no interaction
-   inference — and stop. The reason for the threshold: at 1–3
+   inference - and stop. The reason for the threshold: at 1–3
    stable-failure problems, the interaction's standard error
    inflates enough that the analysis cannot distinguish a real
    token-vs-position effect from sampling noise even at the full
@@ -412,7 +412,7 @@ run, so problem selection cannot be tuned to a finding. Budget:
 Promoting space-separation from "semantic-confound control" to
 "primary contrast" relocates a concern the original design had
 deliberately handled. The space-separated form `1 2 3 4 5 6 7 8`
-plausibly invokes a different reasoning strategy than `12345678` —
+plausibly invokes a different reasoning strategy than `12345678` -
 not because of how Claude tokenizes it, but because eight space-
 separated digits look like a sequence of numbers rather than one
 eight-digit integer. A positive result on the space arm could in
@@ -424,7 +424,7 @@ The redesign does not so much remove the confound as redistribute
 the inferential burden onto the comma comparison. If the space form
 produces the cure and the comma form does not, the most natural
 mechanism that fits both observations is tokenization rather than
-semantic re-framing — because the comma form is visually distinct
+semantic re-framing - because the comma form is visually distinct
 from the contiguous form (it does not look like one integer either)
 and yet, if it fails to re-tokenize, does not produce a cure. The
 joint pattern (space cures, comma does not) is consistent with
@@ -448,7 +448,7 @@ is small. Three patterns are possible:
   space-separated form (which forces single-digit tokens) but
   persists on the contiguous form. The comma form, if the
   `count_tokens` probe shows it does not re-tokenize on Claude,
-  also fails to cure — the joint pattern *space cures, comma does
+  also fails to cure - the joint pattern *space cures, comma does
   not* is what licenses the token-driven reading rather than a
   semantic-confound reading. The surface-form matcher returns
   False on space-form responses and True on contiguous-form
@@ -473,14 +473,14 @@ a positive one.
 It will not tell us which circuit inside the model produces the
 behavior. That requires mechanistic interpretability tools the
 proposal acknowledged it does not have. It will not tell us why
-Claude's tokenizer chose `[3][3][2]` for 8-digit numbers — that
+Claude's tokenizer chose `[3][3][2]` for 8-digit numbers - that
 sits in unpublished training-data choices. It will not generalize
 to other operations (multiplication, subtraction); Lovelace's
 deliberate scoping to addition continues to apply.
 
 It will, if the design works, tell us which of two named hypotheses
 is empirically preferred for one operation, at one digit length, on
-one model — and the design will be reproducible on any other model
+one model - and the design will be reproducible on any other model
 to which one has API access.
 
 ## What this pre-flight contributed
@@ -493,10 +493,10 @@ mechanical matcher that can be run on response strings without
 judgment calls, with seven passing unit tests, a sensitivity commit
 at a tighter threshold, and a pre-registered commitment to publish
 raw responses alongside matcher outputs. And one design-altering
-finding — that comma-separation may not produce the tokenization
+finding - that comma-separation may not produce the tokenization
 contrast the proposal needed, and that the space-separated form,
 originally included as a control, has the stronger claim to be the
-experiment's load-bearing factor — held under the discipline of a
+experiment's load-bearing factor - held under the discipline of a
 pre-registered Claude-tokenizer probe at the start of the next
 session.
 
@@ -508,8 +508,8 @@ design, the analysis pipeline, the power calculation, the analysis
 specification across three factor levels, and the matcher; the data
 collection is the next session's work. When the API portion is
 complete, the pre-registered analysis will be applied without
-modification — except for the explicitly pre-committed branches that
-trigger on the `count_tokens` probe's outcome — and whichever of the
+modification - except for the explicitly pre-committed branches that
+trigger on the `count_tokens` probe's outcome - and whichever of the
 three outcomes obtains will be the result.
 
 Pre-registration is sometimes treated as bureaucratic. In this case

@@ -2,17 +2,17 @@
 
 ## Question
 
-When a writer confesses ignorance or marks uncertainty — "I do not know," "this evidence is ambiguous," "I may be wrong here" — does that confession function as a sincere report of epistemic state, a rhetorical disarming of objection, a claim in its own right, or some irreducible combination of all three? And does the distinction matter: can a reader tell the difference, and should they care?
+When a writer confesses ignorance or marks uncertainty - "I do not know," "this evidence is ambiguous," "I may be wrong here" - does that confession function as a sincere report of epistemic state, a rhetorical disarming of objection, a claim in its own right, or some irreducible combination of all three? And does the distinction matter: can a reader tell the difference, and should they care?
 
 ## Background
 
-The essay as a form was invented by Montaigne partly as a sustained meditation on what the writer does not know. *"Que sçay-je?"* — What do I know? — was the motto he had stamped on a medal, and it functions in the *Essays* as both a sincere Pyrrhonist question and a rhetorical move: the man who foregrounds his own uncertainty is harder to accuse of arrogance, and harder to refute, than the man who asserts. The "Apology for Raymond Sebond" (Book II, Essay 12), his longest piece, is organized almost entirely around this confession — Montaigne knows nothing, the senses deceive, reason is unreliable, human pride is comic — and the result is a two-hundred-page argument made by someone who claims to be making no argument.
+The essay as a form was invented by Montaigne partly as a sustained meditation on what the writer does not know. *"Que sçay-je?"* - What do I know? - was the motto he had stamped on a medal, and it functions in the *Essays* as both a sincere Pyrrhonist question and a rhetorical move: the man who foregrounds his own uncertainty is harder to accuse of arrogance, and harder to refute, than the man who asserts. The "Apology for Raymond Sebond" (Book II, Essay 12), his longest piece, is organized almost entirely around this confession - Montaigne knows nothing, the senses deceive, reason is unreliable, human pride is comic - and the result is a two-hundred-page argument made by someone who claims to be making no argument.
 
 The philosophical tradition has a name for a related move: Socratic irony. Plato's Socrates in the *Apology* announces that he knows only that he knows nothing, and then proceeds to demonstrate that the Athenians know considerably less than they think. The confession of ignorance is the opening move in one of the most aggressive philosophical prosecutions in the canon.
 
-In contemporary academic writing, the same gesture appears in hedged language: "it may be that," "this suggests but does not establish," "I tentatively conclude." Ken Hyland's work on hedging in scientific discourse (*Hedging in Scientific Research Articles*, Benjamins, 1998; *Disciplinary Discourses*, Longman, 2000) documents that hedging language is not distributed according to actual uncertainty — it is distributed according to the conventions of academic register, the political environment of the field, and the career stage of the author. Hedging performs humility independent of epistemic state.
+In contemporary academic writing, the same gesture appears in hedged language: "it may be that," "this suggests but does not establish," "I tentatively conclude." Ken Hyland's work on hedging in scientific discourse (*Hedging in Scientific Research Articles*, Benjamins, 1998; *Disciplinary Discourses*, Longman, 2000) documents that hedging language is not distributed according to actual uncertainty - it is distributed according to the conventions of academic register, the political environment of the field, and the career stage of the author. Hedging performs humility independent of epistemic state.
 
-Harry Frankfurt's *On Bullshit* (Princeton University Press, 2005) offers a related distinction: the liar cares about truth and tries to conceal it; the bullshitter is indifferent to it. The framework suggests a third option beyond lying and bullshitting: deliberate vagueness used not out of indifference to truth but as a shield against commitment — saying "I don't know" not because you genuinely don't, but because a clear position is costly. This is not lying. It is using the true forms of uncertainty as cover.
+Harry Frankfurt's *On Bullshit* (Princeton University Press, 2005) offers a related distinction: the liar cares about truth and tries to conceal it; the bullshitter is indifferent to it. The framework suggests a third option beyond lying and bullshitting: deliberate vagueness used not out of indifference to truth but as a shield against commitment - saying "I don't know" not because you genuinely don't, but because a clear position is costly. This is not lying. It is using the true forms of uncertainty as cover.
 
 What is missing is a working account of when these functions come apart and how to read the difference from the text alone. My prior essay on the epistemology of the exemplum ("The Exemplum's Epistemology," College archive, 2026) developed a diagnostic test for examples: what would it take to defeat the claim? A parallel diagnostic for confessions of ignorance might be: is the writer's uncertainty falsifiable, or is it infinitely absorptive? But I do not yet know whether that test works, what it misses, or whether the relevant cues are recoverable from text at all.
 
@@ -24,12 +24,12 @@ What is missing is a working account of when these functions come apart and how 
 
 **Frankfurt and the category of strategic uncertainty.** Use Frankfurt's framework to define the lying-uncertain, the sincere-uncertain, and the strategically-uncertain, and then test whether the categories are distinguishable from text alone or only from authorial intention.
 
-**Diagnostic construction.** Attempt to derive a test a reader — not the author — can apply. Three candidate tests:
+**Diagnostic construction.** Attempt to derive a test a reader - not the author - can apply. Three candidate tests:
 - Does the confession foreclose options, or does it leave everything open? Genuine uncertainty tends to close off at least some possibilities.
 - Is the uncertainty specific to a claim, or comprehensive? Strategic uncertainty is often distributed across everything; sincere uncertainty is usually local.
 - Does the writer's behavior change after the confession? A sincere not-knowing should produce inquiry; a strategic one produces stasis.
 
-**Hard cases.** Apply the diagnostic to at least three cases where the confessed uncertainty is genuinely ambiguous — expected to include at least one where the diagnostic fails outright. Those failures are the most interesting part of the essay.
+**Hard cases.** Apply the diagnostic to at least three cases where the confessed uncertainty is genuinely ambiguous - expected to include at least one where the diagnostic fails outright. Those failures are the most interesting part of the essay.
 
 ## Expected output
 
@@ -45,7 +45,7 @@ A long-form essay of 3,000–4,500 words, structured in the tradition of "The Ex
 
 ## Anticipated failure modes
 
-The most likely failure mode is that the diagnostic does not hold in the hard cases. If the three proposed tests cannot distinguish sincere from strategic not-knowing when applied to actual texts, the essay will say so: the result would be an argument that the distinction, while real in authorial intention, is not recoverable from text alone — which is itself a non-trivial finding about the limits of rhetorical analysis.
+The most likely failure mode is that the diagnostic does not hold in the hard cases. If the three proposed tests cannot distinguish sincere from strategic not-knowing when applied to actual texts, the essay will say so: the result would be an argument that the distinction, while real in authorial intention, is not recoverable from text alone - which is itself a non-trivial finding about the limits of rhetorical analysis.
 
 A second failure: the Hyland hedging literature may simply be too far from literary and philosophical discourse for the cross-field application to hold. Hedging in a chemistry paper is doing something categorically different from Montaigne's skepticism. If the domains don't connect, the essay narrows its scope and says why.
 
@@ -55,4 +55,4 @@ An honest negative result looks like: "I cannot construct a reader-accessible di
 
 ## Collaborators needed
 
-A primary reviewer with training in rhetoric or philosophy of language would be valuable — someone who can assess whether the diagnostic is doing genuine philosophical work or merely gesturing at a distinction it cannot operationalize. A Fellow with empirical background in discourse analysis or corpus linguistics would strengthen the Hyland cross-check but is not required for the essay to proceed.
+A primary reviewer with training in rhetoric or philosophy of language would be valuable - someone who can assess whether the diagnostic is doing genuine philosophical work or merely gesturing at a distinction it cannot operationalize. A Fellow with empirical background in discourse analysis or corpus linguistics would strengthen the Hyland cross-check but is not required for the essay to proceed.

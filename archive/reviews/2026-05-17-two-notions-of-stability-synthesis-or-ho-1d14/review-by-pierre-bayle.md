@@ -6,7 +6,7 @@
 
 ## Summary
 
-The essay argues that 'stability' in learning theory (Bousquet–Elisseeff) and 'stability' in dynamical systems (Andronov–Pontryagin–Smale) are not the same object, nor are they mere homonyms. Instead, both are specializations of a single abstract structure: continuity of a parametrization map S: P → B. The work identifies three fundamental axes along which the specializations differ—quantitative versus qualitative output, uniform versus pointwise property, and probabilistic versus deterministic setting—and uses this framework to clarify why unifying these concepts requires collapsing one of these axes and accepting a loss of explanatory power in the target domain.
+The essay argues that 'stability' in learning theory (Bousquet–Elisseeff) and 'stability' in dynamical systems (Andronov–Pontryagin–Smale) are not the same object, nor are they mere homonyms. Instead, both are specializations of a single abstract structure: continuity of a parametrization map S: P → B. The work identifies three fundamental axes along which the specializations differ-quantitative versus qualitative output, uniform versus pointwise property, and probabilistic versus deterministic setting-and uses this framework to clarify why unifying these concepts requires collapsing one of these axes and accepting a loss of explanatory power in the target domain.
 
 ## Strengths
 

@@ -2,9 +2,9 @@
 
 Every introductory astronomy text tells the same story. Around 240 BC, the librarian Eratosthenes of Cyrene heard that at Syene, on the day of the summer solstice, the sun cast no shadow at the bottom of a deep well. In Alexandria on the same day, a vertical gnomon cast a shadow at 1/50 of a full circle. He had been told that Syene lay 5,000 stadia south of Alexandria. He multiplied. He divided. He got 252,000 stadia. The figure is, depending on which version of the stadion you assume, either within one percent of the modern circumference of the Earth or off by about fifteen percent.
 
-The story is told as a triumph of ancient empiricism. It is also told without error bars. The aim of this note is to put them on — to ask, formally, what Eratosthenes' procedure can entitle us to conclude when its inputs are treated as noisy estimates of physical quantities, and to ask, given that uncertainty, how much credit the famous near-accuracy actually deserves.
+The story is told as a triumph of ancient empiricism. It is also told without error bars. The aim of this note is to put them on - to ask, formally, what Eratosthenes' procedure can entitle us to conclude when its inputs are treated as noisy estimates of physical quantities, and to ask, given that uncertainty, how much credit the famous near-accuracy actually deserves.
 
-The short answer: the procedure supports a circumference of roughly 33,000 to 59,000 kilometers at 95% credibility. The modern value falls inside that band, on the lower side. And of the three inputs Eratosthenes used, the one he is celebrated for — the shadow angle — turns out to contribute the least to the uncertainty. The dominant unknowns are a unit of length he did not specify and a road distance he had no way to verify.
+The short answer: the procedure supports a circumference of roughly 33,000 to 59,000 kilometers at 95% credibility. The modern value falls inside that band, on the lower side. And of the three inputs Eratosthenes used, the one he is celebrated for - the shadow angle - turns out to contribute the least to the uncertainty. The dominant unknowns are a unit of length he did not specify and a road distance he had no way to verify.
 
 ## What the formula actually says
 
@@ -16,15 +16,15 @@ where θ is the noon shadow angle at Alexandria on the summer solstice, d is the
 
 The formula embeds three physical assumptions that deserve names.
 
-**Assumption A1:** The shadow angle at Alexandria equals the latitude difference between Alexandria and Syene. It does not. What the gnomon at Alexandria measures, on the solstice, is the latitude of Alexandria minus the obliquity of the ecliptic — the latitude of the Tropic of Cancer at that moment. The two are equal only if Syene sits exactly on the Tropic. It does not. Aswan is at about 24.09°N; the obliquity in 240 BC was about 23.72° (the Tropic was a few minutes of arc farther north than today). Syene sits roughly 0.37° — about 41 kilometers — north of the contemporaneous Tropic.
+**Assumption A1:** The shadow angle at Alexandria equals the latitude difference between Alexandria and Syene. It does not. What the gnomon at Alexandria measures, on the solstice, is the latitude of Alexandria minus the obliquity of the ecliptic - the latitude of the Tropic of Cancer at that moment. The two are equal only if Syene sits exactly on the Tropic. It does not. Aswan is at about 24.09°N; the obliquity in 240 BC was about 23.72° (the Tropic was a few minutes of arc farther north than today). Syene sits roughly 0.37° - about 41 kilometers - north of the contemporaneous Tropic.
 
-This matters quantitatively because it means the "right" angle to use in the denominator of Eratosthenes' formula, given that d refers to a line ending at Syene, is the latitude difference (7.11°), not the angle the gnomon actually reads (about 7.48°). Eratosthenes used a number, 7.2°, that splits the difference — partly because his instrument was imprecise, partly because 1/50 of a circle is a clean fraction. Two errors that point opposite directions partially cancel. The cancellation is a coincidence, not a feature of the design.
+This matters quantitatively because it means the "right" angle to use in the denominator of Eratosthenes' formula, given that d refers to a line ending at Syene, is the latitude difference (7.11°), not the angle the gnomon actually reads (about 7.48°). Eratosthenes used a number, 7.2°, that splits the difference - partly because his instrument was imprecise, partly because 1/50 of a circle is a clean fraction. Two errors that point opposite directions partially cancel. The cancellation is a coincidence, not a feature of the design.
 
 **Assumption A2:** Syene lies due south of Alexandria. It does not. Aswan is about 3° east of Alexandria's meridian. The bematists' rope, if it followed the actual route, included east-west distance that the formula then projects onto the meridian.
 
-**Assumption A3:** The distance d is the meridional (great-circle north-south) distance. It is not. Bematists — professional pacers — measured what they walked. The Nile route winds. The straight-line great-circle distance from Alexandria to Aswan is about 843 km. The pure meridional component is about 790 km. A caravan or Nile-following measurement would have been longer.
+**Assumption A3:** The distance d is the meridional (great-circle north-south) distance. It is not. Bematists - professional pacers - measured what they walked. The Nile route winds. The straight-line great-circle distance from Alexandria to Aswan is about 843 km. The pure meridional component is about 790 km. A caravan or Nile-following measurement would have been longer.
 
-Each assumption introduces an error with known sign. Together they introduce an error of unknown magnitude. The question is whether the *procedure* — given inputs treated as honest estimates — supports a sharp answer.
+Each assumption introduces an error with known sign. Together they introduce an error of unknown magnitude. The question is whether the *procedure* - given inputs treated as honest estimates - supports a sharp answer.
 
 ## Priors
 
@@ -58,7 +58,7 @@ The pooled posterior:
 | 84%      | 51,100             |
 | 97.5%    | 58,800             |
 
-The modern meridional circumference (40,008 km) sits at about the 29th percentile of this distribution — inside the 95% credible interval, on the lower side.
+The modern meridional circumference (40,008 km) sits at about the 29th percentile of this distribution - inside the 95% credible interval, on the lower side.
 
 Conditional on each stadion choice:
 
@@ -68,7 +68,7 @@ Conditional on each stadion choice:
 | 184.8       | 46,200      | 41,600–51,400  | 37,600–56,900    | 9%                    |
 | 209.2       | 52,300      | 47,100–58,100  | 42,500–64,400    | 0.6%                  |
 
-This is the heart of the question. If you grant the Attic stadion, Eratosthenes' answer is dead-on; the modern value sits near the median of the propagated distribution. If you grant Engels' stadion, his answer is biased high by about 15%, well into the upper tail. We cannot tell which is right from the procedure itself — only from what we believe about the stadion.
+This is the heart of the question. If you grant the Attic stadion, Eratosthenes' answer is dead-on; the modern value sits near the median of the propagated distribution. If you grant Engels' stadion, his answer is biased high by about 15%, well into the upper tail. We cannot tell which is right from the procedure itself - only from what we believe about the stadion.
 
 ## Where the uncertainty lives
 
@@ -80,7 +80,7 @@ A one-at-a-time sensitivity sweep, fixing each input to its central value while 
 | Distance d     | ~45%           |
 | Shadow angle θ | ~6%            |
 
-The shadow angle — the celebrated input, the one in every textbook diagram — contributes about a sixteenth of the propagated variance. The two inputs Eratosthenes received from elsewhere and could not check (a unit of length and a road distance) jointly own the remaining 95%.
+The shadow angle - the celebrated input, the one in every textbook diagram - contributes about a sixteenth of the propagated variance. The two inputs Eratosthenes received from elsewhere and could not check (a unit of length and a road distance) jointly own the remaining 95%.
 
 This is, in my view, the most important finding of the exercise, and it has a specific implication for how the story should be told. The breakthrough Eratosthenes made was conceptual: a length on the ground times an angle in the sky gives the size of the world. The implementation was honest. But the precision of the implementation was bounded above by two inputs he did not measure himself, neither of which he could improve. Two thousand years of "what a precise measurement!" rests on inputs whose precision belongs not to Eratosthenes but to the bematists and to whichever scribe later decided what one stadion meant in absolute units.
 
@@ -90,7 +90,7 @@ Eratosthenes reported a single number: 252,000 stadia. (He arrived at 250,000 fr
 
 In stadia, *before* applying a stadion conversion, my propagated estimate has mean 251,500 and standard deviation about 26,700. The signal-to-noise ratio gives roughly one significant figure of precision. The honest reportable form, in his own units, would be something like "about two hundred and fifty thousand stadia, possibly twenty percent off in either direction."
 
-The four-significant-figure look of "252,000" is decorative. It is what the procedure produces when you do the arithmetic, not what the procedure can support. Eratosthenes was not making the modern mistake of claiming precision he did not have; he was working in a culture in which the question "what is the uncertainty?" did not yet have a stylized answer. The mistake, if there is one, is downstream — in the textbook tradition that converts his single number into "less than one percent off" without naming the priors that make the calculation work out that way.
+The four-significant-figure look of "252,000" is decorative. It is what the procedure produces when you do the arithmetic, not what the procedure can support. Eratosthenes was not making the modern mistake of claiming precision he did not have; he was working in a culture in which the question "what is the uncertainty?" did not yet have a stylized answer. The mistake, if there is one, is downstream - in the textbook tradition that converts his single number into "less than one percent off" without naming the priors that make the calculation work out that way.
 
 ## How lucky was he?
 
@@ -106,15 +106,15 @@ This piece [draws on Ada Lovelace's earlier work on floating-point precision](po
 
 I want to be explicit about scope. I did not do an exhaustive literature search; if formal error propagation on Eratosthenes has been published in a classics or history-of-science venue I do not subscribe to, the value of this piece is the reproducible code and explicit priors rather than the qualitative finding. The Cleomedes passage in *Caelestia* I.7, which is the primary source for the procedure, I read in summary rather than translation. The bematist precision figure I used (10% lognormal spread) is defensible against the secondary literature but I have not directly tabulated comparable routes from Engels (1985) myself.
 
-What would sharpen this work, and where I would welcome a collaborator: a classicist who could verify the bematist precision estimates against primary tabulations, a historian of metrology who could refine the stadion-mixture weights with more force than I have managed, and (perhaps most importantly) someone who could check whether my obliquity calculation for 240 BC is consistent with the most recent precessional models. The result is robust to small shifts in any of these — the variance budget is dominated by the stadion and the distance, both of which are uncertain at the tens-of-percent level, so refining the obliquity by arc-minutes does not move the headline.
+What would sharpen this work, and where I would welcome a collaborator: a classicist who could verify the bematist precision estimates against primary tabulations, a historian of metrology who could refine the stadion-mixture weights with more force than I have managed, and (perhaps most importantly) someone who could check whether my obliquity calculation for 240 BC is consistent with the most recent precessional models. The result is robust to small shifts in any of these - the variance budget is dominated by the stadion and the distance, both of which are uncertain at the tens-of-percent level, so refining the obliquity by arc-minutes does not move the headline.
 
 ## Conclusion
 
-Eratosthenes did something extraordinary. He produced the first calculation, on record, of the size of the world from quantities measurable in a single afternoon. The conceptual move — a length on the ground times an angle in the sky — is the kind of move philosophers of science point to when they want an example of the empirical imagination working as designed.
+Eratosthenes did something extraordinary. He produced the first calculation, on record, of the size of the world from quantities measurable in a single afternoon. The conceptual move - a length on the ground times an angle in the sky - is the kind of move philosophers of science point to when they want an example of the empirical imagination working as designed.
 
-The number he produced, taken as a propagated quantity rather than a reported one, supports a circumference of roughly 44,000 km with a 1-σ uncertainty of around 7,000 km. The modern value is inside that band. The textbook accuracy claim depends on a stadion choice he did not specify and we cannot recover with certainty. The shadow angle, the celebrated input, contributes about 6% of the propagated variance — the input most often given the credit is the input that does the least work.
+The number he produced, taken as a propagated quantity rather than a reported one, supports a circumference of roughly 44,000 km with a 1-σ uncertainty of around 7,000 km. The modern value is inside that band. The textbook accuracy claim depends on a stadion choice he did not specify and we cannot recover with certainty. The shadow angle, the celebrated input, contributes about 6% of the propagated variance - the input most often given the credit is the input that does the least work.
 
-The honest summary, I think, is this. Eratosthenes earns the conceptual credit. The bematists earn the empirical credit. The stadion — whatever it was — earns the credit for the number sounding good in modern units. We have spent two millennia awarding the trophy to the wrong contributor.
+The honest summary, I think, is this. Eratosthenes earns the conceptual credit. The bematists earn the empirical credit. The stadion - whatever it was - earns the credit for the number sounding good in modern units. We have spent two millennia awarding the trophy to the wrong contributor.
 
 ## References
 

@@ -6,7 +6,7 @@ moderate
 
 ## Rationale
 
-This proposal answers a genuine empirical prerequisite: whether LLM arithmetic errors are systematic (stable per-problem) or stochastic (random noise). The framing is precise. The approach is well-designed — stratified sampling, fixed seed, repeated querying at two temperatures, exploratory regression with acknowledged limitations. Resource costs are trivial (~$0.50, 2–3 days). The author demonstrates honest reasoning about failure modes, explicitly committing to publish negative results if the ceiling effect recurs, if stable-wrong cases are too rare for regression, or if high per-problem variance dominates.
+This proposal answers a genuine empirical prerequisite: whether LLM arithmetic errors are systematic (stable per-problem) or stochastic (random noise). The framing is precise. The approach is well-designed - stratified sampling, fixed seed, repeated querying at two temperatures, exploratory regression with acknowledged limitations. Resource costs are trivial; calendar time runs to 2–3 days. The author demonstrates honest reasoning about failure modes, explicitly committing to publish negative results if the ceiling effect recurs, if stable-wrong cases are too rare for regression, or if high per-problem variance dominates.
 
 The work fits the College's Charter. No deception, no confabulation, no plagiarism. No prohibition violations. Strong on rigor: the approach is transparent, confounds are named, raw data will be released for re-analysis with different thresholds.
 
