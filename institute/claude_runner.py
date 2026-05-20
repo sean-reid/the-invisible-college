@@ -38,6 +38,11 @@ from institute.paths import AUDIT_LOG
 # but bounded so a stuck child never silently consumes the day.
 DEFAULT_INVOKE_TIMEOUT_SECONDS = 90 * 60
 
+# Maximum chars of stderr/raw-output to surface in error messages and
+# audit-log excerpts. Long stderr drowns the rest of the traceback.
+_MAX_ERROR_CONTEXT = 500
+_MAX_AUDIT_EXCERPT = 300
+
 
 class FellowInvocationError(RuntimeError):
     """A `claude` invocation for a Fellow did not produce a valid result.
@@ -250,7 +255,7 @@ def invoke_orchestrator(
         raw = json.loads(raw_text) if raw_text else {}
     except json.JSONDecodeError as exc:
         raise RuntimeError(
-            f"claude (orchestrator) returned non-JSON output. stderr: {proc.stderr.strip()[:500]}"
+            f"claude (orchestrator) returned non-JSON output. stderr: {proc.stderr.strip()[:_MAX_ERROR_CONTEXT]}"
         ) from exc
 
     result_text = raw.get("result", "") if isinstance(raw, dict) else ""
@@ -267,7 +272,7 @@ def invoke_orchestrator(
         "duration_ms": raw.get("duration_ms") if isinstance(raw, dict) else None,
         "cost_usd": raw.get("total_cost_usd") if isinstance(raw, dict) else None,
         "is_error": raw.get("is_error") if isinstance(raw, dict) else None,
-        "stderr_excerpt": proc.stderr.strip()[:300] if proc.stderr else "",
+        "stderr_excerpt": proc.stderr.strip()[:_MAX_AUDIT_EXCERPT] if proc.stderr else "",
     }
     AUDIT_LOG.parent.mkdir(parents=True, exist_ok=True)
     with AUDIT_LOG.open("a", encoding="utf-8") as fh:
@@ -277,7 +282,7 @@ def invoke_orchestrator(
         raise RuntimeError(
             f"Orchestrator call failed (step={step}): "
             f"returncode={proc.returncode}, is_error={is_error}, "
-            f"stderr={proc.stderr.strip()[:500]}"
+            f"stderr={proc.stderr.strip()[:_MAX_ERROR_CONTEXT]}"
         )
 
     return FellowResult(
@@ -353,7 +358,7 @@ def invoke(task: FellowTask) -> FellowResult:
         raw = json.loads(raw_text) if raw_text else {}
     except json.JSONDecodeError as exc:
         raise RuntimeError(
-            f"claude returned non-JSON output. stderr: {proc.stderr.strip()[:500]}"
+            f"claude returned non-JSON output. stderr: {proc.stderr.strip()[:_MAX_ERROR_CONTEXT]}"
         ) from exc
 
     result_text = raw.get("result", "") if isinstance(raw, dict) else ""
@@ -368,7 +373,7 @@ def invoke(task: FellowTask) -> FellowResult:
             project_id=task.project_id,
             returncode=proc.returncode,
             is_error=is_error,
-            stderr=proc.stderr.strip()[:500],
+            stderr=proc.stderr.strip()[:_MAX_ERROR_CONTEXT],
         )
 
     return FellowResult(
@@ -491,7 +496,7 @@ def _audit(
         "duration_ms": raw.get("duration_ms") if isinstance(raw, dict) else None,
         "cost_usd": raw.get("total_cost_usd") if isinstance(raw, dict) else None,
         "is_error": raw.get("is_error") if isinstance(raw, dict) else None,
-        "stderr_excerpt": stderr.strip()[:300] if stderr else "",
+        "stderr_excerpt": stderr.strip()[:_MAX_AUDIT_EXCERPT] if stderr else "",
     }
     AUDIT_LOG.parent.mkdir(parents=True, exist_ok=True)
     with AUDIT_LOG.open("a", encoding="utf-8") as fh:

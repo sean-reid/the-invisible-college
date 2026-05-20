@@ -374,6 +374,14 @@ def run(project_id: str) -> None:
         advisor_feedback_path = (
             paths.REVIEWS / project_id / f"advisor-{postulant_row['advisor_id']}.md"
         )
+        # `prior_revise_rounds` counts panel convenings that ended in
+        # `request-revisions`. `prior_revisions` counts every revision
+        # ever recorded against this project — advisor- and panel-
+        # induced alike. They measure different things deliberately:
+        # the first bounds how often THIS reviewer (the panel) sends
+        # back for more work, the second catches projects that have
+        # been bouncing at the advisor layer with the panel never the
+        # cause but every cycle eating real time.
         prior_revise_rounds = count_prior_revise_rounds(conn, project_id)
         prior_revisions = conn.execute(
             "SELECT COUNT(*) AS n FROM audit_log WHERE action = 'revision' AND project_id = ?",

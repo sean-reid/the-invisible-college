@@ -29,7 +29,6 @@ Archive layout:
 from __future__ import annotations
 
 import re
-import sqlite3
 from datetime import UTC, datetime
 from pathlib import Path
 
@@ -384,7 +383,3 @@ def comment(project_id: str, *, commenter_id: str, version: int | None = None) -
 
 
 __all__ = ["comment", "post"]
-
-
-# Keep sqlite3 imported for future query expansion.
-_ = sqlite3

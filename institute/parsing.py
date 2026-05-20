@@ -13,6 +13,10 @@ from typing import Any
 
 import json_repair
 
+# Truncation budget for the raw-text excerpt surfaced in parse error
+# messages. Keeps the traceback readable when the response is huge.
+_MAX_PARSE_EXCERPT = 500
+
 
 def extract_json_object(text: str) -> str | None:
     """Find the outermost JSON object in `text`, ignoring surrounding prose.
@@ -97,5 +101,5 @@ def parse_json_or_dump(text: str, dump_path: Path, context: str) -> dict[str, An
     raise RuntimeError(
         f"{context}: could not parse JSON from the response. "
         f"Raw text saved to {dump_path}. "
-        f"First 500 chars: {text[:500]}"
+        f"First {_MAX_PARSE_EXCERPT} chars: {text[:_MAX_PARSE_EXCERPT]}"
     )

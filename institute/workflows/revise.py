@@ -43,6 +43,52 @@ from institute.state import State
 console = Console()
 
 
+def _route_after_revise(kind: str, current_round: int) -> tuple[State, int, str]:
+    """Decide where the project goes after a revision pass.
+
+    Pure function so the routing matrix is testable without a real
+    Fellow invocation.
+
+    - Qualifying, round < 2: back to AWAITING_ADVISOR_REVIEW (advisor
+      reconfirms before peer review).
+    - Qualifying, round >= 2: straight to EDITORIAL — the panel and
+      peer reviewers have already had their say. Without this the
+      project loops between peer_review and advisor_review on round 2
+      because the panel's stale-reviews bump keeps incrementing.
+    - Research, round 1: AWAITING_PEER_REVIEW for a second round.
+    - Research, round 2: EDITORIAL — final polish only, no third round.
+    """
+    if kind == "qualifying" and current_round < 2:
+        return (
+            State.AWAITING_ADVISOR_REVIEW,
+            current_round,
+            "Qualifying project: revised draft returns to the advisor for a "
+            "second look. The advisor either approves (advancing to peer "
+            "review) or requests further revision.",
+        )
+    if kind == "qualifying" and current_round >= 2:
+        return (
+            State.EDITORIAL,
+            current_round,
+            "Qualifying project: final polishing pass after round-2 peer "
+            "review. Project transitions directly to `editorial` for "
+            "publication. No further advisor, panel, or peer-review rounds.",
+        )
+    if current_round == 1:
+        return (
+            State.PEER_REVIEWING,
+            2,
+            "Project transitions to `peer_reviewing` for round 2. "
+            "The same reviewers will see the revised draft and the response.",
+        )
+    return (
+        State.EDITORIAL,
+        current_round,
+        "Final polishing pass after round-2 feedback. Project transitions "
+        "directly to `editorial` for publication. No further review rounds.",
+    )
+
+
 BRIEF = """\
 You are revising your own research piece for the Invisible College after
 {round_label} peer review. You are the lead author.
@@ -242,48 +288,7 @@ def run(project_id: str) -> None:
 
     new_title = _extract_draft_title(new_draft_md) or proj["title"]
 
-    if kind == "qualifying" and current_round < 2:
-        # Chapter 5: qualifying projects are advisor-supervised during
-        # the round-1 cycle. After the Postulant addresses the
-        # advisor's revision request, the piece routes back to
-        # AWAITING_ADVISOR_REVIEW so the same advisor confirms the fix
-        # before the project enters the normal peer-review pipeline.
-        target_state = State.AWAITING_ADVISOR_REVIEW
-        next_round = current_round
-        next_description = (
-            "Qualifying project: revised draft returns to the advisor for a "
-            "second look. The advisor either approves (advancing to peer "
-            "review) or requests further revision."
-        )
-    elif kind == "qualifying" and current_round >= 2:
-        # Once a qualifying project has cleared the advisor + panel and
-        # collected peer reviews, the post-round-2 revision is the same
-        # one-final-polish pass as for research projects: straight to
-        # EDITORIAL, no further advisor or panel loop. Without this,
-        # qualifying projects loop endlessly between peer_review and
-        # advisor_review on round 2 because the panel's stale-reviews
-        # bump keeps incrementing the round.
-        target_state = State.EDITORIAL
-        next_round = current_round
-        next_description = (
-            "Qualifying project: final polishing pass after round-2 peer "
-            "review. Project transitions directly to `editorial` for "
-            "publication. No further advisor, panel, or peer-review rounds."
-        )
-    elif current_round == 1:
-        target_state = State.PEER_REVIEWING
-        next_round = 2
-        next_description = (
-            f"Project transitions to `peer_reviewing` for round {next_round}. "
-            "The same reviewers will see the revised draft and the response."
-        )
-    else:
-        target_state = State.EDITORIAL
-        next_round = current_round
-        next_description = (
-            "Final polishing pass after round-2 feedback. Project transitions "
-            "directly to `editorial` for publication. No further review rounds."
-        )
+    target_state, next_round, next_description = _route_after_revise(kind, current_round)
 
     decision = decisions.Decision(
         kind="revision",

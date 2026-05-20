@@ -84,7 +84,7 @@ def record(
             project_id=decision.related_project,
             detail=detail,
         )
-    except Exception:
+    except (ImportError, sqlite3.Error, OSError):
         # Drop the just-written markdown so we never leave an orphan
         # in archive/decisions/ that has no matching audit_log row.
         # `missing_ok` covers the edge case where the file was already

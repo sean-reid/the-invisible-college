@@ -261,15 +261,8 @@ def run(project_id: str) -> None:
     if not title:
         title = proj["title"]
 
-    # Refuse drafts that cite other publications by number. The home
-    # page has no stable visible numbering, so `#NN` references do
-    # not resolve. The writing briefs already forbid this; this is
-    # the hard tripwire.
-    citation_lint.check(body)
-
     now = datetime.now(UTC)
     started = datetime.fromisoformat(proj["created_at"])
-    abstract = _read_abstract_file(project_id) or _extract_abstract_fallback(body)
     slug = project_id  # stable, unique, sortable
     author_genomes = [lead, *collaborator_genomes]
     authors = [g.name for g in author_genomes]
@@ -293,6 +286,15 @@ def run(project_id: str) -> None:
         )
     if editorial_result.footer_md:
         body = editorial_followups.splice_above_references(body, editorial_result.footer_md)
+
+    # Refuse drafts that cite other publications by number. The home
+    # page has no stable visible numbering, so `#NN` references do
+    # not resolve. The writing briefs already forbid this; this is
+    # the hard tripwire. Must run AFTER the editorial-followups splice
+    # so an editor-introduced `(#NN)` is caught too.
+    citation_lint.check(body)
+
+    abstract = _read_abstract_file(project_id) or _extract_abstract_fallback(body)
 
     # Compose publication artifact (archive + blog content)
     publication_md = _publication_markdown(

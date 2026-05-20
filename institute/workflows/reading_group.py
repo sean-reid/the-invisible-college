@@ -730,7 +730,3 @@ def convene_with_rotating_leader(*, target_participants: int = 3) -> Path | None
 
 
 __all__ = ["convene_with_rotating_leader", "pick_convener", "run"]
-
-
-# Keep sqlite3 import used (placeholder for future db queries inside this module).
-_ = sqlite3
