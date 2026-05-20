@@ -15,7 +15,7 @@ from pathlib import Path
 
 from institute.paths import DB_PATH as DB_PATH  # re-exported for tests to patch
 
-SCHEMA_VERSION = 9
+SCHEMA_VERSION = 10
 
 SCHEMA = """
 CREATE TABLE IF NOT EXISTS schema_version (
@@ -105,6 +105,35 @@ CREATE TABLE IF NOT EXISTS project_invitations (
 );
 CREATE INDEX IF NOT EXISTS idx_project_invitations_fellow
     ON project_invitations(fellow_id);
+
+CREATE TABLE IF NOT EXISTS cohort_calls (
+    id                      TEXT    PRIMARY KEY,
+    opened_at               TEXT    NOT NULL,
+    opened_by               TEXT    NOT NULL,
+    target_size             INTEGER NOT NULL,
+    target_specializations  TEXT,
+    target_models           TEXT,
+    orientations            TEXT,
+    status                  TEXT    NOT NULL,
+    closed_at               TEXT,
+    closed_reason           TEXT,
+    admits_count            INTEGER NOT NULL DEFAULT 0
+);
+CREATE INDEX IF NOT EXISTS idx_cohort_calls_status ON cohort_calls(status);
+
+CREATE TABLE IF NOT EXISTS sponsorships (
+    id                    TEXT    PRIMARY KEY,
+    sponsor_id            TEXT    NOT NULL REFERENCES fellows(id),
+    candidate_genome_path TEXT,
+    candidate_fellow_id   TEXT,
+    rationale             TEXT    NOT NULL,
+    opened_at             TEXT    NOT NULL,
+    resolved_at           TEXT,
+    outcome               TEXT    NOT NULL,
+    cohort_call_id        TEXT    REFERENCES cohort_calls(id)
+);
+CREATE INDEX IF NOT EXISTS idx_sponsorships_sponsor ON sponsorships(sponsor_id);
+CREATE INDEX IF NOT EXISTS idx_sponsorships_outcome ON sponsorships(outcome);
 
 CREATE TABLE IF NOT EXISTS reviews (
     id                 TEXT    PRIMARY KEY,
@@ -258,6 +287,9 @@ def _run_migrations(conn: sqlite3.Connection, from_version: int, to_version: int
         elif version == 8:
             _migrate_8_to_9(conn)
             version = 9
+        elif version == 9:
+            _migrate_9_to_10(conn)
+            version = 10
         else:
             raise RuntimeError(f"No migration path from version {version}.")
         # Each migration is responsible for stamping its own version
@@ -571,6 +603,61 @@ def _migrate_8_to_9(conn: sqlite3.Connection) -> None:
         # between migrations leaves the version matching the actually-
         # applied schema.
         conn.execute("UPDATE schema_version SET version = 9")
+        conn.execute("COMMIT")
+    except Exception:
+        conn.execute("ROLLBACK")
+        raise
+
+
+def _migrate_9_to_10(conn: sqlite3.Connection) -> None:
+    """Add cohort_calls + sponsorships for Chapter 4 admissions.
+
+    cohort_calls tracks open calls-for-applications with target size +
+    targeted specializations / models / orientations. sponsorships
+    tracks Fellow-initiated nominations and accumulates sponsor
+    reputation. Both are referenced from the admit workflow.
+    Idempotent.
+    """
+    conn.execute("BEGIN IMMEDIATE")
+    try:
+        conn.execute(
+            """
+            CREATE TABLE IF NOT EXISTS cohort_calls (
+                id                      TEXT    PRIMARY KEY,
+                opened_at               TEXT    NOT NULL,
+                opened_by               TEXT    NOT NULL,
+                target_size             INTEGER NOT NULL,
+                target_specializations  TEXT,
+                target_models           TEXT,
+                orientations            TEXT,
+                status                  TEXT    NOT NULL,
+                closed_at               TEXT,
+                closed_reason           TEXT,
+                admits_count            INTEGER NOT NULL DEFAULT 0
+            )
+            """
+        )
+        conn.execute("CREATE INDEX IF NOT EXISTS idx_cohort_calls_status ON cohort_calls(status)")
+        conn.execute(
+            """
+            CREATE TABLE IF NOT EXISTS sponsorships (
+                id                    TEXT    PRIMARY KEY,
+                sponsor_id            TEXT    NOT NULL REFERENCES fellows(id),
+                candidate_genome_path TEXT,
+                candidate_fellow_id   TEXT,
+                rationale             TEXT    NOT NULL,
+                opened_at             TEXT    NOT NULL,
+                resolved_at           TEXT,
+                outcome               TEXT    NOT NULL,
+                cohort_call_id        TEXT    REFERENCES cohort_calls(id)
+            )
+            """
+        )
+        conn.execute(
+            "CREATE INDEX IF NOT EXISTS idx_sponsorships_sponsor ON sponsorships(sponsor_id)"
+        )
+        conn.execute("CREATE INDEX IF NOT EXISTS idx_sponsorships_outcome ON sponsorships(outcome)")
+        conn.execute("UPDATE schema_version SET version = 10")
         conn.execute("COMMIT")
     except Exception:
         conn.execute("ROLLBACK")

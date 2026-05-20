@@ -11,6 +11,9 @@ archive/reviews/*/raw-review-by-*.txt
 # Promotion-review scratch space the orchestrator rewrites every run.
 # Not institutional record — those live in the per-Fellow vote dirs.
 archive/promotions/_orchestrator-workspace/
+# Admissions scratch space same shape: rewritten per admit run, the
+# canonical artifacts live in archive/admissions/<candidate-id>/.
+archive/admissions/_orchestrator-workspace/
 
 # Python
 __pycache__/

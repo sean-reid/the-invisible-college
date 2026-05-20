@@ -60,9 +60,9 @@ In your current working directory:
 - `cohort.md`        the current Fellows, with their specializations,
                      model backends, and a brief on their work so far.
 - `archive-index.md` every piece the College has published.
-{founder_hint_section}
+{founder_hint_section}{call_section}{sponsor_section}
 
-Read both with the Read tool before designing.
+Read all of them with the Read tool before designing.
 
 # Design constraints
 
@@ -267,8 +267,24 @@ def _atomic_write(path: Path, content: str) -> None:
     tmp.replace(path)
 
 
-def _propose_candidate(founder_hint: str | None) -> dict:
-    """Call the orchestrator to design a candidate genome."""
+def _propose_candidate(
+    founder_hint: str | None,
+    *,
+    call_body_md: str | None = None,
+    sponsor_md: str | None = None,
+) -> dict:
+    """Call the orchestrator to design a candidate genome.
+
+    Two new optional inputs surface the institutional context the
+    candidate should fit:
+
+    - `call_body_md`: the active cohort call's targets (specializations,
+      model backends, orientations). When present, the orchestrator
+      should treat the call as a hard constraint, not a suggestion.
+    - `sponsor_md`: a sponsoring Fellow's rationale + their track
+      record. When present, the orchestrator should design a candidate
+      that addresses the sponsor's stated need.
+    """
     from institute import archive_index
 
     # Stage cohort summary + archive index in a meta workspace.
@@ -285,7 +301,31 @@ def _propose_candidate(founder_hint: str | None) -> dict:
     else:
         founder_hint_section = ""
 
-    brief = PROPOSE_BRIEF.format(founder_hint_section=founder_hint_section)
+    if call_body_md:
+        call_section = (
+            "- `cohort-call.md`   the targets of the currently-open call for "
+            "applications. Treat these as constraints; the candidate must "
+            "address them.\n"
+        )
+        workspaces.stage_input(meta_dir, "cohort-call.md", call_body_md)
+    else:
+        call_section = ""
+
+    if sponsor_md:
+        sponsor_section = (
+            "- `sponsor.md`       the rationale of the Fellow who nominated "
+            "this candidate, plus their sponsor track record. Design a "
+            "candidate that addresses the stated need.\n"
+        )
+        workspaces.stage_input(meta_dir, "sponsor.md", sponsor_md)
+    else:
+        sponsor_section = ""
+
+    brief = PROPOSE_BRIEF.format(
+        founder_hint_section=founder_hint_section,
+        call_section=call_section,
+        sponsor_section=sponsor_section,
+    )
     console.print("[dim]Asking the orchestrator to propose a candidate Fellow...[/dim]")
     result = claude_runner.invoke_orchestrator(
         brief=brief,
@@ -655,7 +695,12 @@ def _panel_vote_admission(
     return admitted, votes
 
 
-def run(founder_hint: str | None = None, *, auto: bool = False) -> str:
+def run(
+    founder_hint: str | None = None,
+    *,
+    auto: bool = False,
+    sponsorship_id: str | None = None,
+) -> str:
     """Top-level admit entry point.
 
     Two execution paths:
@@ -670,8 +715,19 @@ def run(founder_hint: str | None = None, *, auto: bool = False) -> str:
     When `auto=True` and no panel exists, the workflow logs a deferred-
     review note and exits without prompting — so autopilot never blocks.
 
+    If a cohort call is currently open, its targets are surfaced to
+    the orchestrator and the panel; admits_count is incremented in
+    the same transaction as the admit decision, auto-closing the call
+    once target_size is reached.
+
+    If `sponsorship_id` is supplied, the sponsoring Fellow's rationale
+    and track record are surfaced too; outcome is recorded on the
+    sponsorship in the same transaction.
+
     Returns one of "admitted", "rejected", "skipped".
     """
+    from institute import cohort_calls, sponsorships
+
     panel = _admissions_panel()
     use_panel = bool(panel)
 
@@ -683,7 +739,38 @@ def run(founder_hint: str | None = None, *, auto: bool = False) -> str:
         )
         return "skipped"
 
-    raw = _propose_candidate(founder_hint)
+    active_call = cohort_calls.current_call()
+    call_body_md: str | None = None
+    if active_call is not None:
+        call_body_md = cohort_calls.render_for_admit(active_call)
+        console.print(
+            f"[dim]Admitting against open call `{active_call.id}` "
+            f"({active_call.admits_count}/{active_call.target_size} so far).[/dim]"
+        )
+
+    sponsor_md: str | None = None
+    sponsorship_obj = None
+    if sponsorship_id is not None:
+        sponsorship_obj = next(
+            (s for s in sponsorships.list_sponsorships() if s.id == sponsorship_id),
+            None,
+        )
+        if sponsorship_obj is None:
+            console.print(f"[red]No such sponsorship: {sponsorship_id!r}[/red]")
+            return "skipped"
+        if sponsorship_obj.outcome != "pending":
+            console.print(
+                f"[red]Sponsorship {sponsorship_id!r} is already "
+                f"`{sponsorship_obj.outcome}`. Cannot re-evaluate.[/red]"
+            )
+            return "skipped"
+        sponsor_md = (
+            f"## Sponsor rationale\n\n{sponsorship_obj.rationale}\n\n"
+            f"## Sponsor track record\n\n"
+            f"{sponsorships.render_sponsor_reputation_md(sponsorship_obj.sponsor_id)}"
+        )
+
+    raw = _propose_candidate(founder_hint, call_body_md=call_body_md, sponsor_md=sponsor_md)
     if use_panel:
         try:
             candidate = Genome.model_validate({k: v for k, v in raw.items() if k != "rationale"})
@@ -747,6 +834,21 @@ def run(founder_hint: str | None = None, *, auto: bool = False) -> str:
         _register_fellow(candidate, advisor_id)
     with db.connection() as conn, db.transaction(conn):
         decisions.record(conn, decision)
+        # Increment the cohort call's admit count (and possibly auto-close)
+        # in the same transaction as the admit decision; otherwise a
+        # crash between would leave a Fellow registered against a call
+        # whose count never moved.
+        if admitted and active_call is not None:
+            cohort_calls.increment_admits(conn, active_call.id)
+        # Resolve the sponsorship the same way: in-tx so the outcome
+        # never drifts from the admit decision.
+        if sponsorship_obj is not None:
+            sponsorships.record_outcome(
+                sponsorship_obj.id,
+                outcome="admitted" if admitted else "rejected",
+                candidate_fellow_id=candidate.id if admitted else None,
+                conn=conn,
+            )
 
     if admitted:
         # Chapter 5: curriculum is staged on entry. Designed once, here,

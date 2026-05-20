@@ -253,27 +253,276 @@ def bootstrap(from_genomes: bool, force: bool) -> None:
 # ---------------------------------------------------------------------------
 
 
-@main.command()
+@main.group(invoke_without_command=True)
 @click.option(
     "--hint",
     type=str,
     default=None,
     help="Optional Founder guidance for the new admission (e.g. a missing specialty).",
 )
-def admit(hint: str | None) -> None:
-    """Vet and admit a new Fellow.
+@click.option(
+    "--sponsorship",
+    "sponsorship_id",
+    type=str,
+    default=None,
+    help="Sponsorship id to evaluate (from `admit nominate`).",
+)
+@click.pass_context
+def admit(ctx: click.Context, hint: str | None, sponsorship_id: str | None) -> None:
+    """Admissions: vet candidates, run cohort calls, manage sponsorships.
 
-    The orchestrator proposes a candidate genome that complements the
-    current cohort. The Founder reviews the genome; if accepted, the
-    candidate writes responses to the qualifying problem set, the
-    orchestrator evaluates them, and the Founder makes the final
-    admission decision. All artifacts are preserved in
-    archive/admissions/<candidate-id>/.
+    Bare `institute admit` vets and admits a single candidate (panel-or-
+    Founder). Subcommands manage the broader admissions machinery:
+
+      open-call   open a call for applications with target size + targets
+      close-call  close the active call manually
+      calls       list recent calls
+      nominate    a Fellow sponsors a candidate
+      sponsorships  list nominations on file
+
+    If a cohort call is currently open, the bare command admits against
+    its targets. If --sponsorship is supplied, the named nomination is
+    evaluated; otherwise the orchestrator drafts a fresh candidate.
     """
+    if ctx.invoked_subcommand is not None:
+        return
     _check_kill_switch()
     from institute.workflows import admit as admit_workflow
 
-    admit_workflow.run(founder_hint=hint)
+    admit_workflow.run(founder_hint=hint, sponsorship_id=sponsorship_id)
+
+
+@admit.command("open-call")
+@click.option(
+    "--size",
+    "target_size",
+    type=int,
+    required=True,
+    help="Cohort size for this call. Typical: 3 to 8.",
+)
+@click.option(
+    "--specialization",
+    "specializations",
+    type=str,
+    multiple=True,
+    help="Specialization to recruit for. Repeatable.",
+)
+@click.option(
+    "--model",
+    "models",
+    type=str,
+    multiple=True,
+    help="Model backend to recruit for. Repeatable.",
+)
+@click.option(
+    "--orientation",
+    "orientations",
+    type=str,
+    multiple=True,
+    help="Intellectual orientation being prioritized. Repeatable.",
+)
+@click.option(
+    "--opened-by",
+    default="founder",
+    show_default=True,
+    help="Who's opening this call.",
+)
+def admit_open_call(
+    target_size: int,
+    specializations: tuple[str, ...],
+    models: tuple[str, ...],
+    orientations: tuple[str, ...],
+    opened_by: str,
+) -> None:
+    """Open a new cohort call for applications."""
+    from institute import cohort_calls
+
+    try:
+        call = cohort_calls.open_call(
+            target_size=target_size,
+            target_specializations=list(specializations),
+            target_models=list(models),
+            orientations=list(orientations),
+            opened_by=opened_by,
+        )
+    except ValueError as exc:
+        console.print(f"[red]{exc}[/red]")
+        sys.exit(1)
+    console.print(f"[green]Opened call:[/green] {call.id}")
+    console.print(f"  size:           {call.target_size}")
+    if call.target_specializations:
+        console.print(f"  specializations: {', '.join(call.target_specializations)}")
+    if call.target_models:
+        console.print(f"  models:          {', '.join(call.target_models)}")
+    if call.orientations:
+        console.print(f"  orientations:    {', '.join(call.orientations)}")
+
+
+@admit.command("close-call")
+@click.option(
+    "--reason",
+    default="manual",
+    show_default=True,
+    help="Why the call is being closed.",
+)
+def admit_close_call(reason: str) -> None:
+    """Close the currently-open cohort call, if any."""
+    from institute import cohort_calls
+
+    call = cohort_calls.current_call()
+    if call is None:
+        console.print("[dim]No open call.[/dim]")
+        return
+    closed = cohort_calls.close_call(call.id, reason=reason)
+    console.print(f"[green]Closed:[/green] {closed.id} (reason: {closed.closed_reason})")
+    console.print(f"  admitted: {closed.admits_count}/{closed.target_size}")
+
+
+@admit.command("calls")
+@click.option(
+    "--limit",
+    type=int,
+    default=10,
+    show_default=True,
+    help="How many calls to show, newest first.",
+)
+def admit_calls(limit: int) -> None:
+    """List recent cohort calls."""
+    from institute import cohort_calls
+
+    calls = cohort_calls.list_calls(limit=limit)
+    if not calls:
+        console.print("[dim]No calls on file.[/dim]")
+        return
+    for c in calls:
+        color = "green" if c.status == "open" else "dim"
+        targets: list[str] = []
+        if c.target_specializations:
+            targets.append(f"spec=[{', '.join(c.target_specializations)}]")
+        if c.target_models:
+            targets.append(f"model=[{', '.join(c.target_models)}]")
+        if c.orientations:
+            targets.append(f"orient=[{', '.join(c.orientations)}]")
+        target_str = "  ".join(targets) if targets else "(no targets)"
+        console.print(
+            f"[{color}]{c.id}[/{color}]  {c.status}  {c.admits_count}/{c.target_size}  {target_str}"
+        )
+        console.print(f"  [dim]opened {c.opened_at} by {c.opened_by}[/dim]")
+        if c.closed_at:
+            console.print(f"  [dim]closed {c.closed_at}: {c.closed_reason}[/dim]")
+
+
+@admit.command("nominate")
+@click.option(
+    "--sponsor",
+    "sponsor_id",
+    type=str,
+    required=True,
+    help="Fellow id of the sponsoring Fellow (Junior Fellow rank or above).",
+)
+@click.option(
+    "--rationale",
+    type=str,
+    default=None,
+    help=(
+        "Why this candidate would strengthen the College. If omitted, "
+        "rationale is read from stdin (Ctrl-D to finish)."
+    ),
+)
+@click.option(
+    "--call",
+    "cohort_call_id",
+    type=str,
+    default=None,
+    help="Cohort call id to attach the nomination to. Defaults to the current open call.",
+)
+def admit_nominate(
+    sponsor_id: str,
+    rationale: str | None,
+    cohort_call_id: str | None,
+) -> None:
+    """Open a sponsored nomination: a Fellow proposes a candidate."""
+    from institute import cohort_calls, sponsorships
+
+    if rationale is None:
+        console.print("[dim]Reading rationale from stdin. Ctrl-D to finish.[/dim]")
+        rationale = sys.stdin.read()
+    rationale = (rationale or "").strip()
+    if not rationale:
+        console.print("[red]Rationale is required.[/red]")
+        sys.exit(1)
+
+    if cohort_call_id is None:
+        active = cohort_calls.current_call()
+        cohort_call_id = active.id if active is not None else None
+
+    try:
+        sponsorship = sponsorships.nominate(
+            sponsor_id=sponsor_id,
+            rationale=rationale,
+            cohort_call_id=cohort_call_id,
+        )
+    except ValueError as exc:
+        console.print(f"[red]{exc}[/red]")
+        sys.exit(1)
+    console.print(f"[green]Nomination opened:[/green] {sponsorship.id}")
+    if cohort_call_id:
+        console.print(f"  attached to call: {cohort_call_id}")
+    console.print(
+        f"  next: run `institute admit --sponsorship {sponsorship.id}` "
+        "to draft + evaluate the candidate."
+    )
+
+
+@admit.command("sponsorships")
+@click.option(
+    "--fellow",
+    "fellow_id",
+    type=str,
+    default=None,
+    help="Only show sponsorships by this Fellow.",
+)
+@click.option(
+    "--limit",
+    type=int,
+    default=20,
+    show_default=True,
+    help="How many to show, newest first.",
+)
+def admit_sponsorships(fellow_id: str | None, limit: int) -> None:
+    """List nominations on file."""
+    from institute import sponsorships
+
+    items = sponsorships.list_sponsorships(sponsor_id=fellow_id, limit=limit)
+    if not items:
+        console.print("[dim]No sponsorships on file.[/dim]")
+        return
+    for s in items:
+        color = {
+            "pending": "yellow",
+            "admitted": "green",
+            "advanced": "green",
+            "rejected": "red",
+            "withdrawn": "dim",
+        }.get(s.outcome, "white")
+        line = f"[{color}]{s.id}[/{color}]  by {s.sponsor_id}  {s.outcome}"
+        if s.candidate_fellow_id:
+            line += f"  → {s.candidate_fellow_id}"
+        console.print(line)
+        console.print(f"  [dim]{s.opened_at}[/dim]")
+        # Show first line of rationale only, full text via `admit show`.
+        first = (s.rationale or "").splitlines()[0] if s.rationale else ""
+        if first:
+            console.print(f"  {first[:140]}")
+    if fellow_id is not None:
+        successes, resolved, rate = sponsorships.success_rate(fellow_id)
+        if resolved > 0:
+            rate_str = f"{rate * 100:.0f}%" if rate is not None else "n/a"
+            console.print()
+            console.print(
+                f"[bold]Sponsor reputation:[/bold] {successes}/{resolved} "
+                f"resolved sponsorships succeeded ({rate_str})."
+            )
 
 
 # ---------------------------------------------------------------------------
