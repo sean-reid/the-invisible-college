@@ -19,12 +19,10 @@ from __future__ import annotations
 from datetime import UTC, datetime
 from pathlib import Path
 
-import pytest
-
-from institute import db, open_problems, paths, reputation
+from institute import db, open_problems, reputation
 from institute import fellow as fellow_mod
 from institute.fellow import Genome
-from institute.workflows.peer_review import _split_follow_up_blocks
+from institute.open_problems import split_follow_up_blocks as _split_follow_up_blocks
 
 
 def _genome(slug: str, name: str, *, rank: str = "fellow", spec: str = "general") -> Genome:
@@ -37,19 +35,6 @@ def _genome(slug: str, name: str, *, rank: str = "fellow", spec: str = "general"
         system_prompt_addendum=("body " * 60).strip(),
         allowed_tools=["Read"],
     )
-
-
-@pytest.fixture()
-def isolated(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
-    monkeypatch.setattr(fellow_mod, "GENOMES", tmp_path / "genomes")
-    monkeypatch.setattr(fellow_mod, "FELLOWS", tmp_path / "fellows")
-    monkeypatch.setattr(paths, "OPEN_PROBLEMS", tmp_path / "open-problems")
-    monkeypatch.setattr(paths, "ROOT", tmp_path)
-    db_path = tmp_path / "institute.db"
-    monkeypatch.setattr(db, "DB_PATH", db_path)
-    db.initialize(db_path)
-    (tmp_path / "genomes").mkdir(exist_ok=True)
-    return tmp_path
 
 
 # --- _split_follow_up_blocks ---------------------------------------------

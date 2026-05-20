@@ -1,22 +1,18 @@
 ---
 import Base from '../layouts/Base.astro';
 import { getCollection } from 'astro:content';
+import ArticleHeader from '../components/ArticleHeader.astro';
+import ListItem from '../components/ListItem.astro';
+import { buildFellowByName, lookupFellowId } from '../lib/fellow-id-map';
+import { shortDateFormatter } from '../lib/date-formatters';
 
 const posts = (await getCollection('posts', ({ data }) => !data.draft)).sort(
   (a, b) => b.data.publishedAt.getTime() - a.data.publishedAt.getTime(),
 );
 
 const fellows = await getCollection('fellows');
-const fellowByName = new Map(fellows.map((f) => [f.data.name, f.id]));
+const fellowByName = buildFellowByName(fellows);
 
-const dateFormatter = new Intl.DateTimeFormat('en-US', {
-  year: 'numeric',
-  month: 'short',
-  day: 'numeric',
-  timeZone: 'UTC',
-});
-
-// Group by UTC year. Within a year, posts stay reverse-chronological.
 type YearGroup = { year: number; posts: typeof posts };
 const yearGroups: YearGroup[] = [];
 const seenYear = new Map<number, YearGroup>();
@@ -37,19 +33,18 @@ for (const post of posts) {
   description="The full publication record of the Invisible College, newest first."
 >
   <article>
-    <header class="mb-10">
-      <p class="runninghead">Archive</p>
-      <h1
-        class="mt-3 text-3xl sm:text-4xl font-medium tracking-tight leading-[1.15]"
-      >
-        Archive
-      </h1>
+    <ArticleHeader
+      eyebrow="Archive"
+      title="Archive"
+      size="section"
+      spacing="tight"
+      ruleMargin="mt-6"
+    >
       <p class="meta mt-4 max-w-prose">
         Every publication the College has produced, newest first. The home page
         shows only recent work; this is the full record.
       </p>
-      <hr class="rule mt-6" />
-    </header>
+    </ArticleHeader>
 
     {
       yearGroups.length === 0 ? (
@@ -61,21 +56,20 @@ for (const post of posts) {
               <h2 class="smallcaps text-ink-soft mb-3">{group.year}</h2>
               <ul class="not-prose list-none p-0 m-0 space-y-4">
                 {group.posts.map((post) => (
-                  <li>
-                    <a
-                      href={`${import.meta.env.BASE_URL}/posts/${post.id}`}
-                      class="block font-medium text-base text-ink leading-snug no-underline hover:underline"
-                    >
-                      {post.data.title}
-                    </a>
-                    <p class="meta mt-1 flex flex-wrap items-baseline gap-x-2">
+                  <ListItem
+                    href={`${import.meta.env.BASE_URL}/posts/${post.id}`}
+                    title={post.data.title}
+                    size="base"
+                    metaLayout="flex"
+                  >
+                    <Fragment slot="meta-below">
                       <span class="tabular">
-                        {dateFormatter.format(post.data.publishedAt)}
+                        {shortDateFormatter.format(post.data.publishedAt)}
                       </span>
                       <span class="text-rule-strong">·</span>
                       <span>
                         {post.data.authors.map((name, i) => {
-                          const id = fellowByName.get(name);
+                          const id = lookupFellowId(fellowByName, name);
                           return (
                             <>
                               {i > 0 && ', '}
@@ -92,8 +86,8 @@ for (const post of posts) {
                           );
                         })}
                       </span>
-                    </p>
-                  </li>
+                    </Fragment>
+                  </ListItem>
                 ))}
               </ul>
             </section>

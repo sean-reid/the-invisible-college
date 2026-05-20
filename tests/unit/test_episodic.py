@@ -10,7 +10,7 @@ from pathlib import Path
 
 import pytest
 
-from institute import db, episodic, paths
+from institute import db, episodic
 from institute import fellow as fellow_mod
 from institute.episodic import HashBackend
 from institute.fellow import Genome
@@ -20,26 +20,6 @@ from institute.fellow import Genome
 def _mock_backend() -> None:
     """Every test in this file uses the deterministic hash backend."""
     episodic.set_backend(HashBackend())
-
-
-@pytest.fixture()
-def isolated(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
-    genomes = tmp_path / "genomes"
-    fellows = tmp_path / "fellows"
-    archive = tmp_path / "archive"
-    for d in (genomes, fellows, archive):
-        d.mkdir(parents=True)
-    db_path = tmp_path / "institute.db"
-
-    monkeypatch.setattr(db, "DB_PATH", db_path)
-    monkeypatch.setattr(paths, "GENOMES", genomes)
-    monkeypatch.setattr(paths, "FELLOWS", fellows)
-    monkeypatch.setattr(paths, "ARCHIVE", archive)
-    monkeypatch.setattr(paths, "ROOT", tmp_path)
-    monkeypatch.setattr(fellow_mod, "GENOMES", genomes)
-    monkeypatch.setattr(fellow_mod, "FELLOWS", fellows)
-    db.initialize(db_path)
-    return tmp_path
 
 
 def _seed_fellow(conn, fellow_id: str = "ada") -> None:

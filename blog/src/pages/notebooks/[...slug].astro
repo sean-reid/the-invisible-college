@@ -1,64 +1,45 @@
 ---
 import Base from '../../layouts/Base.astro';
 import { getCollection, render } from 'astro:content';
+import ArticleHeader from '../../components/ArticleHeader.astro';
+import Byline from '../../components/Byline.astro';
+import { fellowByNameRecord } from '../../lib/fellow-id-map';
+import { longDateFormatter } from '../../lib/date-formatters';
 
 export async function getStaticPaths() {
   const notebooks = await getCollection('notebooks');
   const fellows = await getCollection('fellows');
-  const fellowByName = Object.fromEntries(
-    fellows.map((f) => [f.data.name, f.id]),
-  );
   return notebooks.map((nb) => ({
     params: { slug: nb.id },
-    props: { notebook: nb, fellowByName },
+    props: { notebook: nb, fellowByName: fellowByNameRecord(fellows) },
   }));
 }
 
 const { notebook, fellowByName } = Astro.props;
 const { Content } = await render(notebook);
-
-const dateFormatter = new Intl.DateTimeFormat('en-US', {
-  year: 'numeric',
-  month: 'long',
-  day: 'numeric',
-  timeZone: 'UTC',
-});
 ---
 
 <Base title={`${notebook.data.title} (Lab notebook)`}>
   <article class="prose">
-    <header class="mb-10 not-prose">
-      <p class="runninghead">Lab notebook</p>
-      <h1
-        class="mt-3 text-2xl sm:text-3xl font-medium tracking-tight leading-[1.15]"
+    <ArticleHeader
+      eyebrow="Lab notebook"
+      title={notebook.data.title}
+      size="sub"
+      spacing="tight"
+      notProse
+      ruleMargin="mt-6"
+      showRule={false}
+    >
+      <Byline
+        authors={notebook.data.authors}
+        fellowByName={fellowByName}
+        topMargin="mt-4"
       >
-        {notebook.data.title}
-      </h1>
-      <div class="meta mt-4 flex flex-wrap gap-x-4 gap-y-1 items-baseline">
-        <span>
-          {
-            notebook.data.authors.map((name, i) => {
-              const id = fellowByName[name];
-              return (
-                <>
-                  {i > 0 && ', '}
-                  {id ? (
-                    <a href={`${import.meta.env.BASE_URL}/fellows/${id}`}>
-                      {name}
-                    </a>
-                  ) : (
-                    name
-                  )}
-                </>
-              );
-            })
-          }
-        </span>
         <span class="text-rule-strong">·</span>
         <span class="tabular">
           started{' '}
           <time datetime={notebook.data.startedAt.toISOString()}>
-            {dateFormatter.format(notebook.data.startedAt)}
+            {longDateFormatter.format(notebook.data.startedAt)}
           </time>
         </span>
         {
@@ -68,13 +49,13 @@ const dateFormatter = new Intl.DateTimeFormat('en-US', {
               <span class="tabular">
                 completed{' '}
                 <time datetime={notebook.data.completedAt.toISOString()}>
-                  {dateFormatter.format(notebook.data.completedAt)}
+                  {longDateFormatter.format(notebook.data.completedAt)}
                 </time>
               </span>
             </>
           )
         }
-      </div>
+      </Byline>
       <p class="meta mt-3">
         Lab notebook for{' '}
         <a href={`${import.meta.env.BASE_URL}/posts/${notebook.data.postSlug}`}
@@ -82,7 +63,7 @@ const dateFormatter = new Intl.DateTimeFormat('en-US', {
         >.
       </p>
       <hr class="rule mt-6" />
-    </header>
+    </ArticleHeader>
 
     <Content />
   </article>

@@ -1,12 +1,17 @@
 ---
 import Base from '../layouts/Base.astro';
 import { getCollection } from 'astro:content';
-import { listProjects as listPreprintProjects } from '../lib/preprints';
+import ListItem from '../components/ListItem.astro';
+import { buildFellowByName, lookupFellowId } from '../lib/fellow-id-map';
+import { longDateFormatter, monthFormatter } from '../lib/date-formatters';
 
 const allPosts = (await getCollection('posts', ({ data }) => !data.draft)).sort(
   (a, b) => b.data.publishedAt.getTime() - a.data.publishedAt.getTime(),
 );
-const preprintCount = listPreprintProjects().length;
+// Count distinct preprint projects (one entry per version, grouped by projectId).
+const preprintEntries = await getCollection('preprints');
+const preprintCount = new Set(preprintEntries.map((e) => e.data.projectId))
+  .size;
 
 // Home page shows recent work. The full institutional record lives on
 // the /archive page, linked at the bottom of the recent section. The
@@ -18,20 +23,7 @@ const totalPostCount = allPosts.length;
 const hasMore = totalPostCount > posts.length;
 
 const fellows = await getCollection('fellows');
-const fellowByName = new Map(fellows.map((f) => [f.data.name, f.id]));
-
-const dateFormatter = new Intl.DateTimeFormat('en-US', {
-  year: 'numeric',
-  month: 'long',
-  day: 'numeric',
-  timeZone: 'UTC',
-});
-
-const monthFormatter = new Intl.DateTimeFormat('en-US', {
-  year: 'numeric',
-  month: 'long',
-  timeZone: 'UTC',
-});
+const fellowByName = buildFellowByName(fellows);
 
 // Group posts by UTC month, preserving the reverse-chronological order
 // in both the month list and within each month. Month subheads make the
@@ -84,21 +76,19 @@ for (const post of posts) {
               <h3 class="smallcaps text-ink-soft mb-3">{group.label}</h3>
               <ol class="space-y-7 list-none pl-0">
                 {group.posts.map((post) => (
-                  <li>
-                    <a
-                      href={`${import.meta.env.BASE_URL}/posts/${post.id}`}
-                      class="block text-xl font-medium leading-tight no-underline hover:underline"
-                    >
-                      {post.data.title}
-                    </a>
-                    <p class="meta mt-1">
+                  <ListItem
+                    href={`${import.meta.env.BASE_URL}/posts/${post.id}`}
+                    title={post.data.title}
+                    size="xl"
+                  >
+                    <Fragment slot="meta-below">
                       <span class="tabular">
-                        {dateFormatter.format(post.data.publishedAt)}
+                        {longDateFormatter.format(post.data.publishedAt)}
                       </span>
                       <span class="mx-2 text-rule-strong">·</span>
                       <span>
                         {post.data.authors.map((name, i) => {
-                          const id = fellowByName.get(name);
+                          const id = lookupFellowId(fellowByName, name);
                           return (
                             <>
                               {i > 0 && ', '}
@@ -115,13 +105,16 @@ for (const post of posts) {
                           );
                         })}
                       </span>
-                    </p>
+                    </Fragment>
                     {post.data.description && (
-                      <p class="mt-2 text-ink-soft leading-relaxed">
+                      <p
+                        class="mt-2 text-ink-soft leading-relaxed"
+                        slot="description"
+                      >
                         {post.data.description}
                       </p>
                     )}
-                  </li>
+                  </ListItem>
                 ))}
               </ol>
             </section>

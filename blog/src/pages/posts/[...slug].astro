@@ -3,14 +3,18 @@ import Base from '../../layouts/Base.astro';
 import { getCollection, render } from 'astro:content';
 import { buildBacklinkMap } from '../../lib/citations';
 import { listArtifacts, humanSize } from '../../lib/artifacts';
+import ArticleHeader from '../../components/ArticleHeader.astro';
+import Byline from '../../components/Byline.astro';
+import ReviewItem from '../../components/ReviewItem.astro';
+import { fellowByNameRecord } from '../../lib/fellow-id-map';
+import { longDateFormatter } from '../../lib/date-formatters';
 
 export async function getStaticPaths() {
   const posts = await getCollection('posts', ({ data }) => !data.draft);
   const allReviews = await getCollection('reviews');
   const fellows = await getCollection('fellows');
   const allDecisions = await getCollection('decisions');
-  // name -> fellow id, used to turn bylines into profile links.
-  const fellowByName = new Map(fellows.map((f) => [f.data.name, f.id]));
+  const fellowByName = fellowByNameRecord(fellows);
 
   // Map of fellow_id -> { kind, date, slug } when that Fellow has been
   // terminated for a Charter violation. Past publications by terminated
@@ -34,7 +38,6 @@ export async function getStaticPaths() {
         actor === 'editorial-board'
       )
         continue;
-      // Don't overwrite an earlier termination record if multiple exist.
       if (!terminationByFellow.has(actor)) {
         terminationByFellow.set(actor, {
           kind,
@@ -68,11 +71,9 @@ export async function getStaticPaths() {
     }));
     const dissents = reviews.filter((r) => r.data.dissent);
 
-    // Compute the disclosure list: any author of this post who was
-    // terminated for a Charter violation.
     const disclosures = post.data.authors
       .map((name) => {
-        const id = fellowByName.get(name);
+        const id = fellowByName[name];
         if (!id) return null;
         const term = terminationByFellow.get(id);
         if (!term) return null;
@@ -88,7 +89,7 @@ export async function getStaticPaths() {
         reviewRounds: Array.from(reviewsByRound.entries()).sort(
           ([a], [b]) => a - b,
         ),
-        fellowByName: Object.fromEntries(fellowByName),
+        fellowByName,
         citedBy,
         dissents,
         disclosures,
@@ -109,13 +110,6 @@ const {
   artifacts,
 } = Astro.props;
 const { Content } = await render(post);
-
-const dateFormatter = new Intl.DateTimeFormat('en-US', {
-  year: 'numeric',
-  month: 'long',
-  day: 'numeric',
-  timeZone: 'UTC',
-});
 ---
 
 <Base
@@ -124,37 +118,17 @@ const dateFormatter = new Intl.DateTimeFormat('en-US', {
   ogType="article"
 >
   <article class="prose">
-    <header class="mb-12 not-prose">
-      <p class="runninghead">Publication</p>
-      <h1
-        class="mt-3 text-3xl sm:text-[2.4rem] font-medium tracking-tight leading-[1.1]"
-      >
-        {post.data.title}
-      </h1>
-      <div class="meta mt-5 flex flex-wrap gap-x-4 gap-y-1 items-baseline">
-        <span>
-          {
-            post.data.authors.map((name, i) => {
-              const id = fellowByName[name];
-              return (
-                <>
-                  {i > 0 && ', '}
-                  {id ? (
-                    <a href={`${import.meta.env.BASE_URL}/fellows/${id}`}>
-                      {name}
-                    </a>
-                  ) : (
-                    name
-                  )}
-                </>
-              );
-            })
-          }
-        </span>
+    <ArticleHeader
+      eyebrow="Publication"
+      title={post.data.title}
+      notProse
+      showRule={false}
+    >
+      <Byline authors={post.data.authors} fellowByName={fellowByName}>
         <span class="text-rule-strong">·</span>
         <span class="tabular">
           <time datetime={post.data.publishedAt.toISOString()}>
-            {dateFormatter.format(post.data.publishedAt)}
+            {longDateFormatter.format(post.data.publishedAt)}
           </time>
         </span>
         {
@@ -164,13 +138,13 @@ const dateFormatter = new Intl.DateTimeFormat('en-US', {
               <span class="tabular italic">
                 revised{' '}
                 <time datetime={post.data.revisedAt.toISOString()}>
-                  {dateFormatter.format(post.data.revisedAt)}
+                  {longDateFormatter.format(post.data.revisedAt)}
                 </time>
               </span>
             </>
           )
         }
-      </div>
+      </Byline>
       {
         post.data.abstract && (
           <p class="mt-6 text-ink-soft italic leading-relaxed border-l-2 border-rule-strong pl-4">
@@ -179,7 +153,7 @@ const dateFormatter = new Intl.DateTimeFormat('en-US', {
         )
       }
       <hr class="rule mt-8" />
-    </header>
+    </ArticleHeader>
 
     {
       disclosures.length > 0 && (
@@ -192,7 +166,7 @@ const dateFormatter = new Intl.DateTimeFormat('en-US', {
             <p class="meta">
               <strong>{d.name}</strong> was terminated by the College on{' '}
               <time datetime={d.date.toISOString()}>
-                {dateFormatter.format(d.date)}
+                {longDateFormatter.format(d.date)}
               </time>{' '}
               for a Charter violation (<code>{d.kind}</code>). This piece was
               published before the violation was identified; the work survives
@@ -259,20 +233,13 @@ const dateFormatter = new Intl.DateTimeFormat('en-US', {
                   <dd>
                     <ul class="list-none p-0 m-0 space-y-1">
                       {roundReviews.map((r) => (
-                        <li>
-                          <a
-                            href={`${import.meta.env.BASE_URL}/reviews/${r.id}`}
-                          >
-                            {r.data.reviewer}
-                          </a>
-                          <span class="ml-2 text-rule-strong">·</span>
-                          <span class="ml-2">{r.data.recommendation}</span>
-                          {r.data.dissent && (
-                            <span class="ml-2 font-medium text-andon">
-                              dissent
-                            </span>
-                          )}
-                        </li>
+                        <ReviewItem
+                          reviewId={r.id}
+                          reviewer={r.data.reviewer}
+                          recommendation={r.data.recommendation}
+                          dissent={r.data.dissent}
+                          showDissentLabel
+                        />
                       ))}
                     </ul>
                   </dd>
@@ -284,15 +251,12 @@ const dateFormatter = new Intl.DateTimeFormat('en-US', {
                 <dd>
                   <ul class="list-none p-0 m-0 space-y-1">
                     {dissents.map((r) => (
-                      <li>
-                        <a href={`${import.meta.env.BASE_URL}/reviews/${r.id}`}>
-                          {r.data.reviewer}
-                        </a>
-                        <span class="ml-2 text-rule-strong">·</span>
-                        <span class="ml-2">round {r.data.round}</span>
-                        <span class="ml-2 text-rule-strong">·</span>
-                        <span class="ml-2">{r.data.recommendation}</span>
-                      </li>
+                      <ReviewItem
+                        reviewId={r.id}
+                        reviewer={r.data.reviewer}
+                        recommendation={r.data.recommendation}
+                        round={r.data.round}
+                      />
                     ))}
                   </ul>
                   <p class="mt-2 text-sm text-ink-soft italic">

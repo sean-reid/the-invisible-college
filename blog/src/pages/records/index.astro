@@ -1,29 +1,14 @@
 ---
 import Base from '../../layouts/Base.astro';
 import { getCollection } from 'astro:content';
+import ArticleHeader from '../../components/ArticleHeader.astro';
+import ListItem from '../../components/ListItem.astro';
+import { shortDateFormatter } from '../../lib/date-formatters';
+import { decisionKindLabel, labelFor } from '../../lib/labels';
 
 const decisions = (await getCollection('decisions')).sort(
   (a, b) => b.data.recorded_at.getTime() - a.data.recorded_at.getTime(),
 );
-
-const dateFormatter = new Intl.DateTimeFormat('en-US', {
-  year: 'numeric',
-  month: 'short',
-  day: 'numeric',
-  timeZone: 'UTC',
-});
-
-const kindLabel: Record<string, string> = {
-  bootstrap: 'Founding',
-  admission: 'Admission',
-  promotion: 'Promotion',
-  promotion_review: 'Promotion review',
-  release: 'Release',
-  andon_cord_pulled: 'Andon cord pulled',
-  andon_cord_outcome: 'Andon ruling',
-  editorial_ruling: 'Editorial ruling',
-  charter_violation_termination: 'Termination (Charter)',
-};
 
 // Each decision's first H1 heading in the body is the real title.
 // Falls back to a dehyphenated slug if the body has no H1.
@@ -42,58 +27,46 @@ function displayTitle(body: string, slug: string): string {
   description="Institutional decisions of the Invisible College: admissions, promotions, releases, editorial rulings, andon-cord pulls."
 >
   <article class="prose">
-    <header class="mb-10 not-prose">
-      <p class="runninghead">Records</p>
-      <h1
-        class="mt-3 text-3xl sm:text-4xl font-medium tracking-tight leading-[1.15]"
-      >
-        Records
-      </h1>
+    <ArticleHeader
+      eyebrow="Records"
+      title="Records"
+      size="section"
+      spacing="tight"
+      notProse
+      ruleMargin="mt-6"
+    >
       <p class="meta mt-4 max-w-prose">
         The institutional decisions of the College, newest first. Admissions,
         promotions, releases, editorial rulings on disputed pieces, and
         andon-cord pulls. Research-flow events (peer reviews, lab notebooks)
         live with their publications.
       </p>
-      <hr class="rule mt-6" />
-    </header>
+    </ArticleHeader>
 
     {
       decisions.length === 0 ? (
         <p class="meta">No records yet.</p>
       ) : (
         <ol class="not-prose space-y-5 list-none pl-0">
-          {/*
-            Each record is a meta line (date · kind) plus the title
-            link below it. The earlier grid layout produced ragged
-            gaps on desktop because the second column was sized to
-            the widest kind label across all rows, leaving variable
-            whitespace between short kinds and their titles. A
-            simple stacked block has consistent indent at every
-            viewport and never wraps a long title to one-word-per-
-            line on narrow screens.
-          */}
           {decisions.map((d) => (
-            <li>
-              <p class="meta flex flex-wrap items-baseline gap-x-2">
+            <ListItem
+              href={`${import.meta.env.BASE_URL}/records/${d.id}`}
+              title={displayTitle(d.body ?? '', d.id)}
+              size="md"
+            >
+              <Fragment slot="meta-above">
                 <time
                   class="tabular"
                   datetime={d.data.recorded_at.toISOString()}
                 >
-                  {dateFormatter.format(d.data.recorded_at)}
+                  {shortDateFormatter.format(d.data.recorded_at)}
                 </time>
                 <span class="text-rule-strong">·</span>
                 <span class="runninghead">
-                  {kindLabel[d.data.kind] ?? d.data.kind}
+                  {labelFor(decisionKindLabel, d.data.kind)}
                 </span>
-              </p>
-              <a
-                href={`${import.meta.env.BASE_URL}/records/${d.id}`}
-                class="mt-1 block font-medium leading-snug no-underline hover:underline"
-              >
-                {displayTitle(d.body ?? '', d.id)}
-              </a>
-            </li>
+              </Fragment>
+            </ListItem>
           ))}
         </ol>
       )

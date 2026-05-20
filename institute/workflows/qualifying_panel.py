@@ -355,11 +355,7 @@ def run(project_id: str) -> None:
             raise SystemExit(f"No such project: {project_id}")
         if proj["kind"] != "qualifying":
             raise SystemExit(f"Project {project_id} is kind=`{proj['kind']}`, not qualifying.")
-        if proj["state"] != State.AWAITING_QUALIFYING_PANEL.value:
-            raise SystemExit(
-                f"Project {project_id} is in state {proj['state']}, expected "
-                "awaiting_qualifying_panel."
-            )
+        state.require_state(proj, project_id, State.AWAITING_QUALIFYING_PANEL)
         postulant_row = conn.execute(
             "SELECT id, name, model, specialization, advisor_id FROM fellows WHERE id = ?",
             (proj["lead_fellow_id"],),

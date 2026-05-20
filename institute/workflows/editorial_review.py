@@ -324,10 +324,7 @@ def run(project_id: str) -> None:
         ).fetchone()
         if proj is None:
             raise SystemExit(f"No such project: {project_id}")
-        if proj["state"] != State.EDITORIAL_REVIEW.value:
-            raise SystemExit(
-                f"Project {project_id} is in state {proj['state']}, expected editorial_review."
-            )
+        state.require_state(proj, project_id, State.EDITORIAL_REVIEW)
         title = proj["title"]
         members = editorial_board.current_members(conn)
 

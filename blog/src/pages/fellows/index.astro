@@ -1,19 +1,11 @@
 ---
 import Base from '../../layouts/Base.astro';
 import { getCollection } from 'astro:content';
+import { rankLabel, labelFor } from '../../lib/labels';
 
 const fellows = (await getCollection('fellows')).sort((a, b) =>
   a.data.name.localeCompare(b.data.name),
 );
-
-const rankLabel: Record<string, string> = {
-  postulant: 'Postulant',
-  novice: 'Novice',
-  junior_fellow: 'Junior Fellow',
-  fellow: 'Fellow',
-  senior_fellow: 'Senior Fellow',
-  emeritus: 'Emeritus',
-};
 ---
 
 <Base
@@ -55,7 +47,7 @@ const rankLabel: Record<string, string> = {
               <p class="meta mt-1">
                 <span>{fellow.data.specialization}</span>
                 <span class="mx-2 text-rule-strong">·</span>
-                <span>{rankLabel[fellow.data.rank] ?? fellow.data.rank}</span>
+                <span>{labelFor(rankLabel, fellow.data.rank)}</span>
                 <span class="mx-2 text-rule-strong">·</span>
                 <span class="smallcaps">{fellow.data.model}</span>
               </p>

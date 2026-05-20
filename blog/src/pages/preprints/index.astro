@@ -1,15 +1,35 @@
 ---
 import Base from '../../layouts/Base.astro';
-import { listProjects } from '../../lib/preprints';
+import { getCollection } from 'astro:content';
+import { longDateFormatter } from '../../lib/date-formatters';
 
-const projects = listProjects();
+// Group preprint version entries by project, newest version first.
+type PreprintEntry = Awaited<
+  ReturnType<typeof getCollection<'preprints'>>
+>[number];
+type ProjectGroup = {
+  projectId: string;
+  latest: PreprintEntry;
+  versions: PreprintEntry[]; // newest first
+};
 
-const dateFormatter = new Intl.DateTimeFormat('en-US', {
-  year: 'numeric',
-  month: 'long',
-  day: 'numeric',
-  timeZone: 'UTC',
-});
+const entries = await getCollection('preprints');
+const byProject = new Map<string, PreprintEntry[]>();
+for (const entry of entries) {
+  const list = byProject.get(entry.data.projectId);
+  if (list) list.push(entry);
+  else byProject.set(entry.data.projectId, [entry]);
+}
+
+const projects: ProjectGroup[] = [];
+for (const [projectId, versions] of byProject) {
+  versions.sort((a, b) => b.data.version - a.data.version);
+  projects.push({ projectId, latest: versions[0], versions });
+}
+// Newest-posted project first.
+projects.sort(
+  (a, b) => b.latest.data.postedAt.getTime() - a.latest.data.postedAt.getTime(),
+);
 ---
 
 <Base
@@ -58,35 +78,37 @@ const dateFormatter = new Intl.DateTimeFormat('en-US', {
                 href={`${import.meta.env.BASE_URL}/preprints/${p.projectId}`}
                 class="block text-xl font-medium leading-tight no-underline hover:underline"
               >
-                {p.title}
+                {p.latest.data.title}
               </a>
               <p class="meta mt-1 flex flex-wrap items-baseline gap-x-2">
                 <span class="tabular">
-                  v{p.latest.version}
-                  {p.allVersions.length > 1 && (
+                  v{p.latest.data.version}
+                  {p.versions.length > 1 && (
                     <span class="ml-1 text-ink-soft">
-                      ({p.allVersions.length} versions)
+                      ({p.versions.length} versions)
                     </span>
                   )}
                 </span>
                 <span class="text-rule-strong">·</span>
                 <span class="tabular">
-                  {dateFormatter.format(p.latest.postedAt)}
+                  {longDateFormatter.format(p.latest.data.postedAt)}
                 </span>
                 <span class="text-rule-strong">·</span>
                 <span>
-                  {p.leadId ? (
-                    <a href={`${import.meta.env.BASE_URL}/fellows/${p.leadId}`}>
-                      {p.lead}
+                  {p.latest.data.leadId ? (
+                    <a
+                      href={`${import.meta.env.BASE_URL}/fellows/${p.latest.data.leadId}`}
+                    >
+                      {p.latest.data.lead}
                     </a>
                   ) : (
-                    p.lead
+                    p.latest.data.lead
                   )}
                 </span>
               </p>
-              {p.latest.abstract && (
+              {p.latest.data.abstract && (
                 <p class="mt-2 text-ink-soft leading-relaxed">
-                  {p.latest.abstract}
+                  {p.latest.data.abstract}
                 </p>
               )}
             </li>

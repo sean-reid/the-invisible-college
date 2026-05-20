@@ -1,23 +1,44 @@
 import { defineCollection, z } from 'astro:content';
 import { glob } from 'astro/loaders';
 
+// Published posts. Drafts (`draft: true`) may omit `abstract` so a
+// Fellow can stage work-in-progress; anything visible on the site
+// (`draft: false`) must ship with one. The conditional requirement is
+// applied with `superRefine` instead of `z.discriminatedUnion` because
+// posts omit the `draft` field entirely (relying on the default), and
+// the discriminator runs before defaults in this version of Zod.
+//
+// Tags remain optional in both states: the institute's current
+// pipeline does not emit them, and a `min(1)` invariant would block
+// every publication today.
 const posts = defineCollection({
   loader: glob({ pattern: '**/*.{md,mdx}', base: './src/content/posts' }),
-  schema: z.object({
-    title: z.string(),
-    description: z.string().optional(),
-    issueNumber: z.number().int().positive().optional(),
-    authors: z.array(z.string()).min(1),
-    publishedAt: z.coerce.date(),
-    revisedAt: z.coerce.date().optional(),
-    reviewers: z.array(z.string()).optional(),
-    abstract: z.string().optional(),
-    tags: z.array(z.string()).optional(),
-    projectId: z.string().optional(),
-    hasNotebook: z.boolean().default(false),
-    hasReviews: z.boolean().default(false),
-    draft: z.boolean().default(false),
-  }),
+  schema: z
+    .object({
+      title: z.string(),
+      description: z.string().optional(),
+      issueNumber: z.number().int().positive().optional(),
+      authors: z.array(z.string()).min(1),
+      publishedAt: z.coerce.date(),
+      revisedAt: z.coerce.date().optional(),
+      reviewers: z.array(z.string()).optional(),
+      abstract: z.string().optional(),
+      tags: z.array(z.string()).optional(),
+      projectId: z.string().optional(),
+      hasNotebook: z.boolean().default(false),
+      hasReviews: z.boolean().default(false),
+      draft: z.boolean().default(false),
+    })
+    .superRefine((data, ctx) => {
+      if (!data.draft && (!data.abstract || data.abstract.trim() === '')) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ['abstract'],
+          message:
+            'Published posts (draft: false) must define a non-empty abstract.',
+        });
+      }
+    }),
 });
 
 // A research project's lab notebook. Append-only public log of the actual
@@ -83,10 +104,51 @@ const fellows = defineCollection({
 // editorial rulings, andon-cord pulls. Synced from archive/decisions/
 // at build time by scripts/sync-decisions.mjs. Filtered to the kinds
 // that belong on the public /records page.
+//
+// The enum here is a deliberately wider superset of what the sync
+// script copies in. The sync's PUBLIC_KINDS filter decides which kinds
+// reach the blog; the schema accepts any value the institute can
+// legitimately write so a kind added to the orchestrator never crashes
+// the build before the sync filter has a chance to drop it.
 const decisions = defineCollection({
   loader: glob({ pattern: '**/*.md', base: './src/content/decisions' }),
   schema: z.object({
-    kind: z.string(),
+    kind: z.enum([
+      'admission',
+      'advisor_review',
+      'andon_cord_outcome',
+      'andon_cord_pulled',
+      'bootstrap',
+      'charter_violation_termination',
+      'concern',
+      'curriculum_response',
+      'editorial',
+      'editorial_ruling',
+      'final_revision_required',
+      'kill_switch',
+      'needs_assessment',
+      'peer_review',
+      'policy_change',
+      'preprint_comment',
+      'preprint_posted',
+      'promotion',
+      'promotion_review',
+      'proposal',
+      'proposal_review',
+      'publication',
+      'qualifying_panel',
+      'qualifying_proposal',
+      'reading_group',
+      'recovery',
+      'release',
+      'research',
+      'retirement',
+      'revision',
+      'revision_required',
+      'rollback',
+      'senior_fellow_confirmed',
+      'step_failure',
+    ]),
     recorded_at: z.coerce.date(),
     actors: z.array(z.string()).default([]),
     project: z.string().optional(),
@@ -108,6 +170,23 @@ const corrections = defineCollection({
   }),
 });
 
+// Working preprints. Each entry is a single version of an in-flight
+// project; ids have the shape `<projectId>--v<N>`. Synced from
+// archive/preprints/<projectId>/v<N>.md by scripts/sync-preprints.mjs.
+const preprints = defineCollection({
+  loader: glob({ pattern: '**/*.md', base: './src/content/preprints' }),
+  schema: z.object({
+    title: z.string(),
+    projectId: z.string(),
+    lead: z.string(),
+    leadId: z.string(),
+    version: z.coerce.number().int().min(1),
+    postedAt: z.coerce.date(),
+    projectStateAtPost: z.string(),
+    abstract: z.string().min(1),
+  }),
+});
+
 export const collections = {
   posts,
   notebooks,
@@ -115,4 +194,5 @@ export const collections = {
   fellows,
   decisions,
   corrections,
+  preprints,
 };

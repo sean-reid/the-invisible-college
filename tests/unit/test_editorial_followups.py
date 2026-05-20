@@ -12,40 +12,9 @@ from __future__ import annotations
 from datetime import UTC, datetime
 from pathlib import Path
 
-import pytest
-
-from institute import (
-    db,
-    editorial_followups,
-    open_problems,
-    paths,
-    workspaces,
-)
+from institute import db, editorial_followups, open_problems
 from institute import fellow as fellow_mod
 from institute.fellow import Genome
-
-
-@pytest.fixture()
-def isolated(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
-    genomes = tmp_path / "genomes"
-    fellows = tmp_path / "fellows"
-    archive = tmp_path / "archive"
-    open_problems_dir = archive / "open-problems"
-    for d in (genomes, fellows, open_problems_dir):
-        d.mkdir(parents=True)
-    db_path = tmp_path / "institute.db"
-
-    monkeypatch.setattr(db, "DB_PATH", db_path)
-    monkeypatch.setattr(paths, "GENOMES", genomes)
-    monkeypatch.setattr(paths, "FELLOWS", fellows)
-    monkeypatch.setattr(paths, "ARCHIVE", archive)
-    monkeypatch.setattr(paths, "OPEN_PROBLEMS", open_problems_dir)
-    monkeypatch.setattr(paths, "ROOT", tmp_path)
-    monkeypatch.setattr(fellow_mod, "GENOMES", genomes)
-    monkeypatch.setattr(fellow_mod, "FELLOWS", fellows)
-    monkeypatch.setattr(workspaces, "FELLOWS", fellows)
-    db.initialize(db_path)
-    return tmp_path
 
 
 def _genome(fellow_id: str, name: str, rank: str = "senior_fellow") -> Genome:

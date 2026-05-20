@@ -11,9 +11,7 @@ from __future__ import annotations
 from datetime import UTC, datetime
 from pathlib import Path
 
-import pytest
-
-from institute import db, paths, workspaces
+from institute import db
 from institute import fellow as fellow_mod
 from institute.fellow import Genome
 from institute.state import (
@@ -24,27 +22,6 @@ from institute.state import (
     is_terminal,
 )
 from institute.workflows import qualifying_panel
-
-
-@pytest.fixture()
-def isolated(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
-    archive = tmp_path / "archive"
-    decisions_dir = archive / "decisions"
-    genomes = tmp_path / "genomes"
-    fellows = tmp_path / "fellows"
-    for d in (archive, decisions_dir, genomes, fellows):
-        d.mkdir(parents=True)
-    db_path = tmp_path / "institute.db"
-    monkeypatch.setattr(db, "DB_PATH", db_path)
-    monkeypatch.setattr(paths, "GENOMES", genomes)
-    monkeypatch.setattr(paths, "FELLOWS", fellows)
-    monkeypatch.setattr(paths, "ARCHIVE", archive)
-    monkeypatch.setattr(paths, "ROOT", tmp_path)
-    monkeypatch.setattr(fellow_mod, "GENOMES", genomes)
-    monkeypatch.setattr(fellow_mod, "FELLOWS", fellows)
-    monkeypatch.setattr(workspaces, "FELLOWS", fellows)
-    db.initialize(db_path)
-    return tmp_path
 
 
 def _seed_fellow(conn, fellow_id: str, name: str, rank: str = "fellow") -> None:

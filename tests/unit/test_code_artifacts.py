@@ -9,22 +9,6 @@ import pytest
 from institute import code_artifacts, paths
 
 
-@pytest.fixture()
-def isolated(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
-    archive = tmp_path / "archive"
-    blog_public = tmp_path / "blog" / "public"
-    code_dir = archive / "code"
-    blog_code = blog_public / "code"
-    for d in (code_dir, blog_code):
-        d.mkdir(parents=True)
-    monkeypatch.setattr(paths, "ROOT", tmp_path)
-    monkeypatch.setattr(paths, "ARCHIVE", archive)
-    monkeypatch.setattr(paths, "CODE", code_dir)
-    monkeypatch.setattr(paths, "BLOG_PUBLIC", blog_public)
-    monkeypatch.setattr(paths, "BLOG_CODE", blog_code)
-    return tmp_path
-
-
 def test_sweep_copies_allowed_extensions(isolated: Path) -> None:
     ws = isolated / "ws"
     ws.mkdir()

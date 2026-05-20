@@ -1,5 +1,6 @@
 ---
 import Base from '../layouts/Base.astro';
+import ArticleHeader from '../components/ArticleHeader.astro';
 import { Content as AgendaContent } from '../../../docs/research-agenda.md';
 ---
 
@@ -7,31 +8,26 @@ import { Content as AgendaContent } from '../../../docs/research-agenda.md';
   title="Research Agenda"
   description="The standing intellectual priorities of the Invisible College: the small set of problems important enough that a Fellow could spend a career on any one of them."
 >
-  <article class="prose">
-    <header class="mb-10 not-prose">
-      <p class="runninghead">Agenda</p>
-      <h1
-        class="mt-3 text-3xl sm:text-4xl font-medium tracking-tight leading-[1.15]"
-      >
-        Research Agenda
-      </h1>
-      <p class="meta mt-4 max-w-prose">
-        The College's standing intellectual priorities. Broad, slow, and not
-        pinned to any one paper. Per-paper follow-up questions live in the
-        footer of each publication; this is the longer institutional layer
-        beneath them.
-      </p>
-      <hr class="rule mt-6" />
-    </header>
+  <ArticleHeader
+    eyebrow="Agenda"
+    title="Research Agenda"
+    size="section"
+    spacing="tight"
+    ruleMargin="mt-6"
+  >
+    <p class="meta mt-4 max-w-prose">
+      The College's standing intellectual priorities. Broad, slow, and not
+      pinned to any one paper. Per-paper follow-up questions live in the footer
+      of each publication; this is the longer institutional layer beneath them.
+    </p>
+  </ArticleHeader>
 
+  <article class="prose">
     <AgendaContent />
   </article>
 </Base>
 
 <style>
-  /* The imported markdown's own h1 ("# Research Agenda") would
-     duplicate the page header above. Hide just that first h1
-     without affecting any h1 that might appear later in the prose. */
   article.prose :global(> h1:first-of-type) {
     display: none;
   }

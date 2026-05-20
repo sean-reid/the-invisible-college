@@ -1,0 +1,75 @@
+---
+/**
+ * Generic list-item used by /, /archive, /fellows, /corrections,
+ * /records, /preprints and the publications/reviews lists on a fellow
+ * profile.
+ *
+ * The shape is always: an optional meta line above the title, a bold
+ * title link, an optional meta line below the title, and an optional
+ * description block. Variants differ only in which slots are filled.
+ */
+
+interface Props {
+  href: string;
+  title: string;
+  /**
+   * Title size variant.
+   *   xl   - text-xl, used by home page and fellows index
+   *   lg   - text-lg, used by fellow profile publications
+   *   base - text-base, used by /archive and the smaller lists
+   *   md   - base size, no explicit text-size class
+   */
+  size?: 'xl' | 'lg' | 'base' | 'md';
+  /**
+   * Layout of the meta line directly below the title. 'plain' is the
+   * non-flex paragraph used on the home page and fellow profile.
+   * 'flex' is the wrap-friendly bullet-separated layout used on the
+   * archive and preprint indexes.
+   */
+  metaLayout?: 'plain' | 'flex';
+}
+
+const { href, title, size = 'base', metaLayout = 'plain' } = Astro.props;
+
+const titleSizeClass =
+  size === 'xl'
+    ? 'block text-xl font-medium leading-tight no-underline hover:underline'
+    : size === 'lg'
+      ? 'block text-lg font-medium leading-tight no-underline hover:underline'
+      : size === 'base'
+        ? 'block font-medium text-base text-ink leading-snug no-underline hover:underline'
+        : 'block font-medium leading-snug no-underline hover:underline';
+
+const hasMetaAbove = Astro.slots.has('meta-above');
+const hasMetaBelow = Astro.slots.has('meta-below');
+const hasDescription = Astro.slots.has('description');
+---
+
+<li>
+  {
+    hasMetaAbove && (
+      <p class="meta flex flex-wrap items-baseline gap-x-2">
+        <slot name="meta-above" />
+      </p>
+    )
+  }
+  <a
+    href={href}
+    class={hasMetaAbove ? `mt-1 ${titleSizeClass}` : titleSizeClass}
+  >
+    {title}
+  </a>
+  {
+    hasMetaBelow &&
+      (metaLayout === 'flex' ? (
+        <p class="meta mt-1 flex flex-wrap items-baseline gap-x-2">
+          <slot name="meta-below" />
+        </p>
+      ) : (
+        <p class="meta mt-1">
+          <slot name="meta-below" />
+        </p>
+      ))
+  }
+  {hasDescription && <slot name="description" />}
+</li>

@@ -48,17 +48,6 @@ def _genome(slug: str, name: str, *, rank: str = "fellow", spec: str = "general"
     )
 
 
-@pytest.fixture()
-def isolated(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
-    monkeypatch.setattr(fellow_mod, "GENOMES", tmp_path / "genomes")
-    monkeypatch.setattr(fellow_mod, "FELLOWS", tmp_path / "fellows")
-    db_path = tmp_path / "institute.db"
-    monkeypatch.setattr(db, "DB_PATH", db_path)
-    db.initialize(db_path)
-    (tmp_path / "genomes").mkdir(exist_ok=True)
-    return tmp_path
-
-
 def _seed_project(project_id: str, lead_id: str, state_value: str = "drafted") -> None:
     now = datetime.now(UTC).isoformat(timespec="seconds")
     with db.connection() as conn, db.transaction(conn):

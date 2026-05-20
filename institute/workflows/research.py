@@ -32,6 +32,7 @@ from institute import (
 from institute import fellow as fellow_mod
 from institute.claude_runner import FellowTask
 from institute.fellow import Genome
+from institute.safe_io import atomic_write
 from institute.state import State
 
 console = Console()
@@ -252,12 +253,6 @@ def _load_review_md(project_id: str) -> str:
     return review_files[0].read_text(encoding="utf-8")
 
 
-def _atomic_write(path: Path, content: str) -> None:
-    from institute.safe_io import atomic_write
-
-    atomic_write(path, content)
-
-
 def _extract_draft_title(draft_md: str) -> str | None:
     match = re.search(r"^#\s+(.+?)$", draft_md.lstrip(), re.MULTILINE)
     return match.group(1).strip() if match else None
@@ -281,11 +276,7 @@ def run(project_id: str) -> None:
         ).fetchone()
         if proj is None:
             raise SystemExit(f"No such project: {project_id}")
-        if proj["state"] not in (State.PROPOSAL_REVIEWED.value, State.RESEARCHING.value):
-            raise SystemExit(
-                f"Project {project_id} is in state {proj['state']}, "
-                "expected proposal_reviewed or researching."
-            )
+        state.require_state(proj, project_id, (State.PROPOSAL_REVIEWED, State.RESEARCHING))
         lead: Genome = fellow_mod.load_genome(conn, proj["lead_fellow_id"])
         collaborator_genomes = [
             fellow_mod.load_genome(conn, c.fellow_id)
@@ -365,10 +356,10 @@ def run(project_id: str) -> None:
     notebook_path = paths.LAB_NOTEBOOKS / project_id / "notebook.md"
     draft_path = paths.DRAFTS / project_id / "draft.md"
     abstract_path = paths.DRAFTS / project_id / "abstract.txt"
-    _atomic_write(notebook_path, notebook_md.rstrip() + "\n")
-    _atomic_write(draft_path, draft_md.rstrip() + "\n")
+    atomic_write(notebook_path, notebook_md.rstrip() + "\n")
+    atomic_write(draft_path, draft_md.rstrip() + "\n")
     if abstract:
-        _atomic_write(abstract_path, abstract + "\n")
+        atomic_write(abstract_path, abstract + "\n")
 
     # Sweep any code or small-data artifacts the Fellow wrote in their
     # workspace into archive/code/<project_id>/ before the workspace
@@ -468,12 +459,11 @@ def _register_follow_up_questions(*, workspace: Path, author_id: str, project_id
     if not text:
         return []
 
-    # Late imports to avoid circulars.
+    # Late import to avoid circulars.
     from institute import open_problems
-    from institute.workflows.peer_review import _split_follow_up_blocks
 
     added: list[str] = []
-    for title, body, tags in _split_follow_up_blocks(text):
+    for title, body, tags in open_problems.split_follow_up_blocks(text):
         if not title or not body:
             continue
         try:
@@ -559,7 +549,7 @@ def _collect_collaborator_contribution(
     )
 
     contribution_md = workspaces.require_output(workspace, "contribution.md", min_chars=200)
-    _atomic_write(contribution_path, contribution_md.rstrip() + "\n")
+    atomic_write(contribution_path, contribution_md.rstrip() + "\n")
 
     # Each collaborator's contribution lands in their own episodic memory
     # so subsequent reviews/promotion calls have it.

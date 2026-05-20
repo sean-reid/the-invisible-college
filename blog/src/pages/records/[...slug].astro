@@ -1,6 +1,8 @@
 ---
 import Base from '../../layouts/Base.astro';
 import { getCollection, render } from 'astro:content';
+import { longDateFormatter } from '../../lib/date-formatters';
+import { decisionKindLabel, labelFor } from '../../lib/labels';
 
 export async function getStaticPaths() {
   const decisions = await getCollection('decisions');
@@ -12,25 +14,6 @@ export async function getStaticPaths() {
 
 const { decision } = Astro.props;
 const { Content } = await render(decision);
-
-const dateFormatter = new Intl.DateTimeFormat('en-US', {
-  year: 'numeric',
-  month: 'long',
-  day: 'numeric',
-  timeZone: 'UTC',
-});
-
-const kindLabel: Record<string, string> = {
-  bootstrap: 'Founding',
-  admission: 'Admission',
-  promotion: 'Promotion',
-  promotion_review: 'Promotion review',
-  release: 'Release',
-  andon_cord_pulled: 'Andon cord pulled',
-  andon_cord_outcome: 'Andon ruling',
-  editorial_ruling: 'Editorial ruling',
-  charter_violation_termination: 'Termination (Charter)',
-};
 ---
 
 <Base
@@ -40,11 +23,11 @@ const kindLabel: Record<string, string> = {
   <article class="prose">
     <header class="mb-10 not-prose">
       <p class="runninghead">
-        Record · {kindLabel[decision.data.kind] ?? decision.data.kind}
+        Record · {labelFor(decisionKindLabel, decision.data.kind)}
       </p>
       <p class="meta mt-3 tabular">
         <time datetime={decision.data.recorded_at.toISOString()}>
-          {dateFormatter.format(decision.data.recorded_at)}
+          {longDateFormatter.format(decision.data.recorded_at)}
         </time>
         {
           decision.data.actors.length > 0 && (

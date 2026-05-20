@@ -22,7 +22,6 @@ from __future__ import annotations
 import re
 import sqlite3
 from datetime import UTC, datetime
-from pathlib import Path
 from typing import Any
 
 from rich.console import Console
@@ -39,15 +38,10 @@ from institute import (
     state,
 )
 from institute import fellow as fellow_mod
+from institute.safe_io import atomic_write
 from institute.state import State
 
 console = Console()
-
-
-def _atomic_write(path: Path, content: str) -> None:
-    from institute.safe_io import atomic_write
-
-    atomic_write(path, content)
 
 
 def _strip_title_heading(draft_md: str) -> tuple[str, str]:
@@ -235,10 +229,7 @@ def run(project_id: str) -> None:
         ).fetchone()
         if proj is None:
             raise SystemExit(f"No such project: {project_id}")
-        if proj["state"] != State.EDITORIAL.value:
-            raise SystemExit(
-                f"Project {project_id} is in state {proj['state']}, expected editorial."
-            )
+        state.require_state(proj, project_id, State.EDITORIAL)
         if not proj["draft_path"]:
             raise SystemExit(f"Project {project_id} has no draft.")
 
@@ -312,8 +303,8 @@ def run(project_id: str) -> None:
 
     publication_archive_path = paths.PUBLICATIONS / f"{slug}.md"
     publication_blog_path = paths.BLOG_POSTS / f"{slug}.md"
-    _atomic_write(publication_archive_path, publication_md)
-    _atomic_write(publication_blog_path, publication_md)
+    atomic_write(publication_archive_path, publication_md)
+    atomic_write(publication_blog_path, publication_md)
 
     # Mirror any code/data artifacts the research and revise steps
     # archived into the blog's public/ tree so the static site can
@@ -330,7 +321,7 @@ def run(project_id: str) -> None:
             started_at=started,
             completed_at=now,
         )
-        _atomic_write(paths.BLOG_NOTEBOOKS / f"{slug}.md", nb_text)
+        atomic_write(paths.BLOG_NOTEBOOKS / f"{slug}.md", nb_text)
 
     for review, genome in zip(reviews_data, reviewer_genomes, strict=False):
         review_body = (paths.ROOT / review["content_path"]).read_text(encoding="utf-8")
@@ -348,7 +339,7 @@ def run(project_id: str) -> None:
             round_number=review_round,
         )
         suffix = f"--r{review_round}" if review_round > 1 else ""
-        _atomic_write(paths.BLOG_REVIEWS / f"{slug}--{genome.id}{suffix}.md", review_text)
+        atomic_write(paths.BLOG_REVIEWS / f"{slug}--{genome.id}{suffix}.md", review_text)
 
     has_dissent = any(r["recommendation"] == "reject" for r in reviews_data)
     decision_body_lines = [

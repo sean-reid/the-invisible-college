@@ -38,6 +38,8 @@ blog/screenshots/
 blog/src/content/fellows/*.json
 # Synced from /archive/decisions at build time by scripts/sync-decisions.mjs.
 blog/src/content/decisions/*.md
+# Synced from /archive/preprints at build time by scripts/sync-preprints.mjs.
+blog/src/content/preprints/*.md
 .DS_Store
 
 # Playwright

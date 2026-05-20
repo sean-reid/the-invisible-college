@@ -5,27 +5,9 @@ from __future__ import annotations
 from datetime import UTC, datetime
 from pathlib import Path
 
-import pytest
-
-from institute import db, paths, reputation
+from institute import db, reputation
 from institute import fellow as fellow_mod
 from institute.fellow import Genome
-
-
-@pytest.fixture()
-def isolated(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
-    genomes = tmp_path / "genomes"
-    fellows = tmp_path / "fellows"
-    genomes.mkdir()
-    fellows.mkdir()
-    db_path = tmp_path / "institute.db"
-    monkeypatch.setattr(db, "DB_PATH", db_path)
-    monkeypatch.setattr(paths, "GENOMES", genomes)
-    monkeypatch.setattr(paths, "FELLOWS", fellows)
-    monkeypatch.setattr(fellow_mod, "GENOMES", genomes)
-    monkeypatch.setattr(fellow_mod, "FELLOWS", fellows)
-    db.initialize(db_path)
-    return tmp_path
 
 
 def _seed_fellow(conn, fellow_id: str, name: str, rank: str = "fellow") -> None:

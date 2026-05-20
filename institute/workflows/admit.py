@@ -44,6 +44,10 @@ from institute import fellow as fellow_mod
 from institute.admissions.problems import for_candidate as _problems_for_candidate
 from institute.claude_runner import FellowTask
 from institute.fellow import Genome
+from institute.safe_io import atomic_write
+from institute.specialization import similarity
+
+_atomic_write = atomic_write
 
 console = Console()
 
@@ -265,12 +269,6 @@ def _read_cohort_summary() -> str:
         lines.append(f"- **specialization:** {r['specialization']}")
         lines.append("")
     return "\n".join(lines).rstrip() + "\n"
-
-
-def _atomic_write(path: Path, content: str) -> None:
-    from institute.safe_io import atomic_write
-
-    atomic_write(path, content)
 
 
 def _propose_candidate(
@@ -548,14 +546,14 @@ def _persist_candidate_package(
     """Write everything about this candidate to archive/admissions/<id>/."""
     pkg = paths.ADMISSIONS / candidate.id
     pkg.mkdir(parents=True, exist_ok=True)
-    _atomic_write(pkg / "genome.json", candidate.model_dump_json(indent=2) + "\n")
-    _atomic_write(pkg / "candidate.md", _render_candidate_markdown(candidate))
+    atomic_write(pkg / "genome.json", candidate.model_dump_json(indent=2) + "\n")
+    atomic_write(pkg / "candidate.md", _render_candidate_markdown(candidate))
     (pkg / "responses").mkdir(exist_ok=True)
     for problem_id, response in responses.items():
-        _atomic_write(pkg / "responses" / f"{problem_id}.md", response)
-    _atomic_write(pkg / "evaluation.json", json.dumps(evaluation, indent=2) + "\n")
+        atomic_write(pkg / "responses" / f"{problem_id}.md", response)
+    atomic_write(pkg / "evaluation.json", json.dumps(evaluation, indent=2) + "\n")
     verdict = "admitted" if admitted else "rejected"
-    _atomic_write(
+    atomic_write(
         pkg / "decision.md",
         f"# Admission decision: {candidate.name}\n\n"
         f"**Verdict:** {verdict}\n\n"
@@ -591,8 +589,6 @@ def _pick_advisor(candidate_specialization: str) -> str | None:
     if not eligible:
         return None
 
-    from institute.workflows.peer_review import _similarity  # local import: avoid cycle
-
     # Per Chapter 4, advisors carry a load cap. Filter out anyone at
     # capacity before scoring.
     eligible = [r for r in eligible if r["advisee_count"] < _advisor_cap(r["rank"])]
@@ -605,7 +601,7 @@ def _pick_advisor(candidate_specialization: str) -> str | None:
     scored = [
         (
             rank_priority.get(r["rank"], 9),
-            -_similarity(candidate_specialization, r["specialization"]),
+            -similarity(candidate_specialization, r["specialization"]),
             r["advisee_count"],
             r["id"],
         )
@@ -815,7 +811,7 @@ def _panel_vote_admission(
         vote_payload["panelist_id"] = panelist.id
         vote_payload["panelist_name"] = panelist.name
         votes.append(vote_payload)
-        _atomic_write(base / f"vote-{panelist.id}.json", json.dumps(vote_payload, indent=2))
+        atomic_write(base / f"vote-{panelist.id}.json", json.dumps(vote_payload, indent=2))
 
     raw_votes = [str(v.get("vote", "")).strip().lower() for v in votes]
     admit_count = sum(1 for v in raw_votes if v == "admit")

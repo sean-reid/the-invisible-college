@@ -1,0 +1,51 @@
+---
+/**
+ * Per-review list item used in the Apparatus footer of a post page:
+ * reviewer link, recommendation, and optional dissent or round label.
+ * The same row shape appears in both the "Reviews" and the "Dissent"
+ * blocks of `posts/[...slug].astro`; this component is what dedupes them.
+ */
+interface Props {
+  reviewId: string;
+  reviewer: string;
+  recommendation: string;
+  round?: number;
+  dissent?: boolean;
+  /**
+   * When true the recommendation is shown as `dissent` (a short label),
+   * matching the original reviewer-row variant. Otherwise the
+   * recommendation string appears verbatim.
+   */
+  showDissentLabel?: boolean;
+}
+
+const {
+  reviewId,
+  reviewer,
+  recommendation,
+  round,
+  dissent = false,
+  showDissentLabel = false,
+} = Astro.props;
+
+const BASE = import.meta.env.BASE_URL;
+---
+
+<li>
+  <a href={`${BASE}/reviews/${reviewId}`}>{reviewer}</a>
+  {
+    round !== undefined && (
+      <>
+        <span class="ml-2 text-rule-strong">·</span>
+        <span class="ml-2">round {round}</span>
+      </>
+    )
+  }
+  <span class="ml-2 text-rule-strong">·</span>
+  <span class="ml-2">{recommendation}</span>
+  {
+    showDissentLabel && dissent && (
+      <span class="ml-2 font-medium text-andon">dissent</span>
+    )
+  }
+</li>

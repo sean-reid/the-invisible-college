@@ -1,52 +1,36 @@
 ---
 import Base from '../../layouts/Base.astro';
 import { getCollection, render } from 'astro:content';
+import ArticleHeader from '../../components/ArticleHeader.astro';
+import { fellowByNameRecord } from '../../lib/fellow-id-map';
+import { longDateFormatter } from '../../lib/date-formatters';
+import { recommendationLabel, roleLabel, labelFor } from '../../lib/labels';
 
 export async function getStaticPaths() {
   const reviews = await getCollection('reviews');
   const fellows = await getCollection('fellows');
-  const fellowByName = Object.fromEntries(
-    fellows.map((f) => [f.data.name, f.id]),
-  );
+  const byName = fellowByNameRecord(fellows);
   return reviews.map((review) => ({
     params: { slug: review.id },
-    props: { review, reviewerId: fellowByName[review.data.reviewer] ?? null },
+    props: { review, reviewerId: byName[review.data.reviewer] ?? null },
   }));
 }
 
 const { review, reviewerId } = Astro.props;
 const { Content } = await render(review);
-
-const dateFormatter = new Intl.DateTimeFormat('en-US', {
-  year: 'numeric',
-  month: 'long',
-  day: 'numeric',
-  timeZone: 'UTC',
-});
-
-const recommendationLabel: Record<string, string> = {
-  accept: 'Accept',
-  minor: 'Accept with minor revisions',
-  major: 'Major revisions required',
-  reject: 'Reject',
-};
-
-const roleLabel: Record<string, string> = {
-  primary: 'Primary reviewer',
-  secondary: 'Secondary reviewer',
-  outside: 'Outside reviewer',
-};
 ---
 
 <Base title={`Review by ${review.data.reviewer}`}>
   <article class="prose">
-    <header class="mb-10 not-prose">
-      <p class="runninghead">Peer review</p>
-      <h1
-        class="mt-3 text-2xl sm:text-3xl font-medium tracking-tight leading-[1.15]"
-      >
-        {review.data.title}
-      </h1>
+    <ArticleHeader
+      eyebrow="Peer review"
+      title={review.data.title}
+      size="sub"
+      spacing="tight"
+      notProse
+      ruleMargin="mt-6"
+      showRule={false}
+    >
       <dl class="meta mt-5 grid grid-cols-[max-content_1fr] gap-x-6 gap-y-2">
         <dt class="smallcaps">Reviewer</dt>
         <dd>
@@ -58,18 +42,18 @@ const roleLabel: Record<string, string> = {
             ) : (
               review.data.reviewer
             )
-          } ({roleLabel[review.data.role]})
+          } ({labelFor(roleLabel, review.data.role)})
         </dd>
 
         <dt class="smallcaps">Submitted</dt>
         <dd class="tabular">
           <time datetime={review.data.submittedAt.toISOString()}>
-            {dateFormatter.format(review.data.submittedAt)}
+            {longDateFormatter.format(review.data.submittedAt)}
           </time>
         </dd>
 
         <dt class="smallcaps">Recommendation</dt>
-        <dd>{recommendationLabel[review.data.recommendation]}</dd>
+        <dd>{labelFor(recommendationLabel, review.data.recommendation)}</dd>
 
         <dt class="smallcaps">Confidence</dt>
         <dd>{review.data.confidence}</dd>
@@ -93,7 +77,7 @@ const roleLabel: Record<string, string> = {
         >.
       </p>
       <hr class="rule mt-6" />
-    </header>
+    </ArticleHeader>
 
     <Content />
   </article>

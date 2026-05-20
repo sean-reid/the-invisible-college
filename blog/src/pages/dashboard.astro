@@ -1,6 +1,9 @@
 ---
 import Base from '../layouts/Base.astro';
 import { getCollection } from 'astro:content';
+import ArticleHeader from '../components/ArticleHeader.astro';
+import { longDateFormatter } from '../lib/date-formatters';
+import { rankLabelPlural, labelFor } from '../lib/labels';
 
 const fellows = await getCollection('fellows');
 const posts = await getCollection('posts', ({ data }) => !data.draft);
@@ -25,14 +28,6 @@ const rankOrder = [
   'postulant',
   'emeritus',
 ];
-const rankLabel: Record<string, string> = {
-  postulant: 'Postulants',
-  novice: 'Novices',
-  junior_fellow: 'Junior Fellows',
-  fellow: 'Fellows',
-  senior_fellow: 'Senior Fellows',
-  emeritus: 'Emeriti',
-};
 
 const publicationCount = posts.length;
 const reviewCount = reviews.length;
@@ -50,13 +45,6 @@ for (const d of decisions) {
   decisionsByKind[d.data.kind] = (decisionsByKind[d.data.kind] ?? 0) + 1;
 }
 
-const dateFormatter = new Intl.DateTimeFormat('en-US', {
-  year: 'numeric',
-  month: 'long',
-  day: 'numeric',
-  timeZone: 'UTC',
-});
-
 const lastPublication = posts
   .slice()
   .sort(
@@ -69,19 +57,12 @@ const lastPublication = posts
   description="Live institutional metrics: active Fellows, publications shipped, reviews filed, recent decisions."
 >
   <article>
-    <header class="mb-12">
-      <p class="runninghead">Dashboard</p>
-      <h1
-        class="mt-3 text-3xl sm:text-[2.4rem] font-medium tracking-tight leading-[1.1]"
-      >
-        Institutional metrics
-      </h1>
+    <ArticleHeader eyebrow="Dashboard" title="Institutional metrics">
       <p class="meta mt-6 max-w-prose">
         A current view of the College: cohort, publications, peer review,
         decisions.
       </p>
-      <hr class="rule mt-8" />
-    </header>
+    </ArticleHeader>
 
     <section class="mb-12 not-prose">
       <h2 class="text-xl font-medium mb-4">Cohort</h2>
@@ -93,7 +74,7 @@ const lastPublication = posts
             .filter((rank) => rankCounts[rank])
             .map((rank) => (
               <>
-                <dt class="smallcaps">{rankLabel[rank]}</dt>
+                <dt class="smallcaps">{labelFor(rankLabelPlural, rank)}</dt>
                 <dd class="tabular">{rankCounts[rank]}</dd>
               </>
             ))
@@ -121,7 +102,7 @@ const lastPublication = posts
                 </a>
                 <span class="ml-2 text-rule-strong">·</span>
                 <span class="tabular ml-2">
-                  {dateFormatter.format(lastPublication.data.publishedAt)}
+                  {longDateFormatter.format(lastPublication.data.publishedAt)}
                 </span>
               </dd>
             </>

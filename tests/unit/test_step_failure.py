@@ -13,32 +13,15 @@ from pathlib import Path
 
 import pytest
 
-from institute import claude_runner, db, decisions, paths
+from institute import claude_runner, db, decisions
 from institute import fellow as fellow_mod
 from institute.cli import _pick_in_flight_project, _record_step_failure
 from institute.fellow import Genome
 
 
-@pytest.fixture()
-def isolated(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
-    archive = tmp_path / "archive"
-    decisions_dir = archive / "decisions"
-    genomes = tmp_path / "genomes"
-    fellows = tmp_path / "fellows"
-    for d in (archive, decisions_dir, genomes, fellows):
-        d.mkdir(parents=True)
-    db_path = tmp_path / "institute.db"
-    monkeypatch.setattr(db, "DB_PATH", db_path)
-    monkeypatch.setattr(decisions, "DECISIONS", decisions_dir)
-    monkeypatch.setattr(paths, "ROOT", tmp_path)
-    monkeypatch.setattr(paths, "ARCHIVE", archive)
-    monkeypatch.setattr(paths, "GENOMES", genomes)
-    monkeypatch.setattr(paths, "FELLOWS", fellows)
-    monkeypatch.setattr(fellow_mod, "GENOMES", genomes)
-    monkeypatch.setattr(fellow_mod, "FELLOWS", fellows)
-    db.initialize(db_path)
-
-    # Seed one Fellow so projects can FK their lead_fellow_id.
+@pytest.fixture(autouse=True)
+def _seeded_lead(isolated: Path) -> None:
+    """Seed one Fellow so projects can FK their lead_fellow_id."""
     lead = Genome(
         id="lead-fellow",
         name="Lead",
@@ -51,7 +34,6 @@ def isolated(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
     lead.write(fellow_mod.genome_path(lead.id))
     with db.connection() as conn, db.transaction(conn):
         fellow_mod.register(conn, lead)
-    return tmp_path
 
 
 def _seed_project(

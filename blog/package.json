@@ -6,7 +6,8 @@
   "scripts": {
     "sync-fellows": "node scripts/sync-fellows.mjs",
     "sync-decisions": "node scripts/sync-decisions.mjs",
-    "sync": "node scripts/sync-fellows.mjs && node scripts/sync-decisions.mjs",
+    "sync-preprints": "node scripts/sync-preprints.mjs",
+    "sync": "node scripts/sync-fellows.mjs && node scripts/sync-decisions.mjs && node scripts/sync-preprints.mjs",
     "dev": "npm run sync && astro dev",
     "start": "npm run sync && astro dev",
     "build": "npm run sync && astro build",
@@ -15,7 +16,9 @@
     "check": "npm run sync && astro check",
     "lint": "eslint .",
     "format": "prettier --write \"src/**/*.{astro,ts,tsx,js,jsx,md,mdx}\"",
-    "format:check": "prettier --check \"src/**/*.{astro,ts,tsx,js,jsx,md,mdx}\""
+    "format:check": "prettier --check \"src/**/*.{astro,ts,tsx,js,jsx,md,mdx}\"",
+    "test:e2e": "playwright test",
+    "test:e2e:headed": "playwright test --headed"
   },
   "dependencies": {
     "@astrojs/check": "^0.9.4",

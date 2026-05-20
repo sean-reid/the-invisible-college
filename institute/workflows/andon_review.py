@@ -496,10 +496,7 @@ def run(project_id: str) -> None:
         ).fetchone()
         if proj is None:
             raise SystemExit(f"No such project: {project_id}")
-        if proj["state"] != State.ANDON_REVIEW.value:
-            raise SystemExit(
-                f"Project {project_id} is in state {proj['state']}, expected andon_review."
-            )
+        state.require_state(proj, project_id, State.ANDON_REVIEW)
         title = proj["title"]
 
     recommendation = _orchestrator_recommend(project_id)

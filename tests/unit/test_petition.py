@@ -7,26 +7,11 @@ from pathlib import Path
 
 import pytest
 
-from institute import db, decisions, paths
+from institute import db
 from institute import fellow as fellow_mod
 from institute.fellow import Genome
 from institute.state import State
 from institute.workflows import petition
-
-
-@pytest.fixture()
-def isolated(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
-    monkeypatch.setattr(paths, "ROOT", tmp_path)
-    monkeypatch.setattr(paths, "ARCHIVE", tmp_path / "archive")
-    monkeypatch.setattr(paths, "DECISIONS", tmp_path / "archive" / "decisions")
-    monkeypatch.setattr(decisions, "DECISIONS", tmp_path / "archive" / "decisions")
-    monkeypatch.setattr(fellow_mod, "GENOMES", tmp_path / "genomes")
-    monkeypatch.setattr(fellow_mod, "FELLOWS", tmp_path / "fellows")
-    (tmp_path / "genomes").mkdir()
-    db_path = tmp_path / "institute.db"
-    monkeypatch.setattr(db, "DB_PATH", db_path)
-    db.initialize(db_path)
-    return tmp_path
 
 
 def _register(conn, fellow_id: str) -> None:

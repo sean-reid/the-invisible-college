@@ -7,16 +7,6 @@ from pathlib import Path
 import pytest
 
 from institute import open_problems as op
-from institute import paths
-
-
-@pytest.fixture()
-def isolated(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
-    """Redirect OPEN_PROBLEMS to a tmp dir so tests don't touch the live archive."""
-    target = tmp_path / "open-problems"
-    monkeypatch.setattr(paths, "OPEN_PROBLEMS", target)
-    monkeypatch.setattr(paths, "ROOT", tmp_path)
-    return tmp_path
 
 
 def test_add_creates_file_and_loads_round_trip(isolated: Path) -> None:

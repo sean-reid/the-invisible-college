@@ -9,14 +9,6 @@ import pytest
 from institute import audit, db
 
 
-@pytest.fixture()
-def isolated(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
-    db_path = tmp_path / "institute.db"
-    monkeypatch.setattr(db, "DB_PATH", db_path)
-    db.initialize(db_path)
-    return tmp_path
-
-
 def test_first_append_uses_empty_prev_hash(isolated: Path) -> None:
     with db.connection() as conn, db.transaction(conn):
         rowid = audit.append(conn, at="2026-05-19T00:00:00Z", actor="orch", action="promotion")

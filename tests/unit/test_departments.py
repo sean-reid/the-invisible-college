@@ -25,19 +25,13 @@ def _register(conn, fellow_id: str, rank: str = "fellow") -> None:
     fellow_mod.register(conn, g)
 
 
-@pytest.fixture()
-def isolated(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
-    monkeypatch.setattr(fellow_mod, "GENOMES", tmp_path / "genomes")
-    monkeypatch.setattr(fellow_mod, "FELLOWS", tmp_path / "fellows")
-    (tmp_path / "genomes").mkdir()
-    db_path = tmp_path / "institute.db"
-    monkeypatch.setattr(db, "DB_PATH", db_path)
-    db.initialize(db_path)
+@pytest.fixture(autouse=True)
+def _seeded(isolated: Path) -> None:
+    """Seed three Fellows on top of the shared isolated fixture."""
     with db.connection() as conn, db.transaction(conn):
         _register(conn, "ada", rank="senior_fellow")
         _register(conn, "henri", rank="senior_fellow")
         _register(conn, "michel")
-    return tmp_path
 
 
 def test_create_idempotent(isolated: Path) -> None:

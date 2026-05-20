@@ -10,34 +10,35 @@
  * workflows) and copy into the Astro project at every build.
  */
 
-import { copyFile, mkdir, readdir, rm } from 'node:fs/promises';
 import { existsSync } from 'node:fs';
-import { fileURLToPath } from 'node:url';
-import { dirname, join } from 'node:path';
+import { readdir } from 'node:fs/promises';
+import { join } from 'node:path';
+import {
+  clearDest,
+  copyOne,
+  ensureDir,
+  resolvePaths,
+  runSync,
+} from './lib/sync.mjs';
 
-const here = dirname(fileURLToPath(import.meta.url));
-const repoRoot = join(here, '..', '..');
-const source = join(repoRoot, 'genomes');
-const dest = join(here, '..', 'src', 'content', 'fellows');
+const TAG = 'sync-fellows';
 
-if (!existsSync(source)) {
-  console.warn(`[sync-fellows] no source directory at ${source}; skipping`);
-  process.exit(0);
-}
+await runSync(TAG, async () => {
+  const { source, dest } = resolvePaths(import.meta.url, 'genomes', 'src/content/fellows');
 
-await mkdir(dest, { recursive: true });
-
-// Clear destination json files so deleted fellows don't linger.
-for (const entry of await readdir(dest)) {
-  if (entry.endsWith('.json')) {
-    await rm(join(dest, entry));
+  if (!existsSync(source)) {
+    console.warn(`[${TAG}] no source directory at ${source}; skipping`);
+    return;
   }
-}
 
-let count = 0;
-for (const entry of await readdir(source)) {
-  if (!entry.endsWith('.json')) continue;
-  await copyFile(join(source, entry), join(dest, entry));
-  count += 1;
-}
-console.log(`[sync-fellows] copied ${count} genome(s) to ${dest}`);
+  await ensureDir(dest);
+  await clearDest(dest, ['.json']);
+
+  let count = 0;
+  for (const entry of await readdir(source)) {
+    if (!entry.endsWith('.json')) continue;
+    await copyOne(join(source, entry), join(dest, entry));
+    count += 1;
+  }
+  console.log(`[${TAG}] copied ${count} genome(s) to ${dest}`);
+});

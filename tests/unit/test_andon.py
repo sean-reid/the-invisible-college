@@ -5,40 +5,11 @@ from __future__ import annotations
 from datetime import UTC, datetime
 from pathlib import Path
 
-import pytest
-
-from institute import db, decisions, paths, workspaces
+from institute import db, paths
 from institute import fellow as fellow_mod
 from institute.fellow import Genome
 from institute.state import ALLOWED_TRANSITIONS, NEXT_ACTION, State
 from institute.workflows import andon_review, peer_review
-
-
-@pytest.fixture()
-def isolated(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
-    genomes = tmp_path / "genomes"
-    fellows = tmp_path / "fellows"
-    archive = tmp_path / "archive"
-    drafts = archive / "drafts"
-    reviews_dir = archive / "reviews"
-    decisions_dir = archive / "decisions"
-    for d in (genomes, fellows, drafts, reviews_dir, decisions_dir):
-        d.mkdir(parents=True)
-    db_path = tmp_path / "institute.db"
-
-    monkeypatch.setattr(db, "DB_PATH", db_path)
-    monkeypatch.setattr(decisions, "DECISIONS", decisions_dir)
-    monkeypatch.setattr(paths, "GENOMES", genomes)
-    monkeypatch.setattr(paths, "FELLOWS", fellows)
-    monkeypatch.setattr(paths, "ARCHIVE", archive)
-    monkeypatch.setattr(paths, "DRAFTS", drafts)
-    monkeypatch.setattr(paths, "REVIEWS", reviews_dir)
-    monkeypatch.setattr(paths, "ROOT", tmp_path)
-    monkeypatch.setattr(fellow_mod, "GENOMES", genomes)
-    monkeypatch.setattr(fellow_mod, "FELLOWS", fellows)
-    monkeypatch.setattr(workspaces, "FELLOWS", fellows)
-    db.initialize(db_path)
-    return tmp_path
 
 
 def _seed_fellow(conn, fellow_id: str, name: str, rank: str = "fellow") -> Genome:

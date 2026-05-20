@@ -97,8 +97,11 @@ cd "$IC_REPO"
 # place; reusing it means this cycle's auto-commit can still tell
 # pre-existing edits apart from daemon-produced ones.
 if [ ! -f "$PRE_STATUS_FILE" ]; then
-    git status --porcelain -- archive/ blog/src/content/ genomes/ 2>/dev/null \
-        > "$PRE_STATUS_FILE" || true
+    # NUL-terminated porcelain v1, with -uall so untracked subdirs are
+    # expanded into their individual files. `institute diff-classify`
+    # parses this format; storing it as bytes means filenames with
+    # spaces or newlines survive a round-trip through disk.
+    git status --porcelain=v1 -z -uall 2>/dev/null > "$PRE_STATUS_FILE" || true
     echo "[$(date -u +%FT%TZ)] captured pre-cycle baseline" >> "$LOG"
 else
     echo "[$(date -u +%FT%TZ)] reusing pre-cycle baseline from prior interrupted cycle" >> "$LOG"
@@ -132,20 +135,26 @@ else
 fi
 
 if [ "$IC_AUTO_PUSH" = "1" ] && [ "$EXIT" = "0" ]; then
-    # Identify which files (if any) had unstaged modifications OR were
-    # untracked-but-present BEFORE this chain of daemon cycles started.
-    # Those are user edits and must be preserved. Files newly modified
-    # or newly created since are daemon output and should be committed
-    # even if a prior cycle left them behind.
+    # Identify which files (if any) had changes in daemon paths BEFORE
+    # this chain of daemon cycles started. Those are user edits and
+    # must be preserved. Files only appearing in POST (not in PRE) are
+    # treated as daemon output.
     #
-    # We include `?` (untracked) in addition to M/A/R/C/D so a file the
-    # operator hand-creates in a daemon path before the daemon starts
-    # is preserved across the auto-commit. Files only appearing in POST
-    # (not in PRE) are treated as daemon output.
-    PRE_FILES=$(awk '/^.[MARCD?]/ { print $2 }' "$PRE_STATUS_FILE" 2>/dev/null | sort -u)
-    POST_FILES=$(git status --porcelain -- archive/ blog/src/content/ genomes/ 2>/dev/null \
-        | awk '/^.[MARCD?]/ { print $2 }' | sort -u)
-    USER_EDIT_FILES=$(comm -12 <(printf '%s\n' "$PRE_FILES") <(printf '%s\n' "$POST_FILES"))
+    # Classification is delegated to `institute diff-classify`, which
+    # parses NUL-terminated porcelain (handles filenames with spaces /
+    # newlines) and applies the path rules from a single source of
+    # truth (`institute/diff_classify.py`). The bash side just intersects
+    # the two `fellow_outputs` lists with a small inline python snippet
+    # to avoid adding a `jq` dependency to the daemon environment.
+    PRE_JSON=$(uv run python -m institute diff-classify --from-file "$PRE_STATUS_FILE" 2>/dev/null || echo '{}')
+    POST_JSON=$(uv run python -m institute diff-classify --repo . 2>/dev/null || echo '{}')
+    USER_EDIT_FILES=$(uv run python -c '
+import json, sys
+pre = json.loads(sys.argv[1] or "{}").get("fellow_outputs", [])
+post = json.loads(sys.argv[2] or "{}").get("fellow_outputs", [])
+for p in sorted(set(pre) & set(post)):
+    print(p)
+' "$PRE_JSON" "$POST_JSON")
 
     if [ -n "$USER_EDIT_FILES" ]; then
         echo "[$(date -u +%FT%TZ)] preserving pre-existing user edits:" >> "$LOG"

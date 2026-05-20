@@ -370,6 +370,46 @@ def _render_cluster_summary(open_list: list[OpenProblem]) -> str:
     return f"## Tag distribution\n\nOpen problems by tag: {distribution}.{saturation_note}"
 
 
+def split_follow_up_blocks(text: str) -> list[tuple[str, str, list[str]]]:
+    """Split follow-up-questions.md into (title, body, tags) tuples.
+
+    Parser is intentionally forgiving: any `## ` heading starts a new
+    block, body runs until the next heading or EOF, an optional last
+    line of the form `Tags: a, b, c` is consumed as the tag list.
+    """
+    blocks: list[tuple[str, str, list[str]]] = []
+    matches = list(re.finditer(r"^##\s+(.+?)\s*$", text, re.MULTILINE))
+    if not matches:
+        return []
+    for i, match in enumerate(matches):
+        title = match.group(1).strip()
+        body_start = match.end()
+        body_end = matches[i + 1].start() if i + 1 < len(matches) else len(text)
+        body = text[body_start:body_end].strip()
+        tags: list[str] = []
+        body_lines = body.splitlines()
+        # Strip trailing empty lines and `---` block separators that
+        # Fellows sometimes leave at the end of a block. Without this,
+        # a `Tags: ...` line above a trailing `---` separator is
+        # missed by the last-line check, and BOTH the Tags line and
+        # the `---` end up baked into the body — which later leaks
+        # into the published "Questions this leaves open" footer
+        # rendered from this body.
+        while body_lines and (not body_lines[-1].strip() or body_lines[-1].strip() == "---"):
+            body_lines.pop()
+        # Pop the trailing `Tags: ...` line if present.
+        if body_lines:
+            last = body_lines[-1].strip()
+            m = re.match(r"^[Tt]ags\s*:\s*(.+)$", last)
+            if m:
+                tag_str = m.group(1).strip()
+                tags = [t.strip() for t in tag_str.split(",") if t.strip()]
+                body_lines.pop()
+        body = "\n".join(body_lines).rstrip()
+        blocks.append((title, body, tags))
+    return blocks
+
+
 __all__ = [
     "OpenProblem",
     "add",
@@ -378,4 +418,5 @@ __all__ = [
     "open_problems",
     "render_summary_md",
     "resolve",
+    "split_follow_up_blocks",
 ]

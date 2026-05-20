@@ -26,6 +26,7 @@ from institute import claude_runner, collaborators, db, decisions, episodic, pat
 from institute import fellow as fellow_mod
 from institute.claude_runner import FellowTask
 from institute.fellow import Genome
+from institute.safe_io import atomic_write
 from institute.state import State
 
 console = Console()
@@ -343,12 +344,6 @@ _SECTION_VARIANTS: dict[str, list[str]] = {
 }
 
 
-def _atomic_write(path: Path, content: str) -> None:
-    from institute.safe_io import atomic_write
-
-    atomic_write(path, content)
-
-
 def _finish_orphaned_proposals() -> list[str]:
     """Persist any proposal.md whose project row never got written.
 
@@ -647,7 +642,7 @@ def run(
     title = _extract_title(proposal_md)
     project_id = _project_id(title)
     proposal_path = paths.PROPOSALS / project_id / "proposal.md"
-    _atomic_write(proposal_path, proposal_md.rstrip() + "\n")
+    atomic_write(proposal_path, proposal_md.rstrip() + "\n")
 
     # Insert the project row eagerly, BEFORE soliciting collaborators.
     # The project_invitations table FKs project_id to projects(id), so

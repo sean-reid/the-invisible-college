@@ -38,6 +38,7 @@ from institute import (
 )
 from institute import fellow as fellow_mod
 from institute.claude_runner import FellowTask
+from institute.safe_io import atomic_write
 from institute.state import State
 
 console = Console()
@@ -184,12 +185,6 @@ def _format_reviews_for_brief(conn: sqlite3.Connection, project_id: str, review_
     return "\n\n".join(blocks)
 
 
-def _atomic_write(path: Path, content: str) -> None:
-    from institute.safe_io import atomic_write
-
-    atomic_write(path, content)
-
-
 def _next_draft_version(draft_dir: Path) -> int:
     versions = [
         int(m.group(1))
@@ -214,10 +209,7 @@ def run(project_id: str) -> None:
         ).fetchone()
         if proj is None:
             raise SystemExit(f"No such project: {project_id}")
-        if proj["state"] != State.REVISING.value:
-            raise SystemExit(
-                f"Project {project_id} is in state {proj['state']}, expected revising."
-            )
+        state.require_state(proj, project_id, State.REVISING)
         current_round = int(proj["review_round"])
         kind = proj["kind"] or "research"
         lead = fellow_mod.load_genome(conn, proj["lead_fellow_id"])
@@ -281,10 +273,10 @@ def run(project_id: str) -> None:
     draft_dir.mkdir(parents=True, exist_ok=True)
     version = _next_draft_version(draft_dir)
     prior_draft_path = draft_dir / f"draft.v{version}.md"
-    _atomic_write(prior_draft_path, draft_md.rstrip() + "\n")
+    atomic_write(prior_draft_path, draft_md.rstrip() + "\n")
 
     response_path = draft_dir / f"response-to-reviewers.v{version}.md"
-    _atomic_write(response_path, response_md.rstrip() + "\n")
+    atomic_write(response_path, response_md.rstrip() + "\n")
 
     new_title = _extract_draft_title(new_draft_md) or proj["title"]
 
@@ -322,14 +314,14 @@ def run(project_id: str) -> None:
     # checks `_lead_outputs_already_complete`-style guards on
     # restart, sees the workspace files, and re-renders without
     # re-invoking Claude.
-    _atomic_write(draft_dir / "draft.md", new_draft_md + "\n")
+    atomic_write(draft_dir / "draft.md", new_draft_md + "\n")
     if new_abstract:
-        _atomic_write(draft_dir / "abstract.txt", new_abstract + "\n")
+        atomic_write(draft_dir / "abstract.txt", new_abstract + "\n")
     if addendum:
         notebook_path = paths.ROOT / proj["notebook_path"]
         existing = notebook_path.read_text(encoding="utf-8").rstrip()
         combined = existing + "\n\n---\n\n" + addendum.rstrip() + "\n"
-        _atomic_write(notebook_path, combined)
+        atomic_write(notebook_path, combined)
 
     # Re-sweep code/data artifacts from the revise workspace so any
     # updated scripts (or new ones introduced during this revision

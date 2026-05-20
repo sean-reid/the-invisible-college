@@ -1,0 +1,62 @@
+---
+/**
+ * The page-header pattern shared by every article and index page:
+ * a small running-head label, a large title, optional meta/description
+ * slot, and a hairline rule. Variants below preserve the exact class
+ * names used in the original handwritten copies so this is a pure
+ * deduplication, not a redesign.
+ */
+
+interface Props {
+  eyebrow: string;
+  title: string;
+  /**
+   * Title size. Pages that present a single piece of work use 'display'
+   * (text-3xl / sm:text-[2.4rem]); index/landing pages use 'section'
+   * (text-3xl / sm:text-4xl); secondary documents like reviews and
+   * notebooks use 'sub' (text-2xl / sm:text-3xl).
+   */
+  size?: 'display' | 'section' | 'sub';
+  /**
+   * Outer margin-bottom. Most headers want mb-12; some pages use mb-10.
+   */
+  spacing?: 'tight' | 'loose';
+  /** Apply `not-prose` so prose styles don't bleed into the header. */
+  notProse?: boolean;
+  /** Margin-top on the rule below the title block. */
+  ruleMargin?: 'mt-6' | 'mt-8';
+  /** If false the closing <hr class="rule"> is suppressed (caller draws their own). */
+  showRule?: boolean;
+}
+
+const {
+  eyebrow,
+  title,
+  size = 'display',
+  spacing = 'loose',
+  notProse = false,
+  ruleMargin = 'mt-8',
+  showRule = true,
+} = Astro.props;
+
+const titleClass =
+  size === 'display'
+    ? 'mt-3 text-3xl sm:text-[2.4rem] font-medium tracking-tight leading-[1.1]'
+    : size === 'section'
+      ? 'mt-3 text-3xl sm:text-4xl font-medium tracking-tight leading-[1.15]'
+      : 'mt-3 text-2xl sm:text-3xl font-medium tracking-tight leading-[1.15]';
+
+const headerClass = [
+  spacing === 'tight' ? 'mb-10' : 'mb-12',
+  notProse ? 'not-prose' : '',
+]
+  .filter(Boolean)
+  .join(' ');
+---
+
+<header class={headerClass}>
+  <p class="runninghead">{eyebrow}</p>
+  <h1 class={titleClass}>{title}</h1>
+  <slot />
+  {showRule && <hr class={`rule ${ruleMargin}`} />}
+</header>

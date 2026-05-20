@@ -16,7 +16,6 @@ Outcomes (the advisor chooses one):
 from __future__ import annotations
 
 import json
-from pathlib import Path
 
 from rich.console import Console
 
@@ -24,6 +23,7 @@ from institute import claude_runner, db, decisions, episodic, paths, state, work
 from institute import fellow as fellow_mod
 from institute.claude_runner import FellowTask
 from institute.fellow import Genome
+from institute.safe_io import atomic_write
 from institute.state import State
 
 console = Console()
@@ -190,7 +190,7 @@ def run(project_id: str) -> None:
     summary = str(decision_payload.get("summary", "")).strip()
 
     feedback_path = paths.REVIEWS / project_id / f"advisor-{advisor.id}.md"
-    _atomic_write(
+    atomic_write(
         feedback_path,
         _render_feedback_markdown(advisor, postulant_row["name"], outcome, summary, feedback_md),
     )
@@ -320,9 +320,3 @@ def _render_feedback_markdown(
             "",
         ]
     )
-
-
-def _atomic_write(path: Path, content: str) -> None:
-    from institute.safe_io import atomic_write
-
-    atomic_write(path, content)

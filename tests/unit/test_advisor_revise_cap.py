@@ -10,22 +10,8 @@ from __future__ import annotations
 
 from pathlib import Path
 
-import pytest
-
-from institute import db, paths
+from institute import db
 from institute.workflows import advisor_review
-
-
-@pytest.fixture()
-def isolated(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
-    archive = tmp_path / "archive"
-    archive.mkdir(parents=True)
-    db_path = tmp_path / "institute.db"
-    monkeypatch.setattr(db, "DB_PATH", db_path)
-    monkeypatch.setattr(paths, "ROOT", tmp_path)
-    monkeypatch.setattr(paths, "ARCHIVE", archive)
-    db.initialize(db_path)
-    return tmp_path
 
 
 def test_max_advisor_revise_rounds_is_three() -> None:

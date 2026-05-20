@@ -1,27 +1,39 @@
 ---
 import Base from '../../layouts/Base.astro';
-import { listProjects } from '../../lib/preprints';
-import { marked } from 'marked';
+import { getCollection, render } from 'astro:content';
+import { longDateFormatter } from '../../lib/date-formatters';
+
+type PreprintEntry = Awaited<
+  ReturnType<typeof getCollection<'preprints'>>
+>[number];
 
 export async function getStaticPaths() {
-  return listProjects().map((p) => ({
-    params: { project: p.projectId },
-    props: { project: p },
-  }));
+  const all = await getCollection('preprints');
+  const byProject = new Map<string, PreprintEntry[]>();
+  for (const entry of all) {
+    const list = byProject.get(entry.data.projectId);
+    if (list) list.push(entry);
+    else byProject.set(entry.data.projectId, [entry]);
+  }
+  const paths = [];
+  for (const [projectId, versions] of byProject) {
+    versions.sort((a, b) => b.data.version - a.data.version);
+    paths.push({
+      params: { project: projectId },
+      props: { latestEntry: versions[0], olderEntries: versions.slice(1) },
+    });
+  }
+  return paths;
 }
 
-const { project } = Astro.props;
-const latest = project.latest;
-const olderVersions = project.allVersions.slice(1); // newest-first; drop latest
+interface Props {
+  latestEntry: PreprintEntry;
+  olderEntries: PreprintEntry[];
+}
 
-const dateFormatter = new Intl.DateTimeFormat('en-US', {
-  year: 'numeric',
-  month: 'long',
-  day: 'numeric',
-  timeZone: 'UTC',
-});
-
-const bodyHtml = marked.parse(latest.body);
+const { latestEntry, olderEntries } = Astro.props as Props;
+const latest = latestEntry.data;
+const { Content } = await render(latestEntry);
 ---
 
 <Base
@@ -52,7 +64,7 @@ const bodyHtml = marked.parse(latest.body);
         <span class="text-rule-strong">·</span>
         <span class="tabular">
           <time datetime={latest.postedAt.toISOString()}>
-            {dateFormatter.format(latest.postedAt)}
+            {longDateFormatter.format(latest.postedAt)}
           </time>
         </span>
         <span class="text-rule-strong">·</span>
@@ -82,23 +94,25 @@ const bodyHtml = marked.parse(latest.body);
       <hr class="rule mt-8" />
     </header>
 
-    <div set:html={bodyHtml} />
+    <Content />
 
     {
-      olderVersions.length > 0 && (
+      olderEntries.length > 0 && (
         <footer class="not-prose mt-16">
           <hr class="rule mb-6" />
           <p class="runninghead mb-3">Earlier versions</p>
           <ul class="meta list-none p-0 m-0 space-y-2">
-            {olderVersions.map((v) => (
+            {olderEntries.map((v) => (
               <li class="flex items-baseline gap-x-3">
-                <span class="tabular">v{v.version}</span>
+                <span class="tabular">v{v.data.version}</span>
                 <span class="text-rule-strong">·</span>
-                <span class="tabular">{dateFormatter.format(v.postedAt)}</span>
-                {v.abstract && (
+                <span class="tabular">
+                  {longDateFormatter.format(v.data.postedAt)}
+                </span>
+                {v.data.abstract && (
                   <>
                     <span class="text-rule-strong">·</span>
-                    <span class="text-ink-soft italic">{v.abstract}</span>
+                    <span class="text-ink-soft italic">{v.data.abstract}</span>
                   </>
                 )}
               </li>

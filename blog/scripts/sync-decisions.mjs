@@ -11,16 +11,19 @@
  * the post pages).
  */
 
-import { copyFile, mkdir, readdir, rm } from 'node:fs/promises';
 import { existsSync } from 'node:fs';
-import { readFileSync } from 'node:fs';
-import { fileURLToPath } from 'node:url';
-import { dirname, join } from 'node:path';
+import { readdir } from 'node:fs/promises';
+import { join } from 'node:path';
+import {
+  clearDest,
+  copyOne,
+  ensureDir,
+  readFrontmatter,
+  resolvePaths,
+  runSync,
+} from './lib/sync.mjs';
 
-const here = dirname(fileURLToPath(import.meta.url));
-const repoRoot = join(here, '..', '..');
-const source = join(repoRoot, 'archive', 'decisions');
-const dest = join(here, '..', 'src', 'content', 'decisions');
+const TAG = 'sync-decisions';
 
 // Kinds that belong on the public /records page. Other kinds (peer_review,
 // curriculum_response, proposal, revision_required, editorial,
@@ -38,38 +41,36 @@ const PUBLIC_KINDS = new Set([
   'charter_violation_termination',
 ]);
 
-if (!existsSync(source)) {
-  console.warn(`[sync-decisions] no source directory at ${source}; skipping`);
-  process.exit(0);
-}
+await runSync(TAG, async () => {
+  const { source, dest } = resolvePaths(
+    import.meta.url,
+    'archive/decisions',
+    'src/content/decisions',
+  );
 
-await mkdir(dest, { recursive: true });
-
-for (const entry of await readdir(dest)) {
-  if (entry.endsWith('.md')) await rm(join(dest, entry));
-}
-
-function frontmatterKind(text) {
-  const m = text.match(/^---\n(.*?)\n---/s);
-  if (!m) return null;
-  for (const line of m[1].split('\n')) {
-    const [k, ...rest] = line.split(':');
-    if (k.trim() === 'kind') return rest.join(':').trim();
+  if (!existsSync(source)) {
+    console.warn(`[${TAG}] no source directory at ${source}; skipping`);
+    return;
   }
-  return null;
-}
 
-let copied = 0;
-let skipped = 0;
-for (const entry of await readdir(source)) {
-  if (!entry.endsWith('.md')) continue;
-  const text = readFileSync(join(source, entry), 'utf-8');
-  const kind = frontmatterKind(text);
-  if (!kind || !PUBLIC_KINDS.has(kind)) {
-    skipped += 1;
-    continue;
+  await ensureDir(dest);
+  await clearDest(dest, ['.md']);
+
+  let copied = 0;
+  let skipped = 0;
+  for (const entry of await readdir(source)) {
+    if (!entry.endsWith('.md')) continue;
+    const fm = readFrontmatter(join(source, entry));
+    const kind = fm?.data?.kind ?? null;
+    if (!kind) {
+      throw new Error(`${entry} has no parseable frontmatter or missing 'kind'`);
+    }
+    if (!PUBLIC_KINDS.has(kind)) {
+      skipped += 1;
+      continue;
+    }
+    await copyOne(join(source, entry), join(dest, entry));
+    copied += 1;
   }
-  await copyFile(join(source, entry), join(dest, entry));
-  copied += 1;
-}
-console.log(`[sync-decisions] copied ${copied} decision(s) (skipped ${skipped} non-public)`);
+  console.log(`[${TAG}] copied ${copied} decision(s) (skipped ${skipped} non-public)`);
+});

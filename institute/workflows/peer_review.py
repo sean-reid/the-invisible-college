@@ -40,6 +40,8 @@ from institute import (
 from institute import fellow as fellow_mod
 from institute.claude_runner import FellowTask
 from institute.fellow import Genome
+from institute.safe_io import atomic_write
+from institute.specialization import similarity
 from institute.state import State
 
 console = Console()
@@ -252,43 +254,6 @@ When all four files exist, reply with the single word `Done.` Nothing else.
 """
 
 
-_STOPWORDS = frozenset(
-    {
-        "a",
-        "an",
-        "the",
-        "and",
-        "or",
-        "of",
-        "in",
-        "on",
-        "for",
-        "with",
-        "to",
-        "from",
-        "by",
-        "as",
-        "at",
-        "is",
-        "are",
-        "be",
-        "this",
-        "that",
-    }
-)
-
-
-def _spec_tokens(specialization: str) -> set[str]:
-    """Content-bearing word tokens from a specialization string."""
-    cleaned = "".join(ch.lower() if ch.isalnum() else " " for ch in specialization)
-    return {tok for tok in cleaned.split() if tok and tok not in _STOPWORDS}
-
-
-def _similarity(lead_spec: str, candidate_spec: str) -> int:
-    """Token-overlap similarity. Bigger = more disciplinary kinship."""
-    return len(_spec_tokens(lead_spec) & _spec_tokens(candidate_spec))
-
-
 def _last_review_at(conn: sqlite3.Connection, reviewer_id: str) -> str:
     """ISO timestamp of the reviewer's most recent review, or '' if never."""
     row = conn.execute(
@@ -312,7 +277,7 @@ def _slots_with_advisor_primary(
 
     scored = [
         (
-            _similarity(lead_spec, r["specialization"]),
+            similarity(lead_spec, r["specialization"]),
             _last_review_at(conn, r["id"]),
             r["id"],
         )
@@ -482,7 +447,7 @@ def _pick_review_slots(
     # by similarity, ascending by last-review timestamp.
     scored = []
     for r in candidates:
-        sim = _similarity(lead_spec, r["specialization"])
+        sim = similarity(lead_spec, r["specialization"])
         last = _last_review_at(conn, r["id"])
         scored.append((sim, last, r["id"]))
 
@@ -557,12 +522,6 @@ def _existing_reviews_in_round(
     }
 
 
-def _atomic_write(path: Path, content: str) -> None:
-    from institute.safe_io import atomic_write
-
-    atomic_write(path, content)
-
-
 def _register_follow_up_questions(
     *,
     workspace: Path,
@@ -591,7 +550,7 @@ def _register_follow_up_questions(
     from institute import open_problems
 
     added: list[str] = []
-    blocks = _split_follow_up_blocks(text)
+    blocks = open_problems.split_follow_up_blocks(text)
     for title, body, tags in blocks:
         if not title or not body:
             continue
@@ -612,46 +571,6 @@ def _register_follow_up_questions(
     return added
 
 
-def _split_follow_up_blocks(text: str) -> list[tuple[str, str, list[str]]]:
-    """Split follow-up-questions.md into (title, body, tags) tuples.
-
-    Parser is intentionally forgiving: any `## ` heading starts a new
-    block, body runs until the next heading or EOF, an optional last
-    line of the form `Tags: a, b, c` is consumed as the tag list.
-    """
-    import re
-
-    blocks: list[tuple[str, str, list[str]]] = []
-    matches = list(re.finditer(r"^##\s+(.+?)\s*$", text, re.MULTILINE))
-    if not matches:
-        return []
-    for i, match in enumerate(matches):
-        title = match.group(1).strip()
-        body_start = match.end()
-        body_end = matches[i + 1].start() if i + 1 < len(matches) else len(text)
-        body = text[body_start:body_end].strip()
-        tags: list[str] = []
-        body_lines = body.splitlines()
-        # Strip trailing empty lines and `---` block separators that
-        # Fellows sometimes leave at the end of a block. Without this,
-        # a `Tags: ...` line above a trailing `---` separator is
-        # missed by the last-line check, and BOTH the Tags line and
-        # the `---` end up baked into the body — which later leaks
-        # into the published "Questions this leaves open" footer
-        # rendered from this body.
-        while body_lines and (not body_lines[-1].strip() or body_lines[-1].strip() == "---"):
-            body_lines.pop()
-        # Pop the trailing `Tags: ...` line if present.
-        if body_lines:
-            last = body_lines[-1].strip()
-            m = re.match(r"^[Tt]ags\s*:\s*(.+)$", last)
-            if m:
-                tag_str = m.group(1).strip()
-                tags = [t.strip() for t in tag_str.split(",") if t.strip()]
-                body_lines.pop()
-        body = "\n".join(body_lines).rstrip()
-        blocks.append((title, body, tags))
-    return blocks
 
 
 def _render_review_markdown(payload: dict, reviewer: Genome, role: Role) -> str:
@@ -712,11 +631,7 @@ def run(project_id: str) -> None:
         ).fetchone()
         if proj is None:
             raise SystemExit(f"No such project: {project_id}")
-        if proj["state"] not in (State.DRAFTED.value, State.PEER_REVIEWING.value):
-            raise SystemExit(
-                f"Project {project_id} is in state {proj['state']}, "
-                "expected drafted or peer_reviewing."
-            )
+        state.require_state(proj, project_id, (State.DRAFTED, State.PEER_REVIEWING))
         review_round = int(proj["review_round"])
         draft_md = (paths.ROOT / proj["draft_path"]).read_text(encoding="utf-8")
         slots = _pick_review_slots(conn, project_id, proj["lead_fellow_id"], review_round)
@@ -865,7 +780,7 @@ def run(project_id: str) -> None:
     round_suffix = f"-r{review_round}" if review_round > 1 else ""
     review_md = _render_review_markdown(payload, reviewer, slot.role)
     review_path = paths.REVIEWS / project_id / f"review-by-{reviewer.id}{round_suffix}.md"
-    _atomic_write(review_path, review_md)
+    atomic_write(review_path, review_md)
 
     now = datetime.now(UTC).isoformat(timespec="seconds")
     review_db_id = f"{project_id}-{reviewer.id}-r{review_round}-{secrets.token_hex(3)}"

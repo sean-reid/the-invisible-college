@@ -170,6 +170,26 @@ TERMINAL_STATE_VALUES: tuple[str, ...] = (
 )
 
 
+def require_state(
+    proj: sqlite3.Row,
+    project_id: str,
+    expected: State | tuple[State, ...],
+) -> None:
+    """Raise SystemExit if `proj['state']` is not in `expected`."""
+    if isinstance(expected, State):
+        allowed: tuple[State, ...] = (expected,)
+    else:
+        allowed = expected
+    if proj["state"] not in {s.value for s in allowed}:
+        if len(allowed) == 1:
+            expected_label = allowed[0].value
+        else:
+            expected_label = " or ".join(s.value for s in allowed)
+        raise SystemExit(
+            f"Project {project_id} is in state {proj['state']}, expected {expected_label}."
+        )
+
+
 def transition(
     conn: sqlite3.Connection,
     project_id: str,

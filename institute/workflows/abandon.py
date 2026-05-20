@@ -36,9 +36,6 @@ from institute.state import State
 console = Console()
 
 
-ABANDONMENT_DIR = paths.ARCHIVE / "abandonments"
-
-
 def _render_lesson_md(
     *,
     project_id: str,
@@ -136,7 +133,7 @@ def run(
 
     from institute.safe_io import atomic_write
 
-    lesson_path = ABANDONMENT_DIR / f"{project_id}.md"
+    lesson_path = paths.ABANDONMENTS / f"{project_id}.md"
     atomic_write(lesson_path, lesson_md)
 
     decision = decisions.Decision(
