@@ -11,10 +11,18 @@ from institute import audit, db, paths, tripwires
 
 @pytest.fixture()
 def isolated(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
-    """Fresh DB with a controllable Charter file at a temp path."""
+    """Fresh DB with a controllable Charter file at a temp path.
+
+    Also redirects killswitch snapshot writes into tmp so test
+    invocations of `fire` don't leak `killswitch-*.md` files into
+    the operator's real `~/Library/Logs/invisible-college/` directory.
+    """
     charter = tmp_path / "01-charter.md"
     charter.write_text("# Charter\n\nMission text.\n", encoding="utf-8")
     monkeypatch.setattr(paths, "CHARTER_FILE", charter)
+
+    snapshot_dir = tmp_path / "killswitch-snapshots"
+    monkeypatch.setattr(tripwires, "_killswitch_snapshot_dir", lambda: snapshot_dir)
 
     db_path = tmp_path / "institute.db"
     monkeypatch.setattr(db, "DB_PATH", db_path)

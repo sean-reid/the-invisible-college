@@ -239,6 +239,16 @@ def fire(
     _write_killswitch_snapshot(reason, triggered_by, now)
 
 
+def _killswitch_snapshot_dir() -> Path:
+    """Where killswitch snapshot files are written.
+
+    Indirected through a function so tests can monkeypatch it; without
+    this, `tests.unit.test_tripwires` (and any other test that exercises
+    `fire`) would write real snapshot files into the operator's log
+    directory on every run."""
+    return Path.home() / "Library" / "Logs" / "invisible-college"
+
+
 def _write_killswitch_snapshot(reason: str, triggered_by: str, at: str) -> None:
     """Write a Founder-readable kill-switch snapshot to a local log.
 
@@ -249,7 +259,7 @@ def _write_killswitch_snapshot(reason: str, triggered_by: str, at: str) -> None:
     no values are surfaced here that wouldn't already be in the
     operator logs.
     """
-    log_dir = Path.home() / "Library" / "Logs" / "invisible-college"
+    log_dir = _killswitch_snapshot_dir()
     try:
         log_dir.mkdir(parents=True, exist_ok=True)
     except OSError:
