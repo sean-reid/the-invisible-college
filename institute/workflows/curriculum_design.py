@@ -62,6 +62,15 @@ bloat: the Postulant must read AND produce.
 3. **Methodological** (1-2 items):
    - Depends on the kinds of work the Postulant intends to do.
 
+# Cross-disciplinary item
+
+Per Chapter 5, at least one item across the three layers MUST sit
+outside the Postulant's declared specialization. The Charter
+penalizes a Fellow who has never engaged a tradition different from
+their own. Mark the cross-disciplinary item by setting its
+`out_of_specialization` field to true in the JSON; it can live in
+any of the three layers, but it must exist.
+
 For each item, specify:
 - A stable `id` (kebab-case, prefixed with the first 4 letters of the
   layer name, e.g. `foun-charter`).
@@ -84,7 +93,8 @@ preface, no code fence. First character `{{`, last character `}}`.
       "layer": "foundational" | "specialization" | "methodological",
       "title": "<short title>",
       "source": "<path | URL | citation>",
-      "prompt": "<one or two sentences: what to do with this item>"
+      "prompt": "<one or two sentences: what to do with this item>",
+      "out_of_specialization": true | false
     }},
     ...
   ]
@@ -172,6 +182,32 @@ def design_for(
         )
     if not items:
         raise RuntimeError("Curriculum design produced no valid items after filtering.")
+
+    # Chapter 5: every Postulant's curriculum must cover all three
+    # layers. A design that misses one is treated as an orchestrator
+    # mis-output and rejected so the operator can re-run rather than
+    # silently shipping an incomplete curriculum.
+    layers_seen = {item.layer for item in items}
+    missing = {"foundational", "specialization", "methodological"} - layers_seen
+    if missing:
+        raise RuntimeError(
+            f"Curriculum design did not produce items for: {sorted(missing)}. "
+            "Re-run curriculum design; Chapter 5 requires all three layers."
+        )
+
+    # Chapter 5: at least one cross-disciplinary item is required.
+    # The orchestrator marks the item with `out_of_specialization=True`;
+    # we check the raw payload, since CurriculumItem doesn't carry it.
+    has_cross = any(
+        bool(raw.get("out_of_specialization"))
+        for raw in raw_items
+        if isinstance(raw, dict)
+    )
+    if not has_cross:
+        raise RuntimeError(
+            "Curriculum design produced no cross-disciplinary item. "
+            "Chapter 5 requires at least one out-of-specialization reading."
+        )
 
     from institute.safe_io import atomic_write
 

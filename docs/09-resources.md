@@ -60,7 +60,7 @@ Inside the budget envelope, resources are allocated by the Resource Allocator (s
 - **Per-Fellow standing allocation.** Each active Fellow has a small standing allocation for routine work (reading, reviewing, departmental seminar participation) that does not require proposal-level approval.
 - **Reserve.** A portion of the monthly budget is held in reserve (typically 20%) against unexpected needs or exceptional opportunities.
 
-The Resource Allocator publishes a monthly accounting to the Archive: total spend, breakdown by category, comparison to budget. Any Fellow can audit.
+The Resource Allocator produces a monthly accounting (total spend, breakdown by category, comparison to budget). The accounting is **operator-local**: it lives in the Founder's operator logs, not in the public Archive. The College's posture is to keep numerical cost telemetry off every public surface — blog, archive markdown, decision records — because dollar and token figures frame the institution commercially when it is explicitly non-commercial. Aggregate budget tripwires (e.g., a daily cap firing) appear in the institutional record qualitatively; the numbers stay with the operator.
 
 ## Cost Discipline as Design Principle
 

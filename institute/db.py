@@ -15,7 +15,7 @@ from pathlib import Path
 
 from institute.paths import DB_PATH as DB_PATH  # re-exported for tests to patch
 
-SCHEMA_VERSION = 16
+SCHEMA_VERSION = 17
 
 SCHEMA = """
 CREATE TABLE IF NOT EXISTS schema_version (
@@ -33,7 +33,12 @@ CREATE TABLE IF NOT EXISTS fellows (
     created_at              TEXT    NOT NULL,
     retired_at              TEXT,
     curriculum_designed_at  TEXT,
-    curriculum_completed_at TEXT
+    curriculum_completed_at TEXT,
+    -- Chapter 5: Senior Fellows may take month-long sabbaticals during
+    -- which they are skipped for peer-review assignments, panels, and
+    -- Editorial Board membership. Set to a future ISO timestamp when
+    -- the Fellow goes on sabbatical; NULL when active.
+    sabbatical_until        TEXT
 );
 
 CREATE TABLE IF NOT EXISTS projects (
@@ -409,6 +414,9 @@ def _run_migrations(conn: sqlite3.Connection, from_version: int, to_version: int
         elif version == 15:
             _migrate_15_to_16(conn)
             version = 16
+        elif version == 16:
+            _migrate_16_to_17(conn)
+            version = 17
         else:
             raise RuntimeError(f"No migration path from version {version}.")
         # Each migration is responsible for stamping its own version
@@ -825,6 +833,20 @@ def _migrate_11_to_12(conn: sqlite3.Connection) -> None:
             "key TEXT PRIMARY KEY, value TEXT NOT NULL)"
         )
         _stamp_version(conn, 12)
+        conn.execute("COMMIT")
+    except Exception:
+        conn.execute("ROLLBACK")
+        raise
+
+
+def _migrate_16_to_17(conn: sqlite3.Connection) -> None:
+    """Add fellows.sabbatical_until (Chapter 5 sabbaticals)."""
+    conn.execute("BEGIN IMMEDIATE")
+    try:
+        cols = {row["name"] for row in conn.execute("PRAGMA table_info(fellows)")}
+        if "sabbatical_until" not in cols:
+            conn.execute("ALTER TABLE fellows ADD COLUMN sabbatical_until TEXT")
+        _stamp_version(conn, 17)
         conn.execute("COMMIT")
     except Exception:
         conn.execute("ROLLBACK")

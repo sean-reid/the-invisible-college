@@ -799,6 +799,31 @@ def fellow() -> None:
     """Per-Fellow inspections and updates."""
 
 
+@fellow.command("sabbatical")
+@click.option("--fellow", "fellow_id", required=True)
+@click.option("--days", type=int, default=30, show_default=True)
+def fellow_sabbatical(fellow_id: str, days: int) -> None:
+    """Place a Senior Fellow on sabbatical for `days` (Chapter 5)."""
+    _check_kill_switch()
+    from institute import sabbaticals
+
+    with db.connection() as conn, db.transaction(conn):
+        until = sabbaticals.begin(conn, fellow_id=fellow_id, days=days)
+    console.print(f"[yellow]{fellow_id}[/yellow] on sabbatical until {until}.")
+
+
+@fellow.command("sabbatical-end")
+@click.option("--fellow", "fellow_id", required=True)
+def fellow_sabbatical_end(fellow_id: str) -> None:
+    """End a sabbatical immediately."""
+    _check_kill_switch()
+    from institute import sabbaticals
+
+    with db.connection() as conn, db.transaction(conn):
+        sabbaticals.end(conn, fellow_id=fellow_id)
+    console.print(f"[green]{fellow_id}[/green] is active again.")
+
+
 @fellow.command("set-research")
 @click.option("--fellow", "fellow_id", required=True, help="Fellow id.")
 @click.option(
