@@ -15,7 +15,7 @@ from pathlib import Path
 
 from institute.paths import DB_PATH as DB_PATH  # re-exported for tests to patch
 
-SCHEMA_VERSION = 14
+SCHEMA_VERSION = 15
 
 SCHEMA = """
 CREATE TABLE IF NOT EXISTS schema_version (
@@ -248,6 +248,34 @@ CREATE TABLE IF NOT EXISTS department_memberships (
 CREATE INDEX IF NOT EXISTS idx_dept_membership_fellow
     ON department_memberships(fellow_id);
 
+-- Centers (Chapter 2). A Center is a finite-term cross-disciplinary
+-- convening: a research focus that pulls Fellows from multiple
+-- departments for a defined window, ending with a written report.
+-- The 90-day default term is a convention, not a hard limit; close
+-- at any time when the report is published.
+CREATE TABLE IF NOT EXISTS centers (
+    id           TEXT PRIMARY KEY,
+    name         TEXT NOT NULL,
+    motivation   TEXT NOT NULL,
+    opened_at    TEXT NOT NULL,
+    closes_at    TEXT NOT NULL,
+    closed_at    TEXT,
+    report_path  TEXT
+);
+
+CREATE TABLE IF NOT EXISTS center_memberships (
+    center_id TEXT NOT NULL,
+    fellow_id TEXT NOT NULL,
+    role      TEXT NOT NULL DEFAULT 'member',
+    joined_at TEXT NOT NULL,
+    PRIMARY KEY (center_id, fellow_id),
+    FOREIGN KEY (center_id) REFERENCES centers(id),
+    FOREIGN KEY (fellow_id) REFERENCES fellows(id)
+);
+
+CREATE INDEX IF NOT EXISTS idx_center_membership_fellow
+    ON center_memberships(fellow_id);
+
 -- Trusted baselines for the Charter integrity tripwire. The Founder
 -- amends the Charter and updates the baseline in the same operation,
 -- so any mid-flight mutation to docs/01-charter.md by a Fellow is
@@ -370,6 +398,9 @@ def _run_migrations(conn: sqlite3.Connection, from_version: int, to_version: int
         elif version == 13:
             _migrate_13_to_14(conn)
             version = 14
+        elif version == 14:
+            _migrate_14_to_15(conn)
+            version = 15
         else:
             raise RuntimeError(f"No migration path from version {version}.")
         # Each migration is responsible for stamping its own version
@@ -786,6 +817,41 @@ def _migrate_11_to_12(conn: sqlite3.Connection) -> None:
             "key TEXT PRIMARY KEY, value TEXT NOT NULL)"
         )
         _stamp_version(conn, 12)
+        conn.execute("COMMIT")
+    except Exception:
+        conn.execute("ROLLBACK")
+        raise
+
+
+def _migrate_14_to_15(conn: sqlite3.Connection) -> None:
+    """Add centers + center_memberships (Chapter 2)."""
+    conn.execute("BEGIN IMMEDIATE")
+    try:
+        conn.execute(
+            "CREATE TABLE IF NOT EXISTS centers ("
+            "id TEXT PRIMARY KEY, "
+            "name TEXT NOT NULL, "
+            "motivation TEXT NOT NULL, "
+            "opened_at TEXT NOT NULL, "
+            "closes_at TEXT NOT NULL, "
+            "closed_at TEXT, "
+            "report_path TEXT)"
+        )
+        conn.execute(
+            "CREATE TABLE IF NOT EXISTS center_memberships ("
+            "center_id TEXT NOT NULL, "
+            "fellow_id TEXT NOT NULL, "
+            "role TEXT NOT NULL DEFAULT 'member', "
+            "joined_at TEXT NOT NULL, "
+            "PRIMARY KEY (center_id, fellow_id), "
+            "FOREIGN KEY (center_id) REFERENCES centers(id), "
+            "FOREIGN KEY (fellow_id) REFERENCES fellows(id))"
+        )
+        conn.execute(
+            "CREATE INDEX IF NOT EXISTS idx_center_membership_fellow "
+            "ON center_memberships(fellow_id)"
+        )
+        _stamp_version(conn, 15)
         conn.execute("COMMIT")
     except Exception:
         conn.execute("ROLLBACK")

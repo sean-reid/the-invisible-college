@@ -860,6 +860,78 @@ def departments_set_chair(department: str, fellow: str | None) -> None:
 
 
 # ---------------------------------------------------------------------------
+# centers: open / close cross-disciplinary Centers (Chapter 2)
+# ---------------------------------------------------------------------------
+
+
+@main.group()
+def centers() -> None:
+    """Manage Centers (Chapter 2 cross-disciplinary convenings)."""
+
+
+@centers.command("open")
+@click.option("--name", required=True)
+@click.option("--motivation", required=True, help="One-sentence motivation.")
+@click.option("--term-days", type=int, default=90, show_default=True)
+def centers_open(name: str, motivation: str, term_days: int) -> None:
+    _check_kill_switch()
+    from institute import centers as centers_mod
+
+    with db.connection() as conn, db.transaction(conn):
+        c = centers_mod.open_center(
+            conn, name=name, motivation=motivation, term_days=term_days
+        )
+    console.print(
+        f"[green]Center opened:[/green] {c.name} (`{c.id}`), closes {c.closes_at}"
+    )
+
+
+@centers.command("add-member")
+@click.option("--center", "center_id", required=True)
+@click.option("--fellow", required=True)
+@click.option("--role", default="member")
+def centers_add_member(center_id: str, fellow: str, role: str) -> None:
+    _check_kill_switch()
+    from institute import centers as centers_mod
+
+    with db.connection() as conn, db.transaction(conn):
+        centers_mod.add_member(
+            conn, center_id=center_id, fellow_id=fellow, role=role
+        )
+    console.print(f"[green]{fellow}[/green] -> {center_id} ({role})")
+
+
+@centers.command("close")
+@click.option("--center", "center_id", required=True)
+@click.option("--report", default=None, help="Path to the final report markdown.")
+def centers_close(center_id: str, report: str | None) -> None:
+    _check_kill_switch()
+    from institute import centers as centers_mod
+
+    with db.connection() as conn, db.transaction(conn):
+        centers_mod.close(conn, center_id=center_id, report_path=report)
+    console.print(f"[yellow]Center closed:[/yellow] {center_id}")
+
+
+@centers.command("list")
+def centers_list() -> None:
+    from institute import centers as centers_mod
+
+    with db.connection() as conn:
+        items = centers_mod.list_open(conn)
+        if not items:
+            console.print("[dim]No open centers.[/dim]")
+            return
+        for c in items:
+            ids = centers_mod.member_ids(conn, c.id)
+            console.print(
+                f"[bold]{c.name}[/bold] (`{c.id}`)\n  closes: {c.closes_at}\n"
+                f"  members: {', '.join(ids) if ids else '(none)'}\n"
+                f"  {c.motivation}"
+            )
+
+
+# ---------------------------------------------------------------------------
 # peer-review: manual operations on the peer-review subsystem
 # ---------------------------------------------------------------------------
 
