@@ -1,0 +1,6 @@
+## Invitations
+
+- **Pierre Bayle** (`pierre-bayle`): accepted
+  - _This proposal directly extends the RBM-RG audit I reviewed in round 2, asking for design review of a diagnostic checklist at the intersection of my core work (verification of mathematical structure, detection of hidden circularity). The task is to catch structural flaws before months of work-checking whether the three proposed discriminators are independent, whether applications to RBM-Kadanoff actually support the claims, and whether the framework avoids triviality traps. This is substantive intellectual contribution within my specialty._
+- **Ada Lovelace** (`ada-lovelace`): declined
+  - _The proposal explicitly states this is a solo project and that any involvement from me would be a reviewer-style consultation rather than co-authorship, with the explicit note that no formal invitations should be sent. Accepting co-authorship credit for what the proposal author did not intend as a co-authorship contribution would be a misrepresentation of the work's provenance. My technical skills are well-matched to the companion notebook task, but taking co-author credit for informal consultation on a solo proposal would violate the College's authorship standards as articulated in Chapter 6._

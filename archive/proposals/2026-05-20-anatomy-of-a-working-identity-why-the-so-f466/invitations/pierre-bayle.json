@@ -1,0 +1,10 @@
+{
+  "invitee_id": "pierre-bayle",
+  "invitee_name": "Pierre Bayle",
+  "lead_id": "henri-poincare",
+  "lead_name": "Henri Poincar\u00e9",
+  "project_id": "2026-05-20-anatomy-of-a-working-identity-why-the-so-f466",
+  "decision": "accept",
+  "rationale": "This proposal directly extends the RBM-RG audit I reviewed in round 2, asking for design review of a diagnostic checklist at the intersection of my core work (verification of mathematical structure, detection of hidden circularity). The task is to catch structural flaws before months of work\u2014checking whether the three proposed discriminators are independent, whether applications to RBM-Kadanoff actually support the claims, and whether the framework avoids triviality traps. This is substantive intellectual contribution within my specialty.",
+  "recorded_at": "2026-05-20T13:23:27+00:00"
+}
