@@ -186,19 +186,30 @@ def kill_switch() -> None:
 @kill_switch.command("on")
 @click.option("--reason", default="manual", help="Why the switch was thrown.")
 def kill_switch_on(reason: str) -> None:
+    from institute import tripwires
+
     with db.connection() as conn, db.transaction(conn):
-        conn.execute(
-            "UPDATE kill_switch SET active = 1, triggered_at = ?, triggered_by = ?, reason = ? WHERE id = 1",
-            (_now(), "founder", reason),
-        )
+        tripwires.fire(conn, reason=reason, triggered_by="founder")
     console.print("[red]Kill switch engaged.[/red] All operations halted.")
+    console.print(
+        "[dim]Snapshot at ~/Library/Logs/invisible-college/killswitch-*.md[/dim]"
+    )
 
 
 @kill_switch.command("off")
 def kill_switch_off() -> None:
+    from institute import audit
+
     with db.connection() as conn, db.transaction(conn):
         conn.execute(
-            "UPDATE kill_switch SET active = 0, triggered_at = NULL, triggered_by = NULL, reason = NULL WHERE id = 1"
+            "UPDATE kill_switch SET active = 0, triggered_at = NULL, "
+            "triggered_by = NULL, reason = NULL WHERE id = 1"
+        )
+        audit.append(
+            conn,
+            at=_now(),
+            actor="founder",
+            action="kill_switch_release",
         )
     console.print("[green]Kill switch released.[/green] Operations may resume.")
 
@@ -1445,6 +1456,65 @@ def _engage_austerity_if_new(snapshot) -> None:
 # ---------------------------------------------------------------------------
 # schedule: manage the launchd plist that wakes autopilot on a cadence
 # ---------------------------------------------------------------------------
+
+
+# ---------------------------------------------------------------------------
+# audit: chain verification + tripwire reporting
+# ---------------------------------------------------------------------------
+
+
+@main.group()
+def audit() -> None:
+    """Inspect institutional audit log integrity and Charter tripwires."""
+
+
+@audit.command("verify")
+def audit_verify() -> None:
+    """Walk the audit-log hash chain. Reports the first break, if any."""
+    from institute import audit as audit_mod
+
+    with db.connection() as conn:
+        result = audit_mod.verify_chain(conn)
+        total = conn.execute("SELECT COUNT(*) FROM audit_log").fetchone()[0]
+    if result is None:
+        console.print(f"[green]OK.[/green] {total} audit_log rows verified.")
+        return
+    console.print(
+        f"[red]Chain break at row {result.row_id}.[/red] "
+        f"expected={result.expected_hash[:12]} stored="
+        f"{(result.stored_hash[:12] if result.stored_hash else 'NULL')}"
+    )
+    raise SystemExit(1)
+
+
+@audit.command("tripwires")
+def audit_tripwires() -> None:
+    """Run every Charter integrity check now and report findings."""
+    from institute import tripwires
+
+    with db.connection() as conn, db.transaction(conn):
+        findings = tripwires.check_all(conn)
+    if not findings:
+        console.print("[green]No tripwires firing.[/green]")
+        return
+    for f in findings:
+        console.print(f"[red]{f.name}[/red]: {f.detail}")
+    raise SystemExit(1)
+
+
+@audit.command("rebaseline-charter")
+def audit_rebaseline_charter() -> None:
+    """Recompute and store the trusted Charter SHA.
+
+    Call this after the Founder amends docs/01-charter.md. Without
+    it, the next runtime check will trip on the modification.
+    """
+    from institute import tripwires
+
+    with db.connection() as conn, db.transaction(conn):
+        tripwires.set_charter_baseline(conn)
+        new_sha = tripwires._compute_charter_sha()
+    console.print(f"[green]Charter baseline updated.[/green] sha={new_sha[:12]}...")
 
 
 # ---------------------------------------------------------------------------

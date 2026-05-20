@@ -1,12 +1,17 @@
 """Runtime guards shared across the CLI and the workflow layer.
 
-Currently the only guard is the kill switch (Chapter 1 + Chapter 2):
-when the Founder engages it, every in-flight Claude invocation must
-stop before doing any more work. The CLI's command-level
-`_check_kill_switch` handles command entry; this module is what
-`claude_runner.invoke` calls before every subprocess, so a mid-workflow
-engagement halts the next Fellow call rather than letting all queued
-Claude work drain.
+Two guards run before every Claude invocation:
+
+  1. **Tripwires** (Chapter 1) — Charter file integrity and audit-log
+     chain integrity. Any failure fires the kill switch automatically
+     with the tripwire as the reason, then exits.
+
+  2. **Kill switch** — if engaged (by the Founder or by a tripwire),
+     every queued Fellow call halts cleanly.
+
+Both checks are cheap (one DB read + one file hash). Called from
+`claude_runner.invoke` before each subprocess so a mid-workflow trip
+stops the next Fellow rather than letting queued work drain.
 """
 
 from __future__ import annotations
@@ -27,12 +32,31 @@ class KillSwitchEngaged(SystemExit):
 
 
 def check_kill_switch() -> None:
-    """Raise KillSwitchEngaged if the institutional kill switch is on.
+    """Run integrity tripwires, then halt if the kill switch is on.
 
-    Safe to call at command entry, before every Claude invocation, and
-    between workflow steps. Uses its own short-lived DB connection so
-    callers don't need to thread one in. Idempotent and cheap.
+    Tripwire findings auto-fire the switch with the finding as the
+    reason. After firing, this raises so the caller stops.
     """
+    _check_tripwires()
+    _check_kill_switch_active()
+
+
+def _check_tripwires() -> None:
+    # Local import to avoid an import cycle between runtime and
+    # tripwires (which imports db, audit, paths).
+    from institute import tripwires
+
+    with db.connection() as conn, db.transaction(conn):
+        findings = tripwires.check_all(conn)
+        for finding in findings:
+            tripwires.fire(conn, reason=str(finding), triggered_by="tripwire")
+        if findings:
+            _console.print(
+                f"[red]Tripwire fired:[/red] {'; '.join(str(f) for f in findings)}"
+            )
+
+
+def _check_kill_switch_active() -> None:
     with db.connection() as conn:
         row = conn.execute("SELECT active, reason FROM kill_switch WHERE id = 1").fetchone()
         if row is None or not row["active"]:

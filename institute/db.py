@@ -15,7 +15,7 @@ from pathlib import Path
 
 from institute.paths import DB_PATH as DB_PATH  # re-exported for tests to patch
 
-SCHEMA_VERSION = 11
+SCHEMA_VERSION = 12
 
 SCHEMA = """
 CREATE TABLE IF NOT EXISTS schema_version (
@@ -202,6 +202,15 @@ CREATE TABLE IF NOT EXISTS kill_switch (
 
 INSERT OR IGNORE INTO kill_switch (id, active) VALUES (1, 0);
 
+-- Trusted baselines for the Charter integrity tripwire. The Founder
+-- amends the Charter and updates the baseline in the same operation,
+-- so any mid-flight mutation to docs/01-charter.md by a Fellow is
+-- detected on the next runtime check.
+CREATE TABLE IF NOT EXISTS tripwire_baseline (
+    key   TEXT PRIMARY KEY,
+    value TEXT NOT NULL
+);
+
 CREATE INDEX IF NOT EXISTS idx_projects_state ON projects(state);
 CREATE INDEX IF NOT EXISTS idx_audit_log_at ON audit_log(at);
 CREATE INDEX IF NOT EXISTS idx_reviews_project ON reviews(project_id);
@@ -306,6 +315,9 @@ def _run_migrations(conn: sqlite3.Connection, from_version: int, to_version: int
         elif version == 10:
             _migrate_10_to_11(conn)
             version = 11
+        elif version == 11:
+            _migrate_11_to_12(conn)
+            version = 12
         else:
             raise RuntimeError(f"No migration path from version {version}.")
         # Each migration is responsible for stamping its own version
@@ -707,6 +719,21 @@ def transaction(conn: sqlite3.Connection) -> Iterator[sqlite3.Connection]:
     conn.execute("BEGIN IMMEDIATE")
     try:
         yield conn
+        conn.execute("COMMIT")
+    except Exception:
+        conn.execute("ROLLBACK")
+        raise
+
+
+def _migrate_11_to_12(conn: sqlite3.Connection) -> None:
+    """Add the tripwire_baseline table for Charter integrity checks."""
+    conn.execute("BEGIN IMMEDIATE")
+    try:
+        conn.execute(
+            "CREATE TABLE IF NOT EXISTS tripwire_baseline ("
+            "key TEXT PRIMARY KEY, value TEXT NOT NULL)"
+        )
+        _stamp_version(conn, 12)
         conn.execute("COMMIT")
     except Exception:
         conn.execute("ROLLBACK")
