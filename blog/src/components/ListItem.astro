@@ -53,10 +53,7 @@ const hasDescription = Astro.slots.has('description');
       </p>
     )
   }
-  <a
-    href={href}
-    class={hasMetaAbove ? `mt-1 ${titleSizeClass}` : titleSizeClass}
-  >
+  <a href={href} class={hasMetaAbove ? `mt-1 ${titleSizeClass}` : titleSizeClass}>
     {title}
   </a>
   {

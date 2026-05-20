@@ -32,6 +32,7 @@ import subprocess
 import tempfile
 from datetime import UTC, datetime
 from pathlib import Path
+from typing import Any
 
 from pydantic import ValidationError
 from rich.console import Console
@@ -42,6 +43,7 @@ from rich.syntax import Syntax
 from institute import claude_runner, db, decisions, parsing, paths, workspaces
 from institute import fellow as fellow_mod
 from institute.admissions.problems import for_candidate as _problems_for_candidate
+from institute.brief_helpers import JSON_OUTPUT_RULES
 from institute.claude_runner import FellowTask
 from institute.fellow import Genome
 from institute.safe_io import atomic_write
@@ -202,7 +204,8 @@ Nothing else.
 """
 
 
-PANELIST_BRIEF = """\
+PANELIST_BRIEF = (
+    """\
 You are serving on the Admissions Committee of the Invisible College.
 A candidate is up for admission. Your job is to read everything the
 committee has gathered and cast a written vote: admit or reject.
@@ -233,8 +236,9 @@ actual disagreements.
 
 # CRITICAL OUTPUT RULES
 
-Reply with a single JSON object. No prose preface, no summary, no
-code fence. First character `{{`, last `}}`.
+"""
+    + JSON_OUTPUT_RULES
+    + """
 
 # Output shape
 
@@ -246,6 +250,7 @@ code fence. First character `{{`, last `}}`.
 }}
 ```
 """
+)
 
 
 def _read_cohort_summary() -> str:
@@ -820,63 +825,36 @@ def _panel_vote_admission(
     return admitted, votes
 
 
-def run(
-    founder_hint: str | None = None,
-    *,
-    auto: bool = False,
-    sponsorship_id: str | None = None,
-) -> str:
-    """Top-level admit entry point.
+def _prepare_admit_inputs(
+    *, auto: bool, sponsorship_id: str | None
+) -> tuple[list[Genome], bool, Any, str | None, str | None, Any] | None:
+    """Gather panel, cohort call, and sponsorship context.
 
-    Two execution paths:
-      - Panel-vote: at least one Senior Fellow exists. The orchestrator
-        drafts a candidate, the candidate writes responses, and the
-        Admissions Committee (Senior Fellows) votes admit/reject.
-        Founder never prompted.
-      - Founder fallback: no Senior Fellow. The Founder approves the
-        proposed genome, then makes the final admit decision after
-        evaluation. Used until an Admissions Committee can form.
-
-    When `auto=True` and no panel exists, the workflow logs a deferred-
-    review note and exits without prompting — so autopilot never blocks.
-
-    If a cohort call is currently open, its targets are surfaced to
-    the orchestrator and the panel; admits_count is incremented in
-    the same transaction as the admit decision, auto-closing the call
-    once target_size is reached.
-
-    If `sponsorship_id` is supplied, the sponsoring Fellow's rationale
-    and track record are surfaced too; outcome is recorded on the
-    sponsorship in the same transaction.
-
-    Returns one of "admitted", "rejected", "skipped".
+    Returns (panel, use_panel, active_call, call_body_md, sponsor_md,
+    sponsorship_obj) on success, or None when the workflow should skip.
     """
     from institute import cohort_calls, sponsorships
 
     panel = _admissions_panel()
     use_panel = bool(panel)
-
     if auto and not use_panel:
         console.print(
             "[yellow]Admissions auto-trigger fired but no Senior Fellow "
             "panel exists. Deferring. Run `institute admit` manually to "
             "use the Founder fallback path.[/yellow]"
         )
-        return "skipped"
+        return None
 
     active_call = cohort_calls.current_call()
     call_body_md: str | None = None
     if active_call is not None:
-        # Chapter 4 comment window: applications are not accepted until
-        # the comment-window deadline passes. Honor it here even if
-        # nothing else gates the workflow.
         if not active_call.is_accepting_applications():
             console.print(
                 f"[yellow]Call `{active_call.id}` is in its comment window "
                 f"until {active_call.applications_open_at}. "
                 "Applications cannot be admitted yet.[/yellow]"
             )
-            return "skipped"
+            return None
         call_body_md = cohort_calls.render_for_admit(active_call)
         console.print(
             f"[dim]Admitting against open call `{active_call.id}` "
@@ -892,91 +870,76 @@ def run(
         )
         if sponsorship_obj is None:
             console.print(f"[red]No such sponsorship: {sponsorship_id!r}[/red]")
-            return "skipped"
+            return None
         if sponsorship_obj.outcome != "pending":
             console.print(
                 f"[red]Sponsorship {sponsorship_id!r} is already "
                 f"`{sponsorship_obj.outcome}`. Cannot re-evaluate.[/red]"
             )
-            return "skipped"
+            return None
         sponsor_md = (
             f"## Sponsor rationale\n\n{sponsorship_obj.rationale}\n\n"
             f"## Sponsor track record\n\n"
             f"{sponsorships.render_sponsor_reputation_md(sponsorship_obj.sponsor_id)}"
         )
 
+    return panel, use_panel, active_call, call_body_md, sponsor_md, sponsorship_obj
+
+
+def _build_candidate(
+    *,
+    founder_hint: str | None,
+    call_body_md: str | None,
+    sponsor_md: str | None,
+    use_panel: bool,
+) -> Genome | None:
+    """Propose a candidate and validate / accept it. None on skip."""
     raw = _propose_candidate(founder_hint, call_body_md=call_body_md, sponsor_md=sponsor_md)
+    candidate: Genome | None
     if use_panel:
         try:
             candidate = Genome.model_validate({k: v for k, v in raw.items() if k != "rationale"})
         except ValidationError as exc:
             console.print(f"[red]Proposed genome failed validation: {exc}[/red]")
-            return "skipped"
+            return None
     else:
         candidate = _founder_review_genome(raw)
         if candidate is None:
             console.print("[yellow]Admission aborted at genome stage.[/yellow]")
-            return "skipped"
-
+            return None
     # New admits enter as Postulants regardless of what the orchestrator
-    # designed, per Chapter 3. Rank is institutional, not part of the
-    # genome's intellectual identity.
-    candidate = candidate.model_copy(update={"rank": "postulant"})
+    # designed, per Chapter 3.
+    return candidate.model_copy(update={"rank": "postulant"})
 
-    responses = _invoke_candidate_for_problems(candidate)
-    evaluation = _evaluate_candidate(candidate, responses)
 
-    panel_votes: list[dict] | None = None
-    if use_panel:
-        console.print(
-            f"[dim]Convening Admissions Committee ({len(panel)} Senior "
-            f"Fellow{'s' if len(panel) != 1 else ''})...[/dim]"
-        )
-        admitted, panel_votes = _panel_vote_admission(candidate, responses, evaluation, panel)
-    else:
-        admitted = _founder_final_review(candidate, responses, evaluation)
+def _resolve_advisor(specialization: str) -> tuple[str | None, str | None]:
+    """Pick an advisor for the admitted candidate. Returns (id, name)."""
+    advisor_id = _pick_advisor(specialization)
+    if advisor_id is None:
+        return None, None
+    with db.connection() as conn:
+        row = conn.execute("SELECT name FROM fellows WHERE id = ?", (advisor_id,)).fetchone()
+    return advisor_id, (row["name"] if row else advisor_id)
 
-    pkg = _persist_candidate_package(candidate, responses, evaluation, admitted)
 
-    advisor_id: str | None = None
-    advisor_name: str | None = None
-    if admitted:
-        advisor_id = _pick_advisor(candidate.specialization)
-        if advisor_id is not None:
-            with db.connection() as conn:
-                row = conn.execute(
-                    "SELECT name FROM fellows WHERE id = ?", (advisor_id,)
-                ).fetchone()
-                advisor_name = row["name"] if row else advisor_id
-
-    decision_body = _format_decision_body(
-        candidate, evaluation, admitted, pkg, advisor_id, advisor_name, panel_votes
-    )
-    if use_panel:
-        actors = ["orchestrator", *[p.id for p in panel], candidate.id]
-    else:
-        actors = ["founder", "orchestrator", candidate.id]
-    if advisor_id:
-        actors.append(advisor_id)
-    decision = decisions.Decision(
-        kind="admission",
-        title=("Admitted: " if admitted else "Rejected: ") + candidate.name,
-        body=decision_body,
-        actors=actors,
-    )
+def _commit_admission(
+    *,
+    candidate: Genome,
+    advisor_id: str | None,
+    admitted: bool,
+    decision: decisions.Decision,
+    active_call: Any,
+    sponsorship_obj: Any,
+) -> None:
+    """Persist the admit decision and any related per-call / sponsorship updates."""
+    from institute import cohort_calls, sponsorships
 
     if admitted:
         _register_fellow(candidate, advisor_id)
     with db.connection() as conn, db.transaction(conn):
         decisions.record(conn, decision)
-        # Increment the cohort call's admit count (and possibly auto-close)
-        # in the same transaction as the admit decision; otherwise a
-        # crash between would leave a Fellow registered against a call
-        # whose count never moved.
         if admitted and active_call is not None:
             cohort_calls.increment_admits(conn, active_call.id)
-        # Resolve the sponsorship the same way: in-tx so the outcome
-        # never drifts from the admit decision.
         if sponsorship_obj is not None:
             sponsorships.record_outcome(
                 sponsorship_obj.id,
@@ -985,30 +948,43 @@ def run(
                 conn=conn,
             )
 
-    if admitted:
-        # Chapter 5: curriculum is staged on entry. Designed once, here,
-        # then worked through one item at a time via `institute curriculum`.
-        try:
-            from institute.workflows import curriculum_design
 
-            curriculum_design.design_for(candidate, advisor_name)
-        except Exception as exc:  # pragma: no cover - best-effort during admission
-            console.print(
-                f"[yellow]Curriculum design failed: {exc}. "
-                f"Run `institute curriculum --fellow {candidate.id} --design` "
-                "to retry.[/yellow]"
-            )
-        # Chapter 4: file a structured kickoff for the new Postulant so
-        # the first conversation has a shape rather than being implicit.
-        try:
-            _write_onboarding_kickoff(
-                candidate=candidate,
-                advisor_name=advisor_name,
-                advisor_id=advisor_id,
-            )
-        except Exception as exc:  # pragma: no cover
-            console.print(f"[yellow]Onboarding kickoff write failed: {exc}.[/yellow]")
+def _post_admit_setup(
+    *,
+    candidate: Genome,
+    advisor_id: str | None,
+    advisor_name: str | None,
+) -> None:
+    """Best-effort curriculum design + onboarding kickoff after a fresh admit."""
+    try:
+        from institute.workflows import curriculum_design
 
+        curriculum_design.design_for(candidate, advisor_name)
+    except Exception as exc:  # pragma: no cover - best-effort during admission
+        console.print(
+            f"[yellow]Curriculum design failed: {exc}. "
+            f"Run `institute curriculum --fellow {candidate.id} --design` "
+            "to retry.[/yellow]"
+        )
+    try:
+        _write_onboarding_kickoff(
+            candidate=candidate,
+            advisor_name=advisor_name,
+            advisor_id=advisor_id,
+        )
+    except Exception as exc:  # pragma: no cover
+        console.print(f"[yellow]Onboarding kickoff write failed: {exc}.[/yellow]")
+
+
+def _print_admit_summary(
+    *,
+    candidate: Genome,
+    admitted: bool,
+    use_panel: bool,
+    advisor_id: str | None,
+    advisor_name: str | None,
+    pkg: Path,
+) -> None:
     console.print()
     if admitted:
         path = "Admissions Committee" if use_panel else "Founder"
@@ -1026,12 +1002,96 @@ def run(
         console.print(f"  Genome:  {fellow_mod.genome_path(candidate.id)}")
         console.print(f"  Package: {pkg.relative_to(paths.ROOT)}")
         console.print("[dim]Commit `genomes/` and `archive/` to git when you're ready.[/dim]")
-        return "admitted"
     else:
         console.print(
             f"[yellow]Not admitted.[/yellow] Package preserved at {pkg.relative_to(paths.ROOT)}."
         )
-        return "rejected"
+
+
+def run(
+    founder_hint: str | None = None,
+    *,
+    auto: bool = False,
+    sponsorship_id: str | None = None,
+) -> str:
+    """Top-level admit entry point.
+
+    Returns one of "admitted", "rejected", "skipped".
+    """
+    prepared = _prepare_admit_inputs(auto=auto, sponsorship_id=sponsorship_id)
+    if prepared is None:
+        return "skipped"
+    panel, use_panel, active_call, call_body_md, sponsor_md, sponsorship_obj = prepared
+
+    candidate = _build_candidate(
+        founder_hint=founder_hint,
+        call_body_md=call_body_md,
+        sponsor_md=sponsor_md,
+        use_panel=use_panel,
+    )
+    if candidate is None:
+        return "skipped"
+
+    responses = _invoke_candidate_for_problems(candidate)
+    evaluation = _evaluate_candidate(candidate, responses)
+
+    panel_votes: list[dict] | None = None
+    if use_panel:
+        console.print(
+            f"[dim]Convening Admissions Committee ({len(panel)} Senior "
+            f"Fellow{'s' if len(panel) != 1 else ''})...[/dim]"
+        )
+        admitted, panel_votes = _panel_vote_admission(candidate, responses, evaluation, panel)
+    else:
+        admitted = _founder_final_review(candidate, responses, evaluation)
+
+    pkg = _persist_candidate_package(candidate, responses, evaluation, admitted)
+
+    advisor_id, advisor_name = (None, None)
+    if admitted:
+        advisor_id, advisor_name = _resolve_advisor(candidate.specialization)
+
+    decision_body = _format_decision_body(
+        candidate, evaluation, admitted, pkg, advisor_id, advisor_name, panel_votes
+    )
+    if use_panel:
+        actors = ["orchestrator", *[p.id for p in panel], candidate.id]
+    else:
+        actors = ["founder", "orchestrator", candidate.id]
+    if advisor_id:
+        actors.append(advisor_id)
+    decision = decisions.Decision(
+        kind="admission",
+        title=("Admitted: " if admitted else "Rejected: ") + candidate.name,
+        body=decision_body,
+        actors=actors,
+    )
+
+    _commit_admission(
+        candidate=candidate,
+        advisor_id=advisor_id,
+        admitted=admitted,
+        decision=decision,
+        active_call=active_call,
+        sponsorship_obj=sponsorship_obj,
+    )
+
+    if admitted:
+        _post_admit_setup(
+            candidate=candidate,
+            advisor_id=advisor_id,
+            advisor_name=advisor_name,
+        )
+
+    _print_admit_summary(
+        candidate=candidate,
+        admitted=admitted,
+        use_panel=use_panel,
+        advisor_id=advisor_id,
+        advisor_name=advisor_name,
+        pkg=pkg,
+    )
+    return "admitted" if admitted else "rejected"
 
 
 def _format_decision_body(

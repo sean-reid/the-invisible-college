@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { expect, test, type Page } from '@playwright/test';
 
 const BASE = '/the-invisible-college';
 
@@ -9,7 +9,7 @@ const BASE = '/the-invisible-college';
 // gracefully when no preprint is present so a clean checkout still
 // passes.
 
-async function gotoPreprintsList(page: import('@playwright/test').Page) {
+async function gotoPreprintsList(page: Page) {
   const response = await page.goto(`${BASE}/preprints`);
   expect(response?.status(), 'GET /preprints status').toBe(200);
 }

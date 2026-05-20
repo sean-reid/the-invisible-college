@@ -332,7 +332,7 @@ def run(project_id: str) -> None:
     # (e.g. a previous run completed Claude but crashed before the DB
     # update), reuse them instead of re-invoking the model and burning
     # budget on identical work.
-    if _lead_outputs_already_complete(workspace):
+    if workspaces.outputs_already_complete(workspace, [("notebook.md", 200), ("draft.md", 400)]):
         console.print(
             "[dim]Lead's draft/notebook/abstract already on disk; "
             "skipping Claude call and proceeding to commit.[/dim]"
@@ -481,22 +481,6 @@ def _register_follow_up_questions(*, workspace: Path, author_id: str, project_id
                 f"{author_id} on {project_id}: {exc}[/yellow]"
             )
     return added
-
-
-def _lead_outputs_already_complete(workspace: Path) -> bool:
-    """True iff the lead's three required outputs already exist with
-    substantive content in this workspace. Used to skip the Claude call
-    when a previous run wrote them but didn't finish committing.
-    """
-    notebook = workspace / "notebook.md"
-    draft = workspace / "draft.md"
-    if not (notebook.is_file() and draft.is_file()):
-        return False
-    if len(notebook.read_text(encoding="utf-8").strip()) < 200:
-        return False
-    if len(draft.read_text(encoding="utf-8").strip()) < 400:
-        return False
-    return True
 
 
 def _collect_collaborator_contribution(

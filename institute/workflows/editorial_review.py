@@ -30,6 +30,7 @@ from rich.panel import Panel
 from rich.prompt import Prompt
 
 from institute import claude_runner, db, decisions, editorial_board, parsing, paths, state
+from institute.brief_helpers import JSON_OUTPUT_RULES
 from institute.claude_runner import FellowTask
 from institute.fellow import Genome
 from institute.state import State
@@ -37,7 +38,8 @@ from institute.state import State
 console = Console()
 
 
-BOARD_BRIEF = """\
+BOARD_BRIEF = (
+    """\
 You are serving on the Editorial Board of the Invisible College.
 Round-2 peer review on this submission produced disagreement — at
 least one reviewer recommended reject, or a reviewer filed a dissent.
@@ -72,8 +74,9 @@ vote reject.
 
 # CRITICAL OUTPUT RULES
 
-Reply with a single JSON object. No prose preface, no summary, no
-code fence. First character `{{`, last `}}`.
+"""
+    + JSON_OUTPUT_RULES
+    + """
 
 # Output shape
 
@@ -85,6 +88,7 @@ code fence. First character `{{`, last `}}`.
 }}
 ```
 """
+)
 
 
 def _stage(path: Path, content: str) -> None:

@@ -34,8 +34,7 @@ const posts = defineCollection({
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
           path: ['abstract'],
-          message:
-            'Published posts (draft: false) must define a non-empty abstract.',
+          message: 'Published posts (draft: false) must define a non-empty abstract.',
         });
       }
     }),

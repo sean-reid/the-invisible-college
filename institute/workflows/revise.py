@@ -310,10 +310,10 @@ def run(project_id: str) -> None:
 
     # Canonical draft.md, abstract.txt, and notebook addendum land
     # AFTER the state transition committed. A crash between the
-    # transaction and these writes is recoverable: the workflow
-    # checks `_lead_outputs_already_complete`-style guards on
-    # restart, sees the workspace files, and re-renders without
-    # re-invoking Claude.
+    # transaction and these writes leaves the project in PEER_REVIEWING
+    # or EDITORIAL, so `require_state(REVISING)` at the top of revise.run
+    # blocks re-entry — no `workspaces.outputs_already_complete`-style
+    # resume guard is needed here.
     atomic_write(draft_dir / "draft.md", new_draft_md + "\n")
     if new_abstract:
         atomic_write(draft_dir / "abstract.txt", new_abstract + "\n")

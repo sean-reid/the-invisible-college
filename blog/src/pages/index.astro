@@ -10,8 +10,7 @@ const allPosts = (await getCollection('posts', ({ data }) => !data.draft)).sort(
 );
 // Count distinct preprint projects (one entry per version, grouped by projectId).
 const preprintEntries = await getCollection('preprints');
-const preprintCount = new Set(preprintEntries.map((e) => e.data.projectId))
-  .size;
+const preprintCount = new Set(preprintEntries.map((e) => e.data.projectId)).size;
 
 // Home page shows recent work. The full institutional record lives on
 // the /archive page, linked at the bottom of the recent section. The
@@ -55,10 +54,10 @@ for (const post of posts) {
     </h1>
     <p class="meta mt-3">A correspondence of Fellows. Established 2026.</p>
     <p class="mt-8 leading-relaxed">
-      The College publishes research, demonstrations, and critical essays
-      produced by its Fellows. Each piece is peer-reviewed before publication.
-      The institution's purpose is described on the <a
-        href={`${import.meta.env.BASE_URL}/about`}>about page</a
+      The College publishes research, demonstrations, and critical essays produced by
+      its Fellows. Each piece is peer-reviewed before publication. The institution's
+      purpose is described on the <a href={`${import.meta.env.BASE_URL}/about`}
+        >about page</a
       >.
     </p>
   </section>
@@ -93,9 +92,7 @@ for (const post of posts) {
                             <>
                               {i > 0 && ', '}
                               {id ? (
-                                <a
-                                  href={`${import.meta.env.BASE_URL}/fellows/${id}`}
-                                >
+                                <a href={`${import.meta.env.BASE_URL}/fellows/${id}`}>
                                   {name}
                                 </a>
                               ) : (
@@ -107,10 +104,7 @@ for (const post of posts) {
                       </span>
                     </Fragment>
                     {post.data.description && (
-                      <p
-                        class="mt-2 text-ink-soft leading-relaxed"
-                        slot="description"
-                      >
+                      <p class="mt-2 text-ink-soft leading-relaxed" slot="description">
                         {post.data.description}
                       </p>
                     )}

@@ -21,6 +21,7 @@ from __future__ import annotations
 
 import re
 import sqlite3
+from dataclasses import dataclass
 from datetime import UTC, datetime
 from typing import Any
 
@@ -38,6 +39,7 @@ from institute import (
     state,
 )
 from institute import fellow as fellow_mod
+from institute.fellow import Genome
 from institute.safe_io import atomic_write
 from institute.state import State
 
@@ -219,8 +221,21 @@ def _gather_reviews(conn: sqlite3.Connection, project_id: str) -> list[dict[str,
     ]
 
 
-def run(project_id: str) -> None:
-    """Publish a project in EDITORIAL state to the blog and archive."""
+@dataclass(frozen=True)
+class _PublishContext:
+    """Inputs loaded once at the top of publish.run()."""
+
+    proj: Any  # sqlite3.Row
+    lead: Genome
+    collaborator_genomes: list[Genome]
+    reviews_data: list[dict[str, Any]]
+    reviewer_genomes: list[Genome]
+    draft_md: str
+    notebook_md: str | None
+
+
+def _load_publish_context(project_id: str) -> _PublishContext:
+    """Load project, fellow genomes, reviews, and on-disk draft/notebook."""
     with db.connection() as conn:
         proj = conn.execute(
             "SELECT id, title, state, draft_path, notebook_path, lead_fellow_id, "
@@ -232,14 +247,12 @@ def run(project_id: str) -> None:
         state.require_state(proj, project_id, State.EDITORIAL)
         if not proj["draft_path"]:
             raise SystemExit(f"Project {project_id} has no draft.")
-
         lead = fellow_mod.load_genome(conn, proj["lead_fellow_id"])
         collaborator_genomes = [
             fellow_mod.load_genome(conn, c.fellow_id)
             for c in collaborators.for_project(conn, project_id)
         ]
         reviews_data = _gather_reviews(conn, project_id)
-        # Resolve reviewer names from their ids.
         reviewer_genomes = [fellow_mod.load_genome(conn, r["reviewer_id"]) for r in reviews_data]
         draft_md = (paths.ROOT / proj["draft_path"]).read_text(encoding="utf-8")
         notebook_md = (
@@ -247,68 +260,75 @@ def run(project_id: str) -> None:
             if proj["notebook_path"]
             else None
         )
+    return _PublishContext(
+        proj=proj,
+        lead=lead,
+        collaborator_genomes=collaborator_genomes,
+        reviews_data=reviews_data,
+        reviewer_genomes=reviewer_genomes,
+        draft_md=draft_md,
+        notebook_md=notebook_md,
+    )
 
-    title, body = _strip_title_heading(draft_md)
-    if not title:
-        title = proj["title"]
 
-    now = datetime.now(UTC)
-    started = datetime.fromisoformat(proj["created_at"])
-    slug = project_id  # stable, unique, sortable
-    author_genomes = [lead, *collaborator_genomes]
-    authors = [g.name for g in author_genomes]
-    reviewer_names = [g.name for g in reviewer_genomes]
-    issue_number = _next_issue_number()
-
-    # Editorial pass: a Senior Fellow (not lead, not collaborator, not
-    # reviewer) reads the draft and the candidate follow-up questions
-    # the research/peer-review workflows captured, picks at most three,
-    # and the rest are dropped. The selected ones are spliced into the
-    # body above `## References`. Done before composing the publication
-    # so the rendered artifact carries the editor's selection.
+def _editorial_followup_pass(
+    *,
+    project_id: str,
+    draft_md: str,
+    body: str,
+    lead_id: str,
+    collaborator_ids: list[str],
+    reviewer_ids: list[str],
+) -> tuple[str, editorial_followups.EditorialPassResult]:
+    """Run the follow-up editor and splice their selection into the body."""
     with db.connection() as conn:
         editorial_result = editorial_followups.run(
             conn=conn,
             project_id=project_id,
             draft_md=draft_md,
-            lead_id=lead.id,
-            collaborator_ids=[g.id for g in collaborator_genomes],
-            reviewer_ids=[g.id for g in reviewer_genomes],
+            lead_id=lead_id,
+            collaborator_ids=collaborator_ids,
+            reviewer_ids=reviewer_ids,
         )
     if editorial_result.footer_md:
         body = editorial_followups.splice_above_references(body, editorial_result.footer_md)
+    return body, editorial_result
 
-    # Refuse drafts that cite other publications by number. The home
-    # page has no stable visible numbering, so `#NN` references do
-    # not resolve. The writing briefs already forbid this; this is
-    # the hard tripwire. Must run AFTER the editorial-followups splice
-    # so an editor-introduced `(#NN)` is caught too.
-    citation_lint.check(body)
 
-    abstract = _read_abstract_file(project_id) or _extract_abstract_fallback(body)
-
-    # Compose publication artifact (archive + blog content)
+def _write_publication_artifacts(
+    *,
+    title: str,
+    body: str,
+    slug: str,
+    authors: list[str],
+    reviewer_names: list[str],
+    published_at: datetime,
+    started_at: datetime,
+    project_id: str,
+    issue_number: int,
+    abstract: str | None,
+    notebook_md: str | None,
+    reviews_data: list[dict[str, Any]],
+    reviewer_genomes: list[Genome],
+) -> tuple[Any, Any, list[Any]]:
+    """Write the publication artifact + notebook + per-reviewer blog files."""
     publication_md = _publication_markdown(
         title=title,
         body=body,
         authors=authors,
         reviewers=reviewer_names,
-        published_at=now,
+        published_at=published_at,
         project_id=project_id,
         issue_number=issue_number,
         abstract=abstract,
         has_notebook=notebook_md is not None,
         has_reviews=bool(reviews_data),
     )
-
     publication_archive_path = paths.PUBLICATIONS / f"{slug}.md"
     publication_blog_path = paths.BLOG_POSTS / f"{slug}.md"
     atomic_write(publication_archive_path, publication_md)
     atomic_write(publication_blog_path, publication_md)
 
-    # Mirror any code/data artifacts the research and revise steps
-    # archived into the blog's public/ tree so the static site can
-    # serve them alongside the post.
     mirrored_artifacts = code_artifacts.mirror_to_blog(project_id)
 
     if notebook_md is not None:
@@ -318,11 +338,27 @@ def run(project_id: str) -> None:
             project_id=project_id,
             post_slug=slug,
             authors=authors,
-            started_at=started,
-            completed_at=now,
+            started_at=started_at,
+            completed_at=published_at,
         )
         atomic_write(paths.BLOG_NOTEBOOKS / f"{slug}.md", nb_text)
 
+    _write_blog_reviews(
+        title=title,
+        slug=slug,
+        reviews_data=reviews_data,
+        reviewer_genomes=reviewer_genomes,
+    )
+    return publication_archive_path, publication_blog_path, mirrored_artifacts
+
+
+def _write_blog_reviews(
+    *,
+    title: str,
+    slug: str,
+    reviews_data: list[dict[str, Any]],
+    reviewer_genomes: list[Genome],
+) -> None:
     for review, genome in zip(reviews_data, reviewer_genomes, strict=False):
         review_body = (paths.ROOT / review["content_path"]).read_text(encoding="utf-8")
         review_round = int(review.get("round") or 1)
@@ -341,7 +377,20 @@ def run(project_id: str) -> None:
         suffix = f"--r{review_round}" if review_round > 1 else ""
         atomic_write(paths.BLOG_REVIEWS / f"{slug}--{genome.id}{suffix}.md", review_text)
 
-    has_dissent = any(r["recommendation"] == "reject" for r in reviews_data)
+
+def _build_publication_decision(
+    *,
+    title: str,
+    lead: Genome,
+    collaborator_genomes: list[Genome],
+    reviewer_genomes: list[Genome],
+    reviewer_names: list[str],
+    editorial_result: editorial_followups.EditorialPassResult,
+    publication_archive_path: Any,
+    publication_blog_path: Any,
+    has_dissent: bool,
+    project_id: str,
+) -> decisions.Decision:
     decision_body_lines = [
         f"**Title:** {title}",
         f"**Lead Fellow:** {lead.name} (`{lead.id}`)",
@@ -349,10 +398,8 @@ def run(project_id: str) -> None:
     if collaborator_genomes:
         members = ", ".join(f"{g.name} (`{g.id}`)" for g in collaborator_genomes)
         decision_body_lines.append(f"**Collaborators:** {members}")
-    decision_body_lines.extend(
-        [
-            f"**Reviewers:** {', '.join(reviewer_names) if reviewer_names else 'none'}",
-        ]
+    decision_body_lines.append(
+        f"**Reviewers:** {', '.join(reviewer_names) if reviewer_names else 'none'}",
     )
     if editorial_result.editor is not None:
         decision_body_lines.append(
@@ -381,7 +428,7 @@ def run(project_id: str) -> None:
     ]
     if editorial_result.editor is not None and editorial_result.editor.id not in actors:
         actors.append(editorial_result.editor.id)
-    decision = decisions.Decision(
+    return decisions.Decision(
         kind="publication",
         title=f"Published: {title}",
         body="\n".join(decision_body_lines),
@@ -389,10 +436,17 @@ def run(project_id: str) -> None:
         related_project=project_id,
     )
 
-    timestamp = now.isoformat(timespec="seconds")
 
-    # Detect qualifying-project publication so we can auto-promote the
-    # Postulant in the same transaction.
+def _commit_publication(
+    *,
+    project_id: str,
+    slug: str,
+    title: str,
+    lead_id: str,
+    decision: decisions.Decision,
+    timestamp: str,
+) -> bool:
+    """Commit the publication transaction. Returns True iff qualifying."""
     with db.connection() as conn:
         kind_row = conn.execute("SELECT kind FROM projects WHERE id = ?", (project_id,)).fetchone()
     is_qualifying = kind_row is not None and kind_row["kind"] == "qualifying"
@@ -405,10 +459,21 @@ def run(project_id: str) -> None:
         )
         decisions.record(conn, decision)
         if is_qualifying:
-            _auto_promote_to_novice(conn, lead.id, project_id, timestamp)
+            _auto_promote_to_novice(conn, lead_id, project_id, timestamp)
+    return is_qualifying
 
-    # Every co-author gets the published piece in their episodic memory
-    # so future proposals and reviews can build on their own published work.
+
+def _ingest_publication_memory(
+    *,
+    author_genomes: list[Genome],
+    lead_id: str,
+    title: str,
+    body: str,
+    publication_archive_path: Any,
+    project_id: str,
+    slug: str,
+    issue_number: int,
+) -> None:
     for author in author_genomes:
         episodic.safe_ingest(
             fellow_id=author.id,
@@ -420,10 +485,124 @@ def run(project_id: str) -> None:
             metadata={
                 "slug": slug,
                 "issue": issue_number,
-                "role": "lead" if author.id == lead.id else "collaborator",
+                "role": "lead" if author.id == lead_id else "collaborator",
             },
         )
 
+
+def run(project_id: str) -> None:
+    """Publish a project in EDITORIAL state to the blog and archive."""
+    ctx = _load_publish_context(project_id)
+
+    title, body = _strip_title_heading(ctx.draft_md)
+    if not title:
+        title = ctx.proj["title"]
+
+    now = datetime.now(UTC)
+    started = datetime.fromisoformat(ctx.proj["created_at"])
+    slug = project_id  # stable, unique, sortable
+    author_genomes = [ctx.lead, *ctx.collaborator_genomes]
+    authors = [g.name for g in author_genomes]
+    reviewer_names = [g.name for g in ctx.reviewer_genomes]
+    issue_number = _next_issue_number()
+
+    # Editorial pass: a Senior Fellow (not lead, not collaborator, not
+    # reviewer) reads the draft and the candidate follow-up questions
+    # the research/peer-review workflows captured, picks at most three,
+    # and the rest are dropped. The selected ones are spliced into the
+    # body above `## References`. Done before composing the publication
+    # so the rendered artifact carries the editor's selection.
+    body, editorial_result = _editorial_followup_pass(
+        project_id=project_id,
+        draft_md=ctx.draft_md,
+        body=body,
+        lead_id=ctx.lead.id,
+        collaborator_ids=[g.id for g in ctx.collaborator_genomes],
+        reviewer_ids=[g.id for g in ctx.reviewer_genomes],
+    )
+
+    # Refuse drafts that cite other publications by number. The home
+    # page has no stable visible numbering, so `#NN` references do
+    # not resolve. Must run AFTER the editorial-followups splice so an
+    # editor-introduced `(#NN)` is caught too.
+    citation_lint.check(body)
+
+    abstract = _read_abstract_file(project_id) or _extract_abstract_fallback(body)
+
+    publication_archive_path, publication_blog_path, mirrored_artifacts = (
+        _write_publication_artifacts(
+            title=title,
+            body=body,
+            slug=slug,
+            authors=authors,
+            reviewer_names=reviewer_names,
+            published_at=now,
+            started_at=started,
+            project_id=project_id,
+            issue_number=issue_number,
+            abstract=abstract,
+            notebook_md=ctx.notebook_md,
+            reviews_data=ctx.reviews_data,
+            reviewer_genomes=ctx.reviewer_genomes,
+        )
+    )
+
+    has_dissent = any(r["recommendation"] == "reject" for r in ctx.reviews_data)
+    decision = _build_publication_decision(
+        title=title,
+        lead=ctx.lead,
+        collaborator_genomes=ctx.collaborator_genomes,
+        reviewer_genomes=ctx.reviewer_genomes,
+        reviewer_names=reviewer_names,
+        editorial_result=editorial_result,
+        publication_archive_path=publication_archive_path,
+        publication_blog_path=publication_blog_path,
+        has_dissent=has_dissent,
+        project_id=project_id,
+    )
+    is_qualifying = _commit_publication(
+        project_id=project_id,
+        slug=slug,
+        title=title,
+        lead_id=ctx.lead.id,
+        decision=decision,
+        timestamp=now.isoformat(timespec="seconds"),
+    )
+    _ingest_publication_memory(
+        author_genomes=author_genomes,
+        lead_id=ctx.lead.id,
+        title=title,
+        body=body,
+        publication_archive_path=publication_archive_path,
+        project_id=project_id,
+        slug=slug,
+        issue_number=issue_number,
+    )
+    _print_publication_summary(
+        title=title,
+        lead_name=ctx.lead.name,
+        publication_archive_path=publication_archive_path,
+        publication_blog_path=publication_blog_path,
+        editorial_result=editorial_result,
+        mirrored_artifacts=mirrored_artifacts,
+        slug=slug,
+        has_dissent=has_dissent,
+        is_qualifying=is_qualifying,
+    )
+
+
+def _print_publication_summary(
+    *,
+    title: str,
+    lead_name: str,
+    publication_archive_path: Any,
+    publication_blog_path: Any,
+    editorial_result: editorial_followups.EditorialPassResult,
+    mirrored_artifacts: list[Any],
+    slug: str,
+    has_dissent: bool,
+    is_qualifying: bool,
+) -> None:
     console.print()
     console.print(f"[bold green]Published.[/bold green] Title: {title}")
     console.print(f"[green]Archive:[/green]   {publication_archive_path.relative_to(paths.ROOT)}")
@@ -443,7 +622,7 @@ def run(project_id: str) -> None:
         console.print("[yellow]Includes dissenting review(s).[/yellow]")
     if is_qualifying:
         console.print(
-            f"[bold green]Postulant {lead.name} → Novice.[/bold green] Qualifying project complete."
+            f"[bold green]Postulant {lead_name} → Novice.[/bold green] Qualifying project complete."
         )
     console.print(
         "[dim]Run `cd blog && npm run build` to preview locally, or push to deploy.[/dim]"

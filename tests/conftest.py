@@ -5,9 +5,17 @@ from __future__ import annotations
 from pathlib import Path
 
 import pytest
+from freezegun import freeze_time
 
 from institute import db, decisions, paths, workspaces
 from institute import fellow as fellow_mod
+
+
+@pytest.fixture()
+def fixed_now():
+    """Freeze wall-clock time to a deterministic instant."""
+    with freeze_time("2026-05-20T12:00:00Z") as frozen:
+        yield frozen
 
 
 @pytest.fixture()

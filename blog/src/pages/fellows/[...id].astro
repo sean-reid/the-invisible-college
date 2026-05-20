@@ -14,18 +14,14 @@ export async function getStaticPaths() {
   const backlinks = buildBacklinkMap(allPosts);
   // Map post slug -> title so review listings can show the publication name
   // instead of an unintelligible random suffix.
-  const postTitleBySlug = Object.fromEntries(
-    allPosts.map((p) => [p.id, p.data.title]),
-  );
+  const postTitleBySlug = Object.fromEntries(allPosts.map((p) => [p.id, p.data.title]));
 
   const fellowById = new Map(fellows.map((f) => [f.id, f]));
 
   return fellows.map((fellow) => {
     const publications = allPosts
       .filter((p) => p.data.authors.includes(fellow.data.name))
-      .sort(
-        (a, b) => b.data.publishedAt.getTime() - a.data.publishedAt.getTime(),
-      );
+      .sort((a, b) => b.data.publishedAt.getTime() - a.data.publishedAt.getTime());
     const totalCitations = publications.reduce(
       (sum, p) => sum + (backlinks.get(p.id)?.length ?? 0),
       0,
@@ -33,9 +29,7 @@ export async function getStaticPaths() {
 
     const reviewsGiven = allReviews
       .filter((r) => r.data.reviewer === fellow.data.name)
-      .sort(
-        (a, b) => b.data.submittedAt.getTime() - a.data.submittedAt.getTime(),
-      );
+      .sort((a, b) => b.data.submittedAt.getTime() - a.data.submittedAt.getTime());
 
     // Reviewer reputation: counts by recommendation + dissent rate.
     // Per Chapter 7, calibration is a public signal: a reviewer who
@@ -66,9 +60,7 @@ export async function getStaticPaths() {
     const reviewGroups = [...reviewsByPaper.entries()]
       .map(([postSlug, reviews]) => {
         reviews.sort((a, b) => a.data.round - b.data.round);
-        const latestAt = Math.max(
-          ...reviews.map((r) => r.data.submittedAt.getTime()),
-        );
+        const latestAt = Math.max(...reviews.map((r) => r.data.submittedAt.getTime()));
         return { postSlug, reviews, latestAt };
       })
       .sort((a, b) => b.latestAt - a.latestAt);
@@ -123,7 +115,7 @@ const addendumParagraphs = fellow.data.system_prompt_addendum
 >
   <article>
     <ArticleHeader eyebrow="Fellow" title={fellow.data.name}>
-      <dl class="meta mt-5 grid grid-cols-[max-content_1fr] gap-x-6 gap-y-1">
+      <dl class="meta mt-5 dl-grid">
         <dt class="smallcaps">Specialization</dt>
         <dd>{fellow.data.specialization}</dd>
 
@@ -189,9 +181,8 @@ const addendumParagraphs = fellow.data.system_prompt_addendum
     <section class="prose mb-16">
       <h2>Approach</h2>
       <p class="meta -mt-2 mb-6">
-        Below is this Fellow's self-described scholarly approach, the seed of
-        their identity as a scholar of the College. It is published in full for
-        transparency.
+        Below is this Fellow's self-described scholarly approach, the seed of their
+        identity as a scholar of the College. It is published in full for transparency.
       </p>
       {addendumParagraphs.map((p) => <p>{p}</p>)}
     </section>
@@ -276,9 +267,7 @@ const addendumParagraphs = fellow.data.system_prompt_addendum
                         </a>
                         <span class="text-rule-strong">·</span>
                         <span>{review.data.recommendation}</span>
-                        {review.data.dissent && (
-                          <span class="italic">(dissent)</span>
-                        )}
+                        {review.data.dissent && <span class="italic">(dissent)</span>}
                       </>
                     ))}
                   </p>

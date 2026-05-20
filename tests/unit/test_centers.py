@@ -6,6 +6,7 @@ from datetime import UTC, datetime, timedelta
 from pathlib import Path
 
 import pytest
+from freezegun import freeze_time
 
 from institute import centers, db
 from institute import fellow as fellow_mod
@@ -93,6 +94,7 @@ def test_list_open_omits_closed(isolated: Path) -> None:
     assert listed == [b.id]
 
 
+@freeze_time("2026-05-20T12:00:00Z")
 def test_expired_unclosed(isolated: Path) -> None:
     past = (datetime.now(UTC) - timedelta(days=10)).isoformat(timespec="seconds")
     with db.connection() as conn, db.transaction(conn):

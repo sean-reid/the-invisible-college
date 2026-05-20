@@ -121,11 +121,7 @@ def test_classify_from_porcelain_pure_operator() -> None:
 
 
 def test_classify_from_porcelain_mixed() -> None:
-    data = (
-        b" M docs/charter.md\x00"
-        b" M archive/drafts/p1.md\x00"
-        b"?? new-top-dir/x.txt\x00"
-    )
+    data = b" M docs/charter.md\x00 M archive/drafts/p1.md\x00?? new-top-dir/x.txt\x00"
     result = diff_classify.classify_from_porcelain(data)
     assert result.operator_edits == ["docs/charter.md"]
     assert result.fellow_outputs == ["archive/drafts/p1.md"]
@@ -264,11 +260,7 @@ def test_cli_diff_classify_from_file(tmp_path: Path) -> None:
     """``--from-file`` lets the daemon classify a saved baseline blob
     without needing the repo to still be on that revision."""
     blob = tmp_path / "baseline.bin"
-    blob.write_bytes(
-        b" M docs/charter.md\x00"
-        b" M archive/drafts/p1.md\x00"
-        b"?? new-top-dir/x.txt\x00"
-    )
+    blob.write_bytes(b" M docs/charter.md\x00 M archive/drafts/p1.md\x00?? new-top-dir/x.txt\x00")
     runner = CliRunner()
     result = runner.invoke(cli_main, ["diff-classify", "--from-file", str(blob)])
     assert result.exit_code == 0, result.output

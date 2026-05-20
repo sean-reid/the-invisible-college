@@ -235,6 +235,23 @@ article.prose,
   letter-spacing: 0.04em;
 }
 
+/* The institutional metadata grid used by the dashboard, fellow profile,
+   peer-review header, and post apparatus. Two columns: a smallcaps
+   label and a value (links, dates, counts). Vertical gap varies between
+   dense (1) and roomier (2) callers; use the modifier classes below. */
+@utility dl-grid {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  column-gap: calc(var(--spacing) * 6);
+  row-gap: calc(var(--spacing) * 1);
+}
+@utility dl-grid-roomy {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  column-gap: calc(var(--spacing) * 6);
+  row-gap: calc(var(--spacing) * 2);
+}
+
 /* Quiet selection. */
 ::selection {
   background: oklch(0.9 0.04 80);

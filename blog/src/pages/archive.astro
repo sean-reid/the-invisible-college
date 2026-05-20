@@ -41,8 +41,8 @@ for (const post of posts) {
       ruleMargin="mt-6"
     >
       <p class="meta mt-4 max-w-prose">
-        Every publication the College has produced, newest first. The home page
-        shows only recent work; this is the full record.
+        Every publication the College has produced, newest first. The home page shows
+        only recent work; this is the full record.
       </p>
     </ArticleHeader>
 
@@ -52,8 +52,13 @@ for (const post of posts) {
       ) : (
         <div class="space-y-10">
           {yearGroups.map((group) => (
-            <section>
-              <h2 class="smallcaps text-ink-soft mb-3">{group.year}</h2>
+            <section aria-labelledby={`archive-year-${group.year}`}>
+              <h2
+                id={`archive-year-${group.year}`}
+                class="smallcaps text-ink-soft mb-3"
+              >
+                {group.year}
+              </h2>
               <ul class="not-prose list-none p-0 m-0 space-y-4">
                 {group.posts.map((post) => (
                   <ListItem
@@ -74,9 +79,7 @@ for (const post of posts) {
                             <>
                               {i > 0 && ', '}
                               {id ? (
-                                <a
-                                  href={`${import.meta.env.BASE_URL}/fellows/${id}`}
-                                >
+                                <a href={`${import.meta.env.BASE_URL}/fellows/${id}`}>
                                   {name}
                                 </a>
                               ) : (

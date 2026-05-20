@@ -571,8 +571,6 @@ def _register_follow_up_questions(
     return added
 
 
-
-
 def _render_review_markdown(payload: dict, reviewer: Genome, role: Role) -> str:
     """Render a review JSON payload as the markdown stored in the archive."""
     lines = [
@@ -611,18 +609,27 @@ def _render_review_markdown(payload: dict, reviewer: Genome, role: Role) -> str:
     return "\n".join(lines)
 
 
-def run(project_id: str) -> None:
-    """Process one pending review for a project in DRAFTED or PEER_REVIEWING.
+_ALLOWED_VIOLATION_KINDS = {
+    "",
+    "deception",
+    "plagiarism",
+    "commercial",
+    "engagement_bait",
+    "harm",
+    "consciousness",
+    "other",
+}
 
-    Each invocation handles a single reviewer. Re-running `institute next`
-    works through the remaining reviewers until all are done.
+
+def _load_review_context(
+    project_id: str,
+) -> tuple[sqlite3.Row, int, str, list[ReviewSlot], set[str]]:
+    """Load project + slot + done-set in a single transaction.
+
+    Slot selection + persistence runs inside a single BEGIN IMMEDIATE so
+    concurrent peer_review invocations cannot both compute a panel from
+    an in-between state of `reviewer_marks`.
     """
-    # Slot selection + persistence runs inside a single BEGIN IMMEDIATE
-    # so concurrent peer_review invocations under different leads (or
-    # the same lead and the daemon) cannot both compute a panel from
-    # an in-between state of `reviewer_marks`. The picker's own cache
-    # (reviewer_slots table) makes the second invocation a no-op once
-    # the first has committed.
     with db.connection() as conn, db.transaction(conn):
         proj = conn.execute(
             "SELECT id, title, state, draft_path, lead_fellow_id, review_round "
@@ -636,35 +643,28 @@ def run(project_id: str) -> None:
         draft_md = (paths.ROOT / proj["draft_path"]).read_text(encoding="utf-8")
         slots = _pick_review_slots(conn, project_id, proj["lead_fellow_id"], review_round)
         done = _existing_reviews_in_round(conn, project_id, review_round)
+    return proj, review_round, draft_md, slots, done
 
-    remaining = [s for s in slots if s.reviewer_id not in done]
-    if not remaining:
-        # All reviews submitted for this round; route based on recommendations.
-        _transition_after_all_reviews(project_id, proj["title"], review_round)
-        return
 
-    slot = remaining[0]
-    with db.connection() as conn:
-        reviewer = fellow_mod.load_genome(conn, slot.reviewer_id)
-        prior_review_md = (
-            _load_round_1_review(conn, project_id, reviewer.id) if review_round > 1 else None
-        )
-    response_md = _load_latest_response_to_reviewers(project_id) if review_round > 1 else None
+def _stage_review_workspace(
+    *,
+    reviewer: Genome,
+    slot_role: Role,
+    project_id: str,
+    review_round: int,
+    draft_md: str,
+    prior_review_md: str | None,
+    response_md: str | None,
+) -> Path:
+    """Create the reviewer's workspace, clear stale outputs, stage inputs.
 
-    round_label = f" (round {review_round})" if review_round > 1 else ""
-    console.print(
-        f"[dim]Asking {reviewer.name} ({reviewer.id}) for a {slot.role} review{round_label}...[/dim]"
-    )
-
-    # Transition into PEER_REVIEWING the first time work starts for a round.
-    if proj["state"] == State.DRAFTED.value:
-        with db.connection() as conn, db.transaction(conn):
-            state.transition(conn, project_id, State.PEER_REVIEWING)
-
+    Note: unlike `curriculum_response` and `research`, peer_review does
+    NOT skip the Claude call when prior outputs exist. The deliberate
+    `clear_outputs` here guarantees that a re-invocation files a fresh
+    review against the current draft, even if a prior attempt left
+    workspace files behind.
+    """
     workspace = workspaces.workspace_for(reviewer.id, f"{project_id}-review-r{review_round}")
-    # Clear stale output files from any prior aborted/failed attempt.
-    # require_output below would otherwise happily return content from
-    # a previous run if Claude does not re-write every file.
     workspaces.clear_outputs(
         workspace,
         (
@@ -682,33 +682,22 @@ def run(project_id: str) -> None:
             workspace, "prior-review.md", prior_review_md or "(prior review not found)"
         )
         workspaces.stage_input(workspace, "response.md", response_md or "(no response on file)")
+    del slot_role  # only used by the brief composer; kept for future routing
+    return workspace
 
-    if review_round == 1:
-        brief = BRIEF_ROUND_1.format(
-            role=slot.role,
-            reviewer_name=reviewer.name,
-            reviewer_rank=reviewer.rank,
-            reviewer_specialization=reviewer.specialization,
-        )
-    else:
-        brief = BRIEF_ROUND_2.format(
-            role=slot.role,
-            reviewer_name=reviewer.name,
-            reviewer_rank=reviewer.rank,
-            reviewer_specialization=reviewer.specialization,
-        )
 
-    claude_runner.invoke(
-        FellowTask(
-            genome=reviewer,
-            project_id=project_id,
-            step=f"peer_review:{slot.role}",
-            brief=brief,
-            workspace=workspace,
-            extra_dirs=(paths.DOCS, paths.ARCHIVE),
-        )
+def _compose_review_brief(*, reviewer: Genome, slot_role: Role, review_round: int) -> str:
+    template = BRIEF_ROUND_1 if review_round == 1 else BRIEF_ROUND_2
+    return template.format(
+        role=slot_role,
+        reviewer_name=reviewer.name,
+        reviewer_rank=reviewer.rank,
+        reviewer_specialization=reviewer.specialization,
     )
 
+
+def _parse_review_payload(workspace: Path) -> dict:
+    """Read review output files; validate; return the assembled payload."""
     summary = workspaces.require_output(workspace, "summary.md", min_chars=30)
     strengths = workspaces.require_output(workspace, "strengths.md", min_chars=30)
     concerns = workspaces.require_output(workspace, "concerns.md", min_chars=30)
@@ -741,16 +730,6 @@ def run(project_id: str) -> None:
 
     charter_violation = bool(decision_payload.get("charter_violation", False))
     violation_kind = str(decision_payload.get("violation_kind", "")).strip().lower()
-    _ALLOWED_VIOLATION_KINDS = {
-        "",
-        "deception",
-        "plagiarism",
-        "commercial",
-        "engagement_bait",
-        "harm",
-        "consciousness",
-        "other",
-    }
     if violation_kind not in _ALLOWED_VIOLATION_KINDS:
         raise RuntimeError(
             f"Invalid violation_kind: {violation_kind!r}. "
@@ -764,7 +743,7 @@ def run(project_id: str) -> None:
         # Charter violation must also pull the cord.
         raise RuntimeError("charter_violation requires andon_cord to also be true.")
 
-    payload = {
+    return {
         "summary": summary,
         "strengths": strengths,
         "concerns": concerns,
@@ -777,19 +756,24 @@ def run(project_id: str) -> None:
         "violation_kind": violation_kind,
     }
 
-    round_suffix = f"-r{review_round}" if review_round > 1 else ""
-    review_md = _render_review_markdown(payload, reviewer, slot.role)
-    review_path = paths.REVIEWS / project_id / f"review-by-{reviewer.id}{round_suffix}.md"
-    atomic_write(review_path, review_md)
 
+def _persist_review(
+    *,
+    project_id: str,
+    project_title: str,
+    reviewer: Genome,
+    slot_role: Role,
+    review_round: int,
+    payload: dict,
+    review_path: Path,
+) -> None:
     now = datetime.now(UTC).isoformat(timespec="seconds")
     review_db_id = f"{project_id}-{reviewer.id}-r{review_round}-{secrets.token_hex(3)}"
-
     decision = decisions.Decision(
         kind="peer_review",
-        title=f"Peer review by {reviewer.name} (round {review_round}): {proj['title']}",
+        title=f"Peer review by {reviewer.name} (round {review_round}): {project_title}",
         body=(
-            f"**Reviewer:** {reviewer.name} (`{reviewer.id}`, {slot.role})\n\n"
+            f"**Reviewer:** {reviewer.name} (`{reviewer.id}`, {slot_role})\n\n"
             f"**Round:** {review_round}\n\n"
             f"**Recommendation:** `{payload['recommendation']}`\n\n"
             f"**Confidence:** {payload['confidence']}\n\n"
@@ -799,7 +783,6 @@ def run(project_id: str) -> None:
         actors=[reviewer.id],
         related_project=project_id,
     )
-
     with db.connection() as conn, db.transaction(conn):
         conn.execute(
             "INSERT INTO reviews "
@@ -811,17 +794,17 @@ def run(project_id: str) -> None:
                 review_db_id,
                 project_id,
                 reviewer.id,
-                slot.role,
+                slot_role,
                 payload["recommendation"],
                 payload["confidence"],
                 str(review_path.relative_to(paths.ROOT)),
                 now,
                 int(bool(payload.get("dissent_intent", False))),
                 review_round,
-                int(andon_cord),
-                andon_reason or None,
-                int(charter_violation),
-                violation_kind or None,
+                int(payload["andon_cord"]),
+                payload["andon_reason"] or None,
+                int(payload["charter_violation"]),
+                payload["violation_kind"] or None,
             ),
         )
         conn.execute(
@@ -830,9 +813,23 @@ def run(project_id: str) -> None:
         )
         decisions.record(conn, decision)
 
-    # Both sides of the review go into episodic memory.
+
+def _ingest_review_memory(
+    *,
+    project_id: str,
+    project_title: str,
+    reviewer: Genome,
+    slot_role: Role,
+    review_round: int,
+    payload: dict,
+    review_md: str,
+    review_path: Path,
+) -> None:
+    """Both sides of the review go into episodic memory."""
+    from institute import collaborators
+
     review_title = (
-        f"Round {review_round} review of {proj['title']} ({slot.role}, "
+        f"Round {review_round} review of {project_title} ({slot_role}, "
         f"recommended {payload['recommendation']})"
     )
     episodic.safe_ingest(
@@ -843,25 +840,21 @@ def run(project_id: str) -> None:
         source_path=str(review_path.relative_to(paths.ROOT)),
         project_id=project_id,
         metadata={
-            "role": slot.role,
+            "role": slot_role,
             "round": review_round,
             "recommendation": payload["recommendation"],
             "confidence": payload["confidence"],
             "dissent": bool(payload.get("dissent_intent", False)),
-            "andon_cord": andon_cord,
+            "andon_cord": payload["andon_cord"],
         },
     )
-    # Each co-author on the project (lead + collaborators) gets the
-    # received-review in their episodic memory — they're all judged by it.
-    from institute import collaborators
-
     with db.connection() as conn:
         author_ids = collaborators.author_ids(conn, project_id)
     for author_id in author_ids:
         episodic.safe_ingest(
             fellow_id=author_id,
             kind="review_received",
-            title=f"Review from {reviewer.name} on {proj['title']} (round {review_round})",
+            title=f"Review from {reviewer.name} on {project_title} (round {review_round})",
             content=review_md,
             source_path=str(review_path.relative_to(paths.ROOT)),
             project_id=project_id,
@@ -871,6 +864,85 @@ def run(project_id: str) -> None:
                 "recommendation": payload["recommendation"],
             },
         )
+
+
+def run(project_id: str) -> None:
+    """Process one pending review for a project in DRAFTED or PEER_REVIEWING.
+
+    Each invocation handles a single reviewer. Re-running `institute next`
+    works through the remaining reviewers until all are done.
+    """
+    proj, review_round, draft_md, slots, done = _load_review_context(project_id)
+
+    remaining = [s for s in slots if s.reviewer_id not in done]
+    if not remaining:
+        _transition_after_all_reviews(project_id, proj["title"], review_round)
+        return
+
+    slot = remaining[0]
+    with db.connection() as conn:
+        reviewer = fellow_mod.load_genome(conn, slot.reviewer_id)
+        prior_review_md = (
+            _load_round_1_review(conn, project_id, reviewer.id) if review_round > 1 else None
+        )
+    response_md = _load_latest_response_to_reviewers(project_id) if review_round > 1 else None
+
+    round_label = f" (round {review_round})" if review_round > 1 else ""
+    console.print(
+        f"[dim]Asking {reviewer.name} ({reviewer.id}) for a {slot.role} review{round_label}...[/dim]"
+    )
+
+    # Transition into PEER_REVIEWING the first time work starts for a round.
+    if proj["state"] == State.DRAFTED.value:
+        with db.connection() as conn, db.transaction(conn):
+            state.transition(conn, project_id, State.PEER_REVIEWING)
+
+    workspace = _stage_review_workspace(
+        reviewer=reviewer,
+        slot_role=slot.role,
+        project_id=project_id,
+        review_round=review_round,
+        draft_md=draft_md,
+        prior_review_md=prior_review_md,
+        response_md=response_md,
+    )
+    brief = _compose_review_brief(reviewer=reviewer, slot_role=slot.role, review_round=review_round)
+    claude_runner.invoke(
+        FellowTask(
+            genome=reviewer,
+            project_id=project_id,
+            step=f"peer_review:{slot.role}",
+            brief=brief,
+            workspace=workspace,
+            extra_dirs=(paths.DOCS, paths.ARCHIVE),
+        )
+    )
+
+    payload = _parse_review_payload(workspace)
+    round_suffix = f"-r{review_round}" if review_round > 1 else ""
+    review_md = _render_review_markdown(payload, reviewer, slot.role)
+    review_path = paths.REVIEWS / project_id / f"review-by-{reviewer.id}{round_suffix}.md"
+    atomic_write(review_path, review_md)
+
+    _persist_review(
+        project_id=project_id,
+        project_title=proj["title"],
+        reviewer=reviewer,
+        slot_role=slot.role,
+        review_round=review_round,
+        payload=payload,
+        review_path=review_path,
+    )
+    _ingest_review_memory(
+        project_id=project_id,
+        project_title=proj["title"],
+        reviewer=reviewer,
+        slot_role=slot.role,
+        review_round=review_round,
+        payload=payload,
+        review_md=review_md,
+        review_path=review_path,
+    )
 
     # Parse and register the optional follow-up-questions.md. Outside
     # reviewers are the primary expected source; the file is optional
@@ -884,20 +956,37 @@ def run(project_id: str) -> None:
     )
 
     remaining_after = len(remaining) - 1
+    _print_review_summary(
+        payload=payload,
+        review_round=review_round,
+        review_path=review_path,
+        added_problems=added,
+        remaining_after=remaining_after,
+    )
+    if remaining_after == 0:
+        _transition_after_all_reviews(project_id, proj["title"], review_round)
+
+
+def _print_review_summary(
+    *,
+    payload: dict,
+    review_round: int,
+    review_path: Path,
+    added_problems: list[str],
+    remaining_after: int,
+) -> None:
     console.print()
     console.print(
         f"[green]Review filed.[/green]  Recommendation: "
         f"[bold]{payload['recommendation']}[/bold]  (round {review_round})"
     )
     console.print(f"[green]Review file:[/green]    {review_path.relative_to(paths.ROOT)}")
-    if added:
-        console.print(f"[green]Open problems added:[/green] {len(added)}")
-        for slug in added:
+    if added_problems:
+        console.print(f"[green]Open problems added:[/green] {len(added_problems)}")
+        for slug in added_problems:
             console.print(f"  - {slug}")
     if remaining_after > 0:
         console.print(f"[dim]{remaining_after} more reviewer(s) to go in this round.[/dim]")
-    else:
-        _transition_after_all_reviews(project_id, proj["title"], review_round)
 
 
 def _transition_after_all_reviews(project_id: str, title: str, review_round: int) -> None:

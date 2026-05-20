@@ -1,12 +1,11 @@
 ---
 import Base from '../../layouts/Base.astro';
 import { getCollection } from 'astro:content';
+import ArticleHeader from '../../components/ArticleHeader.astro';
 import { longDateFormatter } from '../../lib/date-formatters';
 
 // Group preprint version entries by project, newest version first.
-type PreprintEntry = Awaited<
-  ReturnType<typeof getCollection<'preprints'>>
->[number];
+type PreprintEntry = Awaited<ReturnType<typeof getCollection<'preprints'>>>[number];
 type ProjectGroup = {
   projectId: string;
   latest: PreprintEntry;
@@ -37,83 +36,92 @@ projects.sort(
   description="Public-but-provisional snapshots of in-flight work at the Invisible College. Not peer reviewed; surfaced for low-stakes reaction."
 >
   <article>
-    <header class="mb-10">
-      <p class="runninghead">Preprints</p>
-      <h1
-        class="mt-3 text-3xl sm:text-4xl font-medium tracking-tight leading-[1.15]"
-      >
-        Working preprints
-      </h1>
+    <ArticleHeader
+      eyebrow="Preprints"
+      title="Working preprints"
+      size="section"
+      spacing="tight"
+      ruleMargin="mt-8"
+      showRule={false}
+    >
       <p class="meta mt-4 max-w-prose">
         Deliberate checkpoints of in-flight research. Posted by a lead Fellow
-        mid-project as work-in-progress, not as a publication. None of these
-        have passed peer review.
+        mid-project as work-in-progress, not as a publication. None of these have passed
+        peer review.
       </p>
       <aside
         class="mt-6 border-l-4 border-andon pl-4 py-3 bg-paper-deep not-prose"
         role="note"
+        aria-labelledby="preprints-provisional"
       >
-        <p class="runninghead text-andon mb-1">Provisional</p>
+        <p id="preprints-provisional" class="runninghead text-andon mb-1">
+          Provisional
+        </p>
         <p class="meta">
           A preprint is a public reading of work-in-progress. The College's
           peer-reviewed record lives at <a href={`${import.meta.env.BASE_URL}/`}
             >publications</a
-          > and at the <a href={`${import.meta.env.BASE_URL}/archive`}
-            >full archive</a
-          >. Preprints do not count as publications and are not subject to the
-          editorial gate.
+          > and at the <a href={`${import.meta.env.BASE_URL}/archive`}>full archive</a>.
+          Preprints do not count as publications and are not subject to the editorial
+          gate.
         </p>
       </aside>
       <hr class="rule mt-8" />
-    </header>
+    </ArticleHeader>
 
     {
       projects.length === 0 ? (
         <p class="meta italic">No preprints posted yet.</p>
       ) : (
-        <ol class="not-prose space-y-7 list-none pl-0">
-          {projects.map((p) => (
-            <li>
-              <a
-                href={`${import.meta.env.BASE_URL}/preprints/${p.projectId}`}
-                class="block text-xl font-medium leading-tight no-underline hover:underline"
-              >
-                {p.latest.data.title}
-              </a>
-              <p class="meta mt-1 flex flex-wrap items-baseline gap-x-2">
-                <span class="tabular">
-                  v{p.latest.data.version}
-                  {p.versions.length > 1 && (
-                    <span class="ml-1 text-ink-soft">
-                      ({p.versions.length} versions)
-                    </span>
-                  )}
-                </span>
-                <span class="text-rule-strong">·</span>
-                <span class="tabular">
-                  {longDateFormatter.format(p.latest.data.postedAt)}
-                </span>
-                <span class="text-rule-strong">·</span>
-                <span>
-                  {p.latest.data.leadId ? (
-                    <a
-                      href={`${import.meta.env.BASE_URL}/fellows/${p.latest.data.leadId}`}
-                    >
-                      {p.latest.data.lead}
-                    </a>
-                  ) : (
-                    p.latest.data.lead
-                  )}
-                </span>
-              </p>
-              {p.latest.data.abstract && (
-                <p class="mt-2 text-ink-soft leading-relaxed">
-                  {p.latest.data.abstract}
+        <section aria-labelledby="preprints-list">
+          <h2 id="preprints-list" class="runninghead mb-4">
+            Posted preprints
+          </h2>
+          <hr class="rule mb-6" />
+          <ol class="not-prose space-y-7 list-none pl-0">
+            {projects.map((p) => (
+              <li>
+                <a
+                  href={`${import.meta.env.BASE_URL}/preprints/${p.projectId}`}
+                  class="block text-xl font-medium leading-tight no-underline hover:underline"
+                >
+                  {p.latest.data.title}
+                </a>
+                <p class="meta mt-1 flex flex-wrap items-baseline gap-x-2">
+                  <span class="tabular">
+                    v{p.latest.data.version}
+                    {p.versions.length > 1 && (
+                      <span class="ml-1 text-ink-soft">
+                        ({p.versions.length} versions)
+                      </span>
+                    )}
+                  </span>
+                  <span class="text-rule-strong">·</span>
+                  <span class="tabular">
+                    {longDateFormatter.format(p.latest.data.postedAt)}
+                  </span>
+                  <span class="text-rule-strong">·</span>
+                  <span>
+                    {p.latest.data.leadId ? (
+                      <a
+                        href={`${import.meta.env.BASE_URL}/fellows/${p.latest.data.leadId}`}
+                      >
+                        {p.latest.data.lead}
+                      </a>
+                    ) : (
+                      p.latest.data.lead
+                    )}
+                  </span>
                 </p>
-              )}
-            </li>
-          ))}
-        </ol>
+                {p.latest.data.abstract && (
+                  <p class="mt-2 text-ink-soft leading-relaxed">
+                    {p.latest.data.abstract}
+                  </p>
+                )}
+              </li>
+            ))}
+          </ol>
+        </section>
       )
     }
   </article>

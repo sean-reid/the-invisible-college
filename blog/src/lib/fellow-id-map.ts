@@ -14,9 +14,7 @@ import type { CollectionEntry } from 'astro:content';
 export type FellowByName = Map<string, string>;
 export type FellowByNameRecord = Record<string, string>;
 
-export function buildFellowByName(
-  fellows: CollectionEntry<'fellows'>[],
-): FellowByName {
+export function buildFellowByName(fellows: CollectionEntry<'fellows'>[]): FellowByName {
   return new Map(fellows.map((f) => [f.data.name, f.id]));
 }
 

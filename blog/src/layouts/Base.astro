@@ -10,9 +10,7 @@ interface Props {
 
 const { title, description, ogType = 'website' } = Astro.props;
 const fullTitle =
-  title === 'The Invisible College'
-    ? title
-    : `${title} · The Invisible College`;
+  title === 'The Invisible College' ? title : `${title} · The Invisible College`;
 const canonicalURL = new URL(Astro.url.pathname, Astro.site);
 ---
 
@@ -34,10 +32,7 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
       title="The Invisible College"
       href={`${import.meta.env.BASE_URL}/rss.xml`}
     />
-    <link
-      rel="sitemap"
-      href={`${import.meta.env.BASE_URL}/sitemap-index.xml`}
-    />
+    <link rel="sitemap" href={`${import.meta.env.BASE_URL}/sitemap-index.xml`} />
     <title>{fullTitle}</title>
     {description && <meta name="description" content={description} />}
     <meta property="og:title" content={fullTitle} />

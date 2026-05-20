@@ -6,6 +6,7 @@ from datetime import UTC, datetime, timedelta
 from pathlib import Path
 
 import pytest
+from freezegun import freeze_time
 
 from institute import db, paths, reviewer_eligibility
 from institute import fellow as fellow_mod
@@ -111,6 +112,7 @@ def test_is_eligible_above_and_below_threshold(isolated: Path) -> None:
         assert reviewer_eligibility.is_eligible(conn, "pierre") is False
 
 
+@freeze_time("2026-05-20T12:00:00Z")
 def test_expired_marks_do_not_count_toward_weight(isolated: Path) -> None:
     with db.connection() as conn, db.transaction(conn):
         _seed(conn, _genome("pierre", "Pierre"))

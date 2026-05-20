@@ -32,6 +32,7 @@ from rich.prompt import Prompt
 
 from institute import archive_index, claude_runner, db, decisions, parsing, paths, reputation
 from institute import fellow as fellow_mod
+from institute.brief_helpers import JSON_OUTPUT_RULES
 from institute.claude_runner import FellowTask
 from institute.fellow import Genome, Rank
 from institute.workflows import concern_review
@@ -55,7 +56,8 @@ RANK_ORDER: tuple[Rank, ...] = (
 )
 
 
-PROMOTE_BRIEF = """\
+PROMOTE_BRIEF = (
+    """\
 You are the orchestrator of the Invisible College. The Tenure
 Committee has asked you to recommend a rank for a Fellow based on
 their body of work. Chapter 3 of the design (`docs/03-fellows.md`)
@@ -146,8 +148,9 @@ Apply these criteria to the dossier. Consider:
 
 # CRITICAL OUTPUT RULES
 
-Reply with a single JSON object. No prose preface, no summary, no code
-fence. First character `{{`, last `}}`.
+"""
+    + JSON_OUTPUT_RULES
+    + """
 
 # Output shape
 
@@ -160,9 +163,11 @@ fence. First character `{{`, last `}}`.
 }}
 ```
 """
+)
 
 
-PANELIST_BRIEF = """\
+PANELIST_BRIEF = (
+    """\
 You are serving on the Tenure Committee. The College has asked you to
 review a fellow Scholar's body of work and cast a written vote on
 their rank.
@@ -201,8 +206,9 @@ pause. Do not produce template prose.
 
 # CRITICAL OUTPUT RULES
 
-Reply with a single JSON object. No prose preface, no summary, no code
-fence. First character `{{`, last `}}`.
+"""
+    + JSON_OUTPUT_RULES
+    + """
 
 # Output shape
 
@@ -214,6 +220,7 @@ fence. First character `{{`, last `}}`.
 }}
 ```
 """
+)
 
 
 VALID_RANKS: set[str] = set(RANK_ORDER) | {"hold"}

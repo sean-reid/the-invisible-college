@@ -6,6 +6,12 @@
 import { existsSync, readdirSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 
+// Single source of truth for the blog package root. Astro's content
+// pipeline runs with cwd set to the blog/ directory; resolve all
+// build-time file lookups against this constant so every helper in
+// lib/ agrees on the same anchor.
+export const REPO_ROOT = process.cwd();
+
 export type Artifact = {
   name: string;
   size: number;
@@ -13,7 +19,7 @@ export type Artifact = {
 };
 
 export function listArtifacts(projectId: string): Artifact[] {
-  const dir = join(process.cwd(), 'public', 'code', projectId);
+  const dir = join(REPO_ROOT, 'public', 'code', projectId);
   if (!existsSync(dir)) return [];
   return readdirSync(dir)
     .filter((name) => !name.startsWith('.'))
@@ -32,5 +38,5 @@ export function listArtifacts(projectId: string): Artifact[] {
 export function humanSize(bytes: number): string {
   if (bytes < 1024) return `${bytes} B`;
   if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
-  return `${(bytes / (1024 * 1024)).toFixed(2)} MB`;
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }

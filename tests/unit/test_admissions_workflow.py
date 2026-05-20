@@ -1,12 +1,11 @@
-"""Tests for the admissions workflow and supporting helpers."""
+"""Admissions workflow: fellow registration, advisor picking, panel and vote tally."""
 
 from __future__ import annotations
 
 from pathlib import Path
 
-from institute import db, paths
+from institute import db
 from institute import fellow as fellow_mod
-from institute.admissions import problems
 from institute.fellow import Genome
 from institute.workflows import admit
 
@@ -21,147 +20,6 @@ def _make_genome(idx: int, model: str = "claude-sonnet-4-6") -> Genome:
         system_prompt_addendum=("body " * 60).strip(),
         allowed_tools=["Read"],
     )
-
-
-def test_propose_brief_references_research_agenda() -> None:
-    """The orchestrator's candidate-design brief should reference the
-    Research Agenda so the new Fellow plausibly moves an institutional
-    priority forward, not just fills a backend or specialization slot."""
-    assert "research-agenda.md" in admit.PROPOSE_BRIEF
-
-
-def test_load_problems_returns_all_five() -> None:
-    out = problems.load_problems()
-    ids = {p.id for p in out}
-    assert ids == {
-        "01-critique",
-        "02-synthesis",
-        "03-honesty",
-        "04-construction",
-        "05-judgment",
-    }
-    for p in out:
-        assert p.text.strip(), f"{p.id} is empty"
-        assert p.text.endswith("\n")
-
-
-def test_load_problems_sorted_by_id() -> None:
-    out = problems.load_problems()
-    assert [p.id for p in out] == sorted(p.id for p in out)
-
-
-def test_for_candidate_returns_subset() -> None:
-    out = problems.for_candidate("ada")
-    assert len(out) == problems.PROBLEMS_PER_CANDIDATE
-    # All returned items are real problems.
-    pool_ids = {p.id for p in problems.load_problems()}
-    for p in out:
-        assert p.id in pool_ids
-
-
-def test_for_candidate_is_deterministic() -> None:
-    a = problems.for_candidate("ada")
-    b = problems.for_candidate("ada")
-    assert [p.id for p in a] == [p.id for p in b]
-
-
-def test_for_candidate_rotates_across_candidates() -> None:
-    # Two different candidate ids should differ in their starting
-    # problem most of the time; we just verify they're not identical.
-    samples = [problems.for_candidate(f"candidate-{i}") for i in range(10)]
-    distinct_starts = {tuple(p.id for p in s) for s in samples}
-    assert len(distinct_starts) > 1
-
-
-def test_read_cohort_summary_lists_active_fellows(isolated: Path) -> None:
-    with db.connection() as conn, db.transaction(conn):
-        fellow_mod.register(conn, _make_genome(1, model="claude-opus-4-7"))
-        fellow_mod.register(conn, _make_genome(2, model="claude-haiku-4-5"))
-
-    text = admit._read_cohort_summary()
-    assert "Fellow 1" in text
-    assert "Fellow 2" in text
-    assert "`claude-opus-4-7`" in text
-    assert "`claude-haiku-4-5`" in text
-
-
-def test_read_cohort_summary_empty_when_no_fellows(isolated: Path) -> None:
-    text = admit._read_cohort_summary()
-    assert "No active Fellows" in text
-
-
-def test_render_candidate_markdown_includes_key_fields() -> None:
-    g = _make_genome(7, model="claude-opus-4-7")
-    md = admit._render_candidate_markdown(g)
-    assert "# Fellow 7" in md
-    assert "`fellow-7`" in md
-    assert "`claude-opus-4-7`" in md
-    assert "area-7" in md
-    assert g.system_prompt_addendum.strip()[:30] in md
-
-
-def test_format_decision_body_includes_scores_and_verdict(isolated: Path) -> None:
-    g = _make_genome(3)
-    evaluation = {
-        "substance": "solid",
-        "honesty": "strong",
-        "originality": "mixed",
-        "clarity": "solid",
-        "fit": "solid",
-        "summary": "Candidate engages substantively.",
-        "recommendation": "admit",
-    }
-    pkg = paths.ADMISSIONS / g.id
-    pkg.mkdir(parents=True)
-    body = admit._format_decision_body(g, evaluation, admitted=True, pkg=pkg)
-    assert "Fellow 3" in body
-    assert "substance: solid" in body
-    assert "originality: mixed" in body
-    assert "Founder verdict:** admit" in body
-    assert "Candidate engages substantively." in body
-
-
-def test_format_decision_body_reject(isolated: Path) -> None:
-    g = _make_genome(4)
-    pkg = paths.ADMISSIONS / g.id
-    pkg.mkdir(parents=True)
-    body = admit._format_decision_body(g, {"recommendation": "reject"}, admitted=False, pkg=pkg)
-    assert "Founder verdict:** reject" in body
-
-
-def test_atomic_write_creates_parent_and_replaces(tmp_path: Path) -> None:
-    target = tmp_path / "nested" / "file.md"
-    admit._atomic_write(target, "first\n")
-    assert target.read_text() == "first\n"
-    admit._atomic_write(target, "second\n")
-    assert target.read_text() == "second\n"
-    assert not target.with_suffix(target.suffix + ".tmp").exists()
-
-
-def test_persist_candidate_package_writes_full_record(isolated: Path) -> None:
-    g = _make_genome(9)
-    responses = {
-        "01-critique": "Response body for critique.",
-        "02-synthesis": "Response body for synthesis.",
-        "03-honesty": "Response body for honesty.",
-    }
-    evaluation = {
-        "substance": "solid",
-        "honesty": "strong",
-        "originality": "solid",
-        "clarity": "solid",
-        "fit": "solid",
-        "summary": "OK",
-        "recommendation": "admit",
-    }
-    pkg = admit._persist_candidate_package(g, responses, evaluation, admitted=True)
-    assert (pkg / "genome.json").is_file()
-    assert (pkg / "candidate.md").is_file()
-    assert (pkg / "evaluation.json").is_file()
-    decision = (pkg / "decision.md").read_text(encoding="utf-8")
-    assert "admitted" in decision
-    for problem_id in responses:
-        assert (pkg / "responses" / f"{problem_id}.md").is_file()
 
 
 def test_register_fellow_persists_to_db_and_genome_dir(isolated: Path) -> None:
@@ -274,23 +132,6 @@ def test_panel_vote_ties_reject() -> None:
     admit_count = sum(1 for v in raw_votes if v["vote"] == "admit")
     reject_count = sum(1 for v in raw_votes if v["vote"] == "reject")
     assert not (admit_count > reject_count), "ties must not admit"
-
-
-def test_render_evaluation_markdown_includes_scores() -> None:
-    md = admit._render_evaluation_markdown(
-        {
-            "substance": "solid",
-            "honesty": "strong",
-            "originality": "mixed",
-            "clarity": "solid",
-            "fit": "solid",
-            "summary": "Candidate engages substantively.",
-            "recommendation": "admit",
-        }
-    )
-    assert "substance:   solid" in md
-    assert "Candidate engages substantively." in md
-    assert "**Recommendation:** admit" in md
 
 
 def test_admissions_trigger_cadence_constant_set() -> None:

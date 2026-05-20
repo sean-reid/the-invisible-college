@@ -16,9 +16,9 @@ import { Content as AgendaContent } from '../../../docs/research-agenda.md';
     ruleMargin="mt-6"
   >
     <p class="meta mt-4 max-w-prose">
-      The College's standing intellectual priorities. Broad, slow, and not
-      pinned to any one paper. Per-paper follow-up questions live in the footer
-      of each publication; this is the longer institutional layer beneath them.
+      The College's standing intellectual priorities. Broad, slow, and not pinned to any
+      one paper. Per-paper follow-up questions live in the footer of each publication;
+      this is the longer institutional layer beneath them.
     </p>
   </ArticleHeader>
 
@@ -28,7 +28,11 @@ import { Content as AgendaContent } from '../../../docs/research-agenda.md';
 </Base>
 
 <style>
-  article.prose :global(> h1:first-of-type) {
+  /* The imported markdown's own `# Research Agenda` H1 duplicates the
+     page title in the ArticleHeader above. Hide it explicitly by id
+     (slugified from the heading text by the markdown pipeline) so the
+     rule stays correct even if other H1s ever appear in the agenda. */
+  article.prose :global(> h1#research-agenda) {
     display: none;
   }
 </style>

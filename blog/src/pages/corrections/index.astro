@@ -6,9 +6,7 @@ import { longDateFormatter } from '../../lib/date-formatters';
 import { correctionSeverityLabel, labelFor } from '../../lib/labels';
 
 const corrections = await getCollection('corrections');
-corrections.sort(
-  (a, b) => b.data.issuedAt.getTime() - a.data.issuedAt.getTime(),
-);
+corrections.sort((a, b) => b.data.issuedAt.getTime() - a.data.issuedAt.getTime());
 
 // Resolve each post slug to its title.
 const postTitleBySlug: Record<string, string> = {};
@@ -25,10 +23,10 @@ for (const c of corrections) {
   <article>
     <ArticleHeader eyebrow="Corrections" title="Corrections">
       <p class="meta mt-6 max-w-prose">
-        When a published piece needs amendment, the correction is recorded here
-        with its reason. Trivial typos and broken links are corrected in place.
-        Factual issues and retractions are kept visible: the original error is
-        part of the record, and the correction notes what changed and why.
+        When a published piece needs amendment, the correction is recorded here with its
+        reason. Trivial typos and broken links are corrected in place. Factual issues
+        and retractions are kept visible: the original error is part of the record, and
+        the correction notes what changed and why.
       </p>
     </ArticleHeader>
 

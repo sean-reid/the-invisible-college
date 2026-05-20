@@ -10,7 +10,11 @@ import json
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
 
+from freezegun import freeze_time
+
 from institute import budget
+
+FROZEN = "2026-05-20T12:00:00Z"
 
 
 def _write_audit(path: Path, entries: list[dict]) -> None:
@@ -21,6 +25,7 @@ def _ts(when: datetime) -> str:
     return when.isoformat(timespec="seconds")
 
 
+@freeze_time(FROZEN)
 def test_today_usd_sums_only_today(tmp_path: Path) -> None:
     log = tmp_path / "audit.log"
     now = datetime.now(UTC)
@@ -40,6 +45,7 @@ def test_today_usd_empty_log_is_zero(tmp_path: Path) -> None:
     assert budget.today_usd(audit_log=tmp_path / "missing.log") == 0.0
 
 
+@freeze_time(FROZEN)
 def test_daily_total_skips_malformed_lines(tmp_path: Path) -> None:
     log = tmp_path / "audit.log"
     today = datetime.now(UTC).date().isoformat()
@@ -59,6 +65,7 @@ def test_daily_total_skips_malformed_lines(tmp_path: Path) -> None:
     assert budget.daily_total_usd(today, audit_log=log) == 3.5
 
 
+@freeze_time(FROZEN)
 def test_austerity_disabled_when_cap_zero(tmp_path: Path) -> None:
     log = tmp_path / "audit.log"
     now = datetime.now(UTC)
@@ -68,6 +75,7 @@ def test_austerity_disabled_when_cap_zero(tmp_path: Path) -> None:
     assert snapshot.disabled
 
 
+@freeze_time(FROZEN)
 def test_austerity_levels_at_thresholds(tmp_path: Path) -> None:
     log = tmp_path / "audit.log"
     now = datetime.now(UTC)
@@ -89,6 +97,7 @@ def test_austerity_levels_at_thresholds(tmp_path: Path) -> None:
     assert budget.current_status(cap, audit_log=log).level == "hard"
 
 
+@freeze_time(FROZEN)
 def test_austerity_levels_respect_custom_soft_threshold(tmp_path: Path) -> None:
     log = tmp_path / "audit.log"
     now = datetime.now(UTC)
@@ -99,6 +108,7 @@ def test_austerity_levels_respect_custom_soft_threshold(tmp_path: Path) -> None:
     assert snap.soft_cap_usd == 5.0
 
 
+@freeze_time(FROZEN)
 def test_status_for_date_isolates_one_day(tmp_path: Path) -> None:
     log = tmp_path / "audit.log"
     today = datetime.now(UTC).date()
@@ -118,6 +128,7 @@ def test_status_for_date_isolates_one_day(tmp_path: Path) -> None:
     assert today_snap.level == "none"
 
 
+@freeze_time(FROZEN)
 def test_last_n_days_includes_zero_days(tmp_path: Path) -> None:
     log = tmp_path / "audit.log"
     today = datetime.now(UTC).date()
@@ -143,6 +154,7 @@ def test_last_n_days_handles_n_le_zero() -> None:
     assert budget.last_n_days(-1) == []
 
 
+@freeze_time(FROZEN)
 def test_headline_disabled_message(tmp_path: Path) -> None:
     log = tmp_path / "audit.log"
     now = datetime.now(UTC)
@@ -151,6 +163,7 @@ def test_headline_disabled_message(tmp_path: Path) -> None:
     assert "no daily cap" in snap.headline()
 
 
+@freeze_time(FROZEN)
 def test_headline_enabled_message(tmp_path: Path) -> None:
     log = tmp_path / "audit.log"
     now = datetime.now(UTC)

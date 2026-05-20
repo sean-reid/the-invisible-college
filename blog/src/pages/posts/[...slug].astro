@@ -86,9 +86,7 @@ export async function getStaticPaths() {
       props: {
         post,
         reviews,
-        reviewRounds: Array.from(reviewsByRound.entries()).sort(
-          ([a], [b]) => a - b,
-        ),
+        reviewRounds: Array.from(reviewsByRound.entries()).sort(([a], [b]) => a - b),
         fellowByName,
         citedBy,
         dissents,
@@ -112,11 +110,7 @@ const {
 const { Content } = await render(post);
 ---
 
-<Base
-  title={post.data.title}
-  description={post.data.description}
-  ogType="article"
->
+<Base title={post.data.title} description={post.data.description} ogType="article">
   <article class="prose">
     <ArticleHeader
       eyebrow="Publication"
@@ -168,13 +162,10 @@ const { Content } = await render(post);
               <time datetime={d.date.toISOString()}>
                 {longDateFormatter.format(d.date)}
               </time>{' '}
-              for a Charter violation (<code>{d.kind}</code>). This piece was
-              published before the violation was identified; the work survives
-              in the Archive per Chapter 3. See the{' '}
-              <a href={`${import.meta.env.BASE_URL}/records/${d.slug}`}>
-                full record
-              </a>
-              .
+              for a Charter violation (<code>{d.kind}</code>). This piece was published
+              before the violation was identified; the work survives in the Archive per
+              Chapter 3. See the{' '}
+              <a href={`${import.meta.env.BASE_URL}/records/${d.slug}`}>full record</a>.
             </p>
           ))}
         </aside>
@@ -191,7 +182,7 @@ const { Content } = await render(post);
         <footer class="not-prose mt-16">
           <hr class="rule mb-6" />
           <p class="runninghead mb-3">Apparatus</p>
-          <dl class="meta grid grid-cols-[max-content_1fr] gap-x-6 gap-y-2">
+          <dl class="meta dl-grid-roomy">
             {post.data.hasNotebook && (
               <>
                 <dt class="smallcaps">Lab notebook</dt>
@@ -261,8 +252,8 @@ const { Content } = await render(post);
                   </ul>
                   <p class="mt-2 text-sm text-ink-soft italic">
                     Reviews that disagreed with the editorial outcome. Published
-                    alongside the piece because the College treats disagreement
-                    as institutional record, not editorial inconvenience.
+                    alongside the piece because the College treats disagreement as
+                    institutional record, not editorial inconvenience.
                   </p>
                 </dd>
               </>

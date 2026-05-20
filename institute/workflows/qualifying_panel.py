@@ -238,6 +238,11 @@ def _read_cached_panel_feedback(path) -> tuple[str, str] | None:
     """Parse a previously-written panel feedback file. Returns
     (outcome, summary) if the file exists and matches the writer's
     shape; None otherwise (re-invoke the evaluator).
+
+    Intentionally distinct from `workspaces.outputs_already_complete`:
+    the cache file lives under `archive/reviews/<project>/` (not in
+    a workspace) and the resume check inspects content shape — the
+    `**Outcome:**` marker — rather than just file size.
     """
     import re
 

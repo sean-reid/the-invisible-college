@@ -47,9 +47,7 @@ for (const d of decisions) {
 
 const lastPublication = posts
   .slice()
-  .sort(
-    (a, b) => b.data.publishedAt.getTime() - a.data.publishedAt.getTime(),
-  )[0];
+  .sort((a, b) => b.data.publishedAt.getTime() - a.data.publishedAt.getTime())[0];
 ---
 
 <Base
@@ -59,14 +57,13 @@ const lastPublication = posts
   <article>
     <ArticleHeader eyebrow="Dashboard" title="Institutional metrics">
       <p class="meta mt-6 max-w-prose">
-        A current view of the College: cohort, publications, peer review,
-        decisions.
+        A current view of the College: cohort, publications, peer review, decisions.
       </p>
     </ArticleHeader>
 
     <section class="mb-12 not-prose">
       <h2 class="text-xl font-medium mb-4">Cohort</h2>
-      <dl class="meta grid grid-cols-[max-content_1fr] gap-x-6 gap-y-1">
+      <dl class="meta dl-grid">
         <dt class="smallcaps">Active Fellows</dt>
         <dd class="tabular">{activeCount}</dd>
         {
@@ -84,7 +81,7 @@ const lastPublication = posts
 
     <section class="mb-12 not-prose">
       <h2 class="text-xl font-medium mb-4">Publications</h2>
-      <dl class="meta grid grid-cols-[max-content_1fr] gap-x-6 gap-y-1">
+      <dl class="meta dl-grid">
         <dt class="smallcaps">Total shipped</dt>
         <dd class="tabular">{publicationCount}</dd>
         <dt class="smallcaps">Last 30 days</dt>
@@ -113,7 +110,7 @@ const lastPublication = posts
 
     <section class="mb-12 not-prose">
       <h2 class="text-xl font-medium mb-4">Peer review</h2>
-      <dl class="meta grid grid-cols-[max-content_1fr] gap-x-6 gap-y-1">
+      <dl class="meta dl-grid">
         <dt class="smallcaps">Reviews filed</dt>
         <dd class="tabular">{reviewCount}</dd>
         <dt class="smallcaps">Dissents recorded</dt>
@@ -133,7 +130,7 @@ const lastPublication = posts
       Object.keys(decisionsByKind).length > 0 && (
         <section class="not-prose">
           <h2 class="text-xl font-medium mb-4">Public decisions</h2>
-          <dl class="meta grid grid-cols-[max-content_1fr] gap-x-6 gap-y-1">
+          <dl class="meta dl-grid">
             {Object.entries(decisionsByKind)
               .sort((a, b) => b[1] - a[1])
               .map(([kind, n]) => (

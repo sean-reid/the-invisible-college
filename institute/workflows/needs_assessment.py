@@ -25,11 +25,13 @@ from rich.panel import Panel
 from rich.prompt import Prompt
 
 from institute import archive_index, claude_runner, cohort_calls, db, decisions, parsing, paths
+from institute.brief_helpers import JSON_OUTPUT_RULES
 
 console = Console()
 
 
-BRIEF = """\
+BRIEF = (
+    """\
 You are the orchestrator of the Invisible College. The Admissions
 Committee has asked you to perform a Recruitment Needs Assessment
 ahead of opening a cohort call for applications.
@@ -65,8 +67,9 @@ concrete reasoning. A failing call says "more like what we have."
 
 # CRITICAL OUTPUT RULES
 
-Reply with a single JSON object. No prose preface, no summary, no
-code fence. First character `{{`, last `}}`.
+"""
+    + JSON_OUTPUT_RULES
+    + """
 
 # Output shape
 
@@ -86,6 +89,7 @@ Empty arrays are fine. A call with no specific specializations is
 "any backend." But the rationale must explain WHY the targets are
 what they are, in a way the Founder can either trust or push back on.
 """
+)
 
 
 def _compute_coverage_md() -> str:

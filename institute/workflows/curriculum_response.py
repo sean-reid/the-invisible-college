@@ -113,14 +113,12 @@ def run(fellow_id: str) -> str:
     # promote it. Otherwise clear it and run a fresh invocation.
     existing = workspace / "response.md"
     response_md: str | None = None
-    if existing.is_file():
-        text = existing.read_text(encoding="utf-8").strip()
-        if len(text) >= 300:
-            response_md = text
-            console.print(
-                f"[dim]Found a complete response.md from a prior attempt; "
-                f"promoting it without re-invoking {postulant.name}.[/dim]"
-            )
+    if workspaces.outputs_already_complete(workspace, [("response.md", 300)]):
+        response_md = existing.read_text(encoding="utf-8").strip()
+        console.print(
+            f"[dim]Found a complete response.md from a prior attempt; "
+            f"promoting it without re-invoking {postulant.name}.[/dim]"
+        )
 
     if response_md is None:
         workspaces.stage_input(workspace, "item.md", _render_item(item))

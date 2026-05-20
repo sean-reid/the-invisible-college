@@ -22,6 +22,7 @@ from rich.prompt import Prompt
 
 from institute import claude_runner, db, decisions, parsing, paths, state
 from institute import fellow as fellow_mod
+from institute.brief_helpers import JSON_OUTPUT_RULES
 from institute.claude_runner import FellowTask
 from institute.fellow import Genome
 from institute.state import State
@@ -29,7 +30,8 @@ from institute.state import State
 console = Console()
 
 
-ORCHESTRATOR_BRIEF = """\
+ORCHESTRATOR_BRIEF = (
+    """\
 You are the orchestrator of the Invisible College. A reviewer has
 pulled the andon cord on a submission. Publication is halted pending
 review. Chapter 7 of the design (`docs/07-peer-review.md`) describes
@@ -57,8 +59,9 @@ Recommend one of:
 
 # CRITICAL OUTPUT RULES
 
-Reply with a single JSON object. No prose preface, no summary, no code
-fence. First character `{{`, last `}}`.
+"""
+    + JSON_OUTPUT_RULES
+    + """
 
 # Output shape
 
@@ -70,9 +73,11 @@ fence. First character `{{`, last `}}`.
 }}
 ```
 """
+)
 
 
-PANELIST_BRIEF = """\
+PANELIST_BRIEF = (
+    """\
 You are serving on the Editorial Board. A reviewer has pulled the
 andon cord on a submission. Read the piece, the cord pull, and the
 prior reviews, then cast your vote on whether to dismiss the pull
@@ -92,8 +97,9 @@ College's integrity.
 
 # CRITICAL OUTPUT RULES
 
-Reply with a single JSON object. No prose preface, no summary, no code
-fence. First character `{{`, last `}}`.
+"""
+    + JSON_OUTPUT_RULES
+    + """
 
 # Output shape
 
@@ -105,6 +111,7 @@ fence. First character `{{`, last `}}`.
 }}
 ```
 """
+)
 
 
 def _stage(path: Path, content: str) -> None:

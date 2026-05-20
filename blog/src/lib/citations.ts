@@ -22,10 +22,7 @@ type Post = CollectionEntry<'posts'>;
 const LINK_RE =
   /\[[^\]]+\]\((?:\/the-invisible-college\/)?posts\/([A-Za-z0-9_-]+)\/?\)/g;
 
-export function citingSlugsFor(
-  body: string,
-  knownSlugs: Set<string>,
-): string[] {
+export function citingSlugsFor(body: string, knownSlugs: Set<string>): string[] {
   const out = new Set<string>();
   for (const match of body.matchAll(LINK_RE)) {
     const slug = match[1];
@@ -56,9 +53,7 @@ export function buildBacklinkMap(posts: Post[]): Map<string, Post[]> {
   }
 
   for (const [slug, arr] of backlinks) {
-    arr.sort(
-      (a, b) => b.data.publishedAt.getTime() - a.data.publishedAt.getTime(),
-    );
+    arr.sort((a, b) => b.data.publishedAt.getTime() - a.data.publishedAt.getTime());
     backlinks.set(slug, arr);
   }
 

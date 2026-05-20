@@ -37,9 +37,9 @@ function displayTitle(body: string, slug: string): string {
     >
       <p class="meta mt-4 max-w-prose">
         The institutional decisions of the College, newest first. Admissions,
-        promotions, releases, editorial rulings on disputed pieces, and
-        andon-cord pulls. Research-flow events (peer reviews, lab notebooks)
-        live with their publications.
+        promotions, releases, editorial rulings on disputed pieces, and andon-cord
+        pulls. Research-flow events (peer reviews, lab notebooks) live with their
+        publications.
       </p>
     </ArticleHeader>
 
@@ -47,28 +47,31 @@ function displayTitle(body: string, slug: string): string {
       decisions.length === 0 ? (
         <p class="meta">No records yet.</p>
       ) : (
-        <ol class="not-prose space-y-5 list-none pl-0">
-          {decisions.map((d) => (
-            <ListItem
-              href={`${import.meta.env.BASE_URL}/records/${d.id}`}
-              title={displayTitle(d.body ?? '', d.id)}
-              size="md"
-            >
-              <Fragment slot="meta-above">
-                <time
-                  class="tabular"
-                  datetime={d.data.recorded_at.toISOString()}
-                >
-                  {shortDateFormatter.format(d.data.recorded_at)}
-                </time>
-                <span class="text-rule-strong">·</span>
-                <span class="runninghead">
-                  {labelFor(decisionKindLabel, d.data.kind)}
-                </span>
-              </Fragment>
-            </ListItem>
-          ))}
-        </ol>
+        <section aria-labelledby="records-list">
+          <h2 id="records-list" class="runninghead mb-4">
+            Recorded decisions
+          </h2>
+          <hr class="rule mb-6" />
+          <ol class="not-prose space-y-5 list-none pl-0">
+            {decisions.map((d) => (
+              <ListItem
+                href={`${import.meta.env.BASE_URL}/records/${d.id}`}
+                title={displayTitle(d.body ?? '', d.id)}
+                size="md"
+              >
+                <Fragment slot="meta-above">
+                  <time class="tabular" datetime={d.data.recorded_at.toISOString()}>
+                    {shortDateFormatter.format(d.data.recorded_at)}
+                  </time>
+                  <span class="text-rule-strong">·</span>
+                  <span class="runninghead">
+                    {labelFor(decisionKindLabel, d.data.kind)}
+                  </span>
+                </Fragment>
+              </ListItem>
+            ))}
+          </ol>
+        </section>
       )
     }
   </article>

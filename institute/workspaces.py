@@ -70,6 +70,28 @@ def optional_output(workspace: Path, filename: str) -> str | None:
     return text or None
 
 
+def outputs_already_complete(
+    workspace: Path,
+    required: list[tuple[str, int]],
+) -> bool:
+    """True iff every `(filename, min_chars)` exists in `workspace` already.
+
+    Used by workflows that can be safely resumed from a prior partial run:
+    if Claude already wrote substantive outputs (file present and at least
+    `min_chars` of trimmed content) the workflow can promote them without
+    re-invoking the runner. Returns False on any missing file or short
+    content; an empty `required` list returns True vacuously.
+    """
+    for name, min_chars in required:
+        path = workspace / name
+        if not path.is_file():
+            return False
+        text = path.read_text(encoding="utf-8").strip()
+        if len(text) < min_chars:
+            return False
+    return True
+
+
 def clear_outputs(workspace: Path, filenames: tuple[str, ...]) -> None:
     """Unlink any of the named output files that exist in `workspace`.
 

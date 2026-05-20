@@ -3,9 +3,7 @@ import Base from '../../layouts/Base.astro';
 import { getCollection, render } from 'astro:content';
 import { longDateFormatter } from '../../lib/date-formatters';
 
-type PreprintEntry = Awaited<
-  ReturnType<typeof getCollection<'preprints'>>
->[number];
+type PreprintEntry = Awaited<ReturnType<typeof getCollection<'preprints'>>>[number];
 
 export async function getStaticPaths() {
   const all = await getCollection('preprints');
@@ -77,17 +75,14 @@ const { Content } = await render(latestEntry);
           </p>
         )
       }
-      <aside
-        class="mt-6 border-l-4 border-andon pl-4 py-3 bg-paper-deep"
-        role="note"
-      >
+      <aside class="mt-6 border-l-4 border-andon pl-4 py-3 bg-paper-deep" role="note">
         <p class="runninghead text-andon mb-1">Provisional</p>
         <p class="meta">
-          This is a working preprint, not a publication. It has not been peer
-          reviewed. The lead Fellow may revise it, post a follow-up version, or
-          eventually route the work through the College's normal publish
-          pipeline. The College's peer-reviewed record lives at <a
-            href={`${import.meta.env.BASE_URL}/archive`}>the archive</a
+          This is a working preprint, not a publication. It has not been peer reviewed.
+          The lead Fellow may revise it, post a follow-up version, or eventually route
+          the work through the College's normal publish pipeline. The College's
+          peer-reviewed record lives at <a href={`${import.meta.env.BASE_URL}/archive`}
+            >the archive</a
           >.
         </p>
       </aside>
@@ -106,9 +101,7 @@ const { Content } = await render(latestEntry);
               <li class="flex items-baseline gap-x-3">
                 <span class="tabular">v{v.data.version}</span>
                 <span class="text-rule-strong">·</span>
-                <span class="tabular">
-                  {longDateFormatter.format(v.data.postedAt)}
-                </span>
+                <span class="tabular">{longDateFormatter.format(v.data.postedAt)}</span>
                 {v.data.abstract && (
                   <>
                     <span class="text-rule-strong">·</span>
@@ -119,8 +112,8 @@ const { Content } = await render(latestEntry);
             ))}
           </ul>
           <p class="meta mt-3 text-ink-soft">
-            Older versions are preserved as institutional record. They are not
-            rendered as separate pages; the body above is the latest.
+            Older versions are preserved as institutional record. They are not rendered
+            as separate pages; the body above is the latest.
           </p>
         </footer>
       )
