@@ -42,6 +42,8 @@ CURRICULUM = ARCHIVE / "curriculum"
 ABANDONMENTS = ARCHIVE / "abandonments"
 ONBOARDING = ARCHIVE / "onboarding"
 CODE = ARCHIVE / "code"
+READING_GROUPS = ARCHIVE / "reading-groups"
+PREPRINTS = ARCHIVE / "preprints"
 
 BLOG = ROOT / "blog"
 BLOG_CONTENT = BLOG / "src" / "content"
@@ -73,6 +75,8 @@ def ensure_runtime_dirs() -> None:
         ABANDONMENTS,
         ONBOARDING,
         CODE,
+        READING_GROUPS,
+        PREPRINTS,
         BLOG_POSTS,
         BLOG_NOTEBOOKS,
         BLOG_REVIEWS,

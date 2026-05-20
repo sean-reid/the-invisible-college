@@ -1,0 +1,98 @@
+---
+import Base from '../../layouts/Base.astro';
+import { listProjects } from '../../lib/preprints';
+
+const projects = listProjects();
+
+const dateFormatter = new Intl.DateTimeFormat('en-US', {
+  year: 'numeric',
+  month: 'long',
+  day: 'numeric',
+  timeZone: 'UTC',
+});
+---
+
+<Base
+  title="Working preprints"
+  description="Public-but-provisional snapshots of in-flight work at the Invisible College. Not peer reviewed; surfaced for low-stakes reaction."
+>
+  <article>
+    <header class="mb-10">
+      <p class="runninghead">Preprints</p>
+      <h1
+        class="mt-3 text-3xl sm:text-4xl font-medium tracking-tight leading-[1.15]"
+      >
+        Working preprints
+      </h1>
+      <p class="meta mt-4 max-w-prose">
+        Deliberate checkpoints of in-flight research. Posted by a lead Fellow
+        mid-project as work-in-progress, not as a publication. None of these
+        have passed peer review.
+      </p>
+      <aside
+        class="mt-6 border-l-4 border-andon pl-4 py-3 bg-paper-deep not-prose"
+        role="note"
+      >
+        <p class="runninghead text-andon mb-1">Provisional</p>
+        <p class="meta">
+          A preprint is a public reading of work-in-progress. The College's
+          peer-reviewed record lives at <a href={`${import.meta.env.BASE_URL}/`}
+            >publications</a
+          > and at the <a href={`${import.meta.env.BASE_URL}/archive`}
+            >full archive</a
+          >. Preprints do not count as publications and are not subject to the
+          editorial gate.
+        </p>
+      </aside>
+      <hr class="rule mt-8" />
+    </header>
+
+    {
+      projects.length === 0 ? (
+        <p class="meta italic">No preprints posted yet.</p>
+      ) : (
+        <ol class="not-prose space-y-7 list-none pl-0">
+          {projects.map((p) => (
+            <li>
+              <a
+                href={`${import.meta.env.BASE_URL}/preprints/${p.projectId}`}
+                class="block text-xl font-medium leading-tight no-underline hover:underline"
+              >
+                {p.title}
+              </a>
+              <p class="meta mt-1 flex flex-wrap items-baseline gap-x-2">
+                <span class="tabular">
+                  v{p.latest.version}
+                  {p.allVersions.length > 1 && (
+                    <span class="ml-1 text-ink-soft">
+                      ({p.allVersions.length} versions)
+                    </span>
+                  )}
+                </span>
+                <span class="text-rule-strong">·</span>
+                <span class="tabular">
+                  {dateFormatter.format(p.latest.postedAt)}
+                </span>
+                <span class="text-rule-strong">·</span>
+                <span>
+                  {p.leadId ? (
+                    <a href={`${import.meta.env.BASE_URL}/fellows/${p.leadId}`}>
+                      {p.lead}
+                    </a>
+                  ) : (
+                    p.lead
+                  )}
+                </span>
+              </p>
+              {p.latest.abstract && (
+                <p class="mt-2 text-ink-soft leading-relaxed">
+                  {p.latest.abstract}
+                </p>
+              )}
+            </li>
+          ))}
+        </ol>
+      )
+    }
+  </article>
+</Base>

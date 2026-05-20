@@ -15,6 +15,7 @@ import time
 from collections.abc import Iterator
 from contextlib import contextmanager
 from datetime import UTC, datetime
+from pathlib import Path
 
 import click
 from rich.console import Console
@@ -2867,3 +2868,107 @@ def _maybe_trigger_admissions() -> None:
         admit_workflow.run(auto=True)
     except Exception as exc:  # pragma: no cover - best-effort path
         console.print(f"[yellow]admit auto-trigger failed: {exc}[/yellow]")
+
+
+# ---------------------------------------------------------------------------
+# reading-group + preprint: institutional discussion mechanisms
+# ---------------------------------------------------------------------------
+
+
+@main.group("reading-group")
+def reading_group_cli() -> None:
+    """Reading groups: structured asynchronous discussion of a text."""
+
+
+@reading_group_cli.command("convene")
+@click.option("--title", required=True, type=str, help="Human title for the session.")
+@click.option(
+    "--text",
+    "text_path",
+    required=True,
+    type=click.Path(exists=True, dir_okay=False, path_type=Path),
+    help="Path to the text under discussion (markdown).",
+)
+@click.option(
+    "--participants",
+    required=True,
+    type=str,
+    help="Comma-separated list of Fellow ids (at least two).",
+)
+@click.option("--convener", type=str, default="founder", show_default=True)
+@click.option(
+    "--note",
+    "convener_note",
+    type=str,
+    default="",
+    help="Optional context the convener wants attached to the session.",
+)
+@click.option(
+    "--slug",
+    type=str,
+    default=None,
+    help="Override the auto-slug. Used as the archive directory name.",
+)
+def reading_group_convene(
+    title: str,
+    text_path: Path,
+    participants: str,
+    convener: str,
+    convener_note: str,
+    slug: str | None,
+) -> None:
+    """Convene a reading-group session. Synchronous; cost scales with participants."""
+    _check_kill_switch()
+    from institute.workflows import reading_group as reading_group_workflow
+
+    participant_ids = [p.strip() for p in participants.split(",") if p.strip()]
+    reading_group_workflow.run(
+        title=title,
+        text_path=text_path,
+        participants=participant_ids,
+        convener=convener,
+        convener_note=convener_note,
+        slug=slug,
+    )
+
+
+@main.group("preprint")
+def preprint_cli() -> None:
+    """Working preprints: public-but-provisional snapshots of in-flight work."""
+
+
+@preprint_cli.command("post")
+@click.option("--project", "project_id", required=True, type=str)
+def preprint_post(project_id: str) -> None:
+    """Post a new preprint version for an in-flight project.
+
+    The lead Fellow on the project drafts the preprint based on their
+    current draft and lab notebook. Versioning is automatic (v1, v2, ...).
+    """
+    _check_kill_switch()
+    from institute.workflows import preprint as preprint_workflow
+
+    preprint_workflow.post(project_id)
+
+
+@preprint_cli.command("comment")
+@click.option("--project", "project_id", required=True, type=str)
+@click.option(
+    "--as",
+    "commenter_id",
+    required=True,
+    type=str,
+    help="Fellow id of the commenter (cannot be the lead).",
+)
+@click.option(
+    "--version",
+    type=int,
+    default=None,
+    help="Preprint version to comment on. Defaults to the latest.",
+)
+def preprint_comment(project_id: str, commenter_id: str, version: int | None) -> None:
+    """File a comment on a project's preprint. No recommendation gate."""
+    _check_kill_switch()
+    from institute.workflows import preprint as preprint_workflow
+
+    preprint_workflow.comment(project_id, commenter_id=commenter_id, version=version)
