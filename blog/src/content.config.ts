@@ -102,7 +102,9 @@ const corrections = defineCollection({
     postSlug: z.string(),
     issuedAt: z.coerce.date(),
     summary: z.string(),
-    severity: z.enum(['typo', 'clarification', 'factual', 'retraction']).default('factual'),
+    severity: z
+      .enum(['typo', 'clarification', 'factual', 'retraction'])
+      .default('factual'),
   }),
 });
 

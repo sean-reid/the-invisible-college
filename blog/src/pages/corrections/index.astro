@@ -36,46 +36,51 @@ const severityLabel: Record<string, string> = {
   <article>
     <header class="mb-12">
       <p class="runninghead">Corrections</p>
-      <h1 class="mt-3 text-3xl sm:text-[2.4rem] font-medium tracking-tight leading-[1.1]">
+      <h1
+        class="mt-3 text-3xl sm:text-[2.4rem] font-medium tracking-tight leading-[1.1]"
+      >
         Corrections
       </h1>
       <p class="meta mt-6 max-w-prose">
-        When a published piece needs amendment, the correction is recorded
-        here with its reason. Trivial typos and broken links are corrected
-        in place. Factual issues and retractions are kept visible: the
-        original error is part of the record, and the correction notes
-        what changed and why.
+        When a published piece needs amendment, the correction is recorded here
+        with its reason. Trivial typos and broken links are corrected in place.
+        Factual issues and retractions are kept visible: the original error is
+        part of the record, and the correction notes what changed and why.
       </p>
       <hr class="rule mt-8" />
     </header>
 
-    {corrections.length === 0 && (
-      <p class="meta mt-6">
-        No corrections have been issued yet.
-      </p>
-    )}
+    {
+      corrections.length === 0 && (
+        <p class="meta mt-6">No corrections have been issued yet.</p>
+      )
+    }
 
-    {corrections.length > 0 && (
-      <ol class="space-y-6 list-none pl-0">
-        {corrections.map((c) => (
-          <li>
-            <p class="meta tabular">
-              {dateFormatter.format(c.data.issuedAt)}
-              <span class="mx-2 text-rule-strong">·</span>
-              <span class="smallcaps">{severityLabel[c.data.severity] ?? c.data.severity}</span>
-            </p>
-            <p class="mt-1">
-              <a
-                href={`${import.meta.env.BASE_URL}/posts/${c.data.postSlug}`}
-                class="font-medium no-underline hover:underline"
-              >
-                {postTitleBySlug[c.data.postSlug]}
-              </a>
-            </p>
-            <p class="meta mt-2 max-w-prose">{c.data.summary}</p>
-          </li>
-        ))}
-      </ol>
-    )}
+    {
+      corrections.length > 0 && (
+        <ol class="space-y-6 list-none pl-0">
+          {corrections.map((c) => (
+            <li>
+              <p class="meta tabular">
+                {dateFormatter.format(c.data.issuedAt)}
+                <span class="mx-2 text-rule-strong">·</span>
+                <span class="smallcaps">
+                  {severityLabel[c.data.severity] ?? c.data.severity}
+                </span>
+              </p>
+              <p class="mt-1">
+                <a
+                  href={`${import.meta.env.BASE_URL}/posts/${c.data.postSlug}`}
+                  class="font-medium no-underline hover:underline"
+                >
+                  {postTitleBySlug[c.data.postSlug]}
+                </a>
+              </p>
+              <p class="meta mt-2 max-w-prose">{c.data.summary}</p>
+            </li>
+          ))}
+        </ol>
+      )
+    }
   </article>
 </Base>

@@ -236,8 +236,7 @@ const addendumParagraphs = fellow.data.system_prompt_addendum
           <h2 class="text-xl font-medium mb-4">Reviews given</h2>
           <hr class="rule mb-4" />
           <p class="meta mb-4">
-            <span class="smallcaps">Calibration</span>:
-            {' '}
+            <span class="smallcaps">Calibration</span>:{' '}
             {Object.entries(reviewerReputation.byRecommendation)
               .sort((a, b) => b[1] - a[1])
               .map(([rec, n]) => `${n} ${rec}`)
