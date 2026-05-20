@@ -2,9 +2,18 @@
 import Base from '../layouts/Base.astro';
 import { getCollection } from 'astro:content';
 
-const posts = (await getCollection('posts', ({ data }) => !data.draft)).sort(
+const allPosts = (await getCollection('posts', ({ data }) => !data.draft)).sort(
   (a, b) => b.data.publishedAt.getTime() - a.data.publishedAt.getTime(),
 );
+
+// Home page shows recent work. The full institutional record lives on
+// the /archive page, linked at the bottom of the recent section. The
+// cap is a soft cadence guard: as the cohort produces more, the home
+// page stays a reader's-attention span long instead of a scroll wall.
+const RECENT_CAP = 15;
+const posts = allPosts.slice(0, RECENT_CAP);
+const totalPostCount = allPosts.length;
+const hasMore = totalPostCount > posts.length;
 
 const fellows = await getCollection('fellows');
 const fellowByName = new Map(fellows.map((f) => [f.data.name, f.id]));
@@ -116,6 +125,16 @@ for (const post of posts) {
             </section>
           ))}
         </div>
+      )
+    }
+
+    {
+      hasMore && (
+        <p class="meta mt-10">
+          <a href={`${import.meta.env.BASE_URL}/archive`}>
+            Browse the full archive ({totalPostCount} publications) →
+          </a>
+        </p>
       )
     }
   </section>
