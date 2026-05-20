@@ -2436,9 +2436,13 @@ def _autopilot_locked(
         _maybe_trigger_admissions()
 
         if start_new_if_idle:
+            from institute.state import TERMINAL_STATE_VALUES
+
+            placeholders = ",".join("?" * len(TERMINAL_STATE_VALUES))
             with db.connection() as conn:
                 in_flight = conn.execute(
-                    "SELECT COUNT(*) FROM projects WHERE state NOT IN ('published', 'rejected')"
+                    f"SELECT COUNT(*) FROM projects WHERE state NOT IN ({placeholders})",
+                    TERMINAL_STATE_VALUES,
                 ).fetchone()[0]
             if in_flight == 0:
                 console.print("[dim]Idle. Proposing a new project...[/dim]")

@@ -153,6 +153,28 @@ def test_model_comparison_passes() -> None:
     assert cleaned == text
 
 
+def test_latex_inline_math_passes_after_qualifier() -> None:
+    # The corrupted-files bug: a qualifier word adjacent to LaTeX
+    # inline math like `approximately $390$` must not be eaten.
+    text = "The fractional condition number is approximately $390$, which sits adjacent to a singularity."
+    cleaned, report = redaction.redact(text)
+    assert cleaned == text
+    assert report.total == 0
+
+
+def test_latex_with_unit_passes() -> None:
+    text = "Angular precision of approximately $0.017°$ was required."
+    cleaned, _ = redaction.redact(text)
+    assert cleaned == text
+
+
+def test_latex_with_cost_word_passes() -> None:
+    # "cost of $5$" in game-theory prose should not match the cost-verb pattern.
+    text = "Each move carries an opportunity cost of $5$ in the toy game."
+    cleaned, _ = redaction.redact(text)
+    assert cleaned == text
+
+
 def test_token_in_compiler_context() -> None:
     text = "The parser emits a token for each lexeme it recognizes."
     cleaned, _ = redaction.redact(text)

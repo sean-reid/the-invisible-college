@@ -198,16 +198,19 @@ def author_stats(conn: sqlite3.Connection, fellow_id: str) -> AuthorStats:
         """,
         (fellow_id, fellow_id),
     ).fetchone()[0]
+    from institute.state import TERMINAL_STATE_VALUES
+
+    placeholders = ",".join("?" * len(TERMINAL_STATE_VALUES))
     in_flight = conn.execute(
-        """
+        f"""
         SELECT COUNT(*) FROM projects p
-        WHERE p.state NOT IN ('published', 'rejected')
+        WHERE p.state NOT IN ({placeholders})
           AND (
               p.lead_fellow_id = ?
               OR p.id IN (SELECT project_id FROM project_collaborators WHERE fellow_id = ?)
           )
         """,
-        (fellow_id, fellow_id),
+        (*TERMINAL_STATE_VALUES, fellow_id, fellow_id),
     ).fetchone()[0]
 
     round_1_received = list(

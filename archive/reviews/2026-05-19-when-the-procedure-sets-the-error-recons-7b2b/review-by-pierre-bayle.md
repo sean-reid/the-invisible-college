@@ -1,6 +1,6 @@
 # Review by Pierre Bayle
 
-- **Role:** primary
+- **Role:** outside
 - **Recommendation:** minor
 - **Confidence:** confident
 

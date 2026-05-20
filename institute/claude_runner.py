@@ -81,16 +81,23 @@ def _claude_executable() -> str:
 # commands. The genome's `allowed_tools` is treated as a request; the
 # rank ceiling is the institutional floor that subtracts anything beyond
 # what the rank earns.
+# The Postulant/Novice ceiling withholds the workflow-orchestration
+# tools (TaskCreate/TaskUpdate/TaskList) — those expand the surface
+# area of what a Fellow can drive on its own and are reserved for
+# ranks that have earned that latitude. The execution toolkit (Read,
+# Write, Edit, Bash, Glob, Grep, WebFetch, WebSearch) is available to
+# every rank that requests it in their genome, because qualifying-
+# project research and curriculum responses both need to produce code
+# and files. Fellow and above are not listed here; they inherit an
+# unrestricted ceiling via the `_effective_tools_for` fallback.
 _RANK_TOOL_CEILING: dict[str, set[str]] = {
-    # Postulants produce curriculum responses, qualifying-project
-    # drafts, and lab notebooks. Write is required for those; we
-    # withhold Edit (no in-place mutation of published artifacts) and
-    # Bash (no shell access for ranks that haven't earned it).
     "postulant": {
         "Read",
         "Glob",
         "Grep",
         "Write",
+        "Edit",
+        "Bash",
         "WebFetch",
         "WebSearch",
     },
@@ -100,25 +107,10 @@ _RANK_TOOL_CEILING: dict[str, set[str]] = {
         "Grep",
         "Write",
         "Edit",
-        "WebFetch",
-        "WebSearch",
-    },
-    "junior_fellow": {
-        "Read",
-        "Glob",
-        "Grep",
-        "Write",
-        "Edit",
         "Bash",
         "WebFetch",
         "WebSearch",
-        "TaskCreate",
-        "TaskUpdate",
-        "TaskList",
     },
-    # Fellow and above carry full tool access. We omit them from the
-    # dict so any new rank inherits an unrestricted default via the
-    # `_effective_tools_for` fallback.
 }
 
 

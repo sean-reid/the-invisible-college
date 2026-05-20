@@ -122,12 +122,35 @@ def verify_chain(conn: sqlite3.Connection) -> ChainBreak | None:
     appear at the head of the log (i.e. before any hashed row): the
     chain then starts from the first hashed row's `prev_hash`. A
     NULL hash in the middle of a hashed sequence is a chain break.
+
+    For routine runtime checks prefer
+    [`verify_chain_since`][institute.audit.verify_chain_since], which
+    walks only the unverified tail.
     """
-    prev = ""
-    chain_started = False
+    return verify_chain_since(conn, since_id=0, expected_prev_hash="")
+
+
+def verify_chain_since(
+    conn: sqlite3.Connection,
+    *,
+    since_id: int,
+    expected_prev_hash: str,
+) -> ChainBreak | None:
+    """Walk the chain starting strictly after `since_id`, using
+    `expected_prev_hash` as the chain anchor for the first row.
+
+    `since_id=0, expected_prev_hash=""` validates the full log from
+    genesis (legacy unhashed rows at the head are tolerated).
+    Otherwise the caller is asserting that the chain up to and
+    including `since_id` was last seen clean with that hash; we walk
+    only the rows after.
+    """
+    prev = expected_prev_hash
+    chain_started = bool(expected_prev_hash) or since_id > 0
     for row in conn.execute(
         "SELECT id, at, actor, action, project_id, detail, prev_hash, hash "
-        "FROM audit_log ORDER BY id"
+        "FROM audit_log WHERE id > ? ORDER BY id",
+        (since_id,),
     ):
         if row["hash"] is None:
             if chain_started:
@@ -173,3 +196,14 @@ def verify_chain(conn: sqlite3.Connection) -> ChainBreak | None:
         prev = row["hash"]
 
     return None
+
+
+def head(conn: sqlite3.Connection) -> tuple[int, str] | None:
+    """Return (id, hash) of the most recent hashed row, or None."""
+    row = conn.execute(
+        "SELECT id, hash FROM audit_log "
+        "WHERE hash IS NOT NULL ORDER BY id DESC LIMIT 1"
+    ).fetchone()
+    if row is None:
+        return None
+    return (row["id"], row["hash"])

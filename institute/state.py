@@ -149,6 +149,18 @@ def is_terminal(state: State) -> bool:
     return NEXT_ACTION[state] is None
 
 
+# Single source of truth for "this project is done; don't pick it up."
+# Use TERMINAL_STATE_VALUES inside a SQL `IN (...)` clause:
+#   WHERE state NOT IN ({", ".join("?" * len(TERMINAL_STATE_VALUES))})
+# Keeps the three previous in-flight pickers in sync any time a new
+# terminal state is added.
+TERMINAL_STATE_VALUES: tuple[str, ...] = (
+    State.PUBLISHED.value,
+    State.REJECTED.value,
+    State.ABANDONED.value,
+)
+
+
 def transition(
     conn: sqlite3.Connection,
     project_id: str,

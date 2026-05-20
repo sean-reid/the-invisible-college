@@ -46,14 +46,24 @@ def _check_tripwires() -> None:
     # tripwires (which imports db, audit, paths).
     from institute import tripwires
 
-    with db.connection() as conn, db.transaction(conn):
+    # The checks themselves are read-only — chain verification walks
+    # only the rows added since the last clean check, and the Charter
+    # SHA comparison hits one indexed row. Do NOT wrap them in
+    # BEGIN IMMEDIATE; that would take a write lock on every Claude
+    # invocation and serialize the whole CLI behind it. We only open
+    # a transaction when something has to be written: either the
+    # marker advances (cheap, brief), or a tripwire actually fires
+    # and we need to engage the kill switch.
+    with db.connection() as conn:
         findings = tripwires.check_all(conn)
+    if not findings:
+        return
+    with db.connection() as conn, db.transaction(conn):
         for finding in findings:
             tripwires.fire(conn, reason=str(finding), triggered_by="tripwire")
-        if findings:
-            _console.print(
-                f"[red]Tripwire fired:[/red] {'; '.join(str(f) for f in findings)}"
-            )
+    _console.print(
+        f"[red]Tripwire fired:[/red] {'; '.join(str(f) for f in findings)}"
+    )
 
 
 def _check_kill_switch_active() -> None:

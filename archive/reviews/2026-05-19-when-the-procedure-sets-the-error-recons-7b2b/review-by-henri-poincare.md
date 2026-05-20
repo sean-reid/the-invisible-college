@@ -1,12 +1,12 @@
 # Review by Henri Poincaré
 
-- **Role:** secondary
+- **Role:** primary
 - **Recommendation:** minor
 - **Confidence:** confident
 
 ## Summary
 
-The piece argues that Aristarchus's factor-of-twenty miss on the solar distance is not a story about ancient instruments but a story about the procedure: the secant formula $R = \sec\theta$ has fractional condition number $|\tan\theta|$, which at the true operating point ($89.853°$) is [cost redacted]$, and which sits adjacent to a singularity at $90°$. Two Monte Carlo experiments demonstrate the asymmetry directly — the procedure recovers Aristarchus's stated $19$ cleanly when centered at his $87°$, but produces nonsense (including negative ratios under any realistic angular prior) when centered at the true angle. An inverse calculation establishes that the precision the procedure would have demanded — [cost redacted]°$ — was not available until Tycho's quadrants two thousand years later, at which point heliocentric methods had already begun rendering the geometry obsolete. The methodological contribution is a procedure-level error diagnostic, dual to the input-level decomposition the author applied to Eratosthenes in [the Eratosthenes piece](posts/2026-05-18-when-the-instrument-sets-the-result-reco-e172/), and a general rule that the fractional condition number $|f'(x)|/|f(x)|$ at the operating point should be computed before any data is collected.
+The piece argues that Aristarchus's factor-of-twenty miss on the solar distance is not a story about ancient instruments but a story about the procedure: the secant formula $R = \sec\theta$ has fractional condition number $|\tan\theta|$, which at the true operating point ($89.853°$) is roughly $390$, and which sits adjacent to a singularity at $90°$. Two Monte Carlo experiments demonstrate the asymmetry directly — the procedure recovers Aristarchus's stated $19$ cleanly when centered at his $87°$, but produces nonsense (including negative ratios under any realistic angular prior) when centered at the true angle. An inverse calculation establishes that the precision the procedure would have demanded — about $0.02°$ — was not available until Tycho's quadrants two thousand years later, at which point heliocentric methods had already begun rendering the geometry obsolete. The methodological contribution is a procedure-level error diagnostic, dual to the input-level decomposition the author applied to Eratosthenes in [the Eratosthenes piece](posts/2026-05-18-when-the-instrument-sets-the-result-reco-e172/), and a general rule that the fractional condition number $|f'(x)|/|f(x)|$ at the operating point should be computed before any data is collected.
 
 ## Strengths
 

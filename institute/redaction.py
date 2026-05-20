@@ -29,6 +29,14 @@ _COST_MARKER = "[cost redacted]"
 _BUDGET_MARKER = "[budget redacted]"
 _TOKEN_MARKER = "[token count redacted]"
 
+# Suffix appended to any $X dollar-amount pattern. Negative lookahead
+# that bails when another `$` appears within the next 10 same-line
+# characters — that pattern is overwhelmingly LaTeX inline math
+# (`$N$`, `$0.017°$`) rather than operational cost telemetry. Without
+# this guard the redactor swallows the opening `$` of a math span and
+# leaves a corrupted trailing `°$` behind.
+_NOT_LATEX = r"(?![^$\n]{0,10}\$)"
+
 # Each entry: (compiled pattern, replacement marker, label-for-audit).
 # Every pattern requires both an operational keyword and a number
 # (dollar amount or token count). This keeps the redactor from
@@ -39,7 +47,7 @@ _PATTERNS: list[tuple[re.Pattern[str], str, str]] = [
     (
         re.compile(
             r"\belapsed\s*[:=]\s*\d+\s*s\s*[·•|]\s*run\s+cost\s*[:=]\s*"
-            r"\$?\s*\d[\d,._]*(?:\s*of\s*\$?\s*\d[\d,._]*)?",
+            r"\$?\s*\d[\d,._]*(?:\s*of\s*\$?\s*\d[\d,._]*)?" + _NOT_LATEX,
             re.IGNORECASE,
         ),
         _COST_MARKER,
@@ -48,7 +56,8 @@ _PATTERNS: list[tuple[re.Pattern[str], str, str]] = [
     # "run cost: $X" / "run cost = $X of $Y"
     (
         re.compile(
-            r"\brun\s+cost\s*[:=]\s*\$?\s*\d[\d,._]*(?:\s*of\s*\$?\s*\d[\d,._]*)?",
+            r"\brun\s+cost\s*[:=]\s*\$?\s*\d[\d,._]*(?:\s*of\s*\$?\s*\d[\d,._]*)?"
+            + _NOT_LATEX,
             re.IGNORECASE,
         ),
         _COST_MARKER,
@@ -57,7 +66,7 @@ _PATTERNS: list[tuple[re.Pattern[str], str, str]] = [
     # "budget=$X" / "budget = $X" / "budget: $X"
     (
         re.compile(
-            r"\bbudget\s*[:=]\s*\$?\s*\d[\d,._]*",
+            r"\bbudget\s*[:=]\s*\$?\s*\d[\d,._]*" + _NOT_LATEX,
             re.IGNORECASE,
         ),
         _BUDGET_MARKER,
@@ -66,7 +75,7 @@ _PATTERNS: list[tuple[re.Pattern[str], str, str]] = [
     # "daily=$0" / "daily cap = $5"
     (
         re.compile(
-            r"\bdaily(?:\s+cap)?\s*[:=]\s*\$?\s*\d[\d,._]*",
+            r"\bdaily(?:\s+cap)?\s*[:=]\s*\$?\s*\d[\d,._]*" + _NOT_LATEX,
             re.IGNORECASE,
         ),
         _BUDGET_MARKER,
@@ -75,7 +84,8 @@ _PATTERNS: list[tuple[re.Pattern[str], str, str]] = [
     # "total cost: $X" / "estimated cost = $X" / "approximate cost $X"
     (
         re.compile(
-            r"\b(?:total|estimated|approximate|approx\.?|cumulative)\s+cost\s*[:=]?\s*\$\s*\d[\d,._]*",
+            r"\b(?:total|estimated|approximate|approx\.?|cumulative)\s+cost\s*[:=]?\s*"
+            r"\$\s*\d[\d,._]*" + _NOT_LATEX,
             re.IGNORECASE,
         ),
         _COST_MARKER,
@@ -84,7 +94,7 @@ _PATTERNS: list[tuple[re.Pattern[str], str, str]] = [
     # "spent $X"
     (
         re.compile(
-            r"\bspent\s+\$\s*\d[\d,._]*",
+            r"\bspent\s+\$\s*\d[\d,._]*" + _NOT_LATEX,
             re.IGNORECASE,
         ),
         _COST_MARKER,
@@ -93,7 +103,7 @@ _PATTERNS: list[tuple[re.Pattern[str], str, str]] = [
     # "cost of $X" / "cost was $X" / "cost came to $X" / "cost is $X"
     (
         re.compile(
-            r"\bcost\s+(?:of|was|is|came\s+to)\s+\$\s*\d[\d,._]*",
+            r"\bcost\s+(?:of|was|is|came\s+to)\s+\$\s*\d[\d,._]*" + _NOT_LATEX,
             re.IGNORECASE,
         ),
         _COST_MARKER,
@@ -102,7 +112,7 @@ _PATTERNS: list[tuple[re.Pattern[str], str, str]] = [
     # "cost: $X" / "cost = $X" — explicit value after `cost`
     (
         re.compile(
-            r"\bcost(?:s)?\s*[:=]\s*\$\s*\d[\d,._]*",
+            r"\bcost(?:s)?\s*[:=]\s*\$\s*\d[\d,._]*" + _NOT_LATEX,
             re.IGNORECASE,
         ),
         _COST_MARKER,
@@ -115,7 +125,7 @@ _PATTERNS: list[tuple[re.Pattern[str], str, str]] = [
     (
         re.compile(
             r"\b(?:under|approximately|approx\.?|about|around|roughly|less\s+than|over)"
-            r"\s+\$\s*\d[\d,._]*(?:\s+total)?",
+            r"\s+\$\s*\d[\d,._]*(?:\s+total)?" + _NOT_LATEX,
             re.IGNORECASE,
         ),
         _COST_MARKER,

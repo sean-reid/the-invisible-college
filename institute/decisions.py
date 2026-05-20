@@ -69,13 +69,20 @@ def record(
     try:
         from institute import audit
 
+        # Compute the detail path relative to DECISIONS itself, then
+        # prepend the canonical archive prefix. Using
+        # `path.relative_to(DECISIONS.parent.parent)` previously
+        # assumed DECISIONS sat exactly two levels under ROOT — true
+        # in production but fragile under tests that monkeypatch
+        # DECISIONS independently of ROOT.
+        detail = f"archive/decisions/{path.relative_to(DECISIONS)}"
         audit.append(
             conn,
             at=now.isoformat(timespec="seconds"),
             actor=",".join(decision.actors),
             action=decision.kind,
             project_id=decision.related_project,
-            detail=str(path.relative_to(DECISIONS.parent.parent)),
+            detail=detail,
         )
     except Exception:
         # Drop the just-written markdown so we never leave an orphan

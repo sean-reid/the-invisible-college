@@ -82,12 +82,15 @@ def run(
                 f"[yellow]{row['name']} is already retired (at {row['retired_at']}).[/yellow]"
             )
             return False
+        from institute.state import TERMINAL_STATE_VALUES
+
+        placeholders = ",".join("?" * len(TERMINAL_STATE_VALUES))
         in_flight = list(
             conn.execute(
-                "SELECT id, title, state FROM projects "
-                "WHERE lead_fellow_id = ? "
-                "AND state NOT IN ('published', 'rejected')",
-                (fellow_id,),
+                f"SELECT id, title, state FROM projects "
+                f"WHERE lead_fellow_id = ? "
+                f"AND state NOT IN ({placeholders})",
+                (fellow_id, *TERMINAL_STATE_VALUES),
             )
         )
 

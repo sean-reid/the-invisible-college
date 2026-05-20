@@ -133,11 +133,65 @@ def check_charter_integrity(conn: sqlite3.Connection) -> TripwireFinding | None:
     return None
 
 
-def check_audit_chain(conn: sqlite3.Connection) -> TripwireFinding | None:
-    """Walk the hash chain. Returns a finding on the first break."""
-    result = audit.verify_chain(conn)
-    if result is None:
+def _audit_marker(conn: sqlite3.Connection) -> tuple[int, str] | None:
+    row = conn.execute(
+        "SELECT value FROM tripwire_baseline WHERE key = 'audit_head'"
+    ).fetchone()
+    if row is None or not row["value"]:
         return None
+    raw = row["value"]
+    sep = raw.find(":")
+    if sep < 1:
+        return None
+    try:
+        return (int(raw[:sep]), raw[sep + 1 :])
+    except ValueError:
+        return None
+
+
+def _set_audit_marker(
+    conn: sqlite3.Connection, *, row_id: int, row_hash: str
+) -> None:
+    conn.execute(
+        "INSERT INTO tripwire_baseline (key, value) VALUES ('audit_head', ?) "
+        "ON CONFLICT(key) DO UPDATE SET value = excluded.value",
+        (f"{row_id}:{row_hash}",),
+    )
+
+
+def check_audit_chain(conn: sqlite3.Connection) -> TripwireFinding | None:
+    """Verify the hash chain incrementally.
+
+    Reads the last-verified (id, hash) marker from
+    `tripwire_baseline` and walks only the rows that have landed
+    since. Without a marker — fresh DB, or migration to this code
+    path — we fall back to a full chain walk and seed the marker on
+    success. Steady-state cost is O(rows since last check), not
+    O(audit_log).
+    """
+    marker = _audit_marker(conn)
+    if marker is None:
+        result = audit.verify_chain(conn)
+        if result is not None:
+            return _to_finding(result)
+        head = audit.head(conn)
+        if head is not None:
+            _set_audit_marker(conn, row_id=head[0], row_hash=head[1])
+        return None
+
+    since_id, since_hash = marker
+    result = audit.verify_chain_since(
+        conn, since_id=since_id, expected_prev_hash=since_hash
+    )
+    if result is not None:
+        return _to_finding(result)
+    head = audit.head(conn)
+    if head is not None and head[0] != since_id:
+        _set_audit_marker(conn, row_id=head[0], row_hash=head[1])
+    return None
+
+
+def _to_finding(result) -> TripwireFinding:
     return TripwireFinding(
         name="audit_log_tampered",
         detail=(
