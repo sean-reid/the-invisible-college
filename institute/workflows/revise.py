@@ -242,11 +242,11 @@ def run(project_id: str) -> None:
 
     new_title = _extract_draft_title(new_draft_md) or proj["title"]
 
-    if kind == "qualifying":
-        # Chapter 5: qualifying projects are advisor-supervised. After
-        # the Postulant addresses the advisor's revision request, the
-        # piece routes back to AWAITING_ADVISOR_REVIEW (not into peer
-        # review or editorial), so the same advisor confirms the fix
+    if kind == "qualifying" and current_round < 2:
+        # Chapter 5: qualifying projects are advisor-supervised during
+        # the round-1 cycle. After the Postulant addresses the
+        # advisor's revision request, the piece routes back to
+        # AWAITING_ADVISOR_REVIEW so the same advisor confirms the fix
         # before the project enters the normal peer-review pipeline.
         target_state = State.AWAITING_ADVISOR_REVIEW
         next_round = current_round
@@ -254,6 +254,21 @@ def run(project_id: str) -> None:
             "Qualifying project: revised draft returns to the advisor for a "
             "second look. The advisor either approves (advancing to peer "
             "review) or requests further revision."
+        )
+    elif kind == "qualifying" and current_round >= 2:
+        # Once a qualifying project has cleared the advisor + panel and
+        # collected peer reviews, the post-round-2 revision is the same
+        # one-final-polish pass as for research projects: straight to
+        # EDITORIAL, no further advisor or panel loop. Without this,
+        # qualifying projects loop endlessly between peer_review and
+        # advisor_review on round 2 because the panel's stale-reviews
+        # bump keeps incrementing the round.
+        target_state = State.EDITORIAL
+        next_round = current_round
+        next_description = (
+            "Qualifying project: final polishing pass after round-2 peer "
+            "review. Project transitions directly to `editorial` for "
+            "publication. No further advisor, panel, or peer-review rounds."
         )
     elif current_round == 1:
         target_state = State.PEER_REVIEWING
