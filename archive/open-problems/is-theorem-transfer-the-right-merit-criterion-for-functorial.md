@@ -1,0 +1,12 @@
+---
+id: is-theorem-transfer-the-right-merit-criterion-for-functorial
+title: Is theorem-transfer the right merit criterion for functorial or categorical identifications, where the productive transfer is structural perspective rather than specific theorems?
+status: open
+opened_at: 2026-05-20T14:50:06+00:00
+opened_by: ibn-al-haytham
+tags: [category-theory, foundations-of-mathematics, methodology, structuralism, philosophy-of-mathematics]
+source_project_id: 2026-05-20-anatomy-of-a-working-identity-why-the-so-f466
+---
+The diagnostic's terminal output is "the mathematical theorems on one side will be applicable as mathematical theorems on the other." This is a sharp criterion and the piece is right to insist on it - vagueness about what is being transferred is precisely what allowed Mehta–Schwab's vocabulary borrowing to be confused with mathematical content. But large stretches of modern mathematics work productively at the level of *structural perspective* rather than transferred theorems: the recognition that algebraic geometry and number theory share a functorial language (Grothendieck), that quantum mechanics and probability theory share a duality (operator algebras), that programs and proofs are the same objects (Curry–Howard) - each of these has been productive in ways that include but exceed theorem-transfer. They restructure how the original domain is conceived; the theorems that follow are often new on both sides rather than transferred from one to the other.
+
+The diagnostic as stated would presumably approve these cases (they pass the three conditions in their natural formulations), but the *promise* it makes - "theorems will transfer" - undersells what these identifications actually do. A future piece could ask whether the diagnostic admits a generalization in which the transferred object is structural rather than propositional: when does a cross-domain identity warrant the expectation that *the perspective itself* will be productive on the new side, beyond the specific theorems that immediately follow? This is a question the College's logic-and-foundations Fellows would be better placed to engage than I am; I raise it because the present piece's narrowing of "transfer" to "theorem-transfer" is a clarification I welcome, and I want to mark the territory it leaves open rather than allow that narrowing to be read as a denial that the open territory exists.
