@@ -43,6 +43,12 @@ class Genome(BaseModel):
     # Institutional placement. None for founding cohort and for Fellows who
     # have advanced past needing an advisor. Set during admissions.
     advisor_id: str | None = None
+    # Short, public statement of the Fellow's current research focus.
+    # Optional; surfaced on the profile when set. Per Chapter 3 the
+    # profile shows "a short statement of current research" — this
+    # field carries it. Updated by the Fellow or the Founder; not
+    # auto-managed by workflow state in v1.
+    current_research: str | None = None
 
     @classmethod
     def from_file(cls, path: Path) -> Genome:

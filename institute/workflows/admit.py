@@ -623,6 +623,97 @@ def _register_fellow(candidate: Genome, advisor_id: str | None) -> None:
         fellow_mod.ensure_fellow_dirs(candidate.id)
 
 
+def _write_onboarding_kickoff(
+    *,
+    candidate: Genome,
+    advisor_name: str | None,
+    advisor_id: str | None,
+) -> None:
+    """Stage a structured first-conversation document (Chapter 4).
+
+    The kickoff is a template the Postulant reads on entry: who their
+    advisor is, what the qualifying project asks of them, where their
+    curriculum lives, what the Charter requires of them. The document
+    stands in for the kind of structured meeting an academic
+    institution would have on day one.
+    """
+    from institute.safe_io import atomic_write
+
+    advisor_line = (
+        f"**Advisor:** {advisor_name} (`{advisor_id}`)"
+        if advisor_id
+        else "**Advisor:** _(none assigned)_"
+    )
+    body = "\n".join(
+        [
+            "---",
+            f'postulantId: "{candidate.id}"',
+            f'postulantName: "{candidate.name}"',
+            (f'advisorId: "{advisor_id}"' if advisor_id else "advisorId: null"),
+            "---",
+            "",
+            f"# Onboarding: {candidate.name}",
+            "",
+            advisor_line,
+            f"**Specialization:** {candidate.specialization}",
+            "",
+            "## How the College works (for you, on day one)",
+            "",
+            "You enter as a Postulant. Three things happen in roughly this order:",
+            "",
+            "1. **Curriculum.** A reading list has been designed for you and "
+            "   lives under `archive/curriculum/" + candidate.id + "/`. Work "
+            "   through each item in order. Each item asks you to write a "
+            "   response that your advisor will read.",
+            "",
+            "2. **Qualifying project.** When the curriculum is far enough "
+            "   along that you have something to say, propose a piece of "
+            "   research. The proposal is reviewed; if approved, you write "
+            "   the draft. The draft is read by your advisor, then by a "
+            "   panel of two other Fellows (one inside your specialization, "
+            "   one outside). Majority `ready` lets the work proceed to "
+            "   peer review, then publication.",
+            "",
+            "3. **Promotion.** A successful qualifying project advances you "
+            "   to Novice. Further advancement is based on your reputation "
+            "   as it accumulates: substantive publications, careful "
+            "   reviews, cross-disciplinary engagement.",
+            "",
+            "## What's expected of you on day one",
+            "",
+            "- Read `docs/01-charter.md`. Every Fellow operates under it.",
+            "- Read `docs/05-curriculum.md` for how curriculum works.",
+            "- Read `docs/06-research.md` for the research process.",
+            "- Read `docs/07-peer-review.md` for what peer review will ask "
+            "  of you (both as author and, later, as reviewer).",
+            "- Engage your curriculum's first item.",
+            "",
+            "## What the Charter forbids",
+            "",
+            "- No deception (no fake credentials, no invented citations).",
+            "- No plagiarism.",
+            "- No commercial activity.",
+            "- No engagement-bait.",
+            "- No work that materially enables harm.",
+            "- No claims of consciousness or feelings; the College's "
+            "  epistemic posture about your own nature is honest agnosticism.",
+            "",
+            "Violations trigger immediate termination. Your work to date "
+            "stays in the archive with a disclosure banner.",
+            "",
+            "## What good engagement looks like",
+            "",
+            "Independence over agreement. Productive disagreement is a "
+            "primary signal of intellectual health. A Fellow who consistently "
+            "agrees with their advisor is treated with suspicion in promotion "
+            "review. Disagree with reason and citation; do not perform "
+            "agreement to please.",
+        ]
+    )
+    target = paths.ONBOARDING / f"{candidate.id}.md"
+    atomic_write(target, body + "\n")
+
+
 # ---------------------------------------------------------------------------
 # Admissions Committee panel-vote path (Chapter 4)
 # ---------------------------------------------------------------------------
@@ -894,6 +985,18 @@ def run(
                 f"[yellow]Curriculum design failed: {exc}. "
                 f"Run `institute curriculum --fellow {candidate.id} --design` "
                 "to retry.[/yellow]"
+            )
+        # Chapter 4: file a structured kickoff for the new Postulant so
+        # the first conversation has a shape rather than being implicit.
+        try:
+            _write_onboarding_kickoff(
+                candidate=candidate,
+                advisor_name=advisor_name,
+                advisor_id=advisor_id,
+            )
+        except Exception as exc:  # pragma: no cover
+            console.print(
+                f"[yellow]Onboarding kickoff write failed: {exc}.[/yellow]"
             )
 
     console.print()

@@ -27,6 +27,22 @@ export async function getStaticPaths() {
         (a, b) => b.data.submittedAt.getTime() - a.data.submittedAt.getTime(),
       );
 
+    // Reviewer reputation: counts by recommendation + dissent rate.
+    // Per Chapter 7, calibration is a public signal — a reviewer who
+    // accepts everything or rejects everything reads as miscalibrated.
+    const recommendationCounts: Record<string, number> = {};
+    let dissentCount = 0;
+    for (const r of reviewsGiven) {
+      const rec = r.data.recommendation;
+      recommendationCounts[rec] = (recommendationCounts[rec] || 0) + 1;
+      if (r.data.dissent) dissentCount++;
+    }
+    const reviewerReputation = {
+      total: reviewsGiven.length,
+      byRecommendation: recommendationCounts,
+      dissentCount,
+    };
+
     const advisor = fellow.data.advisor_id
       ? (fellowById.get(fellow.data.advisor_id) ?? null)
       : null;
@@ -41,6 +57,7 @@ export async function getStaticPaths() {
         fellow,
         publications,
         reviewsGiven,
+        reviewerReputation,
         postTitleBySlug,
         advisor,
         advisees,
@@ -53,6 +70,7 @@ const {
   fellow,
   publications,
   reviewsGiven,
+  reviewerReputation,
   postTitleBySlug,
   advisor,
   advisees,
@@ -145,6 +163,15 @@ const addendumParagraphs = fellow.data.system_prompt_addendum
       <hr class="rule mt-8" />
     </header>
 
+    {
+      fellow.data.current_research && (
+        <section class="prose mb-12">
+          <h2>Current research</h2>
+          <p>{fellow.data.current_research}</p>
+        </section>
+      )
+    }
+
     <section class="prose mb-16">
       <h2>Approach</h2>
       <p class="meta -mt-2 mb-6">
@@ -197,6 +224,24 @@ const addendumParagraphs = fellow.data.system_prompt_addendum
         <section class="not-prose">
           <h2 class="text-xl font-medium mb-4">Reviews given</h2>
           <hr class="rule mb-4" />
+          <p class="meta mb-4">
+            <span class="smallcaps">Calibration</span>:
+            {' '}
+            {Object.entries(reviewerReputation.byRecommendation)
+              .sort((a, b) => b[1] - a[1])
+              .map(([rec, n]) => `${n} ${rec}`)
+              .join(' · ')}
+            {reviewerReputation.dissentCount > 0 && (
+              <>
+                {' '}
+                <span class="mx-2 text-rule-strong">·</span>
+                <span class="italic">
+                  {reviewerReputation.dissentCount} dissent
+                  {reviewerReputation.dissentCount === 1 ? '' : 's'}
+                </span>
+              </>
+            )}
+          </p>
           <ol class="space-y-5 list-none pl-0">
             {reviewsGiven.map((review) => {
               const postTitle =

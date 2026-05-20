@@ -790,6 +790,45 @@ def terminate(fellow: str, kind: str, reason: str) -> None:
 
 
 # ---------------------------------------------------------------------------
+# fellow: per-Fellow inspections and updates
+# ---------------------------------------------------------------------------
+
+
+@main.group()
+def fellow() -> None:
+    """Per-Fellow inspections and updates."""
+
+
+@fellow.command("set-research")
+@click.option("--fellow", "fellow_id", required=True, help="Fellow id.")
+@click.option(
+    "--statement",
+    required=True,
+    help="Short public statement of current research focus (or '' to clear).",
+)
+def fellow_set_research(fellow_id: str, statement: str) -> None:
+    """Update a Fellow's `current_research` statement (Chapter 3 profile)."""
+    _check_kill_switch()
+    from institute import fellow as fellow_mod
+    from institute.fellow import Genome
+
+    path = fellow_mod.genome_path(fellow_id)
+    if not path.is_file():
+        console.print(f"[red]No genome at {path}.[/red]")
+        sys.exit(1)
+    genome = Genome.from_file(path)
+    cleaned = statement.strip() or None
+    updated = genome.model_copy(update={"current_research": cleaned})
+    updated.write(path)
+    if cleaned:
+        console.print(
+            f"[green]{fellow_id}.current_research[/green] = {cleaned!r}"
+        )
+    else:
+        console.print(f"[yellow]{fellow_id}.current_research cleared.[/yellow]")
+
+
+# ---------------------------------------------------------------------------
 # departments: organize Fellows into long-lived Departments (Chapter 2)
 # ---------------------------------------------------------------------------
 

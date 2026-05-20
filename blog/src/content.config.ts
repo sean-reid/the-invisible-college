@@ -75,6 +75,7 @@ const fellows = defineCollection({
     allowed_tools: z.array(z.string()).default([]),
     behavioral_notes: z.record(z.string(), z.string()).default({}),
     advisor_id: z.string().nullable().optional(),
+    current_research: z.string().nullable().optional(),
   }),
 });
 
