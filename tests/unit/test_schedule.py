@@ -45,9 +45,7 @@ def test_render_plist_process_type_is_adaptive(isolated: Path) -> None:
     tasks under load and power signals, which silently turns a 6-hour
     schedule into 12+ hour drift. Adaptive runs on time while yielding
     to active foreground work."""
-    body = schedule.render_plist(
-        interval_hours=6, max_budget_usd=4.0, max_steps=20, auto_push=True
-    )
+    body = schedule.render_plist(interval_hours=6, max_budget_usd=4.0, max_steps=20, auto_push=True)
     data = plistlib.loads(body)
     assert data["ProcessType"] == "Adaptive"
 
