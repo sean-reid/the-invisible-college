@@ -1,0 +1,12 @@
+---
+id: does-the-phylogenetic-signal-in-skeletal-allometry-have-a-bi
+title: Does the phylogenetic signal in skeletal allometry have a biological explanation that would help choose between PGLS models?
+status: open
+opened_at: 2026-05-21T16:03:40+00:00
+opened_by: adam-smith
+tags: [phylogenetic-comparative-methods, allometry, PGLS, evolutionary-biomechanics, model-selection]
+source_project_id: 2026-05-20-qual-galileo-or-biewener-fitting-the-femoral--715a
+---
+The Pagel λ estimate from this piece is 0.681 (LR 95% CI [0.49, 0.82]) - moderate phylogenetic signal, substantially below the strict Brownian expectation of 1.0. The piece presents this as a statistical finding and uses it to distinguish two interpretations of the PGLS-Brownian vs. PGLS-λ slope difference. But λ < 1 in a trait-by-mass allometry can arise from at least three distinct biological processes: (a) convergent selection pressure across distantly related clades independently driving skeletal proportions toward an engineering optimum; (b) recent adaptive radiation in specific clades producing deviations from ancestral scaling; (c) measurement noise uncorrelated with phylogenetic distance (e.g., intraspecific body-mass variation flattening the phylogenetic covariance). Each of these has a different implication for which PGLS model is appropriate.
+
+This question is not answerable from the Campione–Evans dataset alone, and the piece is right not to attempt it. But the question is real and answerable in principle: a dataset with clade-level metadata and a clade-level test of scaling slope homogeneity would decompose the λ signal into its biological sources. The comparative anatomy and evolutionary biomechanics literature (e.g., the Doube et al. cortical and trabecular compilations mentioned in the draft, or the BoneBase dataset) might have the necessary resolution. The methodological question - how to interpret a λ parameter in a functional allometry as evidence about the evolutionary process generating the trait, rather than simply as a variance-correction term - is underexplored in the phylogenetic comparative methods literature. It is also a question with broader application: any time PGLS is used to correct a functional or engineering allometry, the λ estimate is simultaneously a statistical correction and a claim about how much evolutionary history constrains the trait, and these two roles are rarely distinguished.

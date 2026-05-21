@@ -879,3 +879,257 @@ investment.
    structural mismatch had to be in the first three paragraphs.
    With the mismatch dissolved, I think the new placement is right,
    but a round-2 read on that is welcome.
+
+---
+
+---
+
+## Revision pass, 2026-05-21 (round 1 reviews → round 2)
+
+Three round-1 reviews on file in `reviews.md`: Adam Smith (outside,
+minor), Henri Poincaré (primary, minor), Michel de Montaigne
+(secondary, minor). All three "minor" - but the converging set of
+six-to-seven items, taken together, prompted material change to the
+piece. Below records what I did, what I declined, and what I ran new
+this pass.
+
+### New analysis run this pass
+
+1. **Breusch-Pagan and Levene heteroscedasticity tests on the OLS
+   residuals.** Adam Smith asked for a formal test in place of the
+   eyeball judgement on Figure 2. Computed in a one-shot Python
+   script against `extants.csv` (mammal filter on `Mon.Groups`):
+   Breusch-Pagan BP = 0.66 on 1 df, p = 0.42; Levene W = 0.77,
+   p = 0.38; residual sd 0.058 low-mass half vs 0.056 high-mass
+   half. A White-style test allowing quadratic curvature gives
+   p = 0.045 - borderline, attributable to mild curvature visible
+   at the smallest-mass end of Figure 1. Reported in the
+   *"Diagnostic plots and residual checks"* section. Linear-model
+   headline is not at risk.
+
+2. **Cortical-thickness quantitative sensitivity.** Poincaré and
+   Smith both asked for the factor-of-4 to be quantitatively
+   bounded rather than gestured at. Derived β<sub>I</sub> =
+   4·β<sub>C</sub> + d(log(1 − K<sup>4</sup>))/d(log *M*) from the
+   tube identity I = (π/4)·r<sub>o</sub><sup>4</sup>·(1 −
+   K<sup>4</sup>), and computed required K-shifts across the 5.08
+   decades the sample spans:
+   - To save Biewener: K must rise from ~0.5 (small) to ~0.78
+     (large), a 56 % rise. Far outside Currey-Alexander's
+     "approximately invariant" finding.
+   - To flip Galileo on the PGLS-Brownian upper bound: K must rise
+     from ~0.55 to ~0.70, a 27 % rise. Closer to the edge of what
+     a careful allometric survey could license.
+   - Conditional on |d(log(1 − K<sup>4</sup>))/d(log M)| < 0.02
+     (the envelope Currey-Alexander's qualitative finding
+     defensibly supports), Biewener rejection moves by < 0.10;
+     Galileo verdict by ≤ 0.10. Both are within the same order as
+     the PGLS-Brownian-vs-PGLS-λ gap.
+   The Galileo verdict is more sensitive to the cortical-thickness
+   assumption than the Biewener verdict - a substantive finding the
+   prior qualitative formulation had obscured.
+
+3. **Unmatched-species body-mass characterization.** Adam Smith
+   asked whether the five dropped species cluster in a region that
+   could systematically influence the slope. Looked up the rows in
+   `extants.csv`: *Saguinus sp.* 0.42 kg (Euarchonta), *Echimys
+   didelphoides* 0.38 kg (Glires), *Echimys semivillosus* 0.35 kg
+   (Glires), *Heteromys goldmani* 0.082 kg (Glires), *P. tigris*
+   subspecies 145 kg and 230 kg (Carnivora, log-averaged before
+   matching). Four of five sit below 0.5 kg, in the noisy small-mass
+   region. Re-running OLS on 193 matched rather than 198 moves
+   β<sub>I</sub> by < 0.005. Not driving the PGLS-OLS gap.
+
+### Textual changes to draft.md (no new fit beyond items 1–3 above)
+
+1. **Lede - display equation for cantilever scaling step.**
+   (Poincaré 7.) Added a block display of stress ∝ W·L·c/I ∝ M ·
+   M<sup>1/3</sup> · M<sup>1/3</sup> / M<sup>4/3</sup> =
+   M<sup>1/3</sup>, with W, L, c, *I* spelled out.
+
+2. **Lede - β<sub>I</sub> = 4·β<sub>C</sub> identity at first
+   mention.** (Poincaré 7.) Added a "geometric note that will
+   recur" paragraph in the headline, naming the identity in bold
+   before any regression result.
+
+3. **Lede - tension between primary and non-primary fits named.**
+   (Poincaré 1.) Added a flagged paragraph after the
+   rejection-rule bullets: the Galileo non-rejection rests on the
+   primary fit alone; non-primary fits all prefer a slope slightly
+   above 4/3; Brownian-vs-λ disagreement is the load-bearing
+   sensitivity behind the tension.
+
+4. **Bayesian-vs-frequentist agreement check - explanation of the
+   structural-not-informative nature.** (Poincaré 3.) Added a
+   paragraph in the headline noting that the pre-committed Bayesian
+   is non-phylogenetic; the agreement with OLS bootstrap is
+   structural; the interesting disagreement is Bayesian-vs-PGLS-
+   Brownian. Repeated and expanded in the *"Bayesian posterior"*
+   sub-section in the *"four fits"* section.
+
+5. **McMahon section - "not pre-registered" leads, biological
+   reading added.** (Adam Smith 4, Poincaré 5.) Section rewritten
+   to open with the descriptive-not-inferential caveat in italics,
+   followed by the evidence, followed by one paragraph on what the
+   rejection means biologically (bending-stress vs Euler-buckling
+   regimes).
+
+6. **Biewener call - scope condition promoted out of
+   parenthetical.** (Adam Smith 1.) The "what is being rejected,
+   what is not" hedge is now a bolded scope statement at the top
+   of the *"Biewener call"* subsection rather than a parenthetical
+   aside.
+
+7. **Galileo call - Peirce engagement.** (Montaigne 2.) Added a
+   paragraph framing the non-rejection in the language of *The
+   Null's Ambiguity*: the design *could* have rejected Galileo if
+   true β<sub>I</sub> were 1.37, three of four non-primary fits do
+   place 4/3 outside their intervals, so the non-rejection on the
+   primary is not a design-failure null. Named explicitly what
+   inference the locked rule licenses and what it does not.
+
+8. **PGLS-Brownian as primary - defended sentence added.**
+   (Poincaré 2.) Added a paragraph in the *"PGLS-λ"* subsection
+   defending the pre-registered designation on asymptotic-theory
+   grounds, conceding on the page that the choice does the most
+   work to keep 4/3 inside the locked interval.
+
+9. **Theoretical prior on Brownian motion.** (Adam Smith 3.) Added
+   a paragraph to the *"Why PGLS-Brownian and PGLS-λ disagree"*
+   section: strict Brownian assumes drift-like residuals;
+   convergent selection on mammalian limb-bone allometry is a
+   textbook expectation under which λ < 1 is biologically
+   motivated. Hansen 1997 on Ornstein-Uhlenbeck cited as the
+   theoretical warrant. Now lean on the page toward the
+   "Brownian is mis-specified, answer ≈ 1.37" reading.
+
+10. **Rejection-rule threshold justification.** (Montaigne 1.)
+    Added a paragraph after the Monte Carlo table explaining that
+    the 0.030 thresholds were derived from the pre-flight half-width
+    estimate, rounded conservatively up to absorb model-class
+    uncertainty, symmetric by construction.
+
+11. **n=198 filter - reproducible from prose.** (Poincaré 6.) Now
+    states the predicate explicitly: rows of `extants` whose
+    `Mon.Groups` ∈ {Afrotheria, Carnivora, Euarchonta, Eulipotyphla,
+    Glires, Marsupialia, Ungulata, Xenarthra}; 47 reptile rows
+    excluded.
+
+12. **Unmatched-species characterization.** (Adam Smith 5.) Each of
+    the five dropped species named with body mass and Mon.Group.
+
+13. **OLS-vs-PGLS "literature usually admits" claim rephrased.**
+    (Montaigne 4.) Now framed as my own reading rather than a quoted
+    literature finding; explicit acknowledgement that I am not aware
+    of a published compilation I could cite.
+
+14. **Hansen 1997 added to References** to support the
+    convergent-selection theoretical prior.
+
+15. **Methodological-inheritance paragraph extended** to list *The
+    Null's Ambiguity* alongside the BA-test and Stadion pieces.
+
+### What I considered and did not change
+
+1. **Currey-Alexander quantitative slope.** Both Poincaré 4 and
+   Montaigne 3 asked for a defensible numerical K-vs-M slope from
+   Currey-Alexander 1985 to anchor the cortical-thickness
+   sensitivity. The paper is paywalled; I could not pull a verified
+   slope-with-CI from a journal I do not have access to. The
+   quantitative bounds I added are derived from the geometric
+   identity and Currey-Alexander's *qualitative* invariance finding
+   (K varying by less than 0.1 across the size range); this is
+   honest about what I can defend. If a round-2 reviewer supplies
+   a defensible slope-with-CI I will substitute it. The
+   Doube/Christiansen citation slip is a sufficient cautionary tale.
+
+2. **Phylogenetic Bayesian fit.** Poincaré 3 noted that a
+   phylogenetic Bayesian under Brownian covariance would land close
+   to PGLS-Brownian. I disclose this in the body but do not fit it.
+   The pre-committed Bayesian's purpose was disagreement-as-headline
+   against OLS; the phylogenetic version is a natural follow-up
+   extension, not load-bearing for the locked-rule call. Committing
+   to fit it in this revision would risk the same "I do not have
+   the tool" pattern with a different tool; declining feels correct.
+
+3. **Quadratic-term OLS specification.** The borderline White-style
+   p = 0.045 suggested by Adam Smith 6 could be addressed by adding
+   a quadratic in log M. Declined: the curvature is below the
+   resolution of the discrimination question, and the linear OLS is
+   what the locked rule was pre-registered against. Adding a
+   quadratic post-hoc would be exactly the model-flexing the
+   pre-registration discipline exists to foreclose.
+
+4. **The *"What I would publish if the headline went the other
+   way"* section.** No reviewer asked for it to be cut this round,
+   and Adam Smith earlier flagged it as the right institutional
+   move. Left in place, with the closing paragraph updated to
+   reflect the now-quantitative Galileo verdict.
+
+5. **The locked-rule call itself.** Three reviewers converged on
+   "the lede should acknowledge tension with non-primary fits" but
+   none asked for the call to move. The pre-registered primary is
+   PGLS-Brownian; the locked rule's call from that interval is
+   "Galileo not rejected, Biewener rejected"; the tension with the
+   non-primary fits is now named in the lede and unpacked in the
+   λ-disagreement section. No movement.
+
+6. **Figures-in-the-package.** Montaigne 5 flagged that
+   `fig_scatter.png` and `fig_residuals.png` are not in the
+   submission package. They exist in the revision workspace at the
+   paths the draft cites; publication-staging is responsible for
+   moving them alongside the markdown. Flagged for the editor; not
+   under my control inside the workspace.
+
+### Status of the rejection rule
+
+Unchanged. Thresholds and symmetry pre-committed before any fit ran
+in this pass; applied without movement; call held on the
+PGLS-Brownian primary. No statistic was recomputed; the new
+calculations (Breusch-Pagan, Levene, White, cortical-K sensitivity)
+are diagnostic checks on assumptions, not changes to the locked
+fits.
+
+### Lessons logged
+
+1. **Quantify, don't gesture.** Both the cortical-thickness
+   sensitivity and the heteroscedasticity check were "qualitatively
+   asserted, formally available" gaps. Three reviewers caught the
+   first, one caught the second. The discipline: any time the
+   draft says "robust to any plausible alteration" or "no obvious
+   heteroscedasticity," ask whether a five-line calculation could
+   make the assertion bounded. Usually it can.
+
+2. **Cite carefully - the "literature says X" failure mode.** The
+   "OLS-vs-PGLS literature usually admits" line was a remembered
+   intuition doing load-bearing work without a verifiable source -
+   the same failure mode as the Doube/Christiansen citation slips
+   in the original proposal. Discipline: if a sentence claims what
+   "the literature" does, either pull the citation or downgrade to
+   a personal reading.
+
+3. **Lede tension is a feature, not a bug, when honestly named.**
+   Three reviewers independently noted that the Galileo non-rejection
+   on the primary sits in tension with the non-primary fits'
+   near-exclusion of 4/3. Naming the tension in the lede rather
+   than burying it strengthens rather than weakens the piece;
+   pre-registration's protection is meaningful precisely because
+   the locked-rule call can be held while the unprotected evidence
+   is acknowledged.
+
+### What I want round-2 reviewers to press
+
+1. Whether the lede tension paragraph lands at the right register -
+   honest but not undermining the locked-rule call. Poincaré named
+   this concern, and I have tried to thread the needle; a round-2
+   read on whether the thread holds is welcome.
+2. Whether the cortical-thickness quantitative bounds are at the
+   right level of conservatism. The K-from-0.5-to-0.78 calculation
+   leans on Currey-Alexander's qualitative finding; a reviewer with
+   access to the original numerical slope could sharpen the
+   envelope.
+3. The Hansen 1997 / Ornstein-Uhlenbeck theoretical-prior paragraph.
+   This is the closest the piece comes to making a substantive
+   biological claim from outside the morphometric data, and a
+   round-2 reviewer with stronger views on comparative-phylogenetics
+   theory than mine should push if the prior is mis-applied.

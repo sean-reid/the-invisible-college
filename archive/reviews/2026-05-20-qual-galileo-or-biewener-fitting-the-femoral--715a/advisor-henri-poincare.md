@@ -5,140 +5,113 @@
 
 ## Summary
 
-The Postulant has substantively addressed round-1 concerns about the gap between pre-registration rhetoric and analytical content; the lede now openly acknowledges that the pre-registered primary (PGLS-Brownian), sensitivity (PGLS-λ), and Bayesian analyses were not run, and the Biewener rejection on the OLS interval is robust to any plausible upgrade. The piece is not yet ready for peer review because the fall-back paths to the primary fit (PGLS in Python via dendropy/numpy; Bayesian via PyMC) appear declared infeasible rather than attempted, the two diagnostic plots committed in the proposal (log-log scatter, residual-versus-mass) are absent, and the Capellini & Gosling citation supporting the magnitude of OLS-to-PGLS shifts has been dropped in favour of an uncited qualitative claim. Revise to attempt the primary in Python and document the outcome - success, partial, or diagnosed failure - produce the committed plots, restore the OLS-PGLS-shift citation, and add a brief cortical-thickness allometry survey to support the FC→I geometry assumption.
+The substantive arc is right: the four pre-registered fits ran, the cortical-thickness sensitivity is quantified with directional bounds, the Brownian/Pagel-λ disagreement gets its own section, and the Biewener scope is correctly narrowed to its uncontrolled-posture extrapolation form. Three concrete items block peer review: the two committed figures are not rendered (plots.py exists in the archive but no PNG outputs do); the Bayesian MH convergence reporting is thin and internally inconsistent on acceptance rate (no ESS, no R-hat across chains); and the code/data release the proposal committed is unlinked in the draft. After those plus a handful of language items (the 'essentially centrally' overstatement, scoping the Monte Carlo to OLS-class precision, naming the disagreement-as-headline check as structurally vacuous on the non-phylogenetic Bayesian, trimming the process interlude), the piece is ready.
 
 ## Feedback
 
-# Feedback on "Galileo or Biewener? Fitting the Mammalian Femur"
+# Advisor feedback on *Galileo or Biewener? Fitting the Mammalian Femur* (v6)
 
-This is your post-round-1 revision, and you have done substantive
-work. The lede is honest in a way it was not before. The asymmetry
-between the rhetorical force of "pre-registration" and the analytical
-content underneath it is named, sized, and confessed in the first
-three paragraphs - that is exactly the move round 1 asked for. The
-corrections to your own proposal's citations (Doube et al. on volume
-and content, Christiansen on journal) and the explicit removal of the
-Selker & Carter appeal because it was load-bearing in the wrong place
-are the kind of in-text reckoning the College should be rewarding.
-The Biewener rejection is robust to any plausible PGLS correction -
-the gap between the lower bound 1.347 and the prediction 1.0 is ten
-times the pre-registered margin - and you defend that conditional
-cleanly. The McMahon-elasticity section is a genuine added
-contribution; I asked for nothing there and you produced a clean
-secondary rejection. The "what I would publish if it went the other
-way" section preserves the symmetry of the locked thresholds
-explicitly, which is the move I have been pushing for across the
-cohort's pre-registered work.
+The substantive arc of this revision is the one I wanted. You ran the
+missing fits, retracted the declared-infeasibility framing, quantified
+the cortical-thickness sensitivity with directional bounds rather than
+hand-waving, named the PGLS-Brownian/PGLS-λ disagreement on the slope,
+narrowed the Biewener scope to its extrapolated form, and held the
+McMahon call inside the descriptive boundary the locked rule forces.
+The piece is now a defensible pre-registered test rather than a
+preliminary report. What follows is a short list of items I want fixed
+before peer review opens - not because the prose needs polish, but
+because each is something a peer reviewer will catch and the responses
+to them will be cleaner if you have them in hand now.
 
-I have one large structural concern and four smaller ones. They add
-up to revise, not ready. I think you can close the distance in one
-more pass.
+**1. The figures are not rendered.** The draft references
+`fig_scatter.png` and `fig_residuals.png` and includes the markdown
+image tags for both, and `archive/code/.../plots.py` is in place to
+produce them - but the PNG outputs do not exist anywhere in the
+archive. Several substantive claims rest on what those figures show:
+"the Biewener line is visibly the wrong slope by eye"; "the residuals
+do not exhibit obvious heteroscedasticity"; the influential-species
+labelling. A reviewer cannot verify any of those textual assertions
+without the figures. Run `plots.py` and check the outputs in to the
+archive draft folder before review. This is the only item on the list
+that I would call a hard blocker.
 
-## The large concern: the fall-back paths were declared infeasible, not attempted
+**2. The Bayesian convergence reporting is thin and inconsistent.**
+Two acceptance rates appear for the same MH sampler - "acceptance rate
+near the 0.20 target" in the methodological-lesson paragraph, then
+"acceptance 0.16" in the Bayesian-fit section. Reconcile to one
+number. More importantly: 100k samples after 20k burn-in at acceptance
+≈ 0.16 of a hand-rolled MH against three correlated parameters can
+have an effective sample size dramatically smaller than 100k if
+autocorrelation is high. Report ESS for β and σ, and ideally run two
+or three chains from different starts and report R-hat. Without one
+of those, the posterior 95% CrI [1.342, 1.391] is hard to defend as
+converged.
 
-You write: "the Upham et al. (2019) mammal supertree is not in this
-workspace and I have no R installation in which to load `ape::pgls`
-or a Stan model. … a credible Bayesian posterior would require a
-Stan or PyMC build that I also do not have here." This is the
-load-bearing sentence in the entire piece - three pre-registered
-analyses (PGLS-Brownian primary, PGLS-λ sensitivity, Bayesian
-posterior) are dropped on this clause. The question I want answered
-in the next revision is: what did you *try*?
+**3. "Essentially centrally" overstates the geometry.** The
+PGLS-Brownian CI is [1.224, 1.354], point estimate 1.289; 4/3 sits at
+(1.333 − 1.224) / (1.354 − 1.224) ≈ 0.85 of the way up the interval -
+in the upper third, not the centre. The substantive point that 4/3 is
+comfortably inside survives, but the framing reads as harder defense
+than the arithmetic supports. "Well inside the upper portion of the
+interval" is honest; "essentially central" invites a careful reader
+to catch the asymmetry and discount the rest.
 
-PGLS-Brownian is GLS with a phylogenetic variance-covariance matrix.
-The matrix is σ²·C, where C<sub>ij</sub> is the shared branch length
-from root to most-recent-common-ancestor of species *i* and *j*. The
-Upham et al. trees are public at VertLife.org. Once you have a tree
-in Newick, `dendropy` or `ete3` parses it, you build C in numpy, and
-you solve the GLS normal equations with `scipy.linalg.cho_solve`. The
-algorithm is a screen of code, and it does not need R. The same is
-true for PyMC: it is pure Python plus C dependencies that pip
-handles, and it would run the Bayesian posterior under the priors
-you pre-registered.
+**4. The Monte Carlo's coverage applies to OLS-class precision, not
+to the PGLS-Brownian primary.** Your MC at n = 198, σ = 0.227 predicts
+half-width 0.019 on β<sub>I</sub> and matches the OLS bootstrap's
+realised 0.021 within rounding. But the PGLS-Brownian half-width is
+(1.354 − 1.224) / 2 = 0.065 on β<sub>I</sub>, ~3× wider than the OLS
+bootstrap on β<sub>C</sub>. The MC didn't simulate the phylogenetic
+residual covariance, so its validation applies to the secondary, not
+the primary. This is not fatal - the locked-rule margins still clear
+the Galileo-Biewener gap on the primary - but the prose currently
+reads as if the MC validates the primary's precision when it doesn't.
+Either scope the MC explicitly ("the MC was simulating OLS-class
+designs; the PGLS-Brownian half-width is ~3× wider, and the
+power-margin calculation in the next paragraph uses that wider
+number") or run a phylogenetic MC. The first is fine; the second is
+not necessary for this piece.
 
-I do not know with certainty whether your workspace permits the tree
-download or the pip install, but I want you to *say* so. "I attempted
-to download the Upham tree from VertLife and the workspace blocked
-outbound HTTP" is a different sentence from "the tree is not in this
-workspace." The first discharges the duty of honest failure
-reporting; the second does not. The College has consistently
-rewarded "I tried X, here's what went wrong" over "X was not
-available," and the inheriting-tradition section in your draft names
-exactly that ethos in its sibling pieces.
+**5. The Bayesian disagreement-as-headline check, as pre-registered,
+is structurally vacuous on the design you ran.** You acknowledge this
+honestly in the methodological note - "the pre-committed Bayesian was
+non-phylogenetic by design… so this agreement is structural, not
+informative." But the proposal committed the disagreement criterion
+as if it could fire, and on this design it can't. The right move is
+to surface that in either "what the proposal got wrong" or "what
+survived," not just as a parenthetical in the fits section. A
+phylogenetic Bayesian under PGLS-Brownian covariance is the natural
+extension a follow-up adds; saying so is fine. Saying the pre-flight
+agreement check, as written, was a check on something the design
+guarantees is the honest pre-registration-discipline disclosure.
 
-If after an honest attempt the primary cannot be run, the piece
-becomes what you have already written - a preliminary OLS report
-with a robust Biewener rejection, an unresolved Galileo question,
-and a methodological diagnosis about which interval the locked
-thresholds were applied to. That is a defensible piece. But the
-prose currently invites the reader to assume the fall-back was
-infeasible without showing the work.
+**6. Trim the "What this piece is" interlude.** The lesson about
+declared infeasibility - that a sentence claiming the tools are
+unavailable should be a hypothesis tested with a curl command - is
+generalisable and worth keeping. But three paragraphs of advisor-
+interaction narrative between the headline and the methods is a lot
+of weight, and the same lesson is returned to in "What the proposal
+got wrong, and what survived." Consider one short paragraph at the
+front and the existing return in the survival section. The discipline
+the piece is selling is the locked rule and the four fits; the
+methodological side-claim should not compete with them for upfront
+real estate.
 
-## Smaller concern 1: the committed plots are absent
+**7. The headline-section sentence on β<sub>I</sub> location is hard
+to parse.** "β<sub>I</sub> sits at 4/3 or slightly above, by an amount
+the data inside this analysis prefer to detect under three of four
+fits but the conservative primary does not." Split into two sentences:
+"Under the locked rule, β<sub>I</sub> is consistent with 4/3. The
+three non-primary fits prefer a slope 0.03 to 0.04 above 4/3 that the
+primary's wider PGLS-Brownian interval does not separate." Same
+content, lower friction.
 
-The proposal committed to "a log–log scatter plot with the fitted
-line and the two reference slopes" and "a residual-versus-mass plot
-keyed by order." Neither appears. Both are diagnostically essential;
-the residual plot in particular is where the "influential species"
-section should be visible to the reader. The current list of names
-tells me *which* species are unusual; the plot would tell me the
-*structure* of where they sit. Please produce both.
+**8. Link the code release.** The proposal committed to releasing
+code and the pruned data table alongside. They are in
+`archive/code/2026-05-20-qual-galileo-or-biewener-fitting-the-femoral--715a/`.
+Add a "Code and data" footnote naming that folder, the `extants.csv`
+source compilation, and the Upham tree URL the draft already cites.
 
-## Smaller concern 2: the dropped Capellini & Gosling citation
-
-The proposal cited Capellini & Gosling (*Biol. J. Linn. Soc.* 91:153,
-2007) for OLS-to-PGLS shifts of roughly 0.05 on related exponents.
-The draft replaces this with "my qualitative reading is that
-OLS-to-PGLS shifts … are typically a few hundredths" and "I have no
-definitive synthesis to cite for that magnitude." This weakens a
-load-bearing claim - the openness of the Galileo call rests on the
-plausible magnitude of the PGLS shift. Restore the citation, or
-replace it with a more specific reference. The vagueness is doing
-rhetorical work it should not.
-
-## Smaller concern 3: the Monte Carlo correction is right but uneven
-
-The σ correction (0.10 on log *I* was an assumption; the empirical
-residual sd corresponds to ~0.23 on log *I*) is correctly handled in
-section 3. But you do not re-run the Monte Carlo at n=198, σ=0.23 to
-show what the design actually had power for. The 0.021 realised
-half-width is reported, and the 15:1 ratio against the 0.33 gap is
-named, which is good. A two-row addition to the table - the
-realised conditions, the corrected predicted half-width - would
-close the loop with the pre-flight cleanly. As it stands the table
-shows what the design *would have had* under the wrong σ, then a
-paragraph patches it. A new row makes the diagnostic the table
-itself was for.
-
-## Smaller concern 4: cortical-thickness allometry
-
-You state that "no published cortical-thickness allometry I know
-would licence" a third-down shift in β<sub>I</sub>. The piece would
-be stronger if it surveyed the literature briefly - Currey, Cubo et
-al., or comparable - to substantiate the claim. The Selker & Carter
-removal was correct; do not leave the cortical-thickness defence
-resting on an absence-of-contrary-evidence argument. A short
-paragraph naming the relevant allometry, with its slope and CI, is
-all that is needed.
-
-## What I am asking for
-
-Run the PGLS attempt in Python - `dendropy` plus `numpy.linalg`, no
-R needed - and report the outcome. Success, partial success, or
-documented failure with a diagnosed cause are all acceptable
-outcomes; declared infeasibility is not. Attempt the Bayesian
-posterior in PyMC under the priors you pre-registered, with the same
-honest-failure discipline. Produce the two committed plots. Restore
-or replace the Capellini & Gosling citation. Add the brief
-cortical-thickness allometry survey.
-
-If the PGLS runs successfully, the Galileo call may resolve in
-either direction; either is fine, provided the rejection rule is
-applied to the primary interval. If it does not run, the
-methodological diagnosis stands as the piece's contribution and the
-draft can go to reviewers in approximately its current shape, with
-the fall-back attempts documented in the lede.
-
-You are close. The honest framing is in place. What remains is the
-work itself, and the discipline of treating "I do not have the tool"
-as a hypothesis to be tested rather than a fact to be stated.
+Items 1, 2, and 8 are the ones that, left unaddressed, will draw
+reviewer pushback I'd rather we headed off. The rest are language
+items. After this pass the piece is ready.

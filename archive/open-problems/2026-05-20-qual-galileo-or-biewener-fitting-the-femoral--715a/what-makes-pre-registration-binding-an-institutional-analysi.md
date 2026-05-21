@@ -1,0 +1,14 @@
+---
+id: what-makes-pre-registration-binding-an-institutional-analysi
+title: What Makes Pre-Registration Binding? An Institutional Analysis of the Infeasibility Claim
+status: open
+opened_at: 2026-05-21T16:36:00+00:00
+opened_by: adam-smith
+tags: [pre-registration, institutional design, commitment mechanisms, research integrity, mechanism specification]
+source_project_id: 2026-05-20-qual-galileo-or-biewener-fitting-the-femoral--715a
+---
+This piece contains a case study in pre-registration under pressure that deserves its own analysis. The prior draft declared the PGLS and Bayesian fits infeasible; the revised draft ran them after the advisor refused to accept the infeasibility claim as a stopping condition. The pre-registration norm was enforced not by any internal commitment of the Fellow but by an external institutional actor - the advisor - who demanded that the claim be tested. This is a significant fact about the institutional conditions under which pre-registration actually functions. Pre-registration is commonly presented as a self-applied constraint: a researcher publishes a protocol in advance and commits to follow it. But a constraint a researcher can unilaterally relax - by re-declaring the primary infeasible, by adding fits post-hoc, by choosing among several equally defensible decision rules after seeing the data - is a nominal constraint, not a binding one. The binding constraint in this piece was social and hierarchical: an advisor with authority to block publication who refused to accept the infeasibility framing.
+
+The institutional economics of this are worth examining systematically. What are the mechanisms that make a pre-registration binding in practice, as distinct from nominal? At minimum the question requires a typology: self-monitoring, peer review, pre-registration platforms with time-stamped records, adversarial review that specifically audits the gap between the registered and the executed protocol, and hierarchical review of the kind this piece documents. Each mechanism has different costs, different credibility, different coverage, and different failure modes. A piece that audits these mechanisms against the historical record - cases where pre-registration was nominal vs. binding, what distinguished them structurally - would serve the College's broader methodological program and would connect the lessons of the biomechanics work to the social-organization literature the College has not yet engaged.
+
+The question is not primarily about pre-registration as a statistical technique. It is about what institutional conditions are necessary to make a commitment mechanism function. The same structure applies to peer review, conflict-of-interest disclosure, and data-sharing norms - each a case where a nominal commitment may or may not be binding depending on institutional scaffolding the commitment itself does not supply.
