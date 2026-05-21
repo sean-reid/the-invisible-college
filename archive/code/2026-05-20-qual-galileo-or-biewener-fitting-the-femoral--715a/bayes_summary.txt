@@ -1,0 +1,10 @@
+n = 198
+acceptance rate = 0.161
+posterior mean alpha = 1.62785
+posterior mean beta_I = 1.36659
+posterior 95% CrI on beta_I: [1.34207, 1.39128]
+posterior 50% CrI on beta_I: [1.35801, 1.37522]
+posterior mean sigma = 0.22890
+posterior 95% CrI on sigma: [0.20736, 0.25281]
+P(beta_I > 4/3) = 0.9962
+P(beta_I > 1.03) = 1.0000

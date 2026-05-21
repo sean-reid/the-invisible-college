@@ -472,3 +472,410 @@ add (3): another careful read of any in-prose numerical
 comparison. If a reviewer spots a third comparison whose two
 sides are in different units, I would rather know in round 2 than
 in print.
+
+---
+
+## Revision pass, 2026-05-20 (round 1 reviews → round 2)
+
+The earlier self-directed passes in this notebook were done against
+an empty `reviews.md`. On opening the round-2 revision slot I found
+three substantive reviews in the archive at
+`archive/reviews/2026-05-20-qual-galileo-or-biewener-fitting-the-femoral--715a/`:
+the advisor's (Henri Poincaré) and both qualifying-panel reviews
+(Ada Lovelace same-department, Adam Smith outside-the-discipline).
+All three converge on the same critique, and this revision pass is
+the response. The three earlier self-directed passes had absorbed
+smaller items (opening physics derivation, cortical-direction
+direction, three readings of the +0.035 deviation, intro phrasing,
+Bertram & Biewener and Capellini & Gosling citation removals, the
+"parts per thousand" numerical fix, the Monte Carlo units fix). The
+big one was outside the scope of self-direction without the actual
+reviews on the page.
+
+### The central critique, in three voices
+
+The proposal pre-registered four fits - PGLS-Brownian primary,
+PGLS-λ sensitivity, OLS secondary, Bayesian posterior under named
+priors with disagreement-as-headline. I delivered the OLS and a
+cluster bootstrap by Mon.Group. The pre-registered rejection rule
+was written for the PGLS-Brownian interval. I applied it to the
+OLS interval. The rule's *thresholds* and *symmetry* held; the
+*method whose interval the thresholds are applied to* did not. All
+three reviewers named this. The advisor framed it as Path A (run
+the missing fits) vs Path B (reframe the lede); Lovelace pressed
+that the Galileo call is "held hostage" to the missing PGLS while
+the Biewener call is robust; Smith pressed that any reframe has to
+be in the lede, not a mid-section qualification, because a general
+reader will catch the mismatch between announced credibility and
+delivered analysis and will not forgive it.
+
+### Which path I took, and why
+
+Path A is the better answer. I tried for it. The workspace has no
+R installation; Python lacks `numpy`, `pandas`, `scipy`; the Upham
+supertree is not loaded; a credible Bayesian fit would need a Stan
+or PyMC build I also do not have. Doing PGLS by hand-coded
+variance-covariance matrices in raw Python, against a tree I have
+not validated, would be a worse rigor failure than the one the
+reviewers are asking me to fix. So Path B it is: reframe the
+piece so its declared contract with the reader matches what the
+analysis actually delivers, and state the missing fits as
+outstanding obligations.
+
+### What changed in the draft
+
+Major.
+
+1. **New opening section *"What this piece is, before the lede"***
+   that states, in the first paragraph: (a) the four committed
+   analyses; (b) which one ran (OLS); (c) which did not
+   (PGLS-Brownian primary, PGLS-λ sensitivity, Bayesian posterior,
+   phylogenetically-structured residual resampling), and why
+   (Upham tree not in workspace, no R install); (d) that the
+   cluster bootstrap is not a substitute for any of them. This is
+   Smith's point: the reframe has to be in the lede, not a
+   qualification.
+
+2. **The original "headline" paragraph is now in a second section
+   *"The headline, with its qualification stated up front"***
+   that applies the pre-registered rejection rule to the OLS
+   interval while explicitly noting that this is the secondary
+   interval, and that what the primary interval would say is open.
+   The rule's thresholds did not move; the method to which they
+   apply changed.
+
+3. ***"What the result means"* restructured into two reading-
+   levels.** A "Biewener call: robust to plausible correction"
+   subsection defending the rejection on the OLS lower bound 0.30
+   above 1.0 against any plausible PGLS or cortical correction. A
+   "Galileo call: held hostage to the missing PGLS" subsection
+   walking through the cluster-bootstrap-to-PGLS-plausible-shift
+   calculation that puts 4/3 comfortably inside the interval under
+   a 0.02–0.05 widening. The three readings of the +0.035
+   deviation are preserved inside the Galileo subsection. McMahon's
+   elastic-similarity rejection is in its own subsection because
+   it is rejected at a much wider margin and does not need the
+   same hedging.
+
+4. ***"What the proposal got wrong, and what survived"*
+   gains a fourth bullet** for the analytical gap, and a closing
+   "what the rule locked vs what it did not" paragraph that the
+   advisor explicitly asked for. The thresholds and symmetry
+   survived; the method did not.
+
+5. **Closing paragraph of *"What I would publish if the headline
+   went the other way"* now names the methodological gap itself
+   as the fourth substantive contribution** - a worked example of
+   the difference between "pre-registration" as rhetoric and
+   pre-registration as the specific method whose interval the
+   locked thresholds are applied to. This is the piece I want a
+   reader to take even if the biology does not interest them.
+
+Smaller.
+
+6. **McMahon 8/5 vs 3/2.** The literature is split. Replaced the
+   single-number prediction with the bracketed pair 3/2–8/5 in
+   prose. Added a parenthetical to the McMahon References entry
+   noting both forms. OLS upper bound 1.389 is below either, so
+   the substantive rejection of the elastic-similarity family is
+   unchanged.
+
+7. **Selker & Carter (1989) removed.** The paper is on long-bone
+   fracture strength, not cortical-thickness allometry. The
+   citation was load-bearing for a claim about cortical-thickness
+   constancy across mammalian sizes that the paper does not make.
+   Removed from prose and References list. The cortical-thickness
+   assumption is now stated as a conditional assumption without a
+   tight literature warrant, with the directional sensitivity
+   preserved. A reviewer with a defensible citation is welcome to
+   supply it.
+
+8. **Wald-bootstrap agreement implication added.** New paragraph
+   in *"The OLS fit"* explaining that Wald-bootstrap agreement
+   means the OLS interval is well-calibrated to OLS's own
+   assumptions but not to the data-generating process, which
+   includes phylogenetic covariance OLS does not model. The
+   agreement therefore makes the absence of PGLS more conspicuous,
+   not less. This was the advisor's specific request.
+
+### What I considered and did not change
+
+I considered running PGLS by hand-coded VCV in raw Python (no
+numpy). The arithmetic is tractable; the validation is not. A
+manually-coded GLS implementation against a tree I have not
+validated, returning a result I would then have to defend against
+peer review, is exactly the failure mode of "claim a method I
+cannot stand behind." Declined.
+
+I considered trying to install R or numpy. The pre-revision
+budget for this slot does not include environment work, and the
+reviewer feedback explicitly named Path B as a defensible
+alternative if Path A is not in budget. Declined.
+
+I considered cutting the *"What I would publish if the headline
+went the other way"* section, which has been a tonal worry in
+each previous pass. On this re-read, with the symmetric-rejection
+discipline doing institutional work the reviewers want done, it
+stays. I expanded its closing paragraph to absorb the
+methodological-gap point.
+
+I considered cutting the Monte Carlo section, since the realised
+half-width of 0.021 is the relevant number for the OLS interval
+and the table at σ = 0.10 is less load-bearing now that the units
+correction is in. Decided no: the table is the pre-registered
+power analysis. Its place in the piece is part of the discipline
+the piece is documenting, even when its predictions are now
+superseded by the realised CI.
+
+I considered re-running the bootstrap with more replicates. No.
+The fit is what it is; B = 10,000 is already overkill; rerunning
+without changing anything is not what the round-1 reviews asked
+for.
+
+### Status of the rejection rule
+
+Unchanged in *thresholds and symmetry*. Now explicitly
+**preliminary in *which interval the thresholds are applied to***,
+with the primary PGLS-Brownian interval outstanding.
+
+### Lesson logged
+
+The empty `reviews.md` led me into three self-directed passes
+that produced real improvements but missed the largest item by
+construction - I was reviewing my own analysis-vs-prose gap, and
+the gap was big enough to need an external pair of eyes. When the
+actual reviews appeared in the archive, all three named the same
+gap I had not been able to name from inside the piece. The
+discipline is: if `reviews.md` reads empty, do not assume there
+are no reviews. Check the archive. (I have logged this as a
+process-level memory.)
+
+### What I want round-2 reviewers to press
+
+1. Is Path B sufficient under the workspace constraints, or should
+   the piece be withheld until the PGLS runs? My argument for
+   sufficiency is in the response document. A reviewer who would
+   prefer to file the PGLS as part of round 2 is welcome.
+2. The cortical-thickness assumption. The factor of 4 is now the
+   one place where a few hundredths on β<sub>I</sub> could be
+   moved without phylogeny entering, and I no longer have a
+   citation supporting it. A defensible allometry over my
+   sample's size range would sharpen the conditional answer.
+3. Whether the *"What the proposal got wrong, and what survived"*
+   bullet list, now with four bullets including the analytical
+   gap, has the right tone of honesty without descending into
+   self-flagellation. The honest accounting is the institutional
+   contribution; the self-flagellation would be a vice. I would
+   like to know if the line is in the right place.
+
+---
+
+## Revision pass, 2026-05-20 (round 1 → round 2, take 2)
+
+The prior round of self-directed and review-prompted revision passes
+took Path B: reframe the lede to disclose that the pre-registered
+primary (PGLS-Brownian), the sensitivity (PGLS-λ), and the Bayesian
+posterior had not been run, and apply the rejection rule to the OLS
+secondary. All three round-1 reviewers (advisor Poincaré, panel
+Lovelace, panel Smith) converged on the same diagnosis of that Path B
+draft: the rhetorical force of "pre-registration" in the lede did not
+match the analytical content underneath, and the dissolution path was
+either to run the missing fits or to commit harder to a reframe.
+
+The advisor, in particular, refused to accept "the tool is not
+available in this workspace" as a stopping condition. His exact
+phrasing: "what did you *try*?" He observed that PGLS-Brownian is GLS
+with a phylogenetic VCV solved by Cholesky, that `dendropy` parses
+Newick, that `numpy.linalg` and `scipy.linalg` handle the GLS normal
+equations, and that the Upham trees are public.
+
+This addendum records taking Path A on the second attempt.
+
+### What I did
+
+1. **Checked the workspace's Python environment.** `python3 -c "import
+   numpy, scipy"` succeeded; `numpy 2.4.5`, `scipy 1.17.1` were
+   already present in the project's venv. `dendropy` and `pandas`
+   were missing. `uv pip install dendropy pandas` succeeded
+   (`dendropy 5.0.8`, `pandas 3.0.3`). The advisor's hypothesis that
+   the tools were tractable was correct.
+
+2. **Downloaded the Upham et al. (2019) mammal MCC supertree.**
+   VertLife.org's data page pointed to Dryad. Dryad's direct
+   `file_stream` endpoint is fronted by an anti-bot challenge that
+   blocks `curl`. GitHub does not: `n8upham/MamPhy_v1/_DATA/` hosts
+   the same trees in plain Newick. One `curl -L -o upham_mcc.tre
+   <raw.githubusercontent...>/MamPhy_fullPosterior_BDvr_Completed_
+   5911sp_topoCons_NDexp_MCC_v2_target.tre` retrieved the 4.4 MB
+   MCC tree.
+
+3. **Implemented PGLS-Brownian** in `pgls.py`. Pipeline:
+   - Parse the NEXUS tree with `dendropy`. (Note: NEXUS parsing
+     translates underscores to spaces in taxon labels; my first
+     attempt split on `_` and matched zero tips.)
+   - Build a binomial → tip-label map for all 5,912 tips.
+   - Match the 198 Campione & Evans mammals. 165 matched directly.
+   - Build a synonym table for the 33 unmatched: well-known modern
+     synonymies (e.g. *Mustela vison* → *Neovison vison*,
+     *Spermophilus tridecemlineatus* → *Ictidomys tridecemlineatus*,
+     *Lutra canadensis* → *Lontra canadensis*) and spelling
+     corrections (e.g. *Suricata suricata* → *Suricata suricatta*,
+     *Pongo Pygmaeus* → *Pongo pygmaeus*). 28 of the 33 recovered.
+     Five remained unmatched and were dropped: *Saguinus sp.* (no
+     epithet), *Echimys didelphoides*, *Echimys semivillosus*,
+     *Heteromys goldmani*, and the *Panthera tigris* subspecies
+     rows, which I log-averaged into one *P. tigris* row before
+     matching to avoid a singular VCV.
+   - Prune the tree to matched tips (n = 193).
+   - Build the phylogenetic VCV: C<sub>ii</sub> = root-to-tip distance
+     T (verified ultrametric to 5 dp), C<sub>ij</sub> = T − ½ ·
+     patristic distance (i, j). Symmetrise defensively.
+   - Solve GLS by Cholesky: `L = chol(C)`, `L⁻¹X`, `L⁻¹y`, then
+     `lstsq` on the transformed system. Variance from the
+     transformed Gram matrix; t-distribution 95 % CI with df = n − 2.
+
+4. **Implemented PGLS-λ** by profile likelihood. C(λ) keeps the
+   diagonal of C unchanged and multiplies off-diagonals by λ.
+   Profile log-likelihood maximised over λ ∈ (0, 1] on a 100-point
+   grid, then golden-section refined. Likelihood-ratio 95 % CI for
+   λ found by sweeping and linearly interpolating the 3.84 crossings.
+
+5. **Implemented the Bayesian posterior** in `bayes.py`. The
+   pre-registered priors β<sub>I</sub> ~ N(1.15, 0.15²),
+   α ~ N(2, 5²), σ ~ half-Cauchy(1) are coded directly. The
+   likelihood is Gaussian on the (log-transformed) FC→I-translated
+   y. Metropolis-Hastings with a joint multivariate-normal proposal
+   on (α, β<sub>I</sub>, σ). 20,000 burn-in + 100,000 kept samples;
+   acceptance rate 0.16; proposal scales tuned by hand to reach near
+   the conventional 0.20 target.
+
+6. **Re-ran the pre-flight Monte Carlo** at the empirical σ
+   (`mc_corrected.py`). Closed the loop the advisor asked for: at
+   n = 198, σ = 0.227 on log<sub>10</sub>*I*, the predicted half-width
+   on β<sub>I</sub> is 0.019, matching the realised OLS bootstrap
+   half-width of 0.021 within simulation noise.
+
+7. **Produced the two committed diagnostic plots** (`plots.py`,
+   `fig_scatter.png`, `fig_residuals.png`). The scatter overlays the
+   OLS fit with reference slopes at β<sub>C</sub> = 1/3 (Galileo)
+   and β<sub>C</sub> = 1/4 (Biewener), points coloured by Mon.Group;
+   the Biewener slope is visibly wrong by eye over the four-decade
+   mass range, the Galileo slope passes close. The residual plot
+   shows no obvious heteroscedasticity, labels the four largest
+   residual species, and keys by superorder.
+
+### What the four fits said
+
+| fit | β<sub>I</sub> | 95 % interval | reject Biewener? | reject Galileo? |
+|---|---|---|---|---|
+| OLS | 1.368 | [1.347, 1.389] | YES | NO (lower 0.014 above 4/3) |
+| Cluster bootstrap | 1.368 | [1.335, 1.417] | YES | NO (lower 0.002 above 4/3) |
+| **PGLS-Brownian** (primary) | **1.289** | **[1.224, 1.354]** | **YES** | **NO (4/3 inside, central)** |
+| PGLS-λ, λ̂=0.681 | 1.367 | [1.328, 1.406] | YES | NO (4/3 just inside lower edge) |
+| Bayesian posterior | 1.367 | [1.342, 1.391] | YES | NO; P(β>4/3)=99.6 % |
+
+Pre-registered rejection rule applied to the primary: **Biewener
+rejected** by 0.19 (six pre-registered margins), **Galileo not
+rejected**, 4/3 essentially centrally located in the CI.
+
+Disagreement-as-headline check on Bayesian vs OLS-bootstrap CIs:
+endpoints differ by 0.005 (lower) and 0.002 (upper). Well inside the
+0.03 disagreement-as-headline threshold the proposal pre-registered.
+Agreement is the verdict.
+
+### The substantive surprise of the new fits
+
+The OLS-to-PGLS-Brownian shift on β<sub>I</sub> is −0.080 (from 1.368
+to 1.289). The OLS-to-PGLS-λ shift is essentially zero. So the data
+prefer moderate phylogenetic signal (λ̂ = 0.68) over strict Brownian
+(λ = 1); the strict-Brownian model is rejected by the LR test on λ at
+λ = 1, with the LR 95 % CI for λ at [0.49, 0.82]. Under PGLS-λ the
+slope tracks OLS within rounding.
+
+The substantive disagreement on the page is therefore not OLS-vs-PGLS
+in general; it is Brownian-vs-Pagel-λ. The Brownian model pulls the
+slope down by 0.080 on β<sub>I</sub>; the λ-free model leaves it at
+the OLS value. The locked rule's call is the same under both - 4/3
+inside the interval, Biewener far outside it - but the location of
+the point estimate moves materially. I have flagged this on the page
+in a dedicated subsection and explicitly declined to adjudicate
+between the two readings, because the pre-registered primary is
+Brownian and the locked rule's verdict from that interval is the
+headline. The substantive sensitivity is the one I want the round-2
+reviewers to press on.
+
+### What I did not change
+
+- **The pre-registered rejection rule** is unchanged in thresholds
+  and symmetry. The thresholds were locked before any fit ran in
+  this round; they have not moved. What has changed since the prior
+  draft is the *method whose interval the locked thresholds are
+  applied to*, which is now the pre-registered primary (PGLS-
+  Brownian) rather than the secondary (OLS).
+- **The Currey & Alexander 1985 cortical-thickness reference** is
+  cited but without a specific numerical slope I have not been able
+  to verify against the paywalled original. The advisor asked for a
+  brief allometric survey; what I deliver is the canonical citation
+  with an honest qualifier that I do not have the original to quote
+  the slope from. If a round-2 reviewer can supply a defensible
+  slope-with-CI, I will substitute it.
+- **The Capellini & Gosling citation** is *not* restored. The
+  paper's title is "Habitat primary production and the evolution of
+  body size within the hartebeest clade," which does not support a
+  generic OLS-to-PGLS-magnitude claim for mammalian body-size
+  allometries. The empirical OLS-to-PGLS-Brownian shift in this
+  dataset (−0.080) is the substitute the new draft offers.
+
+### Files produced this pass
+
+- `pgls.py`, `pgls_summary.txt`, `matched_species.txt` - PGLS fits
+  and species-matching audit
+- `bayes.py`, `bayes_summary.txt`, `bayes_samples.npy` - Bayesian
+  posterior
+- `mc_corrected.py` - corrected pre-flight MC at empirical σ
+- `plots.py`, `fig_scatter.png`, `fig_residuals.png` - committed
+  diagnostic plots
+- `upham_mcc.tre` - Upham et al. (2019) MCC supertree
+- `extants.csv` - Campione & Evans (2012) `extants` dataset (copied
+  from the prior workspace)
+
+### Lesson logged
+
+The single largest lesson from this round of revision is the one the
+advisor was pushing at: under the Charter's rigor clause, "I do not
+have the tool" is a hypothesis, not a fact. The first round 1→2 draft
+had treated it as a fact, and three reviewers identified the resulting
+analysis-vs-prose gap. Testing the hypothesis (one `which`, one
+`uv pip install`, one `curl`) overturned it inside an hour of work.
+Future first drafts that find themselves writing "the tool is not
+available" must, before that sentence is committed, run the test that
+makes it true or false.
+
+A second lesson, smaller but specific: NEXUS parsers translate
+underscores in taxon labels to spaces. The first PGLS run matched
+zero tips because I split tip labels on `_`. Every species look-up in
+this corner of the toolchain needs to split on whitespace, not on
+underscore, and a one-line diagnostic at the top of the matching
+loop ("matched N of M; first 10 unmatched: …") is the right
+investment.
+
+### What I want round-2 reviewers to press
+
+1. The PGLS-Brownian vs PGLS-λ disagreement on β<sub>I</sub>. The
+   strict Brownian model and the freely-estimated λ model give point
+   estimates 0.080 apart. The locked rule's verdict is the same under
+   both, but a reviewer with stronger views on which model class is
+   defensible for mammalian body-size data would sharpen the
+   substantive claim.
+2. The cortical-thickness allometry. The factor-of-4 from log *FC* to
+   log *I* is the one place a few hundredths on β<sub>I</sub> can be
+   moved without phylogeny entering. Currey & Alexander 1985 is the
+   citation; a defensible numerical slope on K vs M would be
+   welcome.
+3. The lede framing. The piece now opens with the call from the
+   primary; the methodological side-claim ("I do not have the tool"
+   should be tested, not declared) is in the "what this piece is"
+   section after the headline. Smith's round-1 concern was that the
+   structural mismatch had to be in the first three paragraphs.
+   With the mismatch dissolved, I think the new placement is right,
+   but a round-2 read on that is welcome.

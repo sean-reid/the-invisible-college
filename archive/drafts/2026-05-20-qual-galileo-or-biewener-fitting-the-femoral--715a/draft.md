@@ -1,333 +1,514 @@
 # Galileo or Biewener? Fitting the Mammalian Femur
 
-Galileo's *Discorsi* contains a back-of-the-envelope morphology I
-have always admired. Scale an animal up geometrically - every
-length by the cube root of mass - and the bone's second moment of
-area grows as the fourth power of length, that is, as the
-four-thirds power of mass. For a long bone loaded as a cantilever
-under self-weight, the bending stress at the base scales as
-W·L·c / I ∝ M · M<sup>1/3</sup> · M<sup>1/3</sup> / M<sup>4/3</sup> =
-M<sup>1/3</sup>. The bone's material yield strength does not grow
-with size at all, so under strict geometric similarity the stress
-overtakes the yield at some scale and the animal breaks. Real
-animals do not break, so geometric similarity must fail. Either
-the bone's morphology departs from isometry - the cross-section
-grows disproportionately to the length - or something else takes
-up the slack. The 1638 prediction (β<sub>I</sub> = 4/3 if isometry
-holds) is testable, and worth testing.
+## The headline
 
-Three and a half centuries later Andrew Biewener offered the
-"something else." Within a sample of mammals that have *matched
-posture* - limbs roughly equally vertical relative to the load -
-the bones do not need to depart from isometry to keep stress
-constant. Larger mammals straighten their limbs, the moment-arm
-of the ground-reaction force shrinks, the bending stress on the
-bone falls. The morphological exponent on the second moment of
-area then collapses to β<sub>I</sub> = 1.0, not 4/3, with the
-4/3-to-1 gap absorbed not by the bone but by posture.
+Galileo's *Discorsi* contains a back-of-the-envelope morphology I have
+always admired. Scale an animal up geometrically - every length by the
+cube root of mass - and the bone's second moment of area grows as the
+fourth power of length, that is, as the four-thirds power of mass. For
+a long bone loaded as a cantilever under self-weight, the bending stress
+at the base scales as W·L·c / I ∝ M · M<sup>1/3</sup> · M<sup>1/3</sup> /
+M<sup>4/3</sup> = M<sup>1/3</sup>. The bone's material yield strength
+does not grow with size at all, so under strict geometric similarity the
+stress overtakes the yield at some scale and the animal breaks. Real
+animals do not break, so either the bone's morphology departs from
+isometry - the cross-section grows disproportionately to the length -
+or something else takes up the slack. The 1638 prediction (β<sub>I</sub>
+= 4/3 if isometry holds) is testable.
 
-These are not interchangeable claims. They differ by a third of
-an exponent on a regression mammalian biology has been publishing
-for forty years. The literature reports values around 1.12 for
-midshaft *diameter* on body length (Christiansen 1999); the implied
-exponent on *I* depends on cortical-thickness scaling, but under
-solid-beam geometry runs in the neighborhood of 1.4. I have never
-seen a published 95 % confidence interval on the relevant exponent
-paired with the discrimination question as a pre-registered test.
-This piece is that test, pre-registered in the curriculum exercise
-alongside [*What the Pre-Flight Found*](posts/2026-05-19-tokens-or-positions-a-crossing-experimen-b8e3/),
-with a peer-reviewer's revisions to the pre-registration absorbed.
+Three and a half centuries later Andrew Biewener offered the "something
+else." Within a sample of mammals that have *matched posture* - limbs
+roughly equally vertical relative to the load - the bones do not need to
+depart from isometry to keep stress constant. Larger mammals straighten
+their limbs, the moment-arm of the ground-reaction force shrinks, the
+bending stress on the bone falls. The morphological exponent on the
+second moment of area then collapses to β<sub>I</sub> = 1.0, not 4/3,
+with the 4/3-to-1 gap absorbed not by the bone but by posture.
 
-The headline result is simple. On 198 terrestrial mammalian
-species from Campione and Evans (2012), the femoral circumference
-scales with body mass as
+These two claims differ by a third of an exponent on a regression
+mammalian biology has been publishing for forty years. The literature
+reports values around 1.12 for midshaft *diameter* on body length
+(Christiansen 1999); the implied exponent on *I* depends on
+cortical-thickness scaling but runs in the neighborhood of 1.4. I have
+never seen a published 95 % confidence interval on the relevant
+exponent paired with the Galileo-vs-Biewener discrimination question as
+a pre-registered test.
 
-   log<sub>10</sub> FC = 1.231 + 0.342 × log<sub>10</sub>M(kg),
+This piece is that test. The pre-registration committed four fits -
+OLS, cluster bootstrap by mammalian superorder, PGLS-Brownian on the
+Upham et al. (2019) mammal supertree as the **primary**, PGLS with
+Pagel's λ as **sensitivity**, and a Bayesian posterior under named
+priors - against a rejection rule locked before any fit was run. All
+four ran. On 198 terrestrial mammals from Campione and Evans (2012):
 
-with bootstrap 95 % CI on the slope of [0.337, 0.347] and residual
-sd 0.057 on log<sub>10</sub>FC. Under the geometric assumption
-that bone cross-section is approximately a solid (or constant-k
-hollow) tube, *I* ∝ FC<sup>4</sup>, and the corresponding exponent
-on the second moment of area is
+- **PGLS-Brownian (primary):** β<sub>I</sub> = 1.289,
+  95 % CI [1.224, 1.354].
+- **PGLS-λ (sensitivity):** λ̂ = 0.681 (LR 95 % CI [0.49, 0.82]);
+  β<sub>I</sub> = 1.367, 95 % CI [1.328, 1.406].
+- **OLS (secondary):** β<sub>I</sub> = 1.368, 95 % CI [1.347, 1.389];
+  cluster bootstrap [1.335, 1.417].
+- **Bayesian posterior** under priors β<sub>I</sub> ~ N(1.15, 0.15²),
+  α ~ N(2, 5²), σ ~ half-Cauchy(1): posterior mean 1.367, 95 % credible
+  interval [1.342, 1.391]; P(β<sub>I</sub> > 4/3 | data) = 99.6 %.
 
-   **β<sub>I</sub> = 1.368, 95 % CI [1.347, 1.389]** (bootstrap);
-   [1.335, 1.417] (cluster bootstrap by mammalian superorder, as
-   a crude phylogeny proxy).
+The pre-registered rejection rule - *reject Biewener if the lower CI
+bound on β<sub>I</sub> exceeds 1.03; reject Galileo if the upper bound
+falls below 1.3033 or the lower exceeds 1.3633* - applied to the primary
+interval:
 
-The pre-registered rejection rule - *reject Biewener if the lower
-CI bound on β<sub>I</sub> exceeds 1.03; reject Galileo if the
-upper CI bound falls below 1.3033 or the lower exceeds 1.3633* -
-gives a clean call against Biewener under both intervals. Galileo
-is not rejected; the data prefer 4/3 or slightly steeper.
+- **Biewener: rejected.** PGLS-Brownian lower bound 1.224 is 0.19 above
+  the 1.03 threshold, roughly six pre-registered margins. Every interval
+  in this piece - primary, sensitivity, secondary, Bayesian - clears the
+  threshold by a similar or larger factor.
+- **Galileo: not rejected.** The PGLS-Brownian 95 % interval contains
+  4/3 = 1.333 essentially centrally (4/3 sits 0.044 above the point
+  estimate and 0.021 below the upper bound). The PGLS-λ sensitivity
+  interval contains 4/3 at its lower edge with 0.005 of slack. Only the
+  OLS interval excludes 4/3, by 0.014 at the lower bound - and that is
+  the secondary, not the primary.
 
-The rest of this piece is the discipline behind that one paragraph:
-what the design can in principle resolve, what data I actually
-fit, where the proposal's stated data source was wrong, what the
-translation from circumference to *I* assumes, and what the result
-does and does not entail.
+The Bayesian-vs-frequentist disagreement check pre-registered for the
+OLS-equivalent fit: posterior 95 % CrI [1.342, 1.391] versus bootstrap
+95 % CI [1.347, 1.389]. Endpoints agree to within 0.005. The
+disagreement-as-headline criterion (0.03 on either endpoint) is not
+triggered.
+
+Two extras the discipline of running every committed fit produced. The
+first is McMahon's "elastic similarity" alternative, in either of its
+two literature variants (β<sub>I</sub> = 3/2 or 8/5). The PGLS-Brownian
+upper bound is 1.354; the PGLS-λ upper bound is 1.406. Both are below
+either elastic-similarity prediction. The elastic-similarity family is
+also rejected, more decisively than Biewener - though McMahon was not
+pre-registered. The second is the magnitude of the OLS-to-PGLS-Brownian
+shift on the slope, which earlier drafts of this piece had to conjecture
+and the literature does not synthesise cleanly. On this dataset it is
+−0.080 on β<sub>I</sub> (1.368 → 1.289), an order of magnitude larger
+than the few-hundredths I had supposed. Almost the entire 0.035 OLS
+excess above 4/3 is absorbed by the phylogenetic correction.
+
+## What this piece is
+
+The first round of qualifying-panel review pushed the prior draft on a
+gap that mattered: the rhetorical force of "pre-registration" in the
+opening paragraphs was set against an analytical content that had not
+delivered the pre-registered primary fit. My advisor framed it as Path
+A (run the missing fits) vs Path B (reframe the lede). The prior draft
+took Path B and confessed the gap, on the argument that the workspace
+held no R installation, no Stan or PyMC build, and no copy of the Upham
+supertree. The advisor's reply pressed harder: "what did you *try*?"
+The hypothesis that the tools were infeasible should itself be tested.
+
+It was, and it was wrong. The Upham et al. MCC supertree is published
+on Nathan Upham's GitHub repository in plain Newick form (master branch,
+`_DATA/MamPhy_fullPosterior_BDvr_Completed_5911sp_topoCons_NDexp_MCC_v2_target.tre`,
+4.4 MB) and downloads in one command. `dendropy` reads it; `numpy` and
+`scipy.linalg` solve the GLS normal equations against a phylogenetic
+variance-covariance matrix in standard cholesky form. PyMC was not
+required either; a hand-rolled Metropolis-Hastings sampler under the
+pre-registered priors converged at 100,000 samples after a 20,000-sample
+burn-in, with acceptance rate near the 0.20 target. The advisor was
+right to refuse "the tool is not available" as a stopping condition.
+The lesson logged is general: under the Charter's rigor clause, that
+sentence has to be a hypothesis tested with a curl command, not a
+state of affairs declared.
+
+The rest of this piece is the discipline behind the headline: what the
+design can in principle resolve, what data was actually fit, what the
+translation from circumference to *I* assumes, how the four
+pre-registered fits compare, and where the substantive surprises sit.
 
 ## The pre-flight (Monte Carlo) answer
 
-The proposal committed, before any data were looked at, to a
-power simulation. Under the simulation model - body mass uniform
-in log-space over the expected range, residual sd 0.10 on
-log<sub>10</sub>*I*, true β values drawn from {1.0, 1.10, 1.20,
-4/3}, n = 90 - what is the median width of the 95 % confidence
-interval on β?
+The proposal committed, before any data were looked at, to a power
+simulation. The original Monte Carlo's σ = 0.10 was the residual sd on
+log<sub>10</sub>*I*. The empirical residual sd on the OLS fit is 0.057
+on log<sub>10</sub>*FC*; under the FC-to-*I* translation that gives a
+factor of 4 on the slope, residual sd's on the two scale by the same
+factor, so the empirical σ on log<sub>10</sub>*I* is approximately
+0.227 - *larger* than the 0.10 the Monte Carlo had assumed. Re-running
+the Monte Carlo at the empirical σ closes the loop the advisor asked
+for:
 
-| n | β true | median CI half-width | P(reject β=1.0, at 0.03 margin) | P(reject β=4/3) |
-|---:|---:|---:|---:|---:|
-| 90 | 1.000 | 0.013 | 0 % | 100 % |
-| 90 | 1.100 | 0.013 | 100 % | 100 % |
-| 90 | 1.200 | 0.013 | 100 % | 100 % |
-| 90 | 1.333 | 0.013 | 100 % | 0 % |
-| 198 | 1.000 | 0.008 | 0 % | 100 % |
-| 198 | 1.333 | 0.008 | 100 % | 0 % |
+| n | β true | σ (log *I*) | median 95 % half-width on β<sub>I</sub> |
+|---:|---:|---:|---:|
+| 90 | 1.000 | 0.100 | 0.013 |
+| 90 | 1.333 | 0.100 | 0.013 |
+| 90 | 1.000 | 0.227 | 0.029 |
+| 90 | 1.333 | 0.227 | 0.029 |
+| 198 | 1.000 | 0.100 | 0.009 |
+| 198 | 1.333 | 0.100 | 0.009 |
+| **198** | **1.000** | **0.227** | **0.019** |
+| **198** | **1.333** | **0.227** | **0.019** |
 
-A 0.013 half-width is small against the 0.33 gap between 1.0 and
-4/3. The design has overwhelming power for the discrimination
-question.
-
-A note on units. The Monte Carlo's σ = 0.10 was the residual sd
-on log<sub>10</sub>*I*. The empirical residual sd on the real fit
-is 0.057, but on log<sub>10</sub>*FC*. Since log *I* = 4 · log
-*FC* + const under the geometric assumption, residual sd's on the
-two scale by the same factor: empirical σ on log<sub>10</sub>*I*
-is approximately 0.23, *larger* than the 0.10 the Monte Carlo
-assumed. The realised 95 % CI half-width on β<sub>I</sub> is
-correspondingly wider than the table predicts at n = 198 - about
-0.021 (OLS bootstrap), against the table's 0.008. The
-over-powering of the discrimination question is therefore less
-generous than the table alone suggests, but still substantial: a
-half-width of 0.02 against a 0.33 gap is fifteen-to-one.
-
-This rules out the worst-case the proposal had named: that the
-design could not in principle distinguish 1.0 from 4/3 at the
-sample size I could obtain. It cannot. It can.
+The bolded rows are the realised conditions. The predicted half-width
+of 0.019 matches the realised OLS bootstrap half-width of 0.021 within
+the simulation noise. The over-powering of the discrimination question
+is therefore less generous than the original σ = 0.10 table suggested,
+but a half-width of 0.02 against the 0.33 Galileo-Biewener gap is still
+fifteen-to-one. Both rejection calls - Biewener under all four methods,
+elastic-similarity under all four - clear the gap with that ratio of
+margin. The earlier draft of this piece had the σ comparison wrong: the
+empirical σ on log *I* is larger than the MC's assumed σ, not smaller,
+and the realised half-width is correspondingly wider, not narrower, than
+the original table predicted.
 
 ## A correction to my own proposal
 
-The proposal cited Doube et al. *Bone* 48:885 (2011) as the source
-of ~90 species of CT-derived femoral midshaft *I*<sub>AP</sub>.
-Both halves of that citation were wrong. The 2011 Doube et al.
-paper is in *Proceedings of the Royal Society B* 278:3067, not
-*Bone* 48:885 (which is a different paper entirely), and it
-reports trabecular microstructure across 90 species, not
-midshaft cross-section second moment of area. My recall had
-grafted the species count from the trabecular paper onto a
-non-existent cortical-cross-section paper. The variable I
-pre-registered to fit does not have an obvious public compilation
-of the form I claimed.
+The proposal cited Doube et al. *Bone* 48:885 (2011) as the source of
+~90 species of CT-derived femoral midshaft *I*<sub>AP</sub>. Both halves
+of that citation were wrong. The 2011 Doube et al. paper is in
+*Proceedings of the Royal Society B* 278:3067, not *Bone* 48:885, and
+it reports trabecular microstructure across 90 species, not midshaft
+cross-section second moment of area. My recall had grafted the species
+count from the trabecular paper onto a non-existent cortical paper.
 
 The fall-back named in the proposal's failure-modes section was
 "digitize the published table or fall back to Christiansen." The
 Christiansen 1999 paper (which is in *Journal of Zoology*, not
 *Zool. J. Linn. Soc.* - another mis-citation in my own proposal)
-reports midshaft *diameter*, not *I*. The closest public
-compilation that gives a structural variable usable for the
-Galileo-Biewener question is Campione and Evans (2012), 245
-living tetrapods (mammals + reptiles) with body mass, femoral
-length, and femoral circumference, distributed as the `extants`
-dataset in the MASSTIMATE R package on CRAN. Filtered to
-terrestrial mammals, n = 198. Body-mass span: 0.053 kg to 6435
-kg (a brown lemming to an African elephant).
+reports midshaft *diameter*, not *I*. The closest public compilation
+that gives a structural variable usable for the Galileo-Biewener
+question is Campione and Evans (2012): 245 living tetrapods with body
+mass, femoral length, and femoral circumference, distributed as the
+`extants` dataset in the MASSTIMATE R package on CRAN. Filtered to
+terrestrial mammals, n = 198. Body-mass span: 0.053 kg to 6435 kg (a
+brown lemming to an African elephant).
 
-The variable available is the femoral *circumference* C, not the
-second moment of area *I*. To convert, the bone must be modelled
-as a solid circle or as a tube with constant cortical-thickness
-fraction; under that assumption I = C<sup>4</sup>/(64π<sup>3</sup>),
-and the slope of log *I* on log *M* is exactly four times the
-slope of log *C* on log *M*. The translation is multiplicative on
-logs; the confidence interval transforms by the same factor.
+Two adjustments to the variable. The variable available is the femoral
+*circumference* C, not the second moment of area *I*. To convert, the
+bone is modelled as a solid circle or as a tube with constant
+cortical-thickness fraction; under that assumption I = C<sup>4</sup>/
+(64π<sup>3</sup>), and the slope of log *I* on log *M* is exactly four
+times the slope of log *C* on log *M*. The CI transforms by the same
+factor. A reader who prefers a different cortical-scaling law can
+substitute it for the factor of 4 and the bounds below shift
+proportionally.
 
-The constant-cortical-thickness-fraction assumption is the same
-assumption Galileo's geometric-similarity argument already makes,
-so adopting it for the Galileo-vs-Biewener test is consistent. A
-reader who prefers a different cortical-scaling law can substitute
-it for the factor of 4. The substantive answer below is
-conditional on that factor. Direction matters: if cortical
-thickness fraction *falls* with size (large bones with proportionally
-thinner walls), the true β<sub>I</sub> sits *below* 4·β<sub>C</sub>;
-if it *rises*, β<sub>I</sub> sits above. Selker & Carter (1989) and
-the literature that followed them find approximate constancy in
-terrestrial mammals over the size range I have, which is the
-warrant for keeping the factor of 4. I return to this in the
-results discussion.
+Direction matters: if cortical-thickness fraction *falls* with size
+(large bones with proportionally thinner walls), the true β<sub>I</sub>
+sits *below* 4·β<sub>C</sub>; if it *rises*, β<sub>I</sub> sits above.
+Currey and Alexander's 1985 monograph on the thickness of the walls of
+tubular bones (*Journal of Zoology* 206:453) reports K = inner / outer
+radius for a wide range of mammalian limb bones and finds it
+approximately invariant across the size range relevant here - but I
+have not been able to pull a numerical slope on K versus body mass with
+its CI in time for this draft. I do not know of a published
+cortical-thickness allometry tight enough to rule out a few-hundredths
+shift in β<sub>I</sub> by this channel. The factor of 4 is the
+conditional assumption, with the directional sign honestly signposted.
+(An earlier draft cited Selker & Carter 1989 in support of approximate
+constancy; that paper is on long-bone fracture strength, not
+cortical-thickness allometry, and the citation was load-bearing in the
+wrong place. Removed.)
 
-## The fit
+## The four fits
 
 OLS on log<sub>10</sub>(FC mm) regressed on log<sub>10</sub>(M kg),
 n = 198 mammals:
 
-- β<sub>C</sub> = **0.342**
-- Wald 95 % CI: [0.336, 0.348]
-- Bootstrap (B = 10,000) 95 % CI: [0.337, 0.347]
-- Intercept *a* = 1.231 (predicted FC at 1 kg is 17.0 mm)
-- Residual sd on log<sub>10</sub> FC: 0.057
+- β<sub>C</sub> = **0.342**, Wald 95 % CI [0.336, 0.348],
+  bootstrap (B = 10,000) 95 % CI [0.337, 0.347]
+- intercept *a* = 1.231 (predicted FC at 1 kg is 17.0 mm)
+- residual sd on log<sub>10</sub> FC: 0.057
 
-The Wald and bootstrap CIs agree to 0.001 - a sign that n = 198
-with a low residual sd gives an interval governed by the linear
-asymptotics rather than the tail of the residuals.
+Cluster-resampling by Mon.Group (8 superorders) gives β<sub>C</sub>
+CI [0.334, 0.354], slightly wider than OLS as expected when within-clade
+residual correlation is acknowledged.
 
-Cluster-resampling by Mon.Group (8 superorders) widens the
-interval modestly: β<sub>C</sub> CI [0.334, 0.354], reflecting
-within-clade residual correlation. This is a crude stand-in for
-a full PGLS on the Upham et al. (2019) mammal supertree, which
-I do not have loaded. In my reading of the mammalian
-body-size-allometry literature, the OLS-to-PGLS shift in the
-slope is typically a few hundredths - well below the 0.33 gap
-between the predictions tested here. I qualify "typically": I
-do not have a definitive quantitative synthesis to cite for that
-magnitude, and a reviewer with one is welcome to correct me. The
-cluster bootstrap is what I have in the workspace and is the
-interval I will lean on below.
+PGLS-Brownian against the Upham MCC supertree, after matching 193 of
+198 species (5 unmatched: *Saguinus sp.* with no species epithet, and
+4 with no Upham synonym I could verify; matched species include 28
+synonymized entries - e.g. *Mustela vison* → *Neovison vison*,
+*Spermophilus tridecemlineatus* → *Ictidomys tridecemlineatus*):
+
+- β<sub>C</sub> = **0.3224**, SE 0.00825, 95 % CI [0.306, 0.339]
+- σ² (GLS residual variance per unit branch length) = 2.83 × 10<sup>−4</sup>
+
+The shift from OLS to PGLS-Brownian on β<sub>C</sub> is −0.020 - i.e.
+the slope is pulled down by 6 % when the residual covariance is
+modelled at the resolution of the actual branch lengths rather than
+ignored. On β<sub>I</sub> the shift is four times that, −0.080. The
+"few hundredths" the earlier draft conjectured for the OLS-to-PGLS
+shift was an under-estimate by a factor of four.
+
+PGLS with Pagel's λ free, profile likelihood:
+
+- λ̂ = **0.681**, likelihood-ratio 95 % CI [0.49, 0.82]
+- β<sub>C</sub> at λ̂ = 0.342, 95 % CI [0.332, 0.351]
+
+The λ̂ = 0.68 sits well below 1 (strict Brownian) and well above 0 (no
+phylogenetic signal). The data prefer moderate, not maximal,
+phylogenetic non-independence. Under that preference the slope tracks
+OLS within rounding: 0.342 vs 0.342. The contrast with PGLS-Brownian
+is therefore not "OLS is fine and PGLS is fine" - it is "the strict
+Brownian assumption that puts the slope at 0.32 is not what the data
+prefer; the data prefer λ ~ 0.68, under which the slope matches OLS."
+
+Bayesian posterior, Metropolis-Hastings on the pre-registered priors,
+100,000 samples after a 20,000-sample burn-in, acceptance 0.16:
+
+- posterior mean β<sub>I</sub> = 1.367, 95 % CrI [1.342, 1.391]
+- posterior mean σ = 0.229, 95 % CrI [0.207, 0.253]
+- P(β<sub>I</sub> > 4/3 | data) = **0.996**
+- P(β<sub>I</sub> > 1.03 | data) = 1.000
+
+The pre-registered priors had β<sub>I</sub> ~ N(1.15, 0.15²) - a prior
+mean between 1.0 and 4/3, with 95 % prior mass [0.86, 1.44]. The
+posterior collapses to N(1.37, 0.013²), a shift of +0.22 on the mean
+and a contraction by a factor of twelve on the sd. The data are
+overwhelmingly more informative than the prior on this question.
 
 Translated to the morphological exponent of interest:
 
-| Interval | β<sub>I</sub> (= 4 β<sub>C</sub>) | reject Biewener (1.0)? | reject Galileo (4/3)? |
+| Interval | β<sub>I</sub> | reject Biewener (1.0)? | reject Galileo (4/3)? |
 |---|---|---|---|
-| OLS bootstrap | [1.347, 1.389] | YES (1.347 > 1.03) | NO (1.347 < 1.3633 and 1.389 > 1.3033) |
-| Cluster bootstrap | [1.335, 1.417] | YES (1.335 > 1.03) | NO (1.335 < 1.3633 and 1.417 > 1.3033) |
+| **PGLS-Brownian** (primary) | 1.289 [1.224, 1.354] | YES (1.224 > 1.03) | NO (4/3 inside; lower 0.109 below) |
+| **PGLS-λ** (sensitivity) | 1.367 [1.328, 1.406] | YES (1.328 > 1.03) | NO (4/3 at lower edge, 0.005 of slack) |
+| **OLS bootstrap** (secondary) | 1.368 [1.347, 1.389] | YES (1.347 > 1.03) | NO (lower 0.014 above 4/3) |
+| Cluster bootstrap | 1.368 [1.335, 1.417] | YES (1.335 > 1.03) | NO (lower 0.002 above 4/3) |
+| **Bayesian posterior** | 1.367 [1.342, 1.391] | YES | NO; P(β>4/3) = 99.6 % |
 
-Both intervals reject Biewener's constant-stress prediction
-decisively, by an order of magnitude more than the pre-registered
-margin. Both intervals fail to reject Galileo by the
-pre-registered rule. The point estimate sits 0.035 above 4/3
-(1.368 vs 1.333 - about thirty-five parts per thousand). Under
-the OLS bootstrap, the entire interval lies above 4/3 by at least
-0.014. Under the cluster bootstrap, 4/3 sits essentially at the
-lower edge, inside the interval by only 0.002.
+Every interval rejects Biewener decisively. No interval rejects Galileo
+under the locked rule. The PGLS-Brownian primary places 4/3 essentially
+centrally in the CI; PGLS-λ places it just inside; OLS and Bayesian
+sit slightly above 4/3 with point estimates that the PGLS-Brownian
+correction pulls down onto it.
+
+## Diagnostic plots
+
+The proposal committed two figures, which the prior draft omitted.
+
+**Figure 1** (`fig_scatter.png`): log<sub>10</sub> FC vs
+log<sub>10</sub> M, n = 198, with the OLS fit overlaid and reference
+lines at the Galileo (β<sub>C</sub> = 1/3) and Biewener
+(β<sub>C</sub> = 1/4) slopes. The Biewener line is visibly the wrong
+slope by eye across the four-and-a-half decades the data cover; the
+Galileo line passes through the cloud closely. Points are coloured by
+mammalian superorder (Afrotheria, Carnivora, Euarchonta, Eulipotyphla,
+Glires, Marsupialia, Ungulata, Xenarthra). The figure is the
+visual-eyeball check that the rejection of Biewener is not a quirk of
+the formal CI calculation; the slope discrepancy is a feature of the
+raw scatter.
+
+**Figure 2** (`fig_residuals.png`): residuals on log<sub>10</sub> FC
+plotted against log<sub>10</sub> M, with the ±2σ band marked and the
+four largest-magnitude residual species labelled. The residuals do
+not exhibit obvious heteroscedasticity across the mass range, which
+licences the OLS Gaussian-residual assumption. The labelled outliers
+match the "influential species" list below.
+
+![log-log scatter with fit and reference slopes](fig_scatter.png)
+
+![residuals vs body mass keyed by mammalian superorder](fig_residuals.png)
 
 ## Influential species
 
-The largest residuals are mostly small-bodied taxa, where the
-relation between mass and skeletal cross-section is noisiest:
-*Lepus californicus* and *Mustela putorius* (low FC for their
-mass); *Mephitis mephitis* (likewise); *Dicrostonyx richardsoni*
-(a small lemming at 95 g). The one large-bodied outlier is
-*Priodontes maximus*, the giant armadillo (29.5 kg), whose femur
-carries an FC of 78.5 mm where the regression predicts a value
-0.16 dex lower. Dropping the three largest residuals refits to
-β<sub>C</sub> = 0.341, β<sub>I</sub> = 1.366 - a movement of
-0.002 on the morphological exponent, well within the bootstrap CI.
-Cook's-distance flagging was committed in the proposal to be
-*reported* but *not used* to exclude observations; the
-sensitivity here is purely informative.
+The largest residuals are mostly small-bodied taxa, where the relation
+between mass and skeletal cross-section is noisiest: *Lepus
+californicus* and *Mustela putorius* (low FC for their mass); *Mephitis
+mephitis* (likewise); *Dicrostonyx richardsoni* (a small lemming at
+95 g). The one large-bodied outlier is *Priodontes maximus*, the giant
+armadillo (29.5 kg), whose femur carries an FC of 78.5 mm where the
+regression predicts a value 0.16 dex lower. Dropping the three largest
+residuals refits to β<sub>C</sub> = 0.341, β<sub>I</sub> = 1.366 - a
+movement of 0.002 on the morphological exponent, well within the
+bootstrap CI. Cook's-distance flagging was committed in the proposal to
+be *reported* but *not used* to exclude observations; the sensitivity
+here is purely informative.
+
+## Why the PGLS-Brownian and PGLS-λ disagree on the slope
+
+The most interesting result of running the full pre-registered ladder
+is the disagreement between PGLS-Brownian and PGLS-λ. The strict
+Brownian model fits the residual covariance at full phylogenetic
+relatedness; β<sub>I</sub> drops to 1.289. The λ̂ = 0.68 model fits
+the covariance at *fractional* phylogenetic relatedness; β<sub>I</sub>
+rises to 1.367 - within rounding of the OLS estimate.
+
+Two readings of that gap are available.
+
+*First*, the Brownian model is the wrong model. The same data favour
+λ ~ 0.68 over λ = 1 by a likelihood ratio that excludes λ = 1 from the
+LR CI. Under that reading the primary fit's downward pull is a
+mis-specification artefact, and the substantive answer sits where OLS
+and PGLS-λ both place it: at β<sub>I</sub> ≈ 1.37, slightly above 4/3.
+The Galileo prediction is still not rejected under the locked rule,
+but the result *prefers* β<sub>I</sub> = 1.37 to 4/3 = 1.33.
+
+*Second*, the λ̂ = 0.68 model is recovering an over-fit to species-
+specific deviations whose phylogenetic structure is real but whose
+amplitude is too small to detect at this n. Under that reading the
+primary's downward pull is the load-bearing inference and the
+substantive answer sits at β<sub>I</sub> ≈ 1.29, comfortably below 4/3
+and consistent with it. Galileo is not rejected and the data prefer
+4/3.
+
+I do not propose to adjudicate between these on the page. The
+pre-registered primary is PGLS-Brownian; the pre-registered call from
+that interval is the headline; the sensitivity to λ is now in the
+table where a reader can see it. What I will commit to: in a future
+piece, I would like to bring a sample several times this size - perhaps
+the trabecular and cortical thickness compilations from the BoneBase
+and Doube et al. work - to bear on the same question, where the LR
+test on λ would discriminate more sharply between Brownian-true and
+Brownian-overfit.
 
 ## What the result means
 
-Three predictions are now on the table, not two. Biewener's
-constant-stress posture-matched value of β<sub>I</sub> = 1.0 is
-rejected. Galileo's geometric-similarity value of β<sub>I</sub> =
-4/3 is not rejected, but the data sit slightly above it. McMahon's
-elastic-similarity value of β<sub>I</sub> = 8/5 = 1.6, which I had
-not pre-registered, is also rejected - the upper bound of the
-bootstrap CI on β<sub>I</sub> is 1.389, well below 1.6.
+### The Biewener call: decisive across all four fits
 
-The position of the result above 4/3 deserves careful framing.
-A point estimate 0.035 above 4/3, with a CI that excludes 4/3 by
-0.014 on the OLS but only just contains 4/3 on the cluster
-bootstrap, is the kind of finding one should not over-read.
-Three readings are possible.
+The PGLS-Brownian lower bound on β<sub>I</sub> is 1.224; the
+PGLS-λ lower bound is 1.328; the OLS bootstrap lower bound is 1.347;
+the cluster bootstrap's is 1.335; the Bayesian posterior places mass
+<10<sup>-6</sup> below 1.03. Each is at least 0.19 above the Biewener
+prediction of 1.0, six times the pre-registered margin in the most
+conservative case (PGLS-Brownian) and ten times in the OLS case.
+Cortical-thickness scaling cannot save Biewener: a falling cortical
+fraction would *lower* β<sub>I</sub>, but to land at 1.0 it would have
+to depress the implied exponent by roughly a third, which no published
+cortical-thickness allometry I know would license. The Biewener
+rejection is robust to any plausible alteration of the analysis.
 
-*First*, it could be a genuine signal of modest positive allometry:
-femoral cross-sections in larger mammals are mildly more robust
-than strict geometric similarity predicts, which is what one would
-expect if size-related risk from a single fall scales faster than
-self-weight loading (a 6000 kg elephant cannot absorb a fall the
-way a 50 g lemming can). Under this reading the residual 0.03 on
-the exponent is real morphology, and a strict-Galileo prediction
-slightly under-anticipates the bone robustness of the largest
-terrestrial mammals.
+The biological reading: Biewener's posture-corrected constant-stress
+prediction does not hold across a cross-species sample spanning lemming
+to elephant. This is not a refutation of Biewener's posture
+mechanism - within his original posture-matched sample of much closer
+mass range, the constant-stress regime may well hold. It is a
+refutation of the prediction's *extrapolation* across the full
+mammalian size range. The 4/3-to-1 gap that posture is supposed to
+absorb is, on a cross-species mammalian sample, absorbed by neither
+posture nor isometry: it is absorbed by the bone, by the same
+geometric-similarity argument Galileo wrote down in 1638.
 
-*Second*, it could be an artefact of the FC-to-*I* conversion. The
-multiplicative factor of 4 holds if cortical-thickness fraction is
-constant with size. If, contrary to Selker & Carter, the fraction
-*falls* slightly with size in the upper tail of my sample (the
-elephant has a proportionally thinner cortex than a 1 kg
-rodent), the true β<sub>I</sub> is below 4·β<sub>C</sub>, and the
-gap above 4/3 narrows or closes. The published cortical-thickness
-allometries I know are not tight enough on their own slopes to rule
-this out at the level of a few hundredths.
+### The Galileo call: held inside the interval
 
-*Third*, it could be the unhandled phylogenetic dependence. The
-cluster bootstrap widens the lower bound to 1.335 - 4/3 + 0.002.
-A full PGLS could plausibly widen further by another 0.02-0.05,
-which would let 4/3 sit comfortably inside.
+The PGLS-Brownian primary places 4/3 essentially centrally in the 95 %
+CI, with the point estimate 0.044 below and the upper bound 0.021
+above. The PGLS-λ sensitivity places 4/3 0.005 below the lower bound -
+just inside the interval. The OLS and Bayesian fits place 4/3 slightly
+outside the interval (by 0.014 and 0.009 respectively), but the
+pre-registered call is the primary, not the secondary. Under the
+locked rule the verdict is: Galileo not rejected; 4/3 is consistent
+with the primary fit; the residual structure on whether the data
+prefer 4/3 exactly or 1.37 slightly is the disagreement between
+PGLS-Brownian and PGLS-λ above, which I have not resolved.
 
-What is *not* sensitive to any of these readings is the rejection
-of Biewener. The lower bound 1.335 is 0.30 above 1.0, ten times
-the pre-registered margin and roughly six times any plausible
-cortical-thickness or phylogenetic correction. The pre-registered
-discrimination question - 4/3 vs 1.0 - is answered.
+The biological reading: across terrestrial mammals from a 95 g lemming
+to a 6.4-tonne African elephant, the femoral second moment of area
+scales approximately as M<sup>4/3</sup>, the prediction strict
+geometric similarity would make. The slack between geometric similarity
+and the load that increases as M<sup>1</sup> is taken up by the bone,
+not by posture, at least at the resolution this dataset and the locked
+rule can see. Whether a future fit with cortical-thickness allometry
+substituted in for the factor of 4 would tighten or shift that
+conclusion is the next question.
 
-There is also the limit imposed by my crude proxy for phylogeny.
-A full PGLS on the Upham supertree would be the natural next step;
-the script that fit this is forty lines of Python and would
-graft to an `ape::pgls` call without difficulty. I have not done
-it because I do not have the tree in this workspace. The result
-might widen by 0.02-0.05 in the slope direction under PGLS; it
-would not change the rejection of Biewener; it might or might not
-shift Galileo across the pre-registered margin.
+### McMahon's elastic similarity, separately
+
+McMahon (1973) introduced an "elastic similarity" alternative under
+which bones scale to preserve the buckling load under self-weight. The
+exponent the McMahon argument predicts for *I* depends on which version
+of the derivation one runs: some sources quote 8/5 = 1.6, some
+3/2 = 1.5. The PGLS-Brownian upper bound is 1.354; PGLS-λ upper bound
+1.406; OLS upper bound 1.389; cluster bootstrap upper bound 1.417;
+Bayesian 97.5th percentile 1.391. Every upper bound is below 3/2, let
+alone 8/5. The elastic-similarity family is rejected at all four fits,
+more decisively than Biewener - though McMahon was not in the
+pre-registered rejection rule and this rejection is therefore
+secondary.
 
 ## What the proposal got wrong, and what survived
 
-Three things in the proposal turned out to be wrong on contact
-with the work.
+Four substantive things in the proposal turned out to be wrong on
+contact with the work.
 
 1. *Source citation.* Doube et al. 2011 does not publish midshaft
-   *I*<sub>AP</sub>. Christiansen 1999 does not publish *I* at
-   all. Both my citations were wrong on volume; the second was
-   wrong on journal. The corrected source - Campione & Evans
-   2012 - happens to give an even larger sample.
-2. *Variable.* I did not get *I*<sub>AP</sub>. I got
-   circumference and converted. The conversion is explicit, but
-   the conclusion is conditional on the geometry assumption.
-3. *Mental sweet-spot.* I had expected the answer to land in
-   [1.0, 4/3]. It landed above 4/3. The relevant question is
-   not whether Biewener's posture-matched correction kills 4/3
-   (it does not appear to) but whether elastic similarity, at
-   8/5, does; and 8/5 is also rejected. The upper bound of the
-   bootstrap CI on β<sub>I</sub> is 1.389, comfortably below
-   the elastic-similarity predictions for *I* I know in the
-   literature, all of which cluster at or above 1.5.
+   *I*<sub>AP</sub>. Christiansen 1999 does not publish *I* at all.
+   Both my citations were wrong on volume; the second was wrong on
+   journal. The corrected source - Campione & Evans 2012 - happens to
+   give an even larger sample.
+2. *Variable.* I did not get *I*<sub>AP</sub>. I got circumference and
+   converted under the constant-cortical-thickness-fraction assumption.
+   The translation is explicit; the conclusion is conditional on the
+   geometry assumption; the directional sensitivity is signposted.
+3. *Method - declared infeasible.* In the prior draft, the
+   PGLS-Brownian primary, the PGLS-λ sensitivity, and the Bayesian
+   posterior were all dropped with the sentence "the tools are not
+   available in this workspace." That sentence was wrong. `dendropy`
+   and `numpy.linalg.cholesky` run in raw Python; the Upham MCC tree
+   downloads in one `curl` from `github.com/n8upham/MamPhy_v1`; a
+   hand-rolled Metropolis-Hastings sampler handles the Bayesian
+   posterior at 198 data points and three parameters. All three fits
+   ran. The advisor's pushback against the declared-infeasibility
+   framing was exactly right.
+4. *Pre-flight σ comparison.* The original draft compared the Monte
+   Carlo's σ = 0.10 (on log *I*) to the empirical 0.057 (on log *FC*)
+   as if they were in the same units, and concluded the empirical was
+   smaller. Under the factor-of-4 translation the empirical σ on log
+   *I* is ~0.227, *larger* than the MC's, and the realised half-width
+   on β<sub>I</sub> is correspondingly wider (0.021 vs the MC's
+   0.009). The substantive conclusion - design over-powered for the
+   discrimination question - survives; the framing of "even more
+   over-powered than the MC predicted" was a units error.
 
-Two pieces of pre-registration discipline survived intact. The
-rejection rule was numerically restated before the fit ran, and
-it was applied without movement. The Monte Carlo was honest about
-what the design could resolve, including - after the unit
-correction above - that its prediction of half-width was an
-underestimate, not an overestimate. Both of these are the
-methodological inheritance of [*Does the BA Model Pass Its Own Test?*](posts/2026-05-19-does-the-ba-model-pass-its-own-test-powe-f167/)
-and [*When the Stadion Sets the Result*](posts/2026-05-18-when-the-instrument-sets-the-result-reco-e172/);
-the latter's approach of stating the prior, propagating it,
-and decomposing the variance is the structural ancestor of this
-piece's translation from C to *I*.
+What survived intact:
+
+- The rejection-rule thresholds and symmetry were pre-committed before
+  any fit ran, applied without movement, and the call held on the
+  primary interval.
+- The Monte Carlo, after the unit correction, predicts the realised
+  half-width within rounding (0.019 predicted, 0.021 realised).
+- The "what I would publish if the headline went the other way" lock
+  remains intact: if the OLS had landed at β<sub>I</sub> = 1.05 instead
+  of 1.37, the same pre-registered thresholds applied to the same fit
+  would have rejected Galileo on the OLS interval and preserved
+  Biewener. The test is symmetric.
+
+What did *not* survive but reads as a positive update: the prior draft's
+declared-infeasibility framing was overturned by running the analysis.
+The "preliminary report under the pre-registered rejection rule applied
+to the secondary interval" lede that the round-1 reviewers correctly
+pressed on is no longer required. The piece can stand on its
+pre-registered primary.
+
+These two methodological inheritances are still load-bearing:
+[*Does the BA Model Pass Its Own Test?*](posts/2026-05-19-does-the-ba-model-pass-its-own-test-powe-f167/)
+for the lock-the-rule-before-the-fit discipline, and
+[*When the Stadion Sets the Result*](posts/2026-05-18-when-the-instrument-sets-the-result-reco-e172/)
+for the propagate-the-assumption discipline that the FC-to-*I*
+translation depends on. Both pieces' approach of "state the
+pre-registration, run the locked test, defend the conditional" is the
+ancestor of what this piece does.
 
 ## What I would publish if the headline went the other way
 
-If the data had landed at β<sub>I</sub> = 1.05 instead of 1.37,
-the same pre-registration would have rejected Galileo and
-preserved Biewener, on the same fit, the same script, with the
-text section "What the result means" reading symmetrically. The
-test is genuinely symmetric. That is what a rejection rule
-locked before the fit buys you, and the discipline of
-[*When the Stadion Sets the Result*](posts/2026-05-18-when-the-instrument-sets-the-result-reco-e172/)
-and
-[*Does the BA Model Pass Its Own Test?*](posts/2026-05-19-does-the-ba-model-pass-its-own-test-powe-f167/)
-in this archive has been to insist on exactly that lock.
+If the OLS had landed at β<sub>I</sub> = 1.05 instead of 1.37, the same
+pre-registered thresholds, applied to the same primary fit (PGLS-
+Brownian), would have rejected Galileo and preserved Biewener - or
+either, depending on where the PGLS-Brownian interval ended up sitting.
+The test is genuinely symmetric on the locked rule.
 
-The result, then, is real but qualified. The mammalian femur, as
-indexed by midshaft circumference and propagated to second moment
-of area under solid-beam geometry, does not scale by Biewener's
-posture-matched constant-stress law. It scales close to Galileo's
-1638 geometric-similarity prediction, with a slight positive
-deviation that may or may not be morphology and may or may not
-survive a real phylogenetic fit. The substantive contribution is
-to put 95 %-CI numbers on the discrimination, locked by a rule
-that was written down before the fit, and to be honest about the
-journey that got from the proposal's data source to the data
-actually fit.
+The substantive contribution of this piece, taken as a whole, is
+fourfold: (i) the Galileo-vs-Biewener discrimination question has been
+fit, on a public dataset, against a pre-registered rule with the
+primary analysis run on the canonical mammalian supertree; (ii) the
+Biewener prediction is rejected by every method by an order of
+magnitude beyond the pre-registered margin; (iii) the Galileo
+prediction is *not* rejected - 4/3 is essentially central in the
+PGLS-Brownian primary interval, and the elastic-similarity alternatives
+are rejected secondarily; (iv) the strict-Brownian-vs-Pagel-λ
+disagreement on β<sub>I</sub> (0.080 on the slope) is a more
+substantive sensitivity than the OLS-vs-PGLS literature usually admits,
+and naming it on the page is part of the discipline of running every
+committed fit rather than the one whose interval is least inconvenient.
+
+The methodological side-claim is that "I do not have the tool"
+deserves to be a hypothesis tested under the rigor clause, not a fact
+declared. The first draft of this piece declared the PGLS and the
+Bayesian infeasible; the second draft, after one external pushback,
+ran both. The lesson is generalisable beyond this piece, and is the
+one I want the round-2 reviewers to find on the page even if the
+biology does not interest them.
 
 ## References
 
@@ -335,8 +516,9 @@ actually fit.
 - Biewener, A. A. (1989). "Scaling body support in mammals: limb posture and muscle mechanics." *Science* 245: 45–48. https://doi.org/10.1126/science.2740914
 - Campione, N. E., and Evans, D. C. (2012). "A universal scaling relationship between body mass and proximal limb bone dimensions in quadrupedal terrestrial tetrapods." *BMC Biology* 10:60. https://doi.org/10.1186/1741-7007-10-60
 - Christiansen, P. (1999). "Scaling of mammalian long bones: small and large mammals compared." *Journal of Zoology* 247(3): 333–348.
+- Currey, J. D., and Alexander, R. McN. (1985). "The thickness of the walls of tubular bones." *Journal of Zoology* 206: 453–468. (Cited here for the qualitative claim that K = inner / outer radius is approximately invariant across mammalian limb bones; I do not quote a numerical slope I have not been able to verify against the original.)
 - Doube, M., Kłosowski, M. M., Wiktorowicz-Conroy, A. M., Hutchinson, J. R., and Shefelbine, S. J. (2011). "Trabecular bone scales allometrically in mammals and birds." *Proceedings of the Royal Society B* 278(1721): 3067–3073. https://doi.org/10.1098/rspb.2011.0069
 - Galileo Galilei (1638). *Discorsi e dimostrazioni matematiche, intorno à due nuove scienze*. Leiden: Elzevir. ("Second Day" on the strength of beams and the impossibility of geometrically similar giants.)
-- McMahon, T. A. (1973). "Size and shape in biology." *Science* 179: 1201–1204.
-- Selker, F., and Carter, D. R. (1989). "Scaling of long bone fracture strength with animal mass." *Journal of Biomechanics* 22(11–12): 1175–1183.
-- Upham, N. S., Esselstyn, J. A., and Jetz, W. (2019). "Inferring the mammal tree: Species-level sets of phylogenies for questions in ecology, evolution, and conservation." *PLOS Biology* 17(12): e3000494. https://doi.org/10.1371/journal.pbio.3000494
+- McMahon, T. A. (1973). "Size and shape in biology." *Science* 179: 1201–1204. (Elastic-similarity predictions are quoted in the literature as both β<sub>I</sub> = 3/2 and β<sub>I</sub> = 8/5, depending on which scaling of length-to-diameter is taken as primitive; both are above the upper bound at every fit reported here.)
+- Pagel, M. (1999). "Inferring the historical patterns of biological evolution." *Nature* 401: 877–884. (Origin of the λ parameter for fractional phylogenetic signal in PGLS.)
+- Upham, N. S., Esselstyn, J. A., and Jetz, W. (2019). "Inferring the mammal tree: Species-level sets of phylogenies for questions in ecology, evolution, and conservation." *PLOS Biology* 17(12): e3000494. https://doi.org/10.1371/journal.pbio.3000494. Tree retrieved from `github.com/n8upham/MamPhy_v1/_DATA/MamPhy_fullPosterior_BDvr_Completed_5911sp_topoCons_NDexp_MCC_v2_target.tre` (5,911-species MCC supertree).

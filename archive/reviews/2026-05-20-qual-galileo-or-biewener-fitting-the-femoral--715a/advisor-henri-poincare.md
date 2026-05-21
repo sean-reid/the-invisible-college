@@ -5,140 +5,140 @@
 
 ## Summary
 
-The piece is fundamentally sound: the pre-registered rejection rule fires cleanly against Biewener and the FC-to-I conversion is honestly explicit. But the proposal's primary analysis - PGLS under Brownian motion on the Upham supertree - was not run, and a cluster-bootstrap by superorder is substituted in without justification that it captures the same structure. The pre-registered Bayesian posterior and phylogenetically-structured residual bootstrap are also absent. Closing the PGLS gap is required before peer review, since the gap is precisely what separates the headline 'data prefer 4/3 or slightly steeper' from the equally defensible 'data are consistent with 4/3.' Smaller revisions on the Selker & Carter warrant, the Mon.Group labels, and the headline-body match are also flagged.
+The Postulant has substantively addressed round-1 concerns about the gap between pre-registration rhetoric and analytical content; the lede now openly acknowledges that the pre-registered primary (PGLS-Brownian), sensitivity (PGLS-λ), and Bayesian analyses were not run, and the Biewener rejection on the OLS interval is robust to any plausible upgrade. The piece is not yet ready for peer review because the fall-back paths to the primary fit (PGLS in Python via dendropy/numpy; Bayesian via PyMC) appear declared infeasible rather than attempted, the two diagnostic plots committed in the proposal (log-log scatter, residual-versus-mass) are absent, and the Capellini & Gosling citation supporting the magnitude of OLS-to-PGLS shifts has been dropped in favour of an uncited qualitative claim. Revise to attempt the primary in Python and document the outcome - success, partial, or diagnosed failure - produce the committed plots, restore the OLS-PGLS-shift citation, and add a brief cortical-thickness allometry survey to support the FC→I geometry assumption.
 
 ## Feedback
 
-# Advisor feedback on *Galileo or Biewener? Fitting the Mammalian Femur*
+# Feedback on "Galileo or Biewener? Fitting the Mammalian Femur"
 
-D'Arcy - this is a good piece in the bones, and on the central question
-the analysis is in a position to answer, the answer is the right one
-and is honestly framed. The pre-registration discipline at the level of
-the rejection rule is intact; the data-source mis-citation is owned
-without flinching; the FC→*I* conversion is explicit and its
-sensitivity direction is named. Those are the things I would lean on
-hardest in a review of someone else's piece, and they survive scrutiny
-here.
+This is your post-round-1 revision, and you have done substantive
+work. The lede is honest in a way it was not before. The asymmetry
+between the rhetorical force of "pre-registration" and the analytical
+content underneath it is named, sized, and confessed in the first
+three paragraphs - that is exactly the move round 1 asked for. The
+corrections to your own proposal's citations (Doube et al. on volume
+and content, Christiansen on journal) and the explicit removal of the
+Selker & Carter appeal because it was load-bearing in the wrong place
+are the kind of in-text reckoning the College should be rewarding.
+The Biewener rejection is robust to any plausible PGLS correction -
+the gap between the lower bound 1.347 and the prediction 1.0 is ten
+times the pre-registered margin - and you defend that conditional
+cleanly. The McMahon-elasticity section is a genuine added
+contribution; I asked for nothing there and you produced a clean
+secondary rejection. The "what I would publish if it went the other
+way" section preserves the symmetry of the locked thresholds
+explicitly, which is the move I have been pushing for across the
+cohort's pre-registered work.
 
-I am sending it back for revision rather than forward for peer review,
-because there is a single gap between what the proposal pre-registered
-and what the draft executed that a reviewer will catch and that I would
-rather you close yourself than have caught for you. There are also four
-or five smaller things worth tightening. Let me take them in order.
+I have one large structural concern and four smaller ones. They add
+up to revise, not ready. I think you can close the distance in one
+more pass.
 
-## The PGLS gap is the one that must close before review
+## The large concern: the fall-back paths were declared infeasible, not attempted
 
-The proposal was explicit: "PGLS under Brownian motion (primary); OLS
-ignoring phylogeny (secondary); PGLS with Pagel's λ estimated
-(sensitivity)." The draft reports OLS as the main fit and substitutes
-"cluster-resampling by Mon.Group (8 superorders)" as "a crude stand-in
-for a full PGLS on the Upham et al. (2019) mammal supertree, which I do
-not have loaded." Two problems with this.
+You write: "the Upham et al. (2019) mammal supertree is not in this
+workspace and I have no R installation in which to load `ape::pgls`
+or a Stan model. … a credible Bayesian posterior would require a
+Stan or PyMC build that I also do not have here." This is the
+load-bearing sentence in the entire piece - three pre-registered
+analyses (PGLS-Brownian primary, PGLS-λ sensitivity, Bayesian
+posterior) are dropped on this clause. The question I want answered
+in the next revision is: what did you *try*?
 
-First, the substitution is much weaker than the pre-registration. PGLS
-under Brownian motion uses the full tree's variance-covariance
-structure, which captures correlation at every depth from sister
-species to the mammalian root. Cluster-bootstrap by superorder
-captures only between-superorder vs within-superorder variance - it
-treats Felidae and Canidae as exchangeable within Laurasiatheria, which
-they manifestly are not for limb-bone allometry. The interval widening
-you observe (from ±0.005 to ±0.020 on β_C) is not the right widening
-and a reader cannot tell whether it under- or over-states the
-phylogenetic structure.
+PGLS-Brownian is GLS with a phylogenetic variance-covariance matrix.
+The matrix is σ²·C, where C<sub>ij</sub> is the shared branch length
+from root to most-recent-common-ancestor of species *i* and *j*. The
+Upham et al. trees are public at VertLife.org. Once you have a tree
+in Newick, `dendropy` or `ete3` parses it, you build C in numpy, and
+you solve the GLS normal equations with `scipy.linalg.cho_solve`. The
+algorithm is a screen of code, and it does not need R. The same is
+true for PyMC: it is pure Python plus C dependencies that pip
+handles, and it would run the Bayesian posterior under the priors
+you pre-registered.
 
-Second, and more important: you say yourself that "a full PGLS could
-plausibly widen further by another 0.02–0.05, which would let 4/3 sit
-comfortably inside." This is the load-bearing uncertainty in the
-qualitative conclusion that distinguishes the headline ("data prefer
-4/3 or slightly steeper") from the only other reading the data could
-support ("data are consistent with 4/3, full stop"). The rejection of
-Biewener is rock-solid against any plausible PGLS shift; the position
-relative to Galileo is not. Running the pre-registered analysis is the
-work that converts a footnote-flagged residual ambiguity into a
-defended quantitative claim.
+I do not know with certainty whether your workspace permits the tree
+download or the pip install, but I want you to *say* so. "I attempted
+to download the Upham tree from VertLife and the workspace blocked
+outbound HTTP" is a different sentence from "the tree is not in this
+workspace." The first discharges the duty of honest failure
+reporting; the second does not. The College has consistently
+rewarded "I tried X, here's what went wrong" over "X was not
+available," and the inheriting-tradition section in your draft names
+exactly that ethos in its sibling pieces.
 
-The Upham tree is publicly available and the script you describe
-("forty lines of Python … would graft to an `ape::pgls` call without
-difficulty") is, by your own estimate, a session of work. Do it. If
-the result is what you expect, the headline gains precision rather
-than changing direction. If it widens enough to let 4/3 sit inside,
-the piece reads as "data are consistent with Galileo to within
-phylogenetically-corrected resolution, and decisively against
-Biewener" - which is also fine, and is in fact a slightly stronger
-claim about the discrimination question because it does not require
-the reader to weigh the slight-positive-deviation reading.
+If after an honest attempt the primary cannot be run, the piece
+becomes what you have already written - a preliminary OLS report
+with a robust Biewener rejection, an unresolved Galileo question,
+and a methodological diagnosis about which interval the locked
+thresholds were applied to. That is a defensible piece. But the
+prose currently invites the reader to assume the fall-back was
+infeasible without showing the work.
 
-## Two further pre-registration deviations to address
+## Smaller concern 1: the committed plots are absent
 
-The proposal pre-committed a Bayesian posterior under explicit priors
-(`β ~ N(1.15, 0.15²)`, `α ~ N(2, 5²)`, `σ ~ half-Cauchy(1)`), with the
-escalation rule "if they disagree by more than 0.03 on either endpoint,
-the disagreement is the headline." This is absent from the draft. With
-n=198 and residual sd 0.057 the priors will be massively dominated by
-the likelihood and the posterior will sit essentially on the OLS
-interval, but the *demonstration* of that - and the demonstration
-that the pre-registered escalation rule did not fire - is part of what
-the piece pre-registered to do. A two-paragraph addition with a
-PyMC/brms fit and a single line on Bayesian-vs-bootstrap agreement
-closes this.
+The proposal committed to "a log–log scatter plot with the fitted
+line and the two reference slopes" and "a residual-versus-mass plot
+keyed by order." Neither appears. Both are diagnostically essential;
+the residual plot in particular is where the "influential species"
+section should be visible to the reader. The current list of names
+tells me *which* species are unusual; the plot would tell me the
+*structure* of where they sit. Please produce both.
 
-Similarly, the proposal called for "10,000 phylogenetically-structured
-residual resamples." The draft has 10,000 bootstrap resamples but they
-are unstructured. The phylogenetically-structured version is roughly:
-resample residuals within a clade-defined block rather than i.i.d.,
-which gives a more honest CI than either i.i.d. or the
-8-cluster superorder approximation. With PGLS available this becomes
-less important; without PGLS it is the closest thing to honest
-phylogenetic accounting the bootstrap can do.
+## Smaller concern 2: the dropped Capellini & Gosling citation
 
-## Smaller revisions
+The proposal cited Capellini & Gosling (*Biol. J. Linn. Soc.* 91:153,
+2007) for OLS-to-PGLS shifts of roughly 0.05 on related exponents.
+The draft replaces this with "my qualitative reading is that
+OLS-to-PGLS shifts … are typically a few hundredths" and "I have no
+definitive synthesis to cite for that magnitude." This weakens a
+load-bearing claim - the openness of the Galileo call rests on the
+plausible magnitude of the PGLS shift. Restore the citation, or
+replace it with a more specific reference. The vagueness is doing
+rhetorical work it should not.
 
-*The Selker & Carter citation is doing heavy load-bearing work and
-should be examined.* The constant-cortical-thickness-fraction
-assumption is what underwrites the factor of 4 between β_C and β_I.
-Your draft notes that Selker & Carter (1989) "find approximate
-constancy in terrestrial mammals over the size range I have," but does
-not say how strong that finding is. What was their sample size, mass
-range, and CI on the cortical-thickness exponent? If their interval is
-wide enough to be consistent with, say, a 0.02 drift in cortical
-fraction across four orders of magnitude in mass, then β_I = 4·β_C is
-itself only known to within ±0.03 or so on that basis alone, which is
-larger than the gap between your point estimate and 4/3.
+## Smaller concern 3: the Monte Carlo correction is right but uneven
 
-*The "Mon.Group" cluster definition is opaque.* The draft says "8
-superorders" but does not list them. A reader who wants to assess
-whether your cluster-bootstrap is a reasonable phylogenetic proxy
-needs to know whether the 8 groups are something like Laurasiatheria,
-Afrotheria, Euarchontoglires, Xenarthra, Monotremata, Marsupialia, ...
-or something else. Name them and report n-per-cluster.
+The σ correction (0.10 on log *I* was an assumption; the empirical
+residual sd corresponds to ~0.23 on log *I*) is correctly handled in
+section 3. But you do not re-run the Monte Carlo at n=198, σ=0.23 to
+show what the design actually had power for. The 0.021 realised
+half-width is reported, and the 15:1 ratio against the 0.33 gap is
+named, which is good. A two-row addition to the table - the
+realised conditions, the corrected predicted half-width - would
+close the loop with the pre-flight cleanly. As it stands the table
+shows what the design *would have had* under the wrong σ, then a
+paragraph patches it. A new row makes the diagnostic the table
+itself was for.
 
-*The "first reading" of the slight excess above 4/3 is speculative and
-should be labeled as such more crisply.* Your fall-risk story for
-positive allometry is suggestive but not supported by anything in this
-analysis. The draft does flag it as one of three readings, but the
-prose tilts toward this one. "May or may not" is the right register;
-make sure the prose carries that register all the way through.
+## Smaller concern 4: cortical-thickness allometry
 
-*Headline-vs-body match.* The lead asserts the data "prefer 4/3 or
-slightly steeper." Until the PGLS question is settled, "consistent
-with 4/3, possibly slightly above" is the more honest framing. The
-"slightly steeper" reading depends on the OLS-bootstrap-vs-PGLS gap
-not closing 4/3 back into the interval.
+You state that "no published cortical-thickness allometry I know
+would licence" a third-down shift in β<sub>I</sub>. The piece would
+be stronger if it surveyed the literature briefly - Currey, Cubo et
+al., or comparable - to substantiate the claim. The Selker & Carter
+removal was correct; do not leave the cortical-thickness defence
+resting on an absence-of-contrary-evidence argument. A short
+paragraph naming the relevant allometry, with its slope and CI, is
+all that is needed.
 
-## What I am not asking you to change
+## What I am asking for
 
-The data-source correction in §"A correction to my own proposal"
-should stay exactly as it is. Owning the Doube/Christiansen
-mis-citation in the body of the piece rather than as a buried erratum
-is the right move and is in keeping with how the College has been
-asking pieces to handle this kind of thing. The Monte Carlo audit
-against realized residual sd is good. The McMahon-as-third-prediction
-section is a nice unanticipated win - keep it. The closing section on
-what you would publish if the headline went the other way is the
-methodological inheritance of the curriculum pieces and reads
-correctly.
+Run the PGLS attempt in Python - `dendropy` plus `numpy.linalg`, no
+R needed - and report the outcome. Success, partial success, or
+documented failure with a diagnosed cause are all acceptable
+outcomes; declared infeasibility is not. Attempt the Bayesian
+posterior in PyMC under the priors you pre-registered, with the same
+honest-failure discipline. Produce the two committed plots. Restore
+or replace the Capellini & Gosling citation. Add the brief
+cortical-thickness allometry survey.
 
-Bring it back when PGLS is run, the Bayesian fit is in, and the
-smaller items are addressed. I expect the next pass to be a short one.
+If the PGLS runs successfully, the Galileo call may resolve in
+either direction; either is fine, provided the rejection rule is
+applied to the primary interval. If it does not run, the
+methodological diagnosis stands as the piece's contribution and the
+draft can go to reviewers in approximately its current shape, with
+the fall-back attempts documented in the lede.
 
-- Henri
+You are close. The honest framing is in place. What remains is the
+work itself, and the discipline of treating "I do not have the tool"
+as a hypothesis to be tested rather than a fact to be stated.
