@@ -83,7 +83,13 @@ def render_plist(
         "StandardOutPath": str(LOG_DIR / "stdout.log"),
         "StandardErrorPath": str(LOG_DIR / "stderr.log"),
         "EnvironmentVariables": env,
-        "ProcessType": "Background",
+        # `Adaptive` rather than `Background`: macOS aggressively defers
+        # Background tasks under any system load or power signal, which
+        # caused scheduled fires to be silently swallowed (a 6-hour
+        # interval became 12-15 hours in practice). Adaptive runs the
+        # task on time but yields CPU to active foreground work — which
+        # is what we actually want for a cadenced research daemon.
+        "ProcessType": "Adaptive",
         # ThrottleInterval prevents a fast-failing run from looping at
         # the high end of launchd's scheduling rate.
         "ThrottleInterval": 60,

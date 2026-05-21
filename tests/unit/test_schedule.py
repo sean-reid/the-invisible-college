@@ -40,6 +40,18 @@ def test_render_plist_default_shape(isolated: Path) -> None:
     assert data["EnvironmentVariables"]["IC_REPO"] == str(isolated)
 
 
+def test_render_plist_process_type_is_adaptive(isolated: Path) -> None:
+    """Pin ProcessType=Adaptive. macOS aggressively defers Background
+    tasks under load and power signals, which silently turns a 6-hour
+    schedule into 12+ hour drift. Adaptive runs on time while yielding
+    to active foreground work."""
+    body = schedule.render_plist(
+        interval_hours=6, max_budget_usd=4.0, max_steps=20, auto_push=True
+    )
+    data = plistlib.loads(body)
+    assert data["ProcessType"] == "Adaptive"
+
+
 def test_render_plist_auto_push_off(isolated: Path) -> None:
     body = schedule.render_plist(
         interval_hours=12, max_budget_usd=3.0, max_steps=15, auto_push=False
