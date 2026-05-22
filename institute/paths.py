@@ -45,6 +45,7 @@ CODE = ARCHIVE / "code"
 READING_GROUPS = ARCHIVE / "reading-groups"
 PREPRINTS = ARCHIVE / "preprints"
 DEPARTMENTS = ARCHIVE / "departments"
+FIGURES = ARCHIVE / "figures"
 
 BLOG = ROOT / "blog"
 BLOG_CONTENT = BLOG / "src" / "content"
@@ -53,9 +54,16 @@ BLOG_NOTEBOOKS = BLOG_CONTENT / "notebooks"
 BLOG_REVIEWS = BLOG_CONTENT / "reviews"
 BLOG_PUBLIC = BLOG / "public"
 BLOG_CODE = BLOG_PUBLIC / "code"
+BLOG_FIGURES = BLOG_PUBLIC / "figures"
 
 DB_PATH = ROOT / "institute.db"
 AUDIT_LOG = ROOT / "institute-audit.log"
+
+# Base URL the blog is served under. Must match `base` in
+# `blog/astro.config.mjs`. Used by the publish workflow to rewrite
+# bare-filename image references in the post body to absolute paths
+# that resolve against `blog/public/figures/<id>/` at runtime.
+BLOG_BASE_URL = "/the-invisible-college"
 
 
 def ensure_runtime_dirs() -> None:
@@ -79,9 +87,11 @@ def ensure_runtime_dirs() -> None:
         READING_GROUPS,
         PREPRINTS,
         DEPARTMENTS,
+        FIGURES,
         BLOG_POSTS,
         BLOG_NOTEBOOKS,
         BLOG_REVIEWS,
         BLOG_CODE,
+        BLOG_FIGURES,
     ]:
         path.mkdir(parents=True, exist_ok=True)

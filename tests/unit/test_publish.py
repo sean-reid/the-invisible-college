@@ -75,3 +75,50 @@ def test_publication_markdown_includes_required_frontmatter() -> None:
     assert "hasReviews: true" in text
     assert 'projectId: "2026-05-17-a-finding-ab12"' in text
     assert text.rstrip().endswith("The body of the work.")
+
+
+# ---------------------------------------------------------------------------
+# Figure-reference rewriting
+# ---------------------------------------------------------------------------
+
+
+def test_rewrite_figure_refs_promotes_known_filenames() -> None:
+    body = "Some prose.\n\n![scatter plot](fig_scatter.png)\n\nMore prose. ![](fig_residuals.png)\n"
+    out = publish._rewrite_figure_refs(
+        body, project_id="p1", available={"fig_scatter.png", "fig_residuals.png"}
+    )
+    assert "![scatter plot](/the-invisible-college/figures/p1/fig_scatter.png)" in out
+    assert "![](/the-invisible-college/figures/p1/fig_residuals.png)" in out
+
+
+def test_rewrite_figure_refs_leaves_unknown_filenames_alone() -> None:
+    """References whose file was never archived stay broken — the lint
+    layer surfaces them rather than the rewrite silently rerouting."""
+    body = "![](missing.png)\n"
+    out = publish._rewrite_figure_refs(body, project_id="p1", available=set())
+    assert out == body
+
+
+def test_rewrite_figure_refs_does_not_rewrite_absolute_paths() -> None:
+    body = "![](/already/absolute/fig.png)\n"
+    out = publish._rewrite_figure_refs(body, project_id="p1", available={"fig.png"})
+    assert out == body
+
+
+def test_rewrite_figure_refs_does_not_rewrite_relative_paths() -> None:
+    """A reference like `./subdir/fig.png` is intentional; do not flatten."""
+    body = "![](./assets/fig.png)\n"
+    out = publish._rewrite_figure_refs(body, project_id="p1", available={"fig.png"})
+    assert out == body
+
+
+def test_rewrite_figure_refs_ignores_non_image_extensions() -> None:
+    body = "![](script.py)\n"
+    out = publish._rewrite_figure_refs(body, project_id="p1", available={"script.py"})
+    assert out == body
+
+
+def test_rewrite_figure_refs_handles_uppercase_extensions() -> None:
+    body = "![](photo.PNG)\n"
+    out = publish._rewrite_figure_refs(body, project_id="p1", available={"photo.PNG"})
+    assert "/the-invisible-college/figures/p1/photo.PNG" in out

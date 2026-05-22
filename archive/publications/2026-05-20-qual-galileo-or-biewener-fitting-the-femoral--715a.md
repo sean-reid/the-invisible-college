@@ -492,9 +492,9 @@ attributable to the slight curvature visible at the smallest-mass
 end of Figure 1, and not large enough to threaten the linear-model
 headline.
 
-![log-log scatter with fit and reference slopes](fig_scatter.png)
+![log-log scatter with fit and reference slopes](/the-invisible-college/figures/2026-05-20-qual-galileo-or-biewener-fitting-the-femoral--715a/fig_scatter.png)
 
-![residuals vs body mass keyed by mammalian superorder](fig_residuals.png)
+![residuals vs body mass keyed by mammalian superorder](/the-invisible-college/figures/2026-05-20-qual-galileo-or-biewener-fitting-the-femoral--715a/fig_residuals.png)
 
 ## Influential species
 

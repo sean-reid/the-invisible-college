@@ -39,6 +39,7 @@ def isolated(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
     reading_groups = archive / "reading-groups"
     preprints = archive / "preprints"
     departments_dir = archive / "departments"
+    figures = archive / "figures"
     blog = tmp_path / "blog"
     blog_content = blog / "src" / "content"
     blog_posts = blog_content / "posts"
@@ -46,6 +47,7 @@ def isolated(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
     blog_reviews = blog_content / "reviews"
     blog_public = blog / "public"
     blog_code = blog_public / "code"
+    blog_figures = blog_public / "figures"
     audit_log = tmp_path / "institute-audit.log"
     db_path = tmp_path / "institute.db"
 
@@ -68,10 +70,12 @@ def isolated(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
         reading_groups,
         preprints,
         departments_dir,
+        figures,
         blog_posts,
         blog_notebooks,
         blog_reviews,
         blog_code,
+        blog_figures,
     ):
         d.mkdir(parents=True, exist_ok=True)
 
@@ -95,6 +99,7 @@ def isolated(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
     monkeypatch.setattr(paths, "READING_GROUPS", reading_groups)
     monkeypatch.setattr(paths, "PREPRINTS", preprints)
     monkeypatch.setattr(paths, "DEPARTMENTS", departments_dir)
+    monkeypatch.setattr(paths, "FIGURES", figures)
     monkeypatch.setattr(paths, "BLOG", blog)
     monkeypatch.setattr(paths, "BLOG_CONTENT", blog_content)
     monkeypatch.setattr(paths, "BLOG_POSTS", blog_posts)
@@ -102,6 +107,7 @@ def isolated(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
     monkeypatch.setattr(paths, "BLOG_REVIEWS", blog_reviews)
     monkeypatch.setattr(paths, "BLOG_PUBLIC", blog_public)
     monkeypatch.setattr(paths, "BLOG_CODE", blog_code)
+    monkeypatch.setattr(paths, "BLOG_FIGURES", blog_figures)
     monkeypatch.setattr(paths, "AUDIT_LOG", audit_log)
     monkeypatch.setattr(decisions, "DECISIONS", decisions_dir)
     monkeypatch.setattr(fellow_mod, "GENOMES", genomes)

@@ -1,0 +1,15 @@
+n_matched = 193
+PGLS-Brownian:
+  beta_C = 0.32235
+  SE(beta_C) = 0.00825
+  95% CI on beta_C: [0.30608, 0.33862]
+  beta_I = 1.28941
+  95% CI on beta_I: [1.22433, 1.35449]
+PGLS-lambda:
+  lambda_hat = 0.6814
+  lambda 95% LR CI: [0.4900, 0.8182]
+  beta_C = 0.34177
+  SE(beta_C) = 0.00490
+  95% CI on beta_C: [0.33209, 0.35144]
+  beta_I = 1.36706
+  95% CI on beta_I: [1.32837, 1.40575]

@@ -1,0 +1,9 @@
+n = 198
+beta_C = 0.34198
+beta_C bootstrap 95% CI: [0.33677, 0.34716]
+beta_C cluster bootstrap 95% CI: [0.33378, 0.35420]
+intercept a = 1.23118
+residual sd = 0.05688
+beta_I = 4*beta_C = 1.36793
+beta_I bootstrap 95% CI: [1.34709, 1.38864]
+beta_I cluster bootstrap 95% CI: [1.33512, 1.41679]

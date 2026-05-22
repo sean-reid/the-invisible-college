@@ -46,6 +46,35 @@ from institute.state import State
 console = Console()
 
 
+# Matches `![alt text](filename.ext)` where the filename has no slashes
+# and an image-like extension. The published markdown emits bare-filename
+# references that the Fellow wrote (e.g. `![](fig_residuals.png)`); these
+# must be rewritten to absolute URLs that resolve against
+# `blog/public/figures/<project_id>/` once mirrored.
+_IMAGE_REF_RE = re.compile(
+    r"!\[(?P<alt>[^\]]*)\]\((?P<src>[^/)\s][^/)]*\.(?:png|jpe?g|svg|gif|webp))\)",
+    re.IGNORECASE,
+)
+
+
+def _rewrite_figure_refs(body: str, *, project_id: str, available: set[str]) -> str:
+    """Rewrite `![alt](fig.png)` to `![alt](<BASE>/figures/<id>/fig.png)`.
+
+    Only filenames present in `available` are rewritten; references to
+    files that were never archived as figures are left alone (so a
+    broken reference stays a broken reference, surfaced by the
+    citation/asset lint downstream rather than silently hidden).
+    """
+
+    def _sub(m: re.Match[str]) -> str:
+        src = m.group("src")
+        if src not in available:
+            return m.group(0)
+        return f"![{m.group('alt')}]({paths.BLOG_BASE_URL}/figures/{project_id}/{src})"
+
+    return _IMAGE_REF_RE.sub(_sub, body)
+
+
 def _strip_title_heading(draft_md: str) -> tuple[str, str]:
     """Extract the level-1 title from a draft and return (title, body)."""
     match = re.match(r"\s*#\s+(.+?)\s*\n", draft_md)
@@ -312,6 +341,18 @@ def _write_publication_artifacts(
     reviewer_genomes: list[Genome],
 ) -> tuple[Any, Any, list[Any]]:
     """Write the publication artifact + notebook + per-reviewer blog files."""
+    # Mirror figures and rewrite bare-filename image references in the
+    # body (and notebook) to absolute paths under blog/public/figures/.
+    # Done before the publication wrapper is composed so the rewritten
+    # body is what lands in both the archive and the blog.
+    mirrored_figures = code_artifacts.mirror_figures_to_blog(project_id)
+    available_figures = {p.name for p in mirrored_figures}
+    body = _rewrite_figure_refs(body, project_id=project_id, available=available_figures)
+    if notebook_md is not None:
+        notebook_md = _rewrite_figure_refs(
+            notebook_md, project_id=project_id, available=available_figures
+        )
+
     publication_md = _publication_markdown(
         title=title,
         body=body,

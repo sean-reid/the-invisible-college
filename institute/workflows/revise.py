@@ -331,6 +331,9 @@ def run(project_id: str) -> None:
     swept = code_artifacts.sweep_workspace(workspace=workspace, project_id=project_id)
     if swept:
         console.print(f"[green]Re-archived {len(swept)} code/data artifact(s).[/green]")
+    swept_figs = code_artifacts.sweep_figures(workspace=workspace, project_id=project_id)
+    if swept_figs:
+        console.print(f"[green]Re-archived {len(swept_figs)} figure(s).[/green]")
 
     episodic.safe_ingest(
         fellow_id=lead.id,

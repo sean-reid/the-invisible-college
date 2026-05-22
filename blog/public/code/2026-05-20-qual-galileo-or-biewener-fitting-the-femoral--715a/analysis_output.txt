@@ -1,0 +1,104 @@
+Loaded 245 extant tetrapods
+  mammals: 198    reptiles: 47
+  mammalian groups: ['Afrotheria', 'Carnivora', 'Euarchonta', 'Eulipotyphla', 'Glires', 'Marsupialia', 'Ungulata', 'Xenarthra']
+  mammal body-mass range (kg): 0.0529   -   6435
+  log10 range: -1.28 to 3.81
+
+======================================================================
+Step 1: pre-flight Monte Carlo power for distinguishing beta_I.
+======================================================================
+
+  Simulate y = a + beta * x + eps,  x ~ U(log10 mass range),
+  eps ~ N(0, sigma=0.10).  Fit OLS, take 95% Wald CI on beta.
+
+  n=90 (pre-committed in proposal):
+   beta_true   med CI ±   P(rej 1.0)   P(rej 4/3)
+       1.000      0.013        0.00%      100.00%
+       1.100      0.013      100.00%      100.00%
+       1.200      0.013      100.00%      100.00%
+       1.333      0.013      100.00%        0.00%
+
+  n=198 (Campione&Evans 2012 mammal subset actually available):
+   beta_true   med CI ±   P(rej 1.0)   P(rej 4/3)
+       1.000      0.008        0.00%      100.00%
+       1.100      0.008      100.00%      100.00%
+       1.200      0.009      100.00%      100.00%
+       1.333      0.008      100.00%        0.00%
+
+======================================================================
+Step 2: restated rejection rule (numeric, pre-data).
+======================================================================
+
+  Reject Biewener (beta_I = 1.0):  lower 95% CI on beta_I > 1.03.
+  Reject Galileo (beta_I = 4/3):   upper 95% CI on beta_I < 1.3033.
+  CI straddling both: decline to discriminate.
+
+======================================================================
+Step 3: OLS fit, mammals only,  log10(FC_mm) ~ log10(BM_kg).
+======================================================================
+
+  n = 198
+  beta_C (slope of log(FC) on log(BM_kg)): 0.3420
+    Wald 95% CI: [0.3357, 0.3483]
+    Bootstrap 95% CI (B=10,000): [0.3368, 0.3472]
+  intercept a (log10 FC at 1 kg): 1.2312
+  predicted FC at 1 kg: 17.029 mm
+  residual sd on log10(FC_mm): 0.0569
+
+======================================================================
+Step 4: cluster-bootstrap SE by mammalian Mon.Group (phylo proxy).
+======================================================================
+
+  clusters: 8
+    Afrotheria      n=5
+    Carnivora       n=48
+    Euarchonta      n=15
+    Eulipotyphla    n=4
+    Glires          n=66
+    Marsupialia     n=14
+    Ungulata        n=41
+    Xenarthra       n=5
+  cluster-bootstrap 95% CI on beta_C: [0.3338, 0.3542]
+
+======================================================================
+Step 5: translation to beta_I and rejection-rule call.
+======================================================================
+
+  Under I ∝ C^4 (solid beam / constant-k tube):
+    beta_I point estimate:   1.3679
+    beta_I bootstrap 95% CI: [1.3471, 1.3886]
+    beta_I cluster   95% CI: [1.3351, 1.4168]
+
+  OLS bootstrap:     reject Biewener? True   reject Galileo? False
+  cluster bootstrap: reject Biewener? True   reject Galileo? False
+
+======================================================================
+Step 6: residual extrema (influential species).
+======================================================================
+
+  Top 10 residuals (|log10 FC_obs - log10 FC_pred|):
+    Glires       Lepus californicus               BM=    1.53 kg   FC=   12.3 mm  resid=-0.205
+    Carnivora    Mephitis mephitis                BM=     6.5 kg   FC=   22.1 mm  resid=-0.166
+    Xenarthra    Priodontes maximus               BM=    29.5 kg   FC=   78.5 mm  resid=+0.161
+    Carnivora    Mustela putorius                 BM=     1.1 kg   FC=   12.5 mm  resid=-0.148
+    Xenarthra    Choloepus didactylus             BM=     6.2 kg   FC=   43.2 mm  resid=+0.134
+    Glires       Dicrostonyx richardsoni          BM=   0.095 kg   FC=    5.6 mm  resid=-0.133
+    Carnivora    Taxidae taxus                    BM=     9.9 kg   FC=   27.8 mm  resid=-0.128
+    Carnivora    Lutra canadensis                 BM=     6.4 kg   FC=   24.4 mm  resid=-0.119
+    Glires       Cynomys leucurus?                BM=    1.13 kg   FC=   13.5 mm  resid=-0.119
+    Glires       Lepus europaeus                  BM=     3.4 kg   FC=   33.8 mm  resid=+0.115
+
+  Sensitivity: drop top-3 residuals -> beta_C = 0.3414, intercept = 1.2326, n = 195
+  Sensitivity beta_I = 1.3655
+
+======================================================================
+Step 7: unit audit.
+======================================================================
+
+  Predicted log10(FC) at BM=1 kg:   1.231
+  Predicted FC at BM=1 kg:          17.03 mm
+  -> predicted log10(I_AP) at 1 kg: 1.627 mm^4
+  Pre-committed band: log10 I in [1.5, 2.5] mm^4
+  Audit: PASS
+
+Saved fit_summary.txt
