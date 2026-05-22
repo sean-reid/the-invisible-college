@@ -10,6 +10,7 @@ systemd; left as future work.
 
 from __future__ import annotations
 
+import os
 import plistlib
 import shutil
 import subprocess
@@ -177,13 +178,23 @@ def install(
     tmp.write_bytes(body)
     tmp.replace(path)
 
-    # Unload first in case it was already loaded; ignore errors.
+    # Use the modern bootout/bootstrap pair rather than the legacy
+    # load/unload. Apple's `launchctl` man page calls load/unload
+    # "legacy and not recommended" since Big Sur; the modern API
+    # handles per-user domain transitions correctly and is the
+    # documented recovery path when an agent's domain has been put
+    # into "on-demand-only mode" (which can happen after kickstart -k
+    # or certain session-state transitions).
+    target = _service_target()
     subprocess.run(
-        ["launchctl", "unload", str(path)],
+        ["launchctl", "bootout", target],
         capture_output=True,
         check=False,
     )
-    subprocess.run(["launchctl", "load", str(path)], check=True)
+    subprocess.run(
+        ["launchctl", "bootstrap", _domain_target(), str(path)],
+        check=True,
+    )
     return path
 
 
@@ -194,12 +205,22 @@ def uninstall() -> bool:
         return False
     if shutil.which("launchctl") is not None:
         subprocess.run(
-            ["launchctl", "unload", str(path)],
+            ["launchctl", "bootout", _service_target()],
             capture_output=True,
             check=False,
         )
     path.unlink()
     return True
+
+
+def _domain_target() -> str:
+    """The launchctl domain target string for the current user, e.g. `gui/501`."""
+    return f"gui/{os.getuid()}"
+
+
+def _service_target() -> str:
+    """The launchctl service target string, e.g. `gui/501/com.invisible-college.autopilot`."""
+    return f"{_domain_target()}/{LABEL}"
 
 
 def status() -> dict[str, object]:
