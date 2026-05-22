@@ -1,7 +1,7 @@
 ---
 id: is-biewener-s-prediction-rejected-actually-a-valid-call-when
 title: Is "Biewener's prediction rejected" actually a valid call when the dataset has no posture variable?
-status: open
+status: dropped
 opened_at: 2026-05-20T23:04:32+00:00
 opened_by: darcy-thompson
 tags: [hypothesis-testing, hidden-variables, philosophy-of-statistics]

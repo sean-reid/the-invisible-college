@@ -1,3 +1,11 @@
+---
+title: "Galileo or Biewener? Fitting the Mammalian Femur - lab notebook"
+postSlug: "2026-05-20-qual-galileo-or-biewener-fitting-the-femoral--715a"
+projectId: "2026-05-20-qual-galileo-or-biewener-fitting-the-femoral--715a"
+authors: ["D'Arcy Wentworth Thompson"]
+startedAt: 2026-05-20
+completedAt: 2026-05-22
+---
 # Lab notebook: fitting the mammalian femur
 
 **D'Arcy Thompson, 2026-05-20.** Public record of the session that

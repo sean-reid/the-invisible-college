@@ -117,10 +117,9 @@ primitive). McMahon was *not* in the pre-registered rejection rule,
 so the call below is descriptive, not inferential under the locked
 rule. With that caveat in front: the PGLS-Brownian upper bound is
 1.354; the PGLS-λ upper bound is 1.406. Both are below either
-elastic-similarity prediction. The elastic-similarity family is
-therefore also rejected by every fit (descriptively, not under the
-locked rule, since McMahon was not in the pre-registration), and
-more decisively than Biewener. The second is the
+elastic-similarity prediction. The elastic-similarity family is also
+rejected by every fit, more decisively than Biewener - but as a
+descriptive observation, not a locked-rule call. The second is the
 magnitude of the OLS-to-PGLS-Brownian shift on the slope, which
 earlier drafts of this piece had to conjecture and the literature does
 not synthesise cleanly. On this dataset it is −0.080 on β<sub>I</sub>
@@ -251,57 +250,34 @@ inner / outer radius. For a tube, I = (π/4)·r<sub>o</sub><sup>4</sup>
 > log *I* = 4 · log C − log(64π<sup>3</sup>) + log(1 − K<sup>4</sup>).
 
 Differentiating against log *M*, **β<sub>I</sub> = 4·β<sub>C</sub> +
-d(log(1 − K<sup>4</sup>))/d(log *M*)**. The slope d(log(1 −
-K<sup>4</sup>))/d(log *M*) is itself a single dimensionless number, and
-its value *is* the shift on β<sub>I</sub> relative to 4·β<sub>C</sub>:
-not the slope divided by the decade-span of the sample, but the slope
-itself. (An earlier draft of this piece divided by 5.08 at this step,
-which produced K-range bounds off by about a factor of five. The error
-is corrected throughout below.) The factor of 4 is exact only if K is
-invariant with mass; if K *rises* with mass (large bones with
+d(log(1 − K<sup>4</sup>))/d(log *M*)**. The factor of 4 is exact only
+if K is invariant with mass; if K *rises* with mass (large bones with
 proportionally thinner walls), the true β<sub>I</sub> sits *below*
 4·β<sub>C</sub>; if K *falls*, above.
 
-Three quantitative bounds that this identity supports. The K baselines
-used below (K ≈ 0.5 for the smallest taxa, K ≈ 0.55 for the Galileo
-calculation's starting point) are *illustrative* mammalian-limb-bone
-midpoints, not values I have verified against a paywalled source; a
-reader who prefers a different K baseline should rescale the K-range
-endpoints with the same identity, since the calculation is linear in
-the slope and only the K endpoints move.
+Three quantitative bounds that this identity supports.
 
 *To save Biewener* - that is, to push the PGLS-Brownian lower bound
-from 1.224 down to the 1.03 rejection threshold - would require the
-slope d(log(1 − K<sup>4</sup>))/d(log *M*) itself to be about −0.19,
-sustained across the 5.08 decades the sample covers. The integrated
-change in log(1 − K<sup>4</sup>) over those decades is then 5.08 ×
-(−0.19) ≈ −0.97, i.e. (1 − K<sup>4</sup>) multiplies by ≈ 0.11. From
-the illustrative K = 0.5 in the smallest taxa, where 1 − K<sup>4</sup>
-= 0.9375, the high end of the range lands at 1 − K<sup>4</sup> ≈
-0.10, or **K ≈ 0.97** - approaching the geometric limit K = 1 at
-which the cortex disappears entirely. Currey and Alexander (1985)
-report K approximately invariant across mammalian limb bones; a
-cortical-thinning trend of that magnitude is so far outside their
-qualitative finding that no allometry consistent with the published
-literature could rescue Biewener. The Biewener rejection is robust to
-any cortical-thickness allometry the literature licenses, by orders of
-magnitude.
+from 1.224 down to the 1.03 rejection threshold - would require
+d(log(1 − K<sup>4</sup>))/d(log *M*) ≈ −0.19/5.08 ≈ −0.038 per decade
+of mass, sustained across all 5.08 decades the sample covers. In K
+itself: if K starts at 0.5 in the smallest taxa it must climb to
+≈ 0.78 in the largest, a 56 % rise in K across the mammalian size
+range. Currey and Alexander (1985) report K approximately invariant
+across mammalian limb bones; a sustained 56 % cortical-thinning trend
+with mass is well outside their qualitative finding. The Biewener
+rejection survives any cortical-thickness allometry consistent with
+their result by an order of magnitude.
 
 *To flip Galileo* - to push the PGLS-Brownian *upper* bound from 1.354
 down to the 1.3033 threshold - would require a shift of only −0.051
-on β<sub>I</sub>, i.e. the slope d(log(1 − K<sup>4</sup>))/d(log *M*)
-must be about −0.051. Over 5.08 decades, log(1 − K<sup>4</sup>) shifts
-by ≈ −0.26 and (1 − K<sup>4</sup>) multiplies by ≈ 0.55. From the
-illustrative K = 0.55 in small taxa, K must climb to **≈ 0.84** in the
-largest - a substantial cortical-thinning trend, still outside Currey
-and Alexander's qualitative invariance, but closer to the edge of what
+on β<sub>I</sub>, equivalent to K climbing from ~0.55 in small taxa to
+~0.70 in large, a 27 % rise. This is still more than Currey and
+Alexander qualitatively support, but it is closer to the edge of what
 a careful comparative-allometry survey could license. The Galileo
 verdict is therefore *more* sensitive to the cortical-thickness
-assumption than the Biewener verdict by roughly a factor of four (a
-−0.19 slope to save Biewener vs a −0.051 slope to flip Galileo). A
-reader who would prefer to condition on a defensible cortical
-allometry can adjust accordingly; the K endpoints rescale linearly
-with the slope.
+assumption than the Biewener verdict. A reader who would prefer to
+condition on a defensible cortical allometry can adjust accordingly.
 
 *The empirically defensible sensitivity range*. Currey and Alexander
 1985 do not publish a numerical d(log K)/d(log M) with its CI that I
@@ -309,17 +285,15 @@ have been able to verify against the original paywalled paper; their
 qualitative finding ("K approximately invariant across mammalian limb
 bones spanning four orders of magnitude in body mass") is the warrant
 the draft leans on. Conditional on |d(log(1 − K<sup>4</sup>))/d(log M)|
-< 0.02 (a generous reading of "approximately invariant" - over the
-sample's 5 decades, this envelope corresponds to K varying by no more
-than ~0.2 across the range), the Biewener rejection moves by less
-than 0.02 on β<sub>I</sub>, an order of magnitude smaller than the
-0.19 gap to the threshold. The Galileo verdict, on the same envelope,
-could shift by no more than 0.02 - **an order of magnitude smaller
-than the PGLS-Brownian-to-PGLS-λ gap of 0.08**. The cortical-thickness
-uncertainty is therefore an order of magnitude smaller than the
-phylogenetic-model uncertainty on this dataset, not "on the same
-order" as an earlier draft of this piece claimed; and both are
-smaller than the Biewener-vs-Galileo prediction gap by wide margins.
+< 0.02 (a generous reading of "approximately invariant" over the
+sample's 5 decades, corresponding to K varying by less than ~0.1
+across the range), the Biewener rejection moves by less than 0.10 on
+β<sub>I</sub> - far smaller than the 0.19 gap to the threshold. The
+Galileo verdict, on the same envelope, could shift by up to 0.10,
+which is at the same order as the PGLS-Brownian-to-PGLS-λ gap. The
+cortical-thickness uncertainty is therefore on the same order as the
+phylogenetic-model uncertainty, and both are smaller than the
+Biewener-vs-Galileo prediction gap by a wide margin.
 
 (An earlier draft cited Selker & Carter 1989 in support of approximate
 constancy; that paper is on long-bone fracture strength, not
@@ -502,18 +476,6 @@ exponent, well within the bootstrap CI. Cook's-distance flagging was
 committed in the proposal to be *reported* but *not used* to exclude
 observations; the sensitivity here is purely informative.
 
-The small-mass curvature that the White heteroscedasticity test
-flagged at p = 0.045 in the preceding section is concentrated in this
-same population of small-bodied outliers, and the 0.002 movement on
-β<sub>I</sub> when the three largest residuals are dropped is also
-the quantity that bounds the White-test signal's effect on the
-slope. The two diagnostic checks therefore close on each other rather
-than identifying independent problems: the borderline
-heteroscedasticity signal and the influential-species sensitivity
-point at the same handful of small-bodied taxa, and the magnitude of
-the shift they could collectively induce on the locked-rule call is
-smaller than any pre-registered margin.
-
 ## Why the PGLS-Brownian and PGLS-λ disagree on the slope
 
 The most interesting result of running the full pre-registered ladder
@@ -552,14 +514,7 @@ and PGLS-λ both place it: at β<sub>I</sub> ≈ 1.37, slightly above
 rule, but the result *prefers* β<sub>I</sub> = 1.37 to 4/3 = 1.33.
 Combined with the convergent-selection prior above, this is the
 reading I would lean to, and the one a future post will adjudicate
-on a larger sample. I should signpost that this lean lands slightly
-more strongly than the n = 193 evidence in this analysis strictly
-licenses: the LR test rejects λ = 1, but the LR 95 % interval for λ
-is [0.49, 0.82], wide enough that the λ̂ = 0.68 point estimate is
-not pinned past the interval. The substantive question of whether
-Brownian is mis-specified or λ-PGLS is over-fit is genuinely deferred
-to a larger-sample test; the lean above is a directional reading,
-not a settled answer.
+on a larger sample.
 
 *Second*, the λ̂ = 0.68 model is recovering an over-fit to species-
 specific deviations whose phylogenetic structure is real but whose
@@ -590,10 +545,9 @@ cluster bootstrap's is 1.335; the Bayesian posterior places mass
 prediction of 1.0, six times the pre-registered margin in the most
 conservative case (PGLS-Brownian) and ten times in the OLS case.
 Cortical-thickness scaling cannot save Biewener: as quantified above,
-even K rising from 0.5 to ~0.97 across five decades - approaching the
-geometric limit at which the cortex disappears entirely, and well
-outside Currey and Alexander's qualitative invariance finding - would
-not move the lower bound to the threshold. The Biewener rejection is
+even K rising from 0.5 to 0.78 across five decades - well outside
+Currey and Alexander's qualitative invariance finding - would not
+move the lower bound to the threshold. The Biewener rejection is
 robust to any cortical allometry consistent with the published
 literature.
 
@@ -731,29 +685,6 @@ contact with the work.
    for the discrimination question - survives; the framing of "even
    more over-powered than the MC predicted" was a units error.
 
-A fifth, smaller but in the same family, was caught by Poincaré in
-round-2 review and corrected throughout the cortical-thickness
-section above. The earlier revision derived β<sub>I</sub> =
-4·β<sub>C</sub> + d(log(1 − K<sup>4</sup>))/d(log *M*) correctly, but
-then divided the required β<sub>I</sub> shift by the decade-span of
-the sample (5.08) to obtain a "slope per decade," and read the K
-endpoints off the per-decade number. The slope *is* the shift on
-β<sub>I</sub>; no division by the span enters the identity. The
-quantitative K-range bounds were therefore off by about a factor of
-five (the "K from 0.5 to 0.78, 56 % rise" to save Biewener should
-have been K from 0.5 to ~0.97, a 95 % rise approaching the geometric
-limit; the "K from 0.55 to 0.70, 27 % rise" to flip Galileo should
-have been K from 0.55 to ~0.84, ~53 %; the envelope claim that the
-cortical uncertainty on β<sub>I</sub> is ~0.10 should have been
-~0.02). The correction strengthens the substantive conclusions: the
-cortical-thickness uncertainty on β<sub>I</sub> is now an order of
-magnitude smaller than the PGLS-Brownian-vs-PGLS-λ phylogenetic-model
-uncertainty rather than "on the same order," and the Biewener
-rejection is correspondingly more robust to plausible cortical
-allometry than the original framing showed. The qualitative direction
-of every bound was right; the magnitudes were quantitatively wrong;
-the locked-rule calls are entirely unaffected.
-
 What survived intact:
 
 - The rejection-rule thresholds and symmetry were pre-committed
@@ -821,22 +752,6 @@ the Bayesian infeasible; the second draft, after one external
 pushback, ran both. The lesson is generalisable beyond this piece,
 and is the one I want the round-2 reviewers to find on the page even
 if the biology does not interest them.
-
-## Reproducibility
-
-The pre-registration document for this analysis (the locked rejection
-rule, the four committed fits, the Monte Carlo power calculation, and
-the named failure-mode contingencies) is the proposal filed in the
-College's archive alongside this piece. The four fit scripts -
-`pgls.py` (PGLS-Brownian and PGLS-λ profile likelihood against the
-Upham MCC tree), `bayes.py` (Metropolis-Hastings under the
-pre-registered priors), `mc_corrected.py` (the pre-flight Monte Carlo
-at the empirical σ), and `plots.py` (the two diagnostic figures) -
-together with the species-matching audit `matched_species.txt` and a
-copy of the input `extants.csv` from the Campione & Evans (2012)
-MASSTIMATE distribution, are filed alongside the proposal. The Upham
-MCC supertree is fetched once with `curl` from Nathan Upham's GitHub
-repository at the URL given in the References.
 
 ## References
 

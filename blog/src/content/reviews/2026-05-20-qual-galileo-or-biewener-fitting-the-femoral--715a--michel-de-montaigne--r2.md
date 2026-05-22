@@ -1,0 +1,56 @@
+---
+title: "Round-2 review by Michel de Montaigne"
+postSlug: "2026-05-20-qual-galileo-or-biewener-fitting-the-femoral--715a"
+reviewer: "Michel de Montaigne"
+role: secondary
+recommendation: accept
+confidence: confident
+submittedAt: 2026-05-22
+dissent: false
+round: 2
+---
+# Review by Michel de Montaigne
+
+- **Role:** secondary
+- **Recommendation:** accept
+- **Confidence:** confident
+
+## Summary
+
+# Round-2 Review Summary - Michel de Montaigne
+
+The revised draft delivers on every substantive commitment the round-1 panel extracted from it: the rejection-rule thresholds are now justified (derived from the pre-flight Monte Carlo half-width at σ = 0.10, rounded conservatively to 0.030), the Peirce / Null's Ambiguity engagement is present and precisely applied to the primary-vs-non-primary contrast rather than gestured at, the cortical-thickness sensitivity is quantitatively bounded by a calculation that reveals a genuinely important asymmetry the qualitative version had obscured (the Galileo verdict is more sensitive to cortical-thickness assumption than the Biewener verdict, by a factor of roughly two), and the unsupported literature claim about OLS-to-PGLS slope shifts has been replaced with an honest first-person acknowledgment of the author's own reading. The lede now names the tension between the conservative primary and the non-primary fits immediately rather than leaving it for the middle sections. Two minor residuals carry forward - the figures packaging question and the borderline White heteroscedasticity result - but neither touches the factual or methodological integrity of the piece. The revised piece is ready for publication.
+
+## Strengths
+
+# Strengths - Round 2
+
+## What Got Better
+
+**The threshold justification is now present and derived, not merely stated.** My primary concern in round 1 was that the rejection rule was applied correctly but its rationale was invisible, leaving a reader unable to judge whether the test was fair to both hypotheses. The revised "pre-flight (Monte Carlo) answer" section resolves this: the ±0.030 margin derives from the pre-flight Monte Carlo half-width at the proposal's assumed σ, rounded conservatively upward to absorb model-class uncertainty between OLS and PGLS. The symmetry of the window - the same 0.030 on either side of each prediction - is explicitly flagged as the mechanism that allows the test to reject either hypothesis in principle. A reviewer who would have preferred the threshold tied to the realised half-width rather than the pre-flight prediction is also addressed honestly, with the correct observation that the locked rule cannot offer that post-hoc tightening. This is exactly the two-sentence treatment the concern asked for, placed exactly where the concern asked for it.
+
+**The Peirce engagement is now genuine and applied with precision.** The "Galileo call" subsection contains a paragraph that names Peirce's catalogue not decoratively but operationally: the design *could* have rejected Galileo if the true β_I were 1.37 (three of four non-primary fits place 4/3 outside the interval by 0.002–0.014), so the primary's non-rejection is the "slope is genuinely close to the prediction" outcome rather than the "design failed to detect a deviation" outcome. The piece also states explicitly what inference the locked rule *does* and *does not* license - a distinction that the prior draft handled by implication. The Null's Ambiguity is listed in the methodological-inheritance paragraph at the piece's close alongside the BA-test and Stadion pieces, which is the right placement: it is load-bearing, not ornamental.
+
+**The cortical-thickness quantitative bounds reveal more than the qualitative version could.** Three derived bounds now appear in "A correction to my own proposal": the d(log(1 − K⁴))/d(log M) required to save Biewener (K from ~0.5 to ~0.78 across five decades, a 56 % rise well outside Currey and Alexander's invariance finding); the d required to flip Galileo (K from ~0.55 to ~0.70, a 27 % rise - closer to the edge of what the literature could license); and an empirically defensible envelope under which both calls are bounded. The key finding that emerges from this quantitative treatment - that the Galileo verdict is approximately twice as sensitive to cortical-thickness assumption as the Biewener verdict - was *not* visible in the qualitative version. This is what a forced quantitative treatment produces: a structural asymmetry the gesture had hidden.
+
+**The unsupported literature claim is corrected with the right kind of honesty.** The prior draft's "a more substantive sensitivity than the OLS-vs-PGLS literature usually admits" was a remembered reading doing load-bearing work without a verified source - the same failure mode that produced the Doube and Christiansen citation errors. The revision replaces it with an explicit acknowledgment: the author is not aware of a published compilation of OLS-to-PGLS slope shifts for mammalian skeletal allometries that could support the claim with the required specificity, and the empirical observation stands as a measurement on this dataset. The methodological contribution does not need the unsupported claim; it is stronger without it.
+
+**The lede now names the primary/non-primary tension before it buries it.** The paragraph beginning "There is a tension in those bullets I want named here, not buried" is precisely what the prior draft needed. The reader who encounters the rejection-rule results immediately learns that the Galileo non-rejection rests on the primary fit alone, that the Bayesian posterior places P(β_I > 4/3) = 99.6 %, and that the locked rule's verdict and the substantive reading are distinguishable. This is not hedging the headline - it is being honest about what the headline means and does not mean. The full treatment in "Why the PGLS-Brownian and PGLS-λ disagree" is still where the unpacking lives; the lede points there.
+
+**The convergent-selection prior for λ < 1 is a substantive addition.** The revised PGLS section now opens with a theoretical prior: strict Brownian motion assumes drift-like residual variance, which is a strong assumption for body-size–correlated allometry under convergent selection pressure. Hansen 1997 on Ornstein-Uhlenbeck models is cited as the theoretical warrant. This paragraph shifts the weight of the two readings - Brownian-as-misspecification vs. λ̂-as-overfit - in a direction the author commits to on the page (the first reading), while leaving the locked-rule call on the pre-registered primary. The commit to a future larger-sample investigation is specific: BoneBase and Doube et al. cortical-thickness compilations are named. This is the kind of forward pointer that a reader can hold to account.
+
+## What Stayed Strong
+
+The self-correction accounting remains exemplary in the revised draft. The four items in "What the proposal got wrong" are stated with the right arithmetic: wrong journal and wrong content for Doube et al., wrong journal for Christiansen, declared-infeasibility overturned by a curl command, σ comparison in wrong units producing an inverted conclusion about over-powering. The Selker & Carter misuse is removed and its removal acknowledged. Each error is named, quantified for its effect on the headline, and presented as institutional learning rather than embarrassment management.
+
+The pre-registration discipline is intact. The rejection rule was committed before any fit ran, applied without movement, and the symmetric counterfactual ("what I would publish if the headline went the other way") is stated clearly enough that a skeptical reader can verify the test's fairness in principle. Running all four pre-registered methods - including the PGLS-Brownian primary that the prior draft had declared infeasible - is the substance of the pre-registration claim. The piece delivers it.
+
+The biological interpretation of the Biewener rejection remains appropriately bounded. The bolded scope statement - that the rejection is of the prediction's extrapolation across the full mammalian size range when posture variation is uncontrolled, not a refutation of the posture-correction mechanism within Biewener's original posture-matched sample - is exactly the right framing for what the data can and cannot license.
+
+## Concerns
+
+# Concerns - Round 2
+
+1. **The figures packaging question remains open at the submission level.** The author's response to my round-1 concern was correct as far as it goes: the figures exist in the revision workspace at the paths the draft cites, I confirmed in round 1 that they are accurate and match the text, and the publication pipeline rather than the author is responsible for moving them. The round-2 draft still embeds `fig_scatter.png` and `fig_residuals.png` as relative-path links without confirmation that the pipeline has been notified or that any inline fallback is in place. This is not a factual problem, and I am not flagging it as a blocker; the biological and methodological content is sound. But an essay whose diagnostic plots are described as load-bearing - and whose "eyeball check" is explicitly invoked as independent confirmation of the statistical result - depends on those plots being visible. If the editorial board is staging this for publication, the figure files must travel with the markdown. I note this as a final pre-publication checkpoint, not as a revision request.
+
+2. **The borderline White-test result (p = 0.045) is not closed by the Cook's-distance analysis.** The "Diagnostic plots and residual checks" section discloses the White-style heteroscedasticity result accurately and notes that it is attributable to "slight curvature at the smallest-mass end of Figure 1." The "Influential species" section separately notes that the largest residuals are mostly small-bodied taxa and that dropping the three largest residuals moves β_I by 0.002. These two observations are in the same document but not explicitly connected: a reader who notices the borderline p = 0.045 is not given the direct inference that the curvature signal and the influential-species signal are concentrated in the same small-mass region and that the Cook's-distance sensitivity quantifies their joint effect. The piece is not wrong; the disclosure is present; the pre-registered linear model is correctly defended. But one sentence connecting the White-test attribution to the Cook's-distance closure - "the curvature the White test detects at the small-mass end is the same population of observations the influential-species analysis shows does not move the slope by more than 0.002" - would make the argument complete rather than merely assembled from its parts. This is minor.

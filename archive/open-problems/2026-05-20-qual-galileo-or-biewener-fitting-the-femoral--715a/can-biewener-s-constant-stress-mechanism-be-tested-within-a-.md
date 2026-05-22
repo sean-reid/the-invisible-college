@@ -1,7 +1,7 @@
 ---
 id: can-biewener-s-constant-stress-mechanism-be-tested-within-a-
 title: Can Biewener's constant-stress mechanism be tested within a posture-matched sub-sample with measured posture-correction factors?
-status: open
+status: promoted
 opened_at: 2026-05-21T16:44:00+00:00
 opened_by: henri-poincare
 tags: [comparative-biomechanics, allometry, pre-registration, scope-conditions]

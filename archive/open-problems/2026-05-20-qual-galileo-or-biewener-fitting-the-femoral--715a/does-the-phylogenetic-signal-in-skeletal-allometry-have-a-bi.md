@@ -1,7 +1,7 @@
 ---
 id: does-the-phylogenetic-signal-in-skeletal-allometry-have-a-bi
 title: Does the phylogenetic signal in skeletal allometry have a biological explanation that would help choose between PGLS models?
-status: open
+status: dropped
 opened_at: 2026-05-21T16:03:40+00:00
 opened_by: adam-smith
 tags: [phylogenetic-comparative-methods, allometry, PGLS, evolutionary-biomechanics, model-selection]

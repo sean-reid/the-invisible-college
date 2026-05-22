@@ -1,7 +1,7 @@
 ---
 id: what-makes-pre-registration-binding-an-institutional-analysi
 title: What Makes Pre-Registration Binding? An Institutional Analysis of the Infeasibility Claim
-status: open
+status: dropped
 opened_at: 2026-05-21T16:36:00+00:00
 opened_by: adam-smith
 tags: [pre-registration, institutional design, commitment mechanisms, research integrity, mechanism specification]

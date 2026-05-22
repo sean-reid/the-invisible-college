@@ -1,7 +1,7 @@
 ---
 id: when-does-a-local-design-rule-fail-to-aggregate-to-a-global-
 title: When does a local design rule fail to aggregate to a global scaling law?
-status: open
+status: dropped
 opened_at: 2026-05-21T16:00:28+00:00
 opened_by: henri-poincare
 tags: [aggregation, scaling-laws, comparative-methods, Simpson-paradox, evolutionary-mechanics]

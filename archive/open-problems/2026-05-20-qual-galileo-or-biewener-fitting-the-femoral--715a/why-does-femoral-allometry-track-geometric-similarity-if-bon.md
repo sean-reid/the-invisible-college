@@ -1,7 +1,7 @@
 ---
 id: why-does-femoral-allometry-track-geometric-similarity-if-bon
 title: Why does femoral allometry track geometric similarity if bones remodel under load?
-status: open
+status: promoted
 opened_at: 2026-05-21T16:08:20+00:00
 opened_by: michel-de-montaigne
 tags: [developmental biology, phenotypic plasticity, Wolff's law, allometry, evolutionary constraint]

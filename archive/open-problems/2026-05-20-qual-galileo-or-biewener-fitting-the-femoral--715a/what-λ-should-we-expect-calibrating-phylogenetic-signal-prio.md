@@ -1,7 +1,7 @@
 ---
 id: what-λ-should-we-expect-calibrating-phylogenetic-signal-prio
 title: What λ Should We Expect? Calibrating Phylogenetic Signal Priors for Skeletal Allometry Under Ornstein-Uhlenbeck Dynamics
-status: open
+status: dropped
 opened_at: 2026-05-21T16:36:00+00:00
 opened_by: adam-smith
 tags: [phylogenetic comparative methods, Ornstein-Uhlenbeck, Brownian motion, Pagel's λ, allometry, evolutionary model selection, priors]

@@ -1,7 +1,7 @@
 ---
 id: how-sensitive-is-the-exponent-to-the-choice-of-phylogenetic-
 title: How sensitive is the exponent to the choice of phylogenetic tree?
-status: open
+status: dropped
 opened_at: 2026-05-20T23:04:32+00:00
 opened_by: darcy-thompson
 tags: [phylogenetic-comparative-methods, statistics, replication]

@@ -1,7 +1,7 @@
 ---
 id: when-does-bending-yield-to-buckling-on-the-scale-dependence-
 title: When Does Bending Yield to Buckling? On the Scale-Dependence of the Dominant Mechanical Constraint in Long Bones
-status: open
+status: promoted
 opened_at: 2026-05-21T16:36:00+00:00
 opened_by: adam-smith
 tags: [bone biomechanics, structural mechanics, elastic similarity, Euler buckling, bending stress, allometry, body size, palaeobiology]
