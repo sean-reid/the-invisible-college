@@ -36,6 +36,25 @@ def daemon_script() -> Path:
     return paths.ROOT / "scripts" / "run-daemon.sh"
 
 
+def _calendar_schedule(interval_hours: int) -> list[dict[str, int]]:
+    """Build a `StartCalendarInterval` array spaced every `interval_hours`.
+
+    For `interval_hours=6` returns four wakeups at 00:00, 06:00, 12:00,
+    18:00 UTC-local. Hours that don't divide 24 cleanly leave an
+    uneven gap at the day boundary, which is acceptable for a research
+    cadence but flagged so the operator can pick a factor of 24 if
+    they want even spacing.
+    """
+    if interval_hours < 1:
+        raise ValueError(f"interval_hours must be >= 1, got {interval_hours}")
+    if interval_hours > 24:
+        # Anything past one day per fire is more naturally expressed as
+        # a calendar-day cadence; we refuse to silently round.
+        raise ValueError(f"interval_hours must be <= 24, got {interval_hours}")
+    fires = [{"Hour": h, "Minute": 0} for h in range(0, 24, interval_hours)]
+    return fires
+
+
 def render_plist(
     *,
     interval_hours: int,
@@ -78,22 +97,21 @@ def render_plist(
     plist: dict[str, object] = {
         "Label": LABEL,
         "ProgramArguments": ["/bin/bash", str(daemon_script())],
-        "StartInterval": int(interval_hours) * 3600,
+        # StartCalendarInterval (wall-clock cron-style) rather than
+        # StartInterval (relative to last run). macOS aggressively
+        # throttles user-domain agents using StartInterval: the gui/501
+        # domain enters "on-demand-only mode" after a long-running cycle
+        # exits and silently swallows subsequent scheduled fires. With
+        # StartCalendarInterval each entry is a separate wakeup that
+        # macOS treats as a calendar event, which bypasses that
+        # throttling path (the same shape is in use by another known-
+        # working user agent on this machine).
+        "StartCalendarInterval": _calendar_schedule(int(interval_hours)),
         "RunAtLoad": False,
         "WorkingDirectory": str(paths.ROOT),
         "StandardOutPath": str(LOG_DIR / "stdout.log"),
         "StandardErrorPath": str(LOG_DIR / "stderr.log"),
         "EnvironmentVariables": env,
-        # `Adaptive` rather than `Background`: macOS aggressively defers
-        # Background tasks under any system load or power signal, which
-        # caused scheduled fires to be silently swallowed (a 6-hour
-        # interval became 12-15 hours in practice). Adaptive runs the
-        # task on time but yields CPU to active foreground work — which
-        # is what we actually want for a cadenced research daemon.
-        "ProcessType": "Adaptive",
-        # ThrottleInterval prevents a fast-failing run from looping at
-        # the high end of launchd's scheduling rate.
-        "ThrottleInterval": 60,
     }
     return plistlib.dumps(plist, fmt=plistlib.FMT_XML)
 
@@ -239,9 +257,18 @@ def status() -> dict[str, object]:
     if path.exists():
         try:
             data = plistlib.loads(path.read_bytes())
-            interval = data.get("StartInterval")
-            if isinstance(interval, int):
-                info["interval_hours"] = round(interval / 3600, 2)
+            cal = data.get("StartCalendarInterval")
+            if isinstance(cal, list) and cal:
+                hours = sorted({entry.get("Hour") for entry in cal if "Hour" in entry})
+                if len(hours) >= 2:
+                    info["interval_hours"] = float(hours[1] - hours[0])
+                elif len(hours) == 1:
+                    info["interval_hours"] = 24.0
+            else:
+                # Legacy plists still in the field use StartInterval.
+                interval = data.get("StartInterval")
+                if isinstance(interval, int):
+                    info["interval_hours"] = round(interval / 3600, 2)
         except Exception:
             pass
     info["loaded"] = is_loaded()

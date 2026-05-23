@@ -31,7 +31,16 @@ def test_render_plist_default_shape(isolated: Path) -> None:
     )
     data = plistlib.loads(body)
     assert data["Label"] == schedule.LABEL
-    assert data["StartInterval"] == 6 * 3600
+    # Cron-style wall-clock wakeups (StartCalendarInterval) rather than
+    # interval (StartInterval). macOS user-domain throttling drops
+    # StartInterval fires silently; calendar wakeups bypass that path.
+    assert "StartInterval" not in data
+    assert data["StartCalendarInterval"] == [
+        {"Hour": 0, "Minute": 0},
+        {"Hour": 6, "Minute": 0},
+        {"Hour": 12, "Minute": 0},
+        {"Hour": 18, "Minute": 0},
+    ]
     assert data["RunAtLoad"] is False
     assert data["ProgramArguments"][0] == "/bin/bash"
     assert data["EnvironmentVariables"]["IC_MAX_BUDGET"] == "4.0"
@@ -40,14 +49,32 @@ def test_render_plist_default_shape(isolated: Path) -> None:
     assert data["EnvironmentVariables"]["IC_REPO"] == str(isolated)
 
 
-def test_render_plist_process_type_is_adaptive(isolated: Path) -> None:
-    """Pin ProcessType=Adaptive. macOS aggressively defers Background
-    tasks under load and power signals, which silently turns a 6-hour
-    schedule into 12+ hour drift. Adaptive runs on time while yielding
-    to active foreground work."""
+def test_render_plist_omits_process_type(isolated: Path) -> None:
+    """No ProcessType key: defaults to Standard, which works correctly
+    when paired with StartCalendarInterval. Adaptive/Background only
+    matter under StartInterval scheduling."""
     body = schedule.render_plist(interval_hours=6, max_budget_usd=4.0, max_steps=20, auto_push=True)
     data = plistlib.loads(body)
-    assert data["ProcessType"] == "Adaptive"
+    assert "ProcessType" not in data
+    assert "ThrottleInterval" not in data
+
+
+def test_render_plist_calendar_schedule_24h(isolated: Path) -> None:
+    body = schedule.render_plist(
+        interval_hours=24, max_budget_usd=1.0, max_steps=1, auto_push=False
+    )
+    data = plistlib.loads(body)
+    assert data["StartCalendarInterval"] == [{"Hour": 0, "Minute": 0}]
+
+
+def test_render_plist_calendar_schedule_rejects_zero(isolated: Path) -> None:
+    with pytest.raises(ValueError):
+        schedule.render_plist(interval_hours=0, max_budget_usd=1.0, max_steps=1, auto_push=False)
+
+
+def test_render_plist_calendar_schedule_rejects_too_large(isolated: Path) -> None:
+    with pytest.raises(ValueError):
+        schedule.render_plist(interval_hours=48, max_budget_usd=1.0, max_steps=1, auto_push=False)
 
 
 def test_render_plist_auto_push_off(isolated: Path) -> None:
