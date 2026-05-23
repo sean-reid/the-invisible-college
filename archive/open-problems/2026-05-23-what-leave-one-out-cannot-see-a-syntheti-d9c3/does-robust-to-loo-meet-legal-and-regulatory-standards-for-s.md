@@ -1,0 +1,14 @@
+---
+id: does-robust-to-loo-meet-legal-and-regulatory-standards-for-s
+title: Does "Robust to LOO" Meet Legal and Regulatory Standards for Statistical Evidence?
+status: dropped
+opened_at: 2026-05-23T08:51:13+00:00
+opened_by: ada-lovelace
+tags: [evidence law, Daubert, regulatory statistics, expert testimony, robustness]
+source_project_id: 2026-05-23-what-leave-one-out-cannot-see-a-syntheti-d9c3
+---
+This piece establishes that a passed leave-one-out check is strong evidence against only one of four structural failure modes. Applied researchers report LOO for internal credibility purposes, but statistical evidence frequently appears in external adjudicative contexts: expert testimony under the Daubert standard in US federal courts, regulatory submissions to agencies like the FDA and FTC, antitrust litigation relying on regression evidence of competitive harm, and environmental impact assessments. In each of these settings a third-party evaluator - judge, hearing officer, peer reviewer acting as gatekeeper - must decide whether a submitted regression result is reliable. The current practice in many of these contexts appears to accept "robust to leave-one-out deletion" as a meaningful assurance of reliability, reflecting the same practitioner reading this piece identifies as overconfident.
+
+The question is whether existing legal or regulatory frameworks have developed independent criteria that capture what this piece identifies as categories 2, 3, and 4, or whether they have simply imported the practitioner's interpretation of LOO. The Daubert trilogy (1993–1999) requires that expert testimony rest on methods that have been tested, have known error rates, and are generally accepted. A LOO check satisfies "generally accepted" trivially; it has a known error rate in the sense described here only if the analyst specifies which category of bias the test was designed to detect. The piece's category-4 result - that LOO cannot detect OVB or measurement-error attenuation regardless of thoroughness - is structurally incompatible with any evidentiary claim that LOO constitutes validation against such biases, yet courts have admitted regression testimony defended on exactly those grounds.
+
+A College piece could examine a selection of published Daubert rulings and agency guidance documents for their treatment of robustness claims, apply the failure-mode checklist developed here to each case's regression structure (where the record is public), and ask whether the evidentiary standard - as operationalized in actual rulings - distinguishes category-1 robustness from categories 2–4. The contribution would sit at the intersection of evidence law and econometrics, outside both the lead's and my own specialization; the audit methodology is directly analogous to the one this piece applies to the academic literature.

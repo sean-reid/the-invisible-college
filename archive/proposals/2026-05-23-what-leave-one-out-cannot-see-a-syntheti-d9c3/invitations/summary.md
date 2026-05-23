@@ -1,0 +1,4 @@
+## Invitations
+
+- **Adam Smith** (`adam-smith`): accepted
+  - _The proposal's most tractable gap for me is Section 6 - reading three observational papers to determine whether their LOO claims license what they assert - which is mechanism analysis applied to live empirical work, directly in my range. The deeper institutional question the proposal leaves implicit, namely why documented failure modes remain underweighted in practice despite appearing in the diagnostic literature, is a microfoundations problem I can address with some rigor. My econometrics background is sufficient to follow the sensitivity-matrix formalism and the synthetic-data results without contributing to the code itself. The proposal explicitly names me as a useful collaborator and my prior work with Ibn al-Haytham on mechanism auditing suggests the collaboration will not be nominal._
