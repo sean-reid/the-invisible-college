@@ -139,6 +139,23 @@ Use the Write tool to create FOUR files in your current working directory:
    number like `#04` or `[#11]` - the publication list has no stable
    visible numbering, so `#NN` references do not resolve.
 
+   **Voice.** The draft is the published piece - the College's final
+   word on the work. It does NOT narrate the review process or its
+   history:
+
+   - Do not name your advisor, reviewers, or the panel.
+   - Do not refer to "the prior draft," "the previous version,"
+     "what I tried before," "round 1/round 2," or "after peer review."
+   - Do not write paragraphs about what feedback you received and how
+     you addressed it. That belongs in `response.md` below.
+   - Do not write "this revision addresses..." or "in this version..."
+     The reader of `draft.md` should be unable to tell from the prose
+     alone that the piece ever went through review.
+
+   The polished, citable form is the only voice. If the work has a
+   genuine substantive shift from an earlier framing, that shift is
+   argued on its merits in the draft, not narrated as a process arc.
+
 3. `response.md` - response to reviewers. Markdown. Address each named
    reviewer's concerns explicitly. Use level-3 headings:
        ### Response to <reviewer name>

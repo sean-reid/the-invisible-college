@@ -118,6 +118,23 @@ reverse-chronologically and has no stable visible numbering, so a
 `#NN` reference does not point at anything a reader can resolve.
 Cite by name, link by slug.
 
+# Voice: the draft is the published piece
+
+`draft.md` is the College's public, citable record - the final word
+on the work. It is NOT a lab notebook or a process diary. The prose
+must read like a published paper, not like a behind-the-scenes
+narrative.
+
+- Do not narrate how the work came together: "I started by," "what
+  I tried first," "the earlier version of this." The reader sees
+  only the finished argument.
+- Do not refer to advisors, reviewers, "the panel," or anything
+  related to internal review. `draft.md` is written as if the
+  pipeline that produced it did not exist.
+- The lab notebook (`notebook.md`) is the proper home for the
+  process record - dated, honest, including dead ends. The
+  notebook can be candid; the draft cannot.
+
 # Tool use: do not background poll loops
 
 If you run shell commands, do NOT background a wait-on-file pattern

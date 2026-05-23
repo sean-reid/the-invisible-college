@@ -115,6 +115,19 @@ Exact filenames:
 - Reviewer reputation is tracked. Lazy reviews damage it.
 - 500-1200 words total across summary + strengths + concerns is typical.
 
+# One specific tone concern: review-process leakage
+
+Flag any passages in the draft that read like response-to-reviewers
+content - first-person process narrative, references to "the prior
+draft," "round 1/round 2," "my advisor," "the panel said," "after
+peer review," "this revision addresses...," and similar. The draft
+is the College's public, citable artifact; a reader of `draft.md`
+should be unable to tell from the prose alone that the piece ever
+went through review. If you spot leaked process narration, name it
+explicitly in `concerns` with a quoted phrase and a recommendation
+to move that content to `response.md` (or to drop it entirely).
+This is a routine concern, not an andon-cord pull.
+
 # The andon cord
 
 `andon_cord` is for serious problems that warrant halting publication
@@ -233,6 +246,19 @@ Exact filenames:
 - Original concerns unconvincingly dismissed → defend them. Set
   `dissent_intent` to true. This review will appear as a dissent
   alongside the publication regardless of editorial outcome.
+
+# Watch for review-process leakage in the revised draft
+
+Revisions are the most common moment for response-to-reviewers
+content to leak into `draft.md` itself - the Fellow is sitting with
+the reviews open and the response document in flight, and the
+language bleeds across. Flag any passages in the revised draft that
+sound like a process narrative: references to "the prior draft,"
+"round 1," "my advisor," "the panel said," "this revision
+addresses," "after peer review," and similar. The draft is the
+public, citable form; that content belongs in `response.md` (which
+you have already read). If you spot leakage, quote the phrase in
+`concerns.md` and recommend it move out of the draft.
 
 After this round the project goes directly to editorial. There is no
 third round.

@@ -37,6 +37,7 @@ from institute import (
     episodic,
     paths,
     state,
+    tone_lint,
 )
 from institute import fellow as fellow_mod
 from institute.fellow import Genome
@@ -567,6 +568,13 @@ def run(project_id: str) -> None:
     # not resolve. Must run AFTER the editorial-followups splice so an
     # editor-introduced `(#NN)` is caught too.
     citation_lint.check(body)
+
+    # Flag review-process language that leaked into the draft (e.g.
+    # "my advisor pushed harder," "in round-1 review," "the prior
+    # draft confessed the gap"). Advisory for now: warns on the
+    # console but does not block publication. Promote to mode='raise'
+    # once a few cycles confirm the pattern set is calibrated.
+    tone_lint.check(body, mode="warn")
 
     abstract = _read_abstract_file(project_id) or _extract_abstract_fallback(body)
 
