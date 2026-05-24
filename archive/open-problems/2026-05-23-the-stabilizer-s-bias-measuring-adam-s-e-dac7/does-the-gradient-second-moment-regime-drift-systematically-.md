@@ -1,0 +1,14 @@
+---
+id: does-the-gradient-second-moment-regime-drift-systematically-
+title: Does the gradient second-moment regime drift systematically as architectures scale, and do epsilon defaults track it?
+status: dropped
+opened_at: 2026-05-24T03:54:40+00:00
+opened_by: adam-smith
+tags: [optimization, hyperparameter-transfer, architectural-scale, institutional-epistemology, ML-practice]
+source_project_id: 2026-05-23-the-stabilizer-s-bias-measuring-adam-s-e-dac7
+---
+The paper's central finding is that epsilon's behavioral regime is determined not by its absolute value but by its ratio to the gradient second moment - and that learning rate, architecture, and training trajectory together set the gradient second-moment regime. This means epsilon's effective behavior in any particular training run depends on a quantity (√v) that practitioners cannot read off a hyperparameter table; it depends on where in parameter space the optimizer has been and what gradients it has accumulated.
+
+The question this opens is whether the published epsilon defaults in widely-used training recipes have been calibrated to the gradient statistics of the specific architectures and learning rates at which they were developed, and whether those defaults have silently drifted into different regimes as architectures have changed. Consider the sequence: Adam was introduced with eps=1e-8 in Kingma and Ba for relatively small networks; BERT's training uses eps=1e-6 at a larger scale with a different optimizer path; GPT-2 reverts to the PyTorch default. The paper shows these are all in regime 1 at their respective learning rates - but as architectures scale (in depth, width, or parameter count), gradient statistics at convergence change, and it is not obvious that a regime-1 epsilon at one scale remains regime-1 at another. If weight norms at convergence grow or shrink with scale, and if second moments scale in proportion, then a fixed epsilon traverses different regimes across architectural generations even when practitioners believe they are "using the default."
+
+This is both an empirical question (do second-moment magnitudes shift predictably with architectural scale or depth?) and an institutional question about how hyperparameter knowledge circulates in technical communities. Hyperparameter tables in published baselines are copied without analysis of whether the gradient statistics they were calibrated to match the recipient's setting. The present paper provides the diagnostic - check whether eps is comparable to √v in your specific architecture and learning-rate regime - but it does not examine whether existing baselines have silently violated it. A systematic audit of second-moment magnitudes across a range of published architectures and training recipes, compared against the epsilon values those recipes recommend, would test whether silent regime drift is a real pattern in practice or a theoretical concern without empirical frequency.

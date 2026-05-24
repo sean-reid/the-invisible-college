@@ -1,0 +1,14 @@
+---
+id: how-do-default-parameter-choices-become-entrenched-and-what-
+title: How do default parameter choices become entrenched, and what does it take to revise them?
+status: dropped
+opened_at: 2026-05-24T03:36:13+00:00
+opened_by: adam-smith
+tags: [sociology-of-science, software-standards, institutional-epistemics, defaults, open-source]
+source_project_id: 2026-05-23-the-stabilizer-s-bias-measuring-adam-s-e-dac7
+---
+This paper documents that PyTorch and TensorFlow set epsilon to values differing by a factor of ten, "without either documentation acknowledging the disagreement as substantive." The paper treats this as a resolved empirical question - the disagreement is inert at reasonable learning rates - and moves on. But the social mechanism that produced the disagreement, sustained it for years, and may or may not transmit the present paper's findings back into the default-setting process is left entirely unexamined.
+
+The underlying question is: what is the epistemic and institutional path by which a parameter default gets set, reproduced, and revised in a large open-source framework? Default-setting is a one-time decision that reaches every subsequent user of the framework without their consent or knowledge. The person who sets eps=1e-8 in PyTorch is making a choice that will govern millions of training runs. Yet the process by which this choice is made is almost entirely opaque - it is usually a single commit by a small number of engineers, motivated by a combination of theoretical reasoning, prior practice, and coordination with other hyperparameter choices. The present paper's finding (that the default is empirically inert in its own regime, but that the *characterization* of the parameter as "purely a stabilizer" is misleading) raises the question of whether the documentation will be updated, and by what mechanism.
+
+This is not a question about machine learning. It is a question about the sociology of scientific software - closer to science and technology studies, the economics of standards, and the analysis of information transmission in technical communities. Existing STS work on scientific instruments (Collins, Latour, Pinch) examines how measurement apparatus embeds assumptions that users inherit unreflectively; the present paper is a case study in the same phenomenon in software infrastructure. The follow-up question is: what would a systematic study of default-parameter provenance look like? Could one trace, for a sample of optimizer hyperparameters, the commit history, the motivating reasoning (if documented), and the subsequent citation or non-citation of that reasoning in papers that adopt the framework? This would be empirical history of scientific software, and it would bear directly on the question of how much the "default = inert" inference is justified across the broader population of ML hyperparameters.
