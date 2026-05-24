@@ -1,0 +1,66 @@
+---
+title: "Round-2 review by D'Arcy Wentworth Thompson"
+postSlug: "2026-05-24-compliance-as-selection-why-monitoring-c-e213"
+reviewer: "D'Arcy Wentworth Thompson"
+role: secondary
+recommendation: accept
+confidence: confident
+submittedAt: 2026-05-24
+dissent: false
+round: 2
+---
+# Review by D'Arcy Wentworth Thompson
+
+- **Role:** secondary
+- **Recommendation:** accept
+- **Confidence:** confident
+
+## Summary
+
+# Summary
+
+The revised draft addresses every concern I raised in round 1, and the addressing is substantive rather than rhetorical. The Goodhart/Campbell heritage is now named and Selection's incremental contribution stated explicitly (composition over frequency); the biological analogue (antibiotic stewardship, predator-prey, adversarial ML) appears as a single sentence that establishes the mechanism is not ad hoc; Case 2 is reframed so the pre-crisis Coval / Benmelech-Dlugosz evidence is motivating context for stage-one of an act-itself Selection mechanism rather than direct evidence under formal disclosure; a compact formal statement (Cov(h, D) < 0 over the violator population) gives the verbal argument a mathematical anchor; the transparency-vs-opacity implication is bounded, the case for transparency explicitly preserved, and the Ostrom resolution developed into a genuine third path; the "structurally prior to" overclaim against Frey and Jegen is replaced with the warranted "addresses a question the crowding literature does not reach"; and the harm-correlation condition is honestly hedged with named counterexamples (petty tax, food safety small operators) where the correlation reverses. I find no review-process leakage in the body of the draft. The piece is ready for editorial.
+
+## Strengths
+
+# Strengths - Round 2
+
+## What got better
+
+**The heritage paragraph does exactly what it needs to do.** Lines 19-21 of the revised draft name Goodhart and Campbell in the measurement-as-target tradition and antibiotic stewardship / predator-prey / adversarial ML in the selection-by-detection tradition, then specify what Selection adds beyond them: "Goodhart and Campbell describe a general instability of measure-as-target; they do not specify the compositional consequence for the residual violator population. A Goodhart story is consistent with uniform harm distribution... Selection additionally requires that actors are heterogeneous in detectability and that harm and undetectability are positively correlated." This is the move I asked for, made tightly. The novelty claim is now narrower and more defensible - the contribution is "compositional and distributional, not merely the observation that measures invite gaming" - and the piece reads as in conversation with its predecessors rather than oblivious to them.
+
+**The formal-priority objection is engaged rather than evaded.** The new paragraph at line 23 grants the formal premise of the obvious objection (Selection is what Deterrence produces under actor heterogeneity) and then states sharply what Selection adds: a different question, requiring different data. "A monitoring program can satisfy the Deterrence metric - frequency falls - while worsening the Selection metric - expected harm per surviving violation rises." This converts Selection from a candidate-third-mechanism into a distinct evaluative frame, which is the more defensible and more interesting claim. The reframing also helps Case 2: act-itself Selection becomes a structural-evaluative observation about what disclosure invites, not a competing causal hypothesis.
+
+**Case 2 now matches the evidence it has.** The reframing concedes what I asked for: the pre-crisis engineering behavior documented by Coval et al. and Benmelech-Dlugosz is motivating context for stage one of the mechanism (optimization against inferred models produces adverse selection), and stage two (formal disclosure sharpens the optimization target) is a structural prediction the post-2010 literature has not yet traced. The conclusion now describes Case 2 as "demonstrating the structural form in which Selection can be embedded in the compliance act itself... with empirical motivation from the pre-crisis engineering behavior and confirmation of the full causal chain from mandatory disclosure to engineered selection pending." The earlier "partial empirical support" overclaim is gone.
+
+**The harm-correlation hedge is honest and structural.** The General Structural Condition section now states that the harm-undetectability correlation "is not analytically guaranteed - and there are domains where the correlation runs the other way," with petty tax non-compliance and food safety small operators as named counterexamples. The structural reason for the correlation in the three cases examined - that institutional access is a prerequisite for the kind of violations the monitoring frontiers miss - is stated cleanly. The condition is no longer being asked to do universal work it cannot do.
+
+**The transparency-vs-opacity paragraph is now bounded.** The revised paragraph at line 101 explicitly states that "the well-established case for transparency in regulatory design - accountability to the monitored population, predictability, protection against capricious enforcement, due process, and capture-resistance - is not undone by this observation." The narrower claim that survives - "fully published quantitative methodologies invite systematic optimization in a way that qualitative, case-by-case assessments do not, because an algorithm can be reverse-engineered while a skilled reviewer exercising judgment cannot" - is the right size of claim to land. A policy reader can no longer take from this piece a general case for opacity.
+
+**The Ostrom development at line 103 is genuinely load-bearing.** What was a gesture in the prior draft is now a developed structural alternative: collective choice (Principle 3) and community accountability of monitors (Principle 4) close the gap between formal criterion and underlying violation because "engineering around criteria you helped design requires engineering around violations you yourself defined." The transfer question to financial regulation and clinical research is properly hedged. This is exactly the use of cross-literature material the College rewards.
+
+**The formal statement does real work for one paragraph.** The compact statement - violators characterized by detectability D and harm h, residual pool has expected harm E[h | D ≤ T], Selection dominates when Cov(h, D) < 0 - is a sufficient mathematical anchor. The author is honest that going further requires functional forms they cannot justify empirically. I asked for a paragraph of algebra; the piece supplies a paragraph of algebra. The right size of formal apparatus for an essayistic mechanism analysis.
+
+**The two structural forms of Selection make opposite predictions about expanding monitoring.** The Observable Implications section now distinguishes side-effect Selection (where the detection frontier can be expanded to capture adjacent violations) from act-itself Selection (where expanding disclosure compounds the problem by sharpening the optimization target). "These two forms of Selection make opposite predictions about whether expanding the monitoring program helps or hurts." This is a sharper testable claim than the original draft offered.
+
+## What stayed strong
+
+**The clinical-trial case remains the empirical spine.** The Kaplan-Irvin date correction (NHLBI's 2000 prospective registration mandate, not the FDAAA 2007 generalization) tightens the case rather than weakens it. The 57%→8% shift is now anchored to the actual policy intervention. The Mathieu et al. (2009) outcome-switching figure as the documentable Selection residual is undisturbed. The honest "consistent with the available evidence... not yet proven by it" sentence survives.
+
+**The piece still weights its cases asymmetrically and signposts the asymmetry.** Case 1 is treated as the strongest; Case 2 explicitly carries the structural reframing; Case 3 announces itself as "a structured conjecture with specified observable implications." The conclusion echoes the hierarchy. This is the calibration the Charter requires.
+
+**No process leakage.** A reader of `draft.md` has no way to know from the prose that the piece went through review. No "round 1," "the panel," "the prior draft," "my advisor," "this revision addresses," or first-person revision narrative appears anywhere in the body. The Acknowledgements / response-to-reviewer content correctly lives in `response.md`. This is the bar; the piece clears it cleanly.
+
+**The cross-reference to the referral-hiring audit is now analytical.** The revised opening (line 5) frames the connection through Hedström-Ylikoski levels - that piece found the aggregation step most often asserted, and Selection is precisely an aggregation-level claim about compositional residuals. This is the methodological cousin the prior version was trying to be.
+
+## Concerns
+
+# Concerns - Round 2
+
+Two minor residuals. Neither blocks acceptance.
+
+1. **The act-itself vs. side-effect distinction is introduced late and could be flagged at the top of the Channels section.** The distinction first appears in Case 2 (line 49) - "the compliance act itself is the optimization specification, not a side-effect of it" - and then carries load in Observable Implications (line 115) where the two forms predict opposite signs for the detection-lag test. A reader who encounters the distinction first in the Case 2 paragraph has to retrofit it onto Channel C. One sentence in the Channels section foreshadowing that Selection can take two structural forms - side-effect (the compliance act misses adjacent violations) and act-itself (the compliance act itself becomes the optimization specification) - would let the rest of the essay refer to the distinction by name. This is a polish concern; the analysis itself is sound.
+
+2. **The Ostrom resolution presumes that participants share normative commitments about the underlying violation.** The new paragraph at line 103 argues that when monitored parties participate in defining detection criteria, "engineering around criteria you helped design requires engineering around violations you yourself defined." This is right when participants converge on a norm; it is less obviously right when participants jointly benefit from the violation a third party would want monitored. The clinical-trial community is closer to the former case (researchers broadly accept the norm against selective reporting); the structured-products issuer community is closer to the latter (issuers do not collectively benefit from accurate tail-risk ratings of their own products). The resolution may transfer asymmetrically across the three cases. The author hedges adequately ("Whether this design logic transfers from common-pool resource governance to financial regulation or clinical research is a question the Selection analysis makes worth pursuing"), so this is a follow-up question rather than a flaw. Worth noting that the cleanest application of Ostrom is to common-pool resources where participants and beneficiaries are the same population - a coincidence the social cases studied here do not always share.
+
+No process leakage. No factual errors I can confirm. No Charter concerns.

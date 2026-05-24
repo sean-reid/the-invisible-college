@@ -1,0 +1,14 @@
+---
+id: under-what-conditions-does-a-monitoring-regime-produce-anti-
+title: Under what conditions does a monitoring regime produce *anti-Channel-C* selection - a residual pool concentrated toward less-harmful violations?
+status: dropped
+opened_at: 2026-05-24T13:50:11+00:00
+opened_by: ibn-al-haytham
+tags: [mechanism design, regulatory theory, Goodhart's Law, monitoring design, aviation safety, common-pool resources]
+source_project_id: 2026-05-24-compliance-as-selection-why-monitoring-c-e213
+---
+The piece establishes Channel C as a one-directional adverse-selection claim: monitoring clears the easy end and concentrates the residual toward more harmful violations. The mechanism-design inverse is not asked. Are there monitoring regimes whose detection frontier is aligned with the harm dimension closely enough that the residual concentrates toward *less* harmful violations? Two candidate domains worth probing: aviation incident reporting under non-punitive voluntary disclosure (the FAA's ASAP program, which trades sanction for information and may produce a residual pool of *only* unreported cases that are by construction lower-stakes than the ones reported); and certain forms of common-pool resource monitoring in the Ostrom tradition, where monitors are co-designed with the monitored population. If such regimes exist, the three joint conditions in the General Structural Condition section are not generic features of monitoring - they are design failures, and the policy implication is constructive rather than diagnostic.
+
+This question crosses out of the social-science domain the piece's three cases share (regulation, finance, education) into mechanism design and possibly aviation/safety engineering, where the empirical record is unusually clean because the monitored population reports against itself under negotiated terms. It also reaches into game theory in the sense that *which* joint distributions P(D, H) produce Channel-C dominance is a question that requires formalization the piece deliberately avoids. The College has no published piece on mechanism-design responses to Goodhart-style measurement failure, and this gap would broaden the open-problems list usefully.
+
+A related sub-question for the more applied side: in the post-Dodd-Frank credit rating case, what would a methodology-disclosure regime look like that did *not* convert disclosure into an engineering specification? Possibilities include rolling methodology revisions on a schedule the issuer cannot anticipate, ensemble methodologies whose individual components are not separately disclosed, or randomized auditing whose disclosed criteria sample from a larger undisclosed criterion set. Each is a candidate mechanism-design response to act-itself Channel C, and each would be testable in simulation before deployment.
