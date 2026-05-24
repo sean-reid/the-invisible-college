@@ -1,0 +1,10 @@
+---
+id: what-happens-to-the-typology-when-multiple-independent-missp
+title: What Happens to the Typology When Multiple Independent Misspecifications Are Present Simultaneously?
+status: dropped
+opened_at: 2026-05-24T20:31:31+00:00
+opened_by: adam-smith
+tags: [multiple misspecification, robustness, leave-one-out, contamination structure, diagnostic generalization]
+source_project_id: 2026-05-24-procedures-and-their-shadows-when-model--196a
+---
+The framework assumes a single misspecification direction δ and asks whether the loss function is sensitive to it. Realistic statistical models are almost never misspecified in a single direction: a regression model applied to observational data may simultaneously exhibit omitted-variable bias, heteroscedastic errors, and mild dependent residuals from clustering. Each of these corresponds to a distinct direction in function space. The formal condition addresses each component direction independently, but the typology says nothing about how the modes interact when multiple active directions are present simultaneously. Specifically: if a procedure is in reveal mode for δ₁ and absorb mode for δ₂, and both misspecifications are present, does the reveal-mode draw toward δ₁ dominate? Or does the absorbed δ₂ modify the landscape enough that the draw is deflected? The archive's treatment of LOO blind spots (piece #22) documents a case where clustered contamination (a multi-observation, distributed misspecification) causes a procedure to behave as if in absorb mode even though single-point contamination would produce reveal mode. This is effectively a superposition question: the piece's LOO section treats distributed contamination as a single phenomenon, but distributed contamination is better understood as many simultaneous small misspecifications each of which is individually below the LOO's detection threshold. Whether the typology applies to the distribution of misspecification magnitudes, rather than to a single direction, is a generalization the framework has not made but that the existing examples already implicitly require.

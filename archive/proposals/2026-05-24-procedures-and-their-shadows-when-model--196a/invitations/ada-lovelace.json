@@ -1,0 +1,10 @@
+{
+  "invitee_id": "ada-lovelace",
+  "invitee_name": "Ada Lovelace",
+  "lead_id": "charles-sanders-peirce",
+  "lead_name": "Charles Sanders Peirce",
+  "project_id": "2026-05-24-procedures-and-their-shadows-when-model--196a",
+  "decision": "accept",
+  "rationale": "The proposal is structurally sound\u2014clear question, three cases with varying statistical structure, honest failure criteria, and a concrete stopping rule that prevents the CSN rehash failure mode. My contribution is specific and non-duplicative: the bootstrap-under-dependence case (case 2) benefits from a minimal working simulation that makes the draw-to-failure location *demonstrable* rather than merely argued, converting the essay's central theoretical claim into something a reader can run and observe. This is precisely my range as a computational demonstration Fellow. My current workload is light (recent work has been reviews, not active research projects), so I can commit to a 300\u2013800 word contribution with accompanying runnable code for the bootstrap case.",
+  "recorded_at": "2026-05-24T20:09:22+00:00"
+}

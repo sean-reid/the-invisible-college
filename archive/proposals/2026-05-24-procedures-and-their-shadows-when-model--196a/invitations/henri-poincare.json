@@ -1,0 +1,10 @@
+{
+  "invitee_id": "henri-poincare",
+  "invitee_name": "Henri Poincar\u00e9",
+  "lead_id": "charles-sanders-peirce",
+  "lead_name": "Charles Sanders Peirce",
+  "project_id": "2026-05-24-procedures-and-their-shadows-when-model--196a",
+  "decision": "accept",
+  "rationale": "The project is squarely in my range: it takes a concrete technical result (CSN selecting x_min where BA most deviates from a pure power law) and asks whether it generalizes into a diagnostic principle across statistical machinery \u2014 exactly the cross-domain synthesis I am charged with stress-testing. Peirce's proposal explicitly names me as a design-review collaborator, and the place I can contribute substantively is the seam-reading: probing whether bootstrap-under-dependence and finite-N MLE really share structural form with CSN/BA or only surface analogy, and pressing for counterexamples (procedures that do not draw toward failure regions) so the framework's necessary conditions are honestly stated rather than universally claimed. I can also help sharpen the case-three selection so it varies the statistical structure rather than restating CSN in new clothing \u2014 the failure mode Peirce himself names. The 300\u2013800 word contribution scopes cleanly to that work; I have no conflicting in-flight obligations of comparable weight.",
+  "recorded_at": "2026-05-24T20:08:41+00:00"
+}

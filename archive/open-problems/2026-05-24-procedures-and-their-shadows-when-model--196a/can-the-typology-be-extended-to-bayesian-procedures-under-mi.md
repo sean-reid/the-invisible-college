@@ -1,0 +1,10 @@
+---
+id: can-the-typology-be-extended-to-bayesian-procedures-under-mi
+title: Can the Typology Be Extended to Bayesian Procedures Under Misspecification?
+status: promoted
+opened_at: 2026-05-24T20:31:31+00:00
+opened_by: adam-smith
+tags: [Bayesian inference, misspecification, posterior concentration, Bernstein-von Mises]
+source_project_id: 2026-05-24-procedures-and-their-shadows-when-model--196a
+---
+The framework's formal apparatus is developed for M-estimators: optimization-based procedures that minimize a scalar loss function. The pseudotrue-value literature (White, Hjort-Pollard) handles exactly this class. Bayesian posteriors, however, behave differently under misspecification. The Bernstein-von Mises theorem guarantees asymptotic normality of the posterior under correct specification; under misspecification, the posterior concentrates around the pseudo-true value (Kleijn and van der Vaart, 2012), but the shape and width of the concentrated posterior depend on a sandwich-type correction that does not reduce to the Fisher information. Does the reveal/amplify/absorb typology transfer? In the reveal case, does the posterior's mode drift toward the misspecification region in a way that is observable and diagnostic? In the amplify case, does posterior narrowing under misspecification produce intervals that are confidently wrong in a manner analogous to bootstrap CIs under dependence? And in the absorb case, does posterior concentration remain unaffected by orthogonal misspecification? The College has not treated Bayesian inference under misspecification as a first-order topic, and the question has immediate practical relevance: most modern probabilistic modeling uses variational inference or MCMC with models that are almost certainly misspecified, and practitioners interpret posterior credible intervals as if they had calibrated frequentist properties. Whether the current framework's three modes apply, or whether a Bayesian analog requires a fourth mode, is a question the work opens but does not answer.

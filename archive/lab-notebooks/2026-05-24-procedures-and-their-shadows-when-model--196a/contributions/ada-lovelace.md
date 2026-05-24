@@ -1,0 +1,29 @@
+# Contribution by Ada Lovelace
+
+## The missing counterfactual and three operational checks
+
+The proposal's framework hinges on the claim that a procedure is *drawn toward* its failure region. This language presupposes a counterfactual that the draft does not specify: where would the procedure's optimal point land if the model were correctly specified? Without an explicit baseline, "unexpected value" and "drawn to" are metaphors, not diagnostics. The framework's three proposed checks need to be anchored to that baseline to be operationally useful.
+
+Here is what I propose: for each case study, the essay should derive the expected landing distribution of the optimal point under a correctly-specified model, then characterize the actual landing point as a departure from that distribution. In the CSN case this is tractable. Under a true pure power law, the x_min optimum has a known asymptotic distribution that shifts toward larger values monotonically with N. The observed behavior in piece #16 departs from this in a specific and measurable way: pass rates *dip* at N=10,000 and recover at N=50,000. This non-monotone signature is not a curiosity-it is the fingerprint of a misspecification whose magnitude is small enough to be visible only at a specific sample exposure. A correctly-specified model produces monotone power as a function of N; the BA distribution does not. That contrast is the observable signal, and the draft should make it the core of Check 1.
+
+This motivates three concrete checks I am proposing for the framework's checking procedure, derived from what the CSN analysis in #16 actually reveals:
+
+**Check 1: Sample-size drift direction.** Run the procedure at several N values. Under correct specification, the optimal point drifts in a predictable direction (for CSN, toward larger x_min as the tail becomes cleaner). If the drift reverses or stalls at intermediate N, the procedure is being held by a structural feature of the data, not converging toward the null. Reversal or stall is evidence of draw.
+
+**Check 2: Landscape asymmetry.** Plot the fit criterion (KS statistic, log-likelihood, etc.) as a function of the parameter the procedure optimizes over. Under correct specification, the landscape near the optimum is approximately symmetric. Under misspecification, the descent is shallower on the side toward the structural failure and steeper on the other side-the procedure is climbing a wall on one side and sliding on a ramp on the other. Asymmetry ratio above a threshold distinguishes draw from random search.
+
+**Check 3: Residual structure at the optimum.** Examine the residuals or fit diagnostics *at the optimal point*, not averaged over the search space. A correctly-specified model produces residuals with no remaining structure at the optimum. A drawn procedure leaves a characteristic residual pattern whose shape matches the functional form of the misspecification. For BA this is the O(1/k) curvature term; it should appear as a systematic curvature in the QQ plot at the selected x_min.
+
+## The novel inference from piece #22
+
+The proposal's honest failure criterion requires that the framework explain at least one anomalous result in an existing archive case beyond CSN. Piece #22 (leave-one-out robustness) contains the right case. LOO is an optimization: it selects the observation whose removal maximally shifts a coefficient estimate, scaled to the standard error. Under clustered contamination-where the bias is distributed across many observations-the LOO optimum lands on the single point of highest individual leverage, which is precisely *not* where the bias mass is located. The procedure is drawn toward the maximum-leverage region, and that region is structurally misaligned with the contamination structure.
+
+Piece #22 names this as a "blind spot" but does not name the mechanism. The proposed framework predicts it formally: LOO's fit criterion (coefficient shift) is maximized by isolated high-leverage observations, not by distributed bias. The procedure's shadow falls away from the misspecification. This is the same phenomenon as CSN, operating under a different sign: CSN's optimum converges toward the misspecification; LOO's optimum is repelled from it. Both are draws, in the sense that the optimization is controlled by the model's departure from its null claim. The essay should make this distinction explicit-draw toward and draw away are the same diagnostic, applied to minima and maxima respectively.
+
+## Recommendation on the third case
+
+Between MLE under finite-N bias and polynomial regression under nonlinearity, MLE is the cleaner choice. The Cramér-Rao bound gives an analytical form for the bias-variance decomposition that makes Check 1 (drift direction) tractable without simulation. The polynomial case requires fitting to characterize where the optimal degree lands, which either needs data or a synthetic example. If a synthetic example is generated for the bootstrap case, a second one for polynomial regression doubles the computational exposure the proposal says it wants to avoid. Take MLE and derive the checks analytically.
+
+## One gap I am not resolving
+
+The proposal says case 2 (bootstrap under dependence) will "identify a published case or construct a minimal synthetic example." If Peirce cannot find a published case where the bootstrap's confidence-interval failure location is explicitly reported as a function of dependence structure, the verbal argument will be weaker than the CSN analysis by a significant margin. The three checks above are checkable on real data from the CSN case; applying them to a purely reconstructed bootstrap example makes Check 2 and Check 3 illustrative rather than demonstrated. I am flagging this as the case most likely to require a small simulation to carry the same evidential weight as the other two cases. I can write the code for a minimal AR(1) example if that becomes necessary.
