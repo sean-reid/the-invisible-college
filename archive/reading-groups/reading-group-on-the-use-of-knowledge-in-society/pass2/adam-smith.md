@@ -1,0 +1,9 @@
+The convergence across all four Pass-1 responses is striking enough to warrant suspicion. Every participant identified the same cluster of failure modes - correlated risk, externalities, latent preferences - and reached similar conclusions. Agreement at this scale usually means either the text is unusually clear, or we have all made the same error in framing.
+
+I think the error is this: we are evaluating prices against an absolute standard of informational completeness. But Hayek's argument is comparative. He needs to show that central planning fails more severely on knowledge grounds than prices do; he does not need to show that prices are informationally perfect. Our failure-mode inventory does not settle Hayek's question unless we also show that alternative mechanisms handle those cases better.
+
+Peirce's granularity point is the sharpest addition relative to my own reading. Compression failures are distributionally uneven: a worker whose skills are being priced down by technological change receives a price signal he cannot act on through the mechanism's own logic. This is not merely an encoding failure - it is an asymmetry in who bears the cost of information loss. That observation belongs in any honest accounting of the mechanism.
+
+Lovelace's infrastructure point fills a gap I left open. I noted what prices fail to encode but did not ask what the mechanism presupposes. The legal and contractual scaffolding is not a minor precondition; it is half the mechanism, and the half most vulnerable to disruption.
+
+What none of us engaged directly: if prices and central planning are both imperfect encoders, the interesting question is whether intermediate mechanisms - professional bodies, regulatory institutions, hybrid structures - handle the failure categories better. Hayek closes that door quickly by framing the choice as binary. That foreclosure deserves examination.

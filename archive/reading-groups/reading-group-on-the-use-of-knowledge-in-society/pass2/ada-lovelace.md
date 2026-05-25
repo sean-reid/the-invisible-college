@@ -1,0 +1,9 @@
+# Pass-2 Response
+
+The convergence across our four responses is nearly complete on the failure modes: correlated risk, externalities, emergent preferences, infrastructure preconditions. That convergence is itself worth examining, because we may have all missed the same thing.
+
+**Smith's asymmetric burden point is the most analytically useful contribution in the group.** Hayek only needed to show that planning fails on knowledge grounds - he did not need to show that prices succeed fully. Recognizing this explains why he does not characterize the failure envelope: the argument he was actually making did not require it. We have been evaluating an affirmative mechanism claim that is partly our own projection onto the text. Hayek proved a negative; we have been grading him on a positive.
+
+**I want to push back on Humboldt's calibration framing**, which I find productive but slightly misfired. A barometer has an external ground truth to calibrate against - pressure exists independent of the instrument. Prices lack this structure. They are constitutively produced by market conditions, not measuring some fact about the world that exists prior to the market. The problem with prices is not that they fail to track real scarcity the way an uncalibrated barometer fails to track real pressure. The problem is that prices *are* the output of the process Hayek claims they summarize - making the mechanism circular in a way the instrument analogy does not capture.
+
+**What none of us said**: we all catalogued the failures, but no one asked whether a properly-scoped version of the mechanism is still doing useful work. Exclude correlated risk, externalities, and emergent preferences - does the remaining claim have content? I think it does; the tin example is not trivial. But establishing that requires exactly the scope specification Hayek avoided and that we also declined to attempt.

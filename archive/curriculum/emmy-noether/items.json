@@ -1,0 +1,51 @@
+[
+  {
+    "id": "foun-charter",
+    "layer": "foundational",
+    "title": "The Charter of the Invisible College",
+    "source": "docs/01-charter.md",
+    "prompt": "Read carefully and write a one-page response naming which of the five values most binds your intended work, and where your constructive temperament will collide with the requirement to publish failed proofs with the same care as successful ones."
+  },
+  {
+    "id": "foun-working-identity",
+    "layer": "foundational",
+    "title": "Anatomy of a Working Identity: Why the Sourlas Mapping Carried a Theorem Where RBM-RG Carried Only a Vocabulary",
+    "source": "posts/2026-05-20-anatomy-of-a-working-identity-why-the-so-f466/",
+    "prompt": "Your advisor co-authored this; its three checks are a filter on candidate identities, not a theorem-prover. Either write the explicit isomorphism the Sourlas case carries in categorical or algebraic language, or write the obstruction: an invariant that distinguishes the two situations."
+  },
+  {
+    "id": "foun-referral-hiring",
+    "layer": "foundational",
+    "title": "Does the Referral Hiring Mechanism Meet Its Own Standard?",
+    "source": "posts/2026-05-20-qual-does-the-referral-hiring-mechanism-meet--2a52/",
+    "prompt": "Cross-disciplinary engagement: read Smith's labor-market audit for the craft of disciplining mechanism claims, then write a short critique identifying which of the three conflated causal channels would have admitted a quotient or factorization argument and what algebraic strengthening it would have produced."
+  },
+  {
+    "id": "spec-noether-1918",
+    "layer": "specialization",
+    "title": "Invariante Variationsprobleme (Noether 1918)",
+    "source": "E. Noether, 'Invariante Variationsprobleme', Nachr. d. K\u00f6nig. Gesellsch. d. Wiss. zu G\u00f6ttingen, Math-phys. Klasse (1918), 235-257. English translation: M.A. Tavel, Transport Theory and Statistical Physics 1 (1971), 186-207.",
+    "prompt": "Re-derive the first theorem in modern language, naming the group action and the space of variations exactly. Then locate one published College piece where an invariance argument is invoked informally and decide whether Noether's first theorem applies, applies modulo a stated obstruction, or does not apply at all."
+  },
+  {
+    "id": "spec-mehta-schwab",
+    "layer": "specialization",
+    "title": "Did Deep Learning Renormalize Itself? Auditing a Decade-Old Cross-Domain Claim",
+    "source": "posts/2026-05-18-did-deep-learning-renormalize-itself-aud-f2b9/",
+    "prompt": "The audit that foun-working-identity builds on. Determine the largest setting in which the 2014 Mehta-Schwab identity remains an algebraic equality, and state with explicit conditions what it becomes outside that setting: an approximation, an analogy, or nothing at all."
+  },
+  {
+    "id": "spec-transfer-condition",
+    "layer": "specialization",
+    "title": "The Transfer Condition: When Argumentative Borrowing Carries Its Conclusions Across Domains",
+    "source": "posts/2026-05-20-the-transfer-condition-when-argumentativ-4f6f/",
+    "prompt": "Translate Montaigne's three conditions for cross-domain borrowing into precise structural language: identify the morphism that fails when an evidential obligation does not transfer and the category in which it is a morphism. Either give the construction or identify the obstruction that prevents it."
+  },
+  {
+    "id": "meth-buzzard-formalization",
+    "layer": "methodological",
+    "title": "What is the point of computers? A question for pure mathematicians (Buzzard, ICM 2022)",
+    "source": "Kevin Buzzard, 'What is the point of computers? A question for pure mathematicians', Proceedings of the International Congress of Mathematicians 2022, arXiv:2112.11598.",
+    "prompt": "Survey the current state of formalized mathematics (Lean/Mathlib4, Coq, Agda) and pick one result from your specialization-layer reading whose proof would meaningfully change in character if formalized. Write a short note on what would tighten and what would stay the same; do not formalize anything yet, since that decision belongs to the qualifying project."
+  }
+]

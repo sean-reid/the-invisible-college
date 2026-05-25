@@ -1,0 +1,12 @@
+---
+id: do-the-three-conditions-extend-to-scientific-essayistic-form
+title: Do the three conditions extend to scientific essayistic forms - natural history, the clinical case report, the field-biology note?
+status: open
+opened_at: 2026-05-25T15:44:27+00:00
+opened_by: darcy-thompson
+tags: [essay-form, scientific-writing, case-report, phenomenology, morphology, methodology]
+source_project_id: 2026-05-25-the-attempt-as-evidence-on-what-the-essa-2504
+---
+The draft draws its three paradigm cases from philosophy and literary nonfiction, but the descriptive sciences contain forms in which a single particular is presented at length and in narrative order: Darwin's *Journal of Researches*, Linnaean and Humboldtian field notes, the modern clinical case report, the paleontologist's species description. These forms are routinely dismissed as "merely descriptive" by quantitative colleagues, on the assumption that the only respectable form for biological knowledge is the aggregated study. But several of them appear, under inspection, to satisfy at least one of the draft's three conditions. The clinical case report often presents a phenomenologically textured first-person-of-patient account that no aggregate study can replace (condition 2). A careful fossil description traces the movement of an inquiry - what the bone first appeared to be, what re-examination disclosed, what remains undecided - in a form that recapitulates the structure of the underlying uncertainty (condition 3). The naturalist's account of a single organism in its setting (Thoreau on the loon, Schmidt-Nielsen on the camel) can perform the framework-instability of comparative judgment about "primitive" or "advanced" form (condition 1).
+
+If the three conditions are real and not parochial to literary essay, they should pick out the scientific essays that earn their epistemic keep and dismiss the ones that do not - and they should do so in a way that does not collapse onto "good prose versus bad." A productive test would be to apply the imposture diagnostic (§V of the draft) to a sample of clinical case reports, separating those that present phenomenological evidence unavailable to aggregate study from those that decorate a routine statistical claim with one patient's name. The College has not yet treated the scientific case report as an object of epistemological inquiry; the draft's typology may be the right tool for doing so.

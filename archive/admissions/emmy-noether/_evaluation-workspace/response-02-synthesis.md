@@ -1,45 +1,58 @@
 # Response to Problem 2: Synthesis
 
-## The Question
+The phrase "common underlying principle" is doing a great deal of work in this question. To answer honestly I have to first ask what it would *mean* for the two phenomena to share a principle, and only then ask whether they do.
 
-Do spaced repetition and learning rate schedules instantiate the same underlying principle, or is their similarity superficial? Both involve time-varying intensity of input—reviews spaced over days or weeks, gradient updates scaled over thousands of steps—and both beat the naive baseline of constant-intensity engagement. But the mechanisms could be fundamentally different.
+## What Would Count as Sameness
 
-I will argue that these are **mechanistically distinct phenomena** that achieve similar empirical outcomes through different causes, but share a *meta-principle* about avoiding specific failure modes of constant-intensity training.
+The relevant notion of sameness, for me, is a functor: a way of mapping objects and morphisms in one domain to objects and morphisms in the other such that the structural relations are preserved. If the same algebraic object is appearing twice with different vocabulary, the functor exists and the equivalence is genuine. If only the vocabulary is shared, we have a metaphor.
 
-## The Mechanisms
+So I will try to write the functor explicitly, and report where it breaks.
 
-**Spaced repetition.** Memory decays over time (Ebbinghaus curve). The spacing effect (Bjork, Cepeda) shows that retention is better when reviews occur at expanding intervals than when they occur in massed trials. The mechanism appears to involve two components: (1) retrieval-induced consolidation—effort required to retrieve a weakened memory strengthens it more than retrieval of a strong memory—and (2) context variability, where spacing across different times and contexts improves transfer. The system being trained is biological memory with predictable decay dynamics.
+## A Candidate Functor
 
-**Learning rate schedules.** Gradient descent with a constant learning rate diverges (step too large) or converges slowly to poor minima (step too small). Schedules that are large early and small late work better. The mechanism involves optimization geometry: large steps let the algorithm escape saddle points and explore the loss surface; small steps near good minima prevent overshooting and oscillation. The system being trained is a high-dimensional parameter space with noise (stochastic gradients) and complex topology (multiple local minima).
+Both phenomena can be cast as update rules for a noisy estimate of a hidden target. Let $\theta_t$ denote the system's internal state at time $t$ — memory strength for the studied item, or the parameter vector of the model. Let $L(\theta)$ denote the loss against the target — expected recall failure on a future test, or expected prediction error on the data distribution. Both systems perform updates of the form
 
-These operate on different systems with different constraints. Memory decay is not present in gradient descent. Loss surface topology is not directly present in human memory consolidation.
+$$\theta_{t^+} = \theta_{t^-} + \eta_t \cdot u_t,$$
 
-## A Possible Shared Meta-Principle
+where $u_t$ is a noisy estimate of $-\nabla L$ at time $t$ and $\eta_t$ is the scheduled intensity at $t$.
 
-Despite mechanistic differences, both phenomena avoid a specific failure mode: **over-reliance on immediate, high-intensity input under conditions of incomplete information and noise.**
+Under this framing:
 
-In spaced repetition: Massed trials (constant high intensity) cause rapid forgetting because the learner relies on priming and short-term memory rather than permanent consolidation. Spacing forces retrieval from weakened memories, which engages deeper consolidation. The noise here is biological noise and decay; the incomplete information is the future context in which the memory must be retrieved.
+- **In gradient descent**, $\eta_t$ is the learning rate, $u_t$ is the stochastic gradient on a mini-batch, and updates happen at every step.
+- **In spaced repetition**, $\eta_t$ is approximately a sum of point masses $\sum_i \delta(t - t_i) \cdot R(t_i - t_{i-1})$, where $t_i$ is the time of the $i$-th review and $R$ is the strength of the retrieval event (the "testing effect" makes this depend on inter-review interval). Between presentations, $\eta_t = 0$.
 
-In learning rate schedules: Constant high intensity causes divergence because large steps in a noisy gradient space prevent the algorithm from settling into regions with low training loss and, more importantly, generalizing well. Large steps also cause the algorithm to ignore local structure. Annealing allows the algorithm to exploit local structure more finely. The noise here is gradient noise from finite batches; the incomplete information is the true gradient direction.
+The functor sends "schedule of $\eta_t$" to "schedule of $\eta_t$" and "stochastic update direction" to "stochastic update direction." So far the diagram commutes.
 
-In both cases, the system performs poorly if it commits too heavily to recent information (strong memories, recent gradients) without allowing consolidation or exploitation of finer structure. The solution is to reduce intensity adaptively, allowing the system to integrate information more carefully.
+## Where the Functor Breaks
 
-## A Testable Prediction
+The two systems differ in one structural feature that I cannot remove by relabeling.
 
-If this account is correct, then **domains where both spaced repetition and learning rate schedules can be applied (e.g., reinforcement learning agents learning from experience) should show a specific relationship between optimal spacing intervals and optimal learning rate decay rates.**
+**Spaced repetition has a non-trivial dynamics between updates; vanilla gradient descent does not.** In SR, $\theta$ decays between presentations: $d\theta/dt = -\lambda \theta$ on $(t_i, t_{i+1})$ for some decay rate $\lambda > 0$. In SGD, $\theta$ is constant between steps; there is no spontaneous drift toward $0$.
 
-Concretely: if an RL agent is learning from rollouts of experience (analogous to review sessions), and we vary both the spacing between reviews of the same trajectory and the learning rate schedule over those reviews, the optimal hyperparameters should satisfy a scaling relationship. Tighter spacing should require larger learning rates (since less consolidation time is available); longer spacing should work with smaller final learning rates. A unified model would predict this relationship; mechanistically separate accounts would not.
+This single asymmetry generates most of the qualitative differences:
 
-If such a relationship exists with a specific functional form across different domains, that would be evidence for a shared principle rather than convergent evolution.
+1. *Optimal spacing.* The reason spacing helps in SR is that retrieval at low memory strength produces a larger consolidation gain than retrieval at high strength (the desirable-difficulty mechanism). This is a property of the interaction between decay and update strength. With no decay, there is no SR-style spacing effect to recover in SGD.
 
-## Where the Argument Weakens
+2. *Where the "schedule" lives.* In SR the schedule is on the *times* $\{t_i\}$ of unit-magnitude events. In SGD it is on the *magnitudes* $\{\eta_t\}$ of unit-frequency events. These are dual in a loose sense — modulating the measure on the time axis by mass vs. by frequency — but they are not isomorphic: one cannot recover SR by varying $\eta$ at fixed event times, nor SGD by varying event times at fixed $\eta$, without first introducing the missing piece (decay or its absence).
 
-**1. The principle is vague.** "Avoid over-reliance on immediate high-intensity input" is stated post-hoc and could fit many phenomena. A stronger account would derive the principle from first principles (e.g., from information theory or from the geometry of learning problems) rather than observing two cases and naming a pattern they satisfy.
+The shorter version: **the functor exists at the level of "scheduled update of a noisy estimator," but fails to extend to a functor of dynamical systems**, because the between-update dynamics differ. They are not the same algebraic object; they are two objects with a non-trivial morphism into a shared abstract scaffold.
 
-**2. The scaling relationship prediction may not hold.** Even if the principle is real, the prediction assumes a tight enough coupling between the two phenomena to produce observable relationships. But learning rates and spacing intervals operate on different timescales and different systems. The relationship might exist in principle but be undetectable in practice.
+## A Distinguishing Prediction
 
-**3. Convergent evolution remains plausible.** The most parsimonious account may simply be that high-dimensional systems (biological and machine) with noise and incomplete information generically benefit from adaptive, non-constant intensity schedules, without any deeper principle linking them. This would explain the surface similarity without requiring a shared mechanism.
+The account predicts that the gap closes when the missing piece is added. Specifically:
 
-**4. Individual mechanisms are not fully understood.** The precise role of spacing in human consolidation is still debated. The role of learning rate scheduling in generalization is not fully explained by the geometric arguments above; there may be implicit regularization effects that operate differently than I have described. Claiming a shared principle without fully understanding either mechanism is premature.
+**If we add weight decay (an explicit decay-toward-zero term, $\dot\theta = -\lambda\theta$) to SGD, the optimal learning rate schedule should acquire features characteristic of spaced repetition** — in particular, a benefit to non-uniform inter-update intervals at fixed total $\sum_t \eta_t$, and a relationship between decay rate $\lambda$ and optimal inter-update interval that mirrors the SR forgetting curve.
 
-The honest answer is: these likely share a vague meta-principle about adaptive intensity under noise, but the mechanisms are distinct enough that "shared principle" may be a useful metaphor rather than a falsifiable claim. Further work would require formalizing the principle and testing it against alternatives.
+A pure-convergent-evolution account (the alternative: that the two phenomena are unrelated and merely both benefit from "varied intensity") makes no such prediction. A genuine shared-principle account does. The prediction is in principle testable on small neural networks: train with weight decay, vary the spacing of mini-batch updates at fixed total effective step size, and measure whether the optimal spacing pattern resembles SR's expanding-interval schedule. If yes, the morphism extends; if no, the two are deeper apart than my account claims.
+
+A weaker version of this experiment may already exist in the literature on "cyclic learning rates" and on stochastic weight averaging with decay, but I have not verified the exact comparison and will not assert it here.
+
+## Where the Argument is Weakest
+
+**1. The functor I wrote is too coarse to be falsifiable on its own.** "Scheduled noisy update of an estimator" is a description so abstract that essentially any iterative algorithm fits it. Calling this a "shared principle" risks Bourbaki's overreach: an abstraction so general that descending back to cases gives nothing non-trivial.
+
+**2. The prediction assumes weight decay is the *only* missing ingredient.** It may not be. SR also depends on the testing effect (retrieval itself strengthens memory), context-dependent encoding, and the structure of the recall test (which has no clean analogue in supervised learning). My account silently bundles these into "the missing piece is decay." If the prediction fails, the failure may be due to one of these other unmodeled features rather than to the absence of a shared principle.
+
+**3. I have not proved the converse.** Even if SGD-with-decay does benefit from SR-like update spacing, that shows the analogy is consistent; it does not show that the underlying mechanisms are the same. A proper proof of shared principle would derive both the SR spacing curve and the LR schedule from a single optimization theorem — for example, by writing both as instances of stochastic approximation under explicit-decay dynamics and showing that the Robbins-Monro conditions $\sum \eta_t = \infty$, $\sum \eta_t^2 < \infty$ specialize to the right limit in each case. I have not done this. It is a research program, not an argument I have closed.
+
+The honest answer: there is a functor at the level of update-rule scaffolding, and the obstruction to extending it lives precisely in the between-update dynamics. Calling this "a shared principle" is fair if one is honest that the principle is at the scaffold level and the mechanisms diverge once one descends. I do not have a theorem here. I have a candidate diagram and a prediction that would tell me whether to keep working on it.
