@@ -122,3 +122,52 @@ def test_rewrite_figure_refs_handles_uppercase_extensions() -> None:
     body = "![](photo.PNG)\n"
     out = publish._rewrite_figure_refs(body, project_id="p1", available={"photo.PNG"})
     assert "/the-invisible-college/figures/p1/photo.PNG" in out
+
+
+def test_rewrite_resolves_subdir_flattened_figure_by_basename() -> None:
+    """The real-world Stahl bug: Fellow puts the PNG in `analysis/`
+    inside the workspace, sweep_figures archives it as
+    `analysis--lifetime_heartbeats.png`, but the markdown writes
+    `![](lifetime_heartbeats.png)`. Basename match must find it."""
+    body = "![Lifetime heartbeats](lifetime_heartbeats.png)\n"
+    out = publish._rewrite_figure_refs(
+        body, project_id="p1", available={"analysis--lifetime_heartbeats.png"}
+    )
+    assert (
+        "![Lifetime heartbeats](/the-invisible-college/figures/p1/analysis--lifetime_heartbeats.png)"
+        in out
+    )
+
+
+def test_rewrite_prefers_exact_match_over_basename() -> None:
+    """If both `foo.png` and `subdir--foo.png` are archived, the bare
+    reference resolves to the top-level one."""
+    body = "![](foo.png)\n"
+    out = publish._rewrite_figure_refs(
+        body, project_id="p1", available={"foo.png", "subdir--foo.png"}
+    )
+    assert "/the-invisible-college/figures/p1/foo.png" in out
+    assert "subdir--foo.png" not in out
+
+
+def test_rewrite_leaves_ambiguous_basename_match_alone() -> None:
+    """Two flattened candidates with the same basename is ambiguous;
+    refuse to guess. The publish-time unresolved-ref check will then
+    fail the publish so the operator can fix the reference."""
+    body = "![](foo.png)\n"
+    out = publish._rewrite_figure_refs(
+        body, project_id="p1", available={"a--foo.png", "b--foo.png"}
+    )
+    assert out == body
+
+
+def test_unresolved_figure_refs_finds_bare_references() -> None:
+    body = "Some prose ![](still_bare.png) and another ![alt](also_bare.jpg) here.\n"
+    refs = publish._unresolved_figure_refs(body)
+    assert sorted(refs) == ["also_bare.jpg", "still_bare.png"]
+
+
+def test_unresolved_figure_refs_empty_after_full_rewrite() -> None:
+    body = "![](fig.png)\n"
+    out = publish._rewrite_figure_refs(body, project_id="p1", available={"fig.png"})
+    assert publish._unresolved_figure_refs(out) == []

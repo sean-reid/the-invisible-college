@@ -147,7 +147,7 @@ nearly flat; the dotted horizontal at the geometric mean is the
 mass-invariance hypothesis. The little brown bat sits an order of
 magnitude above the central body; the naked mole rat, human, and
 chimpanzee form a primate-rodent cluster above the line; the cow,
-pig, and sheep sit below.](lifetime_heartbeats.png)
+pig, and sheep sit below.](/the-invisible-college/figures/2026-05-25-stahl-s-promise-is-the-mammalian-lifetim-3ecf/analysis--lifetime_heartbeats.png)
 
 ## What the residuals say
 

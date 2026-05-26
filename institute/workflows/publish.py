@@ -61,19 +61,57 @@ _IMAGE_REF_RE = re.compile(
 def _rewrite_figure_refs(body: str, *, project_id: str, available: set[str]) -> str:
     """Rewrite `![alt](fig.png)` to `![alt](<BASE>/figures/<id>/fig.png)`.
 
-    Only filenames present in `available` are rewritten; references to
-    files that were never archived as figures are left alone (so a
-    broken reference stays a broken reference, surfaced by the
-    citation/asset lint downstream rather than silently hidden).
+    `available` is the set of archived figure filenames (which may be
+    `--`-flattened paths, e.g. `analysis--fig.png` for a Fellow who put
+    the file in an `analysis/` subdir of their workspace).
+
+    Matching is two-step:
+      1. Exact match against `available`. Used when the Fellow wrote
+         the image at the workspace root.
+      2. Suffix match: if exactly one archived filename ends with the
+         referenced name (preceded by either `--` or start-of-string),
+         use it. Used for subdir-archived figures where the markdown
+         references the bare basename. Ambiguous matches (more than
+         one candidate) are left alone rather than guessing.
+
+    References that resolve to no archived figure are left alone -
+    the broken ref is then surfaced by the figure-lint at publish
+    time, which fails the publication explicitly instead of letting
+    Astro discover it at build.
     """
+
+    def resolve(name: str) -> str | None:
+        if name in available:
+            return name
+        # Suffix-match: archived filename ending in `--<name>` (one
+        # subdir level of flattening), or exact match with different
+        # case, etc. Require exactly one candidate to avoid guessing.
+        candidates = [a for a in available if a == name or a.endswith("--" + name)]
+        if len(candidates) == 1:
+            return candidates[0]
+        return None
 
     def _sub(m: re.Match[str]) -> str:
         src = m.group("src")
-        if src not in available:
+        resolved = resolve(src)
+        if resolved is None:
             return m.group(0)
-        return f"![{m.group('alt')}]({paths.BLOG_BASE_URL}/figures/{project_id}/{src})"
+        return f"![{m.group('alt')}]({paths.BLOG_BASE_URL}/figures/{project_id}/{resolved})"
 
     return _IMAGE_REF_RE.sub(_sub, body)
+
+
+def _unresolved_figure_refs(body: str) -> list[str]:
+    """Return image-reference filenames that still look like bare names.
+
+    Called AFTER `_rewrite_figure_refs`. Anything still matching the
+    bare-filename pattern means the rewrite couldn't find a matching
+    archived figure - the publication would ship with a broken image
+    and Astro's build would fail. Surface this at publish time
+    instead so the autopilot records a step_failure and the next
+    cycle retries.
+    """
+    return [m.group("src") for m in _IMAGE_REF_RE.finditer(body)]
 
 
 def _strip_title_heading(draft_md: str) -> tuple[str, str]:
@@ -352,6 +390,25 @@ def _write_publication_artifacts(
     if notebook_md is not None:
         notebook_md = _rewrite_figure_refs(
             notebook_md, project_id=project_id, available=available_figures
+        )
+
+    # Fail the publish step if any image reference still looks like a
+    # bare filename. Either the Fellow referenced a figure that was
+    # never archived, or the basename resolver found an ambiguous
+    # match and refused to guess. Either way, letting it through
+    # means Astro will blow up on `npm run build` in CI. Surface it
+    # here so the autopilot's _guarded handler records a step_failure
+    # and the next cycle retries cleanly.
+    unresolved = _unresolved_figure_refs(body)
+    if notebook_md is not None:
+        unresolved += _unresolved_figure_refs(notebook_md)
+    if unresolved:
+        raise RuntimeError(
+            f"publish: {len(unresolved)} unresolved image reference(s) in "
+            f"draft body/notebook: {unresolved[:5]}. Archived figures "
+            f"available for this project: {sorted(available_figures)[:10]}. "
+            "Move the figure into the workspace under one of those names, "
+            "or fix the reference."
         )
 
     publication_md = _publication_markdown(
