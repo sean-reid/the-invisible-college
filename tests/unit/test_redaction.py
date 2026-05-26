@@ -206,3 +206,55 @@ def test_redaction_report_truthiness() -> None:
     assert not empty
     _, hit = redaction.redact("budget=$5")
     assert hit
+
+
+# ---------------------------------------------------------------------------
+# LaTeX inline-math protection
+# ---------------------------------------------------------------------------
+
+
+def test_latex_math_with_qualifier_does_not_leak() -> None:
+    """The Stahl-paper regression: `to approximately $1.1 \\times 10^9$`
+    was matching `qualified-dollar` because the 10-char `_NOT_LATEX`
+    lookahead couldn't see the closing `$` 19 chars away. Math-span
+    masking solves it cleanly."""
+    text = (
+        "brings $H_{\\text{bat}}$ down from $1.2 \\times 10^{10}$ "
+        "to approximately $1.1 \\times 10^{9}$. The bat..."
+    )
+    out, report = redaction.redact(text)
+    assert "[cost redacted]" not in out
+    assert report.total == 0
+    assert "$1.1 \\times 10^{9}$" in out
+
+
+def test_latex_math_with_under_does_not_leak() -> None:
+    text = "fell from $1.2 \\times 10^{10}$ to under $1.1 \\times 10^{9}$."
+    out, _ = redaction.redact(text)
+    assert "[cost redacted]" not in out
+
+
+def test_latex_math_with_subscript() -> None:
+    out, _ = redaction.redact("the index $x_i$ runs from 1 to n.")
+    assert out == "the index $x_i$ runs from 1 to n."
+
+
+def test_pure_numeric_math_unprotected_but_safe_without_keyword() -> None:
+    """`$1.5$` has no LaTeX signal so it isn't masked, but no
+    redaction pattern matches it either (no operational keyword)."""
+    out, report = redaction.redact("The magnitude is $1.5$.")
+    assert out == "The magnitude is $1.5$."
+    assert report.total == 0
+
+
+def test_run_cost_with_two_dollars_still_redacts() -> None:
+    """Two `$` in real operational telemetry must not be misread as
+    a math span (they have no LaTeX signal chars between them)."""
+    out, _ = redaction.redact("run cost: $2.24 of $10.00 total")
+    assert "[cost redacted]" in out
+
+
+def test_display_math_block_protected() -> None:
+    text = "see the formula $$\\sum_{i} x_i^2$$ below."
+    out, _ = redaction.redact(text)
+    assert out == text

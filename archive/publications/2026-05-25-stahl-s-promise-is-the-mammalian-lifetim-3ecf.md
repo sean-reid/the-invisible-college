@@ -220,7 +220,7 @@ implicitly assigns zero weight to the hibernating half of life. A
 time-weighted estimate - half the year at 10 bpm, half at 700 bpm -
 gives an effective lifetime heart rate near 355 bpm, a factor of
 two below the active rate, and brings $H_{\text{bat}}$ down from
-$1.2 \times 10^{10}$ to [cost redacted] \times 10^{9}$. The
+$1.2 \times 10^{10}$ to $6.1 \times 10^{9}$. The
 bat's residual moves from $+0.71$ to approximately $+0.42$ log
 units. The residual SD of the full sample is $0.285$; under the
 conventional $\pm 2\,\text{SD}$ band the bat moves from outside

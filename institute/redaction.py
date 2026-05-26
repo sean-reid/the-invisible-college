@@ -29,13 +29,32 @@ _COST_MARKER = "[cost redacted]"
 _BUDGET_MARKER = "[budget redacted]"
 _TOKEN_MARKER = "[token count redacted]"
 
-# Suffix appended to any $X dollar-amount pattern. Negative lookahead
-# that bails when another `$` appears within the next 10 same-line
-# characters — that pattern is overwhelmingly LaTeX inline math
-# (`$N$`, `$0.017°$`) rather than operational cost telemetry. Without
-# this guard the redactor swallows the opening `$` of a math span and
-# leaves a corrupted trailing `°$` behind.
-_NOT_LATEX = r"(?![^$\n]{0,10}\$)"
+# Inline-math LaTeX spans. We mask these before running any cost
+# pattern so a `$` that opens a math span is never mistaken for an
+# operational dollar amount. This is the robust replacement for the
+# earlier 10-char lookahead: real LaTeX spans like `$1.1 \times 10^9$`
+# are 15-30 chars wide and the lookahead silently failed on them.
+#
+# The inline-math arm requires at least one LaTeX-signal char inside
+# the span (`\`, `^`, `_`, `{`, or `}`). Without that guard, a span
+# like `$2.24 of $10.00` from real operational cost telemetry would
+# match the simple `$...$` shape and be masked incorrectly. Pure-
+# numeric math like `$1.5$` is left to the redactor's keyword-based
+# checks; those need an operational keyword to fire so a bare math
+# numeral with no qualifier passes through cleanly.
+_MATH_SPAN_RE = re.compile(
+    r"\$\$[^\n]+?\$\$|\$[^$\n]*?[\\^_{}][^$\n]*?\$",
+)
+_MATH_PLACEHOLDER = "\x00MATHSPAN{}\x00"
+
+# Negative lookahead used by patterns that follow a cost qualifier
+# or verb directly with a `$X` amount. The math-span pre-pass above
+# already masks any LaTeX expression that contains a signal char
+# (`\`, `^`, `_`, `{`, `}`), so this lookahead is the second layer:
+# it catches short pure-numeric inline math like `$390$`, `$5$`,
+# `$0.017`°$` where the LaTeX heuristic doesn't fire. 15 chars is
+# the typical width of those spans plus margin.
+_NOT_LATEX = r"(?![^$\n]{0,15}\$)"
 
 # Each entry: (compiled pattern, replacement marker, label-for-audit).
 # Every pattern requires both an operational keyword and a number
@@ -196,6 +215,11 @@ def redact(text: str) -> tuple[str, RedactionReport]:
 
     Returns the cleaned text and a report of how many matches each
     pattern removed. Never raises; an empty input round-trips.
+
+    LaTeX inline math (`$...$`, `$$...$$`) is masked before any cost
+    pattern runs and restored verbatim afterwards. A Fellow's
+    rendered formula like `$1.1 \\times 10^{9}$` therefore cannot
+    look like an operational dollar amount to the redactor.
     """
     if not text:
         return text, RedactionReport(total=0, by_pattern={})
@@ -214,14 +238,29 @@ def redact(text: str) -> tuple[str, RedactionReport]:
     ):
         return text, RedactionReport(total=0, by_pattern={})
 
+    # Mask LaTeX math spans before running any cost pattern.
+    saved_spans: list[str] = []
+
+    def _stash(m: re.Match[str]) -> str:
+        saved_spans.append(m.group(0))
+        return _MATH_PLACEHOLDER.format(len(saved_spans) - 1)
+
+    masked = _MATH_SPAN_RE.sub(_stash, text)
+
     by_pattern: dict[str, int] = {}
     total = 0
     for pattern, replacement, label in _PATTERNS:
-        text, n = pattern.subn(replacement, text)
+        masked, n = pattern.subn(replacement, masked)
         if n:
             by_pattern[label] = n
             total += n
-    return text, RedactionReport(total=total, by_pattern=by_pattern)
+
+    # Restore math spans verbatim. Placeholder is NUL-delimited so it
+    # cannot collide with any prose the Fellow wrote.
+    for i, span in enumerate(saved_spans):
+        masked = masked.replace(_MATH_PLACEHOLDER.format(i), span)
+
+    return masked, RedactionReport(total=total, by_pattern=by_pattern)
 
 
 def has_cost_leak(text: str) -> bool:
