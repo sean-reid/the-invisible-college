@@ -180,6 +180,118 @@ def _record_step_failure(
     except Exception:  # pragma: no cover - best-effort
         # Never let the audit write itself crash the loop.
         pass
+    # After recording the failure, see if we have hit the circuit
+    # breaker. If yes, abandon the project so a deterministic loop
+    # (e.g. a citation_lint failure on a body that the autopilot
+    # cannot revise itself) does not keep wasting cycles forever.
+    if project_id:
+        _maybe_circuit_break(project_id)
+
+
+# Circuit-breaker thresholds. Workflow-level failures (raised by
+# publish/peer_review/etc. as plain Exceptions with fellow_id =
+# "orchestrator") are deterministic - retrying without operator
+# intervention will fail the same way - so we abandon sooner.
+# Fellow CLI failures (FellowInvocationError) are usually transient
+# network blips or model flakes; we tolerate more retries before
+# giving up.
+_MAX_CONSECUTIVE_WORKFLOW_FAILURES = 2
+_MAX_CONSECUTIVE_FELLOW_FAILURES = 5
+
+
+def _maybe_circuit_break(project_id: str) -> None:
+    """Abandon a project that has hit too many consecutive failures.
+
+    Looks at the trailing run of `step_failure` audit rows for this
+    project. If we have crossed either the workflow-failure or the
+    fellow-CLI-failure threshold, transition the project to
+    ABANDONED with an explanatory decision and stop retrying.
+
+    The operator can resurrect the project by directly editing the
+    db (state back to whatever workflow needs to re-run) once they
+    have fixed the root cause.
+    """
+    from institute import decisions
+    from institute import state as state_mod
+    from institute.state import State
+
+    with db.connection() as conn:
+        proj = conn.execute(
+            "SELECT id, state FROM projects WHERE id = ?",
+            (project_id,),
+        ).fetchone()
+        if proj is None:
+            return
+        current_state = proj["state"]
+        if current_state in {
+            State.PUBLISHED.value,
+            State.REJECTED.value,
+            State.ABANDONED.value,
+            State.SHELVED.value,
+        }:
+            return
+        # Most-recent audit rows for this project. We stop counting
+        # at the first non-step_failure row: a successful step (any
+        # other action against this project_id) resets the streak.
+        rows = conn.execute(
+            "SELECT action, actor FROM audit_log WHERE project_id = ? ORDER BY at DESC LIMIT 10",
+            (project_id,),
+        ).fetchall()
+
+    trailing = 0
+    workflow = 0
+    for row in rows:
+        if row["action"] != "step_failure":
+            break
+        trailing += 1
+        # A workflow-level failure (publish/peer_review raising a
+        # plain exception) has actors=["orchestrator", "orchestrator"]
+        # - no real Fellow involved. A Fellow CLI failure carries
+        # the fellow's id alongside. Count as "workflow" only when
+        # every actor is the orchestrator.
+        actors = {a.strip() for a in (row["actor"] or "").split(",") if a.strip()}
+        if actors and actors == {"orchestrator"}:
+            workflow += 1
+
+    if (
+        workflow < _MAX_CONSECUTIVE_WORKFLOW_FAILURES
+        and trailing < _MAX_CONSECUTIVE_FELLOW_FAILURES
+    ):
+        return
+
+    reason = (
+        f"{workflow} consecutive workflow-level failure(s)"
+        if workflow >= _MAX_CONSECUTIVE_WORKFLOW_FAILURES
+        else f"{trailing} consecutive Fellow CLI failure(s)"
+    )
+    body = (
+        f"**Where:** project `{project_id}` (state: `{current_state}`)\n\n"
+        f"**Reason:** circuit breaker tripped after {reason}.\n\n"
+        "The autopilot kept hitting the same failure mode on retry "
+        "and cannot self-heal. The project is moved to `abandoned` "
+        "so the cycle stops re-spending budget on the same broken "
+        "step. The operator can resurrect the project by editing "
+        "the most recent step_failure (or fixing the root cause "
+        "in the workspace/archive) and pushing the project state "
+        "back to the workflow that needs to re-run."
+    )
+    decision = decisions.Decision(
+        kind="circuit_breaker",
+        title=f"Circuit breaker: abandoned {project_id}",
+        body=body,
+        actors=["orchestrator"],
+        related_project=project_id,
+    )
+    try:
+        with db.connection() as conn, db.transaction(conn):
+            state_mod.transition(conn, project_id, State.ABANDONED)
+            decisions.record(conn, decision)
+        console.print(
+            f"[red]Circuit breaker: {project_id} abandoned after {reason}. "
+            "See decision record for recovery instructions.[/red]"
+        )
+    except Exception as exc:  # pragma: no cover - best-effort
+        console.print(f"[yellow]Circuit breaker write failed: {exc}[/yellow]")
 
 
 def _pick_in_flight_project(

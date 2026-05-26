@@ -164,6 +164,23 @@ def _candidates_md(items: list[open_problems.OpenProblem]) -> str:
     return "\n".join(out)
 
 
+def _lint_reason(body: str) -> str | None:
+    """Return a short reason string if `body` would fail a publish-time
+    lint, or None if it is clean. Used by `run()` to filter promoted
+    candidates so a citation-by-number pattern in a follow-up question
+    doesn't cascade into a publish loop."""
+    from institute import citation_lint, tone_lint
+
+    citation_violations = citation_lint.find_violations(body)
+    if citation_violations:
+        return f"citation-by-number: {citation_violations[0]!r}"
+    tone_violations = tone_lint.find_violations(body)
+    if tone_violations:
+        label, match = tone_violations[0]
+        return f"tone leak: {label} {match!r}"
+    return None
+
+
 def _stage(path: Path, content: str) -> None:
     from institute.safe_io import atomic_write
 
@@ -288,17 +305,41 @@ def run(
 
     by_slug = {p.slug: p for p in candidates}
     promoted: list[open_problems.OpenProblem] = []
+    lint_dropped: list[tuple[str, str]] = []  # (slug, reason)
     for slug in selected_slugs[:MAX_SURVIVORS]:
-        if slug in by_slug and slug not in [p.slug for p in promoted]:
-            promoted.append(by_slug[slug])
+        if slug not in by_slug or slug in {p.slug for p in promoted}:
+            continue
+        problem = by_slug[slug]
+        # Defence in depth: refuse to promote a candidate whose body
+        # would trip the publish-time citation_lint once spliced. Bad
+        # content here cascades into a publish loop because publish
+        # re-runs the splice each cycle and re-fails the same way.
+        # Catching it at promote time keeps the publication moving.
+        reason = _lint_reason(problem.body)
+        if reason is not None:
+            lint_dropped.append((slug, reason))
+            continue
+        promoted.append(problem)
 
     promoted_set = {p.slug for p in promoted}
-    discarded = [p for p in candidates if p.slug not in promoted_set]
+    lint_drop_slugs = {slug for slug, _ in lint_dropped}
+    discarded = [
+        p for p in candidates if p.slug not in promoted_set and p.slug not in lint_drop_slugs
+    ]
+    if lint_dropped:
+        console.print(
+            f"[yellow]Editorial pass dropped {len(lint_dropped)} candidate(s) "
+            f"that would have failed publish-time lint: "
+            f"{', '.join(f'{slug} ({reason})' for slug, reason in lint_dropped)}.[/yellow]"
+        )
 
     for p in promoted:
         open_problems.mark_promoted(p)
     for p in discarded:
         open_problems.discard(p)
+    # lint-dropped candidates stay 'open' on disk - they may be fine
+    # once the Fellow rewrites the bad citation, and we don't want to
+    # silently lose them.
 
     _stage(
         ws / "decision.json",

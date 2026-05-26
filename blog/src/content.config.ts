@@ -119,6 +119,7 @@ const decisions = defineCollection({
       'andon_cord_pulled',
       'bootstrap',
       'charter_violation_termination',
+      'circuit_breaker',
       'concern',
       'curriculum_response',
       'editorial',
