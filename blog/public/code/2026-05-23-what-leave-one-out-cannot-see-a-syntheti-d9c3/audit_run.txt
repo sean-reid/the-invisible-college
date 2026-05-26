@@ -1,0 +1,103 @@
+
+=== 0 clean baseline (no contamination) (n=200, p=2) ===
+  true beta            = +1.000
+  OLS beta-hat         = +1.054  (SE 0.060)
+  bias                 = +0.89 SE
+  max |DFBETAS|        = 0.201  (thresh 0.141)
+  LOO flag             = YES
+  LOO beta range       = [+1.042, +1.066]  (excludes truth)
+  best pair            = (19, 156)
+  pair-LOO beta-hat    = +1.031  (move -0.38 SE)
+
+
+=== A single high-leverage point (n=200, p=2) ===
+  true beta            = +1.000
+  OLS beta-hat         = +1.780  (SE 0.123)
+  bias                 = +6.36 SE
+  max |DFBETAS|        = 13.138  (thresh 0.141)
+  LOO flag             = YES
+  LOO beta range       = [+0.895, +1.805]  (covers truth)
+  best pair            = (0, 176)
+  pair-LOO beta-hat    = +0.888  (move -7.27 SE)
+
+
+=== B single high-residual point (n=200, p=2) ===
+  true beta            = +1.000
+  OLS beta-hat         = +1.218  (SE 0.152)
+  bias                 = +1.44 SE
+  max |DFBETAS|        = 2.798  (thresh 0.141)
+  LOO flag             = YES
+  LOO beta range       = [+1.058, +1.233]  (excludes truth)
+  best pair            = (0, 197)
+  pair-LOO beta-hat    = +1.044  (move -1.15 SE)
+
+
+=== C masked pair (Lawrance/Hadi) (n=200, p=2) ===
+  true beta            = +1.000
+  OLS beta-hat         = +1.223  (SE 0.061)
+  bias                 = +3.68 SE
+  max |DFBETAS|        = 1.155  (thresh 0.141)
+  LOO flag             = YES
+  LOO beta range       = [+1.155, +1.240]  (excludes truth)
+  best pair            = (0, 1)
+  pair-LOO beta-hat    = +1.075  (move -2.45 SE)
+
+
+=== D clustered leverage (K=8 batch) — correct LCO grouping (n=200, p=2) ===
+  true beta            = +1.000
+  OLS beta-hat         = +1.305  (SE 0.069)
+  bias                 = +4.44 SE
+  max |DFBETAS|        = 0.511  (thresh 0.141)
+  LOO flag             = YES
+  LOO beta range       = [+1.271, +1.321]  (excludes truth)
+  best pair            = (3, 6)
+  pair-LOO beta-hat    = +1.238  (move -0.97 SE)
+  LCO beta range       = [-1.510, +0.999]  (excludes truth)
+
+
+=== D' clustered leverage — wrong LCO grouping (5 random partitions) (n=200, p=2) ===
+  true beta            = +1.000
+  OLS beta-hat         = +1.305  (SE 0.069)
+  bias                 = +4.44 SE
+  max |DFBETAS|        = 0.511  (thresh 0.141)
+  LOO flag             = YES
+  LOO beta range       = [+1.271, +1.321]  (excludes truth)
+  best pair            = (3, 6)
+  pair-LOO beta-hat    = +1.238  (move -0.97 SE)
+  LCO beta range       = [+1.279, +1.324]  (excludes truth)
+
+
+=== E group mean shift (one of 12) (n=240, p=2) ===
+  true beta            = +1.000
+  OLS beta-hat         = +0.017  (SE 0.059)
+  bias                 = -16.55 SE
+  max |DFBETAS|        = 0.505  (thresh 0.129)
+  LOO flag             = YES
+  LOO beta range       = [+0.001, +0.047]  (excludes truth)
+  best pair            = (14, 15)
+  pair-LOO beta-hat    = +0.071  (move +0.91 SE)
+  LCO beta range       = [-0.047, +0.971]  (excludes truth)
+
+
+=== F omitted-variable bias (n=200, p=2) ===
+  true beta            = +1.000
+  OLS beta-hat         = +2.383  (SE 0.130)
+  bias                 = +10.60 SE
+  max |DFBETAS|        = 0.294  (thresh 0.141)
+  LOO flag             = YES
+  LOO beta range       = [+2.345, +2.407]  (excludes truth)
+  best pair            = (74, 199)
+  pair-LOO beta-hat    = +2.315  (move -0.52 SE)
+  LCO beta range       = [+2.316, +2.505]  (excludes truth)
+
+
+=== G classical measurement error on x (n=200, p=2) ===
+  true beta            = +1.000
+  OLS beta-hat         = +0.666  (SE 0.042)
+  bias                 = -7.98 SE
+  max |DFBETAS|        = 0.339  (thresh 0.141)
+  LOO flag             = YES
+  LOO beta range       = [+0.652, +0.679]  (excludes truth)
+  best pair            = (87, 196)
+  pair-LOO beta-hat    = +0.692  (move +0.64 SE)
+

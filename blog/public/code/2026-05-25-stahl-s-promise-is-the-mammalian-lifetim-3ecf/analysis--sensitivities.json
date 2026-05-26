@@ -1,0 +1,335 @@
+{
+  "drop_order": {
+    "Artiodactyla": {
+      "slope": -0.033272403436848744,
+      "n": 19,
+      "ci": [
+        -0.11159674095245818,
+        0.03998101063557768
+      ],
+      "dropped": [
+        "sheep",
+        "pig",
+        "cow"
+      ]
+    },
+    "Carnivora": {
+      "slope": -0.05216473882142076,
+      "n": 19,
+      "ci": [
+        -0.13414540034751204,
+        0.016535481137847776
+      ],
+      "dropped": [
+        "domestic cat",
+        "domestic dog",
+        "ferret"
+      ]
+    },
+    "Cetacea": {
+      "slope": -0.062328463723081075,
+      "n": 21,
+      "ci": [
+        -0.15626643461602063,
+        0.024664842706326174
+      ],
+      "dropped": [
+        "fin whale"
+      ]
+    },
+    "Chiroptera": {
+      "slope": -0.02168276241487241,
+      "n": 21,
+      "ci": [
+        -0.08382410614637958,
+        0.029488414003775682
+      ],
+      "dropped": [
+        "little brown bat"
+      ]
+    },
+    "Eulipotyphla": {
+      "slope": -0.06721194493537061,
+      "n": 20,
+      "ci": [
+        -0.15636276922666476,
+        0.019308588110389394
+      ],
+      "dropped": [
+        "European hedgehog",
+        "Etruscan shrew"
+      ]
+    },
+    "Lagomorpha": {
+      "slope": -0.05355517275004462,
+      "n": 21,
+      "ci": [
+        -0.13721475568853772,
+        0.01318521504282731
+      ],
+      "dropped": [
+        "domestic rabbit"
+      ]
+    },
+    "Perissodactyla": {
+      "slope": -0.05301657943409557,
+      "n": 21,
+      "ci": [
+        -0.1415181252561178,
+        0.01869816152465354
+      ],
+      "dropped": [
+        "horse"
+      ]
+    },
+    "Primates": {
+      "slope": -0.06452086067507018,
+      "n": 19,
+      "ci": [
+        -0.15810781565569484,
+        -0.001922511938645733
+      ],
+      "dropped": [
+        "human",
+        "chimpanzee",
+        "rhesus macaque"
+      ]
+    },
+    "Proboscidea": {
+      "slope": -0.05579935147502302,
+      "n": 21,
+      "ci": [
+        -0.14889034482958943,
+        0.019810344784276353
+      ],
+      "dropped": [
+        "African elephant"
+      ]
+    },
+    "Rodentia": {
+      "slope": -0.06992175340935622,
+      "n": 16,
+      "ci": [
+        -0.18146207075938098,
+        0.00538303110116934
+      ],
+      "dropped": [
+        "house mouse",
+        "brown rat",
+        "golden hamster",
+        "guinea pig",
+        "naked mole rat",
+        "gray squirrel"
+      ]
+    }
+  },
+  "well_monitored": {
+    "n": 15,
+    "species": [
+      "house mouse",
+      "brown rat",
+      "golden hamster",
+      "guinea pig",
+      "domestic rabbit",
+      "domestic cat",
+      "domestic dog",
+      "ferret",
+      "sheep",
+      "pig",
+      "cow",
+      "horse",
+      "human",
+      "chimpanzee",
+      "rhesus macaque"
+    ],
+    "slope": 0.012185015769382539,
+    "intercept": 9.078569880635268,
+    "se": 0.04868498907631348,
+    "ci": [
+      -0.0807735709802943,
+      0.12052194895540491
+    ]
+  },
+  "less_monitored": {
+    "n": 7,
+    "species": [
+      "African elephant",
+      "fin whale",
+      "naked mole rat",
+      "little brown bat",
+      "European hedgehog",
+      "gray squirrel",
+      "Etruscan shrew"
+    ],
+    "slope": -0.06998177837952242,
+    "intercept": 9.630499913406894,
+    "se": 0.04701925236044277,
+    "ci": [
+      -0.16660600856317317,
+      0.009018249620945298
+    ]
+  },
+  "bias_check": {
+    "well_slope": 0.012185015769382539,
+    "less_slope": -0.06998177837952242,
+    "difference": 0.08216679414890496
+  },
+  "drop_outliers": {
+    "drop_bat": {
+      "slope": -0.02168276241487241,
+      "n": 21,
+      "ci": [
+        -0.08382410614637958,
+        0.029488414003775682
+      ],
+      "dropped": [
+        "Myotis lucifugus"
+      ]
+    },
+    "drop_nakedmolerat": {
+      "slope": -0.04173749720811073,
+      "n": 21,
+      "ci": [
+        -0.13113958968799988,
+        0.026554732927940545
+      ],
+      "dropped": [
+        "Heterocephalus glaber"
+      ]
+    },
+    "drop_primates": {
+      "slope": -0.06452086067507018,
+      "n": 19,
+      "ci": [
+        -0.15810781565569484,
+        -0.001922511938645733
+      ],
+      "dropped": [
+        "Homo sapiens",
+        "Macaca mulatta",
+        "Pan troglodytes"
+      ]
+    },
+    "drop_bat_and_mole_rat": {
+      "slope": -0.0045793070420694325,
+      "n": 20,
+      "ci": [
+        -0.053272692005201745,
+        0.045223310359842464
+      ],
+      "dropped": [
+        "Heterocephalus glaber",
+        "Myotis lucifugus"
+      ]
+    },
+    "drop_all_named_outliers": {
+      "slope": -0.015579709854575319,
+      "n": 17,
+      "ci": [
+        -0.07010986169421457,
+        0.017134881734906255
+      ],
+      "dropped": [
+        "Heterocephalus glaber",
+        "Homo sapiens",
+        "Macaca mulatta",
+        "Myotis lucifugus",
+        "Pan troglodytes"
+      ]
+    }
+  },
+  "by_order": {
+    "Artiodactyla": {
+      "n": 3,
+      "species": [
+        "sheep",
+        "pig",
+        "cow"
+      ],
+      "median_H": 899391600.0000002,
+      "geomean_H": 802730165.132157
+    },
+    "Carnivora": {
+      "n": 3,
+      "species": [
+        "domestic cat",
+        "domestic dog",
+        "ferret"
+      ],
+      "median_H": 1446390000.0000002,
+      "geomean_H": 1572602769.9458663
+    },
+    "Cetacea": {
+      "n": 1,
+      "species": [
+        "fin whale"
+      ],
+      "median_H": 1319107680.0000012,
+      "geomean_H": 1319107680.0000012
+    },
+    "Chiroptera": {
+      "n": 1,
+      "species": [
+        "little brown bat"
+      ],
+      "median_H": 11802542400.000017,
+      "geomean_H": 11802542400.000017
+    },
+    "Eulipotyphla": {
+      "n": 2,
+      "species": [
+        "European hedgehog",
+        "Etruscan shrew"
+      ],
+      "median_H": 1471899060.0000007,
+      "geomean_H": 1470394531.2932072
+    },
+    "Lagomorpha": {
+      "n": 1,
+      "species": [
+        "domestic rabbit"
+      ],
+      "median_H": 970396200.0000002,
+      "geomean_H": 970396200.0000002
+    },
+    "Perissodactyla": {
+      "n": 1,
+      "species": [
+        "horse"
+      ],
+      "median_H": 1319107680.0000012,
+      "geomean_H": 1319107680.0000012
+    },
+    "Primates": {
+      "n": 3,
+      "species": [
+        "human",
+        "chimpanzee",
+        "rhesus macaque"
+      ],
+      "median_H": 2734992000.000001,
+      "geomean_H": 2821508720.1444383
+    },
+    "Proboscidea": {
+      "n": 1,
+      "species": [
+        "African elephant"
+      ],
+      "median_H": 1356976800.000002,
+      "geomean_H": 1356976800.000002
+    },
+    "Rodentia": {
+      "n": 6,
+      "species": [
+        "house mouse",
+        "brown rat",
+        "golden hamster",
+        "guinea pig",
+        "naked mole rat",
+        "gray squirrel"
+      ],
+      "median_H": 1493726400.0,
+      "geomean_H": 1637275088.0196724
+    }
+  }
+}

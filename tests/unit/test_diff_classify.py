@@ -31,12 +31,25 @@ def test_classify_path_fellow_prefixes() -> None:
     assert diff_classify.classify_path("genomes/ada.json") == "fellow"
 
 
+def test_classify_path_blog_public_assets_are_fellow_owned() -> None:
+    """mirror_to_blog and mirror_figures_to_blog write into these dirs at
+    publish time. Treating them as operator-owned (because they live
+    under blog/public/) silently skips them at the daemon's commit
+    step and leaves the published blog references broken."""
+    assert diff_classify.classify_path("blog/public/code/proj-1/script.py") == "fellow"
+    assert diff_classify.classify_path("blog/public/figures/proj-1/fig.png") == "fellow"
+
+
 def test_classify_path_operator_prefixes() -> None:
     assert diff_classify.classify_path("docs/01-charter.md") == "operator"
     assert diff_classify.classify_path("institute/cli.py") == "operator"
     assert diff_classify.classify_path("tests/unit/test_x.py") == "operator"
     assert diff_classify.classify_path("scripts/run-daemon.sh") == "operator"
     assert diff_classify.classify_path("blog/src/components/Foo.astro") == "operator"
+    # blog/public/ proper (favicon, robots, top-level assets) remains
+    # operator-owned; only the per-project mirror subdirs flip.
+    assert diff_classify.classify_path("blog/public/favicon.svg") == "operator"
+    assert diff_classify.classify_path("blog/public/robots.txt") == "operator"
 
 
 def test_classify_path_operator_toplevel_files() -> None:

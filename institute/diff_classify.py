@@ -33,6 +33,8 @@ from pathlib import Path
 # because these are disjoint.
 FELLOW_PREFIXES: tuple[str, ...] = (
     "archive/",
+    "blog/public/code/",
+    "blog/public/figures/",
     "blog/src/content/",
     "fellows/",
     "genomes/",

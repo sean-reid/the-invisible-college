@@ -1,0 +1,23 @@
+species,common_name,order,mass_g,hr_bpm,Lmax_yr,source_HR,source_Lmax,measurement_notes
+Mus musculus,house mouse,Rodentia,25,580,4.0,Stahl1967,AnAge,awake_restraint
+Rattus norvegicus,brown rat,Rodentia,250,330,3.8,Stahl1967,AnAge,awake
+Mesocricetus auratus,golden hamster,Rodentia,120,450,3.9,Calder1984,AnAge,awake
+Cavia porcellus,guinea pig,Rodentia,700,280,12.0,Stahl1967,AnAge,awake
+Oryctolagus cuniculus,domestic rabbit,Lagomorpha,2300,205,9.0,Stahl1967,AnAge,awake_restraint
+Felis catus,domestic cat,Carnivora,4000,150,30.0,Stahl1967,AnAge,awake
+Canis familiaris,domestic dog,Carnivora,18000,90,24.0,Stahl1967,AnAge,awake_breed_pooled
+Mustela putorius furo,ferret,Carnivora,1100,250,11.0,AnAge,AnAge,awake
+Ovis aries,sheep,Artiodactyla,50000,75,22.8,Stahl1967,AnAge,awake
+Sus scrofa domesticus,pig,Artiodactyla,100000,70,27.0,Stahl1967,AnAge,awake
+Bos taurus,cow,Artiodactyla,600000,50,22.0,Stahl1967,AnAge,awake
+Equus caballus,horse,Perissodactyla,500000,44,57.0,Stahl1967,AnAge,awake
+Loxodonta africana,African elephant,Proboscidea,3500000,30,86.0,Calder1984,AnAge,awake_field
+Balaenoptera physalus,fin whale,Cetacea,70000000,22,114.0,Calder1984,AnAge,inferred_resting
+Homo sapiens,human,Primates,70000,60,122.5,Stahl1967,AnAge,Calment_record
+Pan troglodytes,chimpanzee,Primates,50000,68,59.4,AnAge,AnAge,awake
+Macaca mulatta,rhesus macaque,Primates,8000,130,40.0,AnAge,AnAge,awake
+Heterocephalus glaber,naked mole rat,Rodentia,35,290,31.0,Buffenstein2008,AnAge,awake
+Myotis lucifugus,little brown bat,Chiroptera,7,660,34.0,SchmidtNielsen1984,AnAge,active_resting_not_torpor
+Erinaceus europaeus,European hedgehog,Eulipotyphla,800,250,11.7,Calder1984,AnAge,awake_not_hibernating
+Sciurus carolinensis,gray squirrel,Rodentia,500,250,23.6,Calder1984,AnAge,awake
+Suncus etruscus,Etruscan shrew,Eulipotyphla,2,835,3.2,SchmidtNielsen1984,AnAge,awake_high_variance

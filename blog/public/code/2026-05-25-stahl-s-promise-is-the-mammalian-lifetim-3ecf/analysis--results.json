@@ -1,0 +1,537 @@
+{
+  "fit_fH": {
+    "slope": -0.23161112473741857,
+    "se_slope": 0.009644269819255109,
+    "intercept": 3.0192519477902127,
+    "r2": 0.9664845701441285,
+    "n": 22,
+    "boot": {
+      "slope_mean": -0.23349984672137972,
+      "slope_ci": [
+        -0.2594431252330524,
+        -0.2132468471643431
+      ],
+      "intercept_mean": 3.0251533554123675,
+      "intercept_ci": [
+        2.936577082023103,
+        3.1264747843218594
+      ],
+      "n_replicates": 5000
+    }
+  },
+  "fit_Lmax": {
+    "slope": 0.17901976703655878,
+    "se_slope": 0.03869133279319104,
+    "intercept": 0.6656579438521967,
+    "r2": 0.5170006826048357,
+    "n": 22,
+    "boot": {
+      "slope_mean": 0.18043090140078824,
+      "slope_ci": [
+        0.09511984773766216,
+        0.26625447759877274
+      ],
+      "intercept_mean": 0.6594873467238755,
+      "intercept_ci": [
+        0.2806272530360077,
+        1.0574929231479777
+      ],
+      "n_replicates": 5000
+    }
+  },
+  "fit_H": {
+    "slope": -0.05259135770085981,
+    "se_slope": 0.03355141734918217,
+    "intercept": 9.405862608343993,
+    "r2": 0.10940951168805058,
+    "n": 22,
+    "boot": {
+      "slope_mean": -0.053068945320591435,
+      "slope_ci": [
+        -0.13545593533375855,
+        0.017025588889988556
+      ],
+      "intercept_mean": 9.405593418837828,
+      "intercept_ci": [
+        9.088663940131038,
+        9.772372653036884
+      ],
+      "n_replicates": 5000
+    }
+  },
+  "consistency": {
+    "slope_H_observed": -0.05259135770085981,
+    "slope_fH_plus_Lmax": -0.05259135770085979,
+    "difference": -2.0816681711721685e-17
+  },
+  "cluster_boot_H": {
+    "slope_mean": -0.05648909330212007,
+    "slope_ci": [
+      -0.15430183609421944,
+      0.00925608799604444
+    ],
+    "n_replicates": 5000
+  },
+  "fit_H_small": {
+    "slope": -0.13203061149688994,
+    "se_slope": 0.1499781539422249,
+    "intercept": 9.548636983893525,
+    "r2": 0.0996767124906538,
+    "n": 9,
+    "species_included": [
+      "Mus musculus",
+      "Rattus norvegicus",
+      "Mesocricetus auratus",
+      "Cavia porcellus",
+      "Heterocephalus glaber",
+      "Myotis lucifugus",
+      "Erinaceus europaeus",
+      "Sciurus carolinensis",
+      "Suncus etruscus"
+    ]
+  },
+  "fit_H_large": {
+    "slope": -0.036639031743832894,
+    "se_slope": 0.04900332733749948,
+    "intercept": 9.333334514641097,
+    "r2": 0.04836323718046642,
+    "n": 13,
+    "species_included": [
+      "Oryctolagus cuniculus",
+      "Felis catus",
+      "Canis familiaris",
+      "Mustela putorius furo",
+      "Ovis aries",
+      "Sus scrofa domesticus",
+      "Bos taurus",
+      "Equus caballus",
+      "Loxodonta africana",
+      "Balaenoptera physalus",
+      "Homo sapiens",
+      "Pan troglodytes",
+      "Macaca mulatta"
+    ]
+  },
+  "central_H": {
+    "median_H": 1381170960.0,
+    "median_H_ci": [
+      1136073600.0,
+      1952626500.0
+    ],
+    "geomean_H": 1636587885.69602,
+    "log10_H_mean": 9.213939332129799,
+    "log10_H_sd": 0.30202219702183253,
+    "log10_H_range": [
+      8.76234540185981,
+      10.071975569285708
+    ]
+  },
+  "per_species": [
+    {
+      "species": "Mus musculus",
+      "common": "house mouse",
+      "order": "Rodentia",
+      "mass_g": 25.0,
+      "hr_bpm": 580.0,
+      "Lmax_yr": 4.0,
+      "H": 1220227200.0,
+      "log10_H": 9.086440701592483,
+      "log10_H_predicted_under_zero_slope": 9.213939332129799,
+      "log10_H_predicted_under_H_fit": 9.33234304530358,
+      "residual_under_H_fit": -0.2459023437110961
+    },
+    {
+      "species": "Rattus norvegicus",
+      "common": "brown rat",
+      "order": "Rodentia",
+      "mass_g": 250.0,
+      "hr_bpm": 330.0,
+      "Lmax_yr": 3.8,
+      "H": 659553840.0,
+      "log10_H": 8.819250253196282,
+      "log10_H_predicted_under_zero_slope": 9.213939332129799,
+      "log10_H_predicted_under_H_fit": 9.279751687602719,
+      "residual_under_H_fit": -0.46050143440643687
+    },
+    {
+      "species": "Mesocricetus auratus",
+      "common": "golden hamster",
+      "order": "Rodentia",
+      "mass_g": 120.0,
+      "hr_bpm": 450.0,
+      "Lmax_yr": 3.9,
+      "H": 923059800.0,
+      "log10_H": 8.965229837503427,
+      "log10_H_predicted_under_zero_slope": 9.213939332129799,
+      "log10_H_predicted_under_H_fit": 9.296515643708183,
+      "residual_under_H_fit": -0.3312858062047557
+    },
+    {
+      "species": "Cavia porcellus",
+      "common": "guinea pig",
+      "order": "Rodentia",
+      "mass_g": 700.0,
+      "hr_bpm": 280.0,
+      "Lmax_yr": 12.0,
+      "H": 1767225600.0,
+      "log10_H": 9.247291994091428,
+      "log10_H_predicted_under_zero_slope": 9.213939332129799,
+      "log10_H_predicted_under_H_fit": 9.256235039627589,
+      "residual_under_H_fit": -0.008943045536160099
+    },
+    {
+      "species": "Oryctolagus cuniculus",
+      "common": "domestic rabbit",
+      "order": "Lagomorpha",
+      "mass_g": 2300.0,
+      "hr_bpm": 205.0,
+      "Lmax_yr": 9.0,
+      "H": 970396200.0,
+      "log10_H": 8.986949087196663,
+      "log10_H_predicted_under_zero_slope": 9.213939332129799,
+      "log10_H_predicted_under_H_fit": 9.229064777227054,
+      "residual_under_H_fit": -0.24211569003039024
+    },
+    {
+      "species": "Felis catus",
+      "common": "domestic cat",
+      "order": "Carnivora",
+      "mass_g": 4000.0,
+      "hr_bpm": 150.0,
+      "Lmax_yr": 30.0,
+      "H": 2366820000.0,
+      "log10_H": 9.374165230476928,
+      "log10_H_predicted_under_zero_slope": 9.213939332129799,
+      "log10_H_predicted_under_H_fit": 9.216425382880107,
+      "residual_under_H_fit": 0.15773984759682058
+    },
+    {
+      "species": "Canis familiaris",
+      "common": "domestic dog",
+      "order": "Carnivora",
+      "mass_g": 18000.0,
+      "hr_bpm": 90.0,
+      "Lmax_yr": 24.0,
+      "H": 1136073600.0,
+      "log10_H": 9.055406467852515,
+      "log10_H_predicted_under_zero_slope": 9.213939332129799,
+      "log10_H_predicted_under_H_fit": 9.18207204991347,
+      "residual_under_H_fit": -0.12666558206095502
+    },
+    {
+      "species": "Mustela putorius furo",
+      "common": "ferret",
+      "order": "Carnivora",
+      "mass_g": 1100.0,
+      "hr_bpm": 250.0,
+      "Lmax_yr": 11.0,
+      "H": 1446390000.0,
+      "log10_H": 9.160285410531847,
+      "log10_H_predicted_under_zero_slope": 9.213939332129799,
+      "log10_H_predicted_under_H_fit": 9.245911637730059,
+      "residual_under_H_fit": -0.08562622719821178
+    },
+    {
+      "species": "Ovis aries",
+      "common": "sheep",
+      "order": "Artiodactyla",
+      "mass_g": 50000.0,
+      "hr_bpm": 75.0,
+      "Lmax_yr": 22.8,
+      "H": 899391600.0,
+      "log10_H": 8.953948827093738,
+      "log10_H_predicted_under_zero_slope": 9.213939332129799,
+      "log10_H_predicted_under_H_fit": 9.158737396020346,
+      "residual_under_H_fit": -0.2047885689266078
+    },
+    {
+      "species": "Sus scrofa domesticus",
+      "common": "pig",
+      "order": "Artiodactyla",
+      "mass_g": 100000.0,
+      "hr_bpm": 70.0,
+      "Lmax_yr": 27.0,
+      "H": 994064400.0,
+      "log10_H": 8.997414520874829,
+      "log10_H_predicted_under_zero_slope": 9.213939332129799,
+      "log10_H_predicted_under_H_fit": 9.142905819839694,
+      "residual_under_H_fit": -0.14549129896486512
+    },
+    {
+      "species": "Bos taurus",
+      "common": "cow",
+      "order": "Artiodactyla",
+      "mass_g": 600000.0,
+      "hr_bpm": 50.0,
+      "Lmax_yr": 22.0,
+      "H": 578556000.0,
+      "log10_H": 8.76234540185981,
+      "log10_H_predicted_under_zero_slope": 9.213939332129799,
+      "log10_H_predicted_under_H_fit": 9.101981789085396,
+      "residual_under_H_fit": -0.3396363872255872
+    },
+    {
+      "species": "Equus caballus",
+      "common": "horse",
+      "order": "Perissodactyla",
+      "mass_g": 500000.0,
+      "hr_bpm": 44.0,
+      "Lmax_yr": 57.0,
+      "H": 1319107680.0,
+      "log10_H": 9.120280248860263,
+      "log10_H_predicted_under_zero_slope": 9.213939332129799,
+      "log10_H_predicted_under_H_fit": 9.106146038319487,
+      "residual_under_H_fit": 0.014134210540776238
+    },
+    {
+      "species": "Loxodonta africana",
+      "common": "African elephant",
+      "order": "Proboscidea",
+      "mass_g": 3500000.0,
+      "hr_bpm": 30.0,
+      "Lmax_yr": 86.0,
+      "H": 1356976800.0,
+      "log10_H": 9.132572422664815,
+      "log10_H_predicted_under_zero_slope": 9.213939332129799,
+      "log10_H_predicted_under_H_fit": 9.061701185004802,
+      "residual_under_H_fit": 0.07087123766001291
+    },
+    {
+      "species": "Balaenoptera physalus",
+      "common": "fin whale",
+      "order": "Cetacea",
+      "mass_g": 70000000.0,
+      "hr_bpm": 22.0,
+      "Lmax_yr": 114.0,
+      "H": 1319107680.0,
+      "log10_H": 9.120280248860263,
+      "log10_H_predicted_under_zero_slope": 9.213939332129799,
+      "log10_H_predicted_under_H_fit": 8.99327825112329,
+      "residual_under_H_fit": 0.12700199773697385
+    },
+    {
+      "species": "Homo sapiens",
+      "common": "human",
+      "order": "Primates",
+      "mass_g": 70000.0,
+      "hr_bpm": 60.0,
+      "Lmax_yr": 122.5,
+      "H": 3865806000.0,
+      "log10_H": 9.587240055785779,
+      "log10_H_predicted_under_zero_slope": 9.213939332129799,
+      "log10_H_predicted_under_H_fit": 9.15105232422587,
+      "residual_under_H_fit": 0.43618773155990986
+    },
+    {
+      "species": "Pan troglodytes",
+      "common": "chimpanzee",
+      "order": "Primates",
+      "mass_g": 50000.0,
+      "hr_bpm": 68.0,
+      "Lmax_yr": 59.4,
+      "H": 2124457632.0,
+      "log10_H": 9.327248074389013,
+      "log10_H_predicted_under_zero_slope": 9.213939332129799,
+      "log10_H_predicted_under_H_fit": 9.158737396020346,
+      "residual_under_H_fit": 0.1685106783686674
+    },
+    {
+      "species": "Macaca mulatta",
+      "common": "rhesus macaque",
+      "order": "Primates",
+      "mass_g": 8000.0,
+      "hr_bpm": 130.0,
+      "Lmax_yr": 40.0,
+      "H": 2734992000.0,
+      "log10_H": 9.436956060336383,
+      "log10_H_predicted_under_zero_slope": 9.213939332129799,
+      "log10_H_predicted_under_H_fit": 9.200593806699455,
+      "residual_under_H_fit": 0.2363622536369281
+    },
+    {
+      "species": "Heterocephalus glaber",
+      "common": "naked mole rat",
+      "order": "Rodentia",
+      "mass_g": 35.0,
+      "hr_bpm": 290.0,
+      "Lmax_yr": 31.0,
+      "H": 4728380400.0,
+      "log10_H": 9.674712408434813,
+      "log10_H_predicted_under_zero_slope": 9.213939332129799,
+      "log10_H_predicted_under_H_fit": 9.324657973509101,
+      "residual_under_H_fit": 0.35005443492571153
+    },
+    {
+      "species": "Myotis lucifugus",
+      "common": "little brown bat",
+      "order": "Chiroptera",
+      "mass_g": 7.0,
+      "hr_bpm": 660.0,
+      "Lmax_yr": 34.0,
+      "H": 11802542400.0,
+      "log10_H": 10.071975569285708,
+      "log10_H_predicted_under_zero_slope": 9.213939332129799,
+      "log10_H_predicted_under_H_fit": 9.361417755029308,
+      "residual_under_H_fit": 0.7105578142564006
+    },
+    {
+      "species": "Erinaceus europaeus",
+      "common": "European hedgehog",
+      "order": "Eulipotyphla",
+      "mass_g": 800.0,
+      "hr_bpm": 250.0,
+      "Lmax_yr": 11.7,
+      "H": 1538433000.0,
+      "log10_H": 9.187078587119784,
+      "log10_H_predicted_under_zero_slope": 9.213939332129799,
+      "log10_H_predicted_under_H_fit": 9.253185164400316,
+      "residual_under_H_fit": -0.06610657728053226
+    },
+    {
+      "species": "Sciurus carolinensis",
+      "common": "gray squirrel",
+      "order": "Rodentia",
+      "mass_g": 500.0,
+      "hr_bpm": 250.0,
+      "Lmax_yr": 23.6,
+      "H": 3103164000.0,
+      "log10_H": 9.491804728343729,
+      "log10_H_predicted_under_zero_slope": 9.213939332129799,
+      "log10_H_predicted_under_H_fit": 9.263920111422067,
+      "residual_under_H_fit": 0.22788461692166173
+    },
+    {
+      "species": "Suncus etruscus",
+      "common": "Etruscan shrew",
+      "order": "Eulipotyphla",
+      "mass_g": 2.0,
+      "hr_bpm": 835.0,
+      "Lmax_yr": 3.2,
+      "H": 1405365120.0,
+      "log10_H": 9.147789170505092,
+      "log10_H_predicted_under_zero_slope": 9.213939332129799,
+      "log10_H_predicted_under_H_fit": 9.390031032163341,
+      "residual_under_H_fit": -0.24224186165824868
+    }
+  ],
+  "loo_H": [
+    {
+      "dropped": "Mus musculus",
+      "slope": -0.060822254470347725,
+      "intercept": 9.448491938182379
+    },
+    {
+      "dropped": "Rattus norvegicus",
+      "slope": -0.060734837528276915,
+      "intercept": 9.457994772492306
+    },
+    {
+      "dropped": "Mesocricetus auratus",
+      "slope": -0.0600367062107883,
+      "intercept": 9.449365346204823
+    },
+    {
+      "dropped": "Cavia porcellus",
+      "slope": -0.05269169176797107,
+      "intercept": 9.406658462359612
+    },
+    {
+      "dropped": "Oryctolagus cuniculus",
+      "slope": -0.05355517275004462,
+      "intercept": 9.420922406957024
+    },
+    {
+      "dropped": "Felis catus",
+      "slope": -0.052488264388492537,
+      "intercept": 9.39797473333738
+    },
+    {
+      "dropped": "Canis familiaris",
+      "slope": -0.05152481189428164,
+      "intercept": 9.408032898457105
+    },
+    {
+      "dropped": "Mustela putorius furo",
+      "slope": -0.05331474562839299,
+      "intercept": 9.412600871462212
+    },
+    {
+      "dropped": "Ovis aries",
+      "slope": -0.049573548287083526,
+      "intercept": 9.404752297853545
+    },
+    {
+      "dropped": "Sus scrofa domesticus",
+      "slope": -0.04980420849834127,
+      "intercept": 9.40279879788456
+    },
+    {
+      "dropped": "Bos taurus",
+      "slope": -0.04192701910010892,
+      "intercept": 9.38419913681523
+    },
+    {
+      "dropped": "Equus caballus",
+      "slope": -0.05301657943409557,
+      "intercept": 9.406699823156998
+    },
+    {
+      "dropped": "Loxodonta africana",
+      "slope": -0.05579935147502302,
+      "intercept": 9.41375261421437
+    },
+    {
+      "dropped": "Balaenoptera physalus",
+      "slope": -0.062328463723081075,
+      "intercept": 9.433403359341964
+    },
+    {
+      "dropped": "Homo sapiens",
+      "slope": -0.0599478601117418,
+      "intercept": 9.411519188182995
+    },
+    {
+      "dropped": "Pan troglodytes",
+      "slope": -0.05507456813671689,
+      "intercept": 9.406776229523759
+    },
+    {
+      "dropped": "Macaca mulatta",
+      "slope": -0.05342133512824683,
+      "intercept": 9.397626096108512
+    },
+    {
+      "dropped": "Heterocephalus glaber",
+      "slope": -0.04173749720811073,
+      "intercept": 9.348495912848268
+    },
+    {
+      "dropped": "Myotis lucifugus",
+      "slope": -0.02168276241487241,
+      "intercept": 9.255103448137346
+    },
+    {
+      "dropped": "Erinaceus europaeus",
+      "slope": -0.05327868008378783,
+      "intercept": 9.41154323172998
+    },
+    {
+      "dropped": "Sciurus carolinensis",
+      "slope": -0.049559276198310645,
+      "intercept": 9.383808672928145
+    },
+    {
+      "dropped": "Suncus etruscus",
+      "slope": -0.06586214101760797,
+      "intercept": 9.467943349401668
+    }
+  ],
+  "heterogeneity_check": {
+    "resid_sd_log10H": 0.2850216754608984,
+    "threshold_resid_sd": 0.45,
+    "resid_sd_pass": true,
+    "max_loo_slope_shift": 0.030908595285987404,
+    "threshold_loo_shift": 0.05,
+    "loo_pass": true
+  }
+}
