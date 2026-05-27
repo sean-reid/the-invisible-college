@@ -1,0 +1,878 @@
+{
+  "Normal(0,1)": {
+    "5": {
+      "Student-t": {
+        "coverage": 0.9506,
+        "degenerate_rate": 0.0
+      },
+      "Basic Bootstrap": {
+        "coverage": 0.8385,
+        "degenerate_rate": 0.0
+      },
+      "Percentile Bootstrap": {
+        "coverage": 0.8367,
+        "degenerate_rate": 0.0
+      },
+      "BCa Bootstrap": {
+        "coverage": 0.8358,
+        "degenerate_rate": 0.0
+      }
+    },
+    "10": {
+      "Student-t": {
+        "coverage": 0.9496,
+        "degenerate_rate": 0.0
+      },
+      "Basic Bootstrap": {
+        "coverage": 0.898,
+        "degenerate_rate": 0.0
+      },
+      "Percentile Bootstrap": {
+        "coverage": 0.8983,
+        "degenerate_rate": 0.0
+      },
+      "BCa Bootstrap": {
+        "coverage": 0.8959,
+        "degenerate_rate": 0.0
+      }
+    },
+    "15": {
+      "Student-t": {
+        "coverage": 0.9503,
+        "degenerate_rate": 0.0
+      },
+      "Basic Bootstrap": {
+        "coverage": 0.9185,
+        "degenerate_rate": 0.0
+      },
+      "Percentile Bootstrap": {
+        "coverage": 0.9176,
+        "degenerate_rate": 0.0
+      },
+      "BCa Bootstrap": {
+        "coverage": 0.9164,
+        "degenerate_rate": 0.0
+      }
+    },
+    "20": {
+      "Student-t": {
+        "coverage": 0.9498,
+        "degenerate_rate": 0.0
+      },
+      "Basic Bootstrap": {
+        "coverage": 0.9257,
+        "degenerate_rate": 0.0
+      },
+      "Percentile Bootstrap": {
+        "coverage": 0.9273,
+        "degenerate_rate": 0.0
+      },
+      "BCa Bootstrap": {
+        "coverage": 0.9264,
+        "degenerate_rate": 0.0
+      }
+    },
+    "30": {
+      "Student-t": {
+        "coverage": 0.9524,
+        "degenerate_rate": 0.0
+      },
+      "Basic Bootstrap": {
+        "coverage": 0.9359,
+        "degenerate_rate": 0.0
+      },
+      "Percentile Bootstrap": {
+        "coverage": 0.9343,
+        "degenerate_rate": 0.0
+      },
+      "BCa Bootstrap": {
+        "coverage": 0.9347,
+        "degenerate_rate": 0.0
+      }
+    },
+    "50": {
+      "Student-t": {
+        "coverage": 0.951,
+        "degenerate_rate": 0.0
+      },
+      "Basic Bootstrap": {
+        "coverage": 0.9391,
+        "degenerate_rate": 0.0
+      },
+      "Percentile Bootstrap": {
+        "coverage": 0.9403,
+        "degenerate_rate": 0.0
+      },
+      "BCa Bootstrap": {
+        "coverage": 0.9376,
+        "degenerate_rate": 0.0
+      }
+    },
+    "100": {
+      "Student-t": {
+        "coverage": 0.9521,
+        "degenerate_rate": 0.0
+      },
+      "Basic Bootstrap": {
+        "coverage": 0.9465,
+        "degenerate_rate": 0.0
+      },
+      "Percentile Bootstrap": {
+        "coverage": 0.946,
+        "degenerate_rate": 0.0
+      },
+      "BCa Bootstrap": {
+        "coverage": 0.9444,
+        "degenerate_rate": 0.0
+      }
+    },
+    "200": {
+      "Student-t": {
+        "coverage": 0.9477,
+        "degenerate_rate": 0.0
+      },
+      "Basic Bootstrap": {
+        "coverage": 0.9425,
+        "degenerate_rate": 0.0
+      },
+      "Percentile Bootstrap": {
+        "coverage": 0.943,
+        "degenerate_rate": 0.0
+      },
+      "BCa Bootstrap": {
+        "coverage": 0.942,
+        "degenerate_rate": 0.0
+      }
+    }
+  },
+  "t(3)": {
+    "5": {
+      "Student-t": {
+        "coverage": 0.9623,
+        "degenerate_rate": 0.0
+      },
+      "Basic Bootstrap": {
+        "coverage": 0.8577,
+        "degenerate_rate": 0.0
+      },
+      "Percentile Bootstrap": {
+        "coverage": 0.8285,
+        "degenerate_rate": 0.0
+      },
+      "BCa Bootstrap": {
+        "coverage": 0.8124,
+        "degenerate_rate": 0.0
+      }
+    },
+    "10": {
+      "Student-t": {
+        "coverage": 0.9583,
+        "degenerate_rate": 0.0
+      },
+      "Basic Bootstrap": {
+        "coverage": 0.9186,
+        "degenerate_rate": 0.0
+      },
+      "Percentile Bootstrap": {
+        "coverage": 0.8919,
+        "degenerate_rate": 0.0
+      },
+      "BCa Bootstrap": {
+        "coverage": 0.8637,
+        "degenerate_rate": 0.0
+      }
+    },
+    "15": {
+      "Student-t": {
+        "coverage": 0.9563,
+        "degenerate_rate": 0.0
+      },
+      "Basic Bootstrap": {
+        "coverage": 0.9362,
+        "degenerate_rate": 0.0
+      },
+      "Percentile Bootstrap": {
+        "coverage": 0.9081,
+        "degenerate_rate": 0.0
+      },
+      "BCa Bootstrap": {
+        "coverage": 0.8791,
+        "degenerate_rate": 0.0
+      }
+    },
+    "20": {
+      "Student-t": {
+        "coverage": 0.9543,
+        "degenerate_rate": 0.0
+      },
+      "Basic Bootstrap": {
+        "coverage": 0.9375,
+        "degenerate_rate": 0.0
+      },
+      "Percentile Bootstrap": {
+        "coverage": 0.914,
+        "degenerate_rate": 0.0
+      },
+      "BCa Bootstrap": {
+        "coverage": 0.8848,
+        "degenerate_rate": 0.0
+      }
+    },
+    "30": {
+      "Student-t": {
+        "coverage": 0.9558,
+        "degenerate_rate": 0.0
+      },
+      "Basic Bootstrap": {
+        "coverage": 0.9478,
+        "degenerate_rate": 0.0
+      },
+      "Percentile Bootstrap": {
+        "coverage": 0.9263,
+        "degenerate_rate": 0.0
+      },
+      "BCa Bootstrap": {
+        "coverage": 0.9004,
+        "degenerate_rate": 0.0
+      }
+    },
+    "50": {
+      "Student-t": {
+        "coverage": 0.954,
+        "degenerate_rate": 0.0
+      },
+      "Basic Bootstrap": {
+        "coverage": 0.9499,
+        "degenerate_rate": 0.0
+      },
+      "Percentile Bootstrap": {
+        "coverage": 0.9323,
+        "degenerate_rate": 0.0
+      },
+      "BCa Bootstrap": {
+        "coverage": 0.9036,
+        "degenerate_rate": 0.0
+      }
+    },
+    "100": {
+      "Student-t": {
+        "coverage": 0.9557,
+        "degenerate_rate": 0.0
+      },
+      "Basic Bootstrap": {
+        "coverage": 0.955,
+        "degenerate_rate": 0.0
+      },
+      "Percentile Bootstrap": {
+        "coverage": 0.9409,
+        "degenerate_rate": 0.0
+      },
+      "BCa Bootstrap": {
+        "coverage": 0.923,
+        "degenerate_rate": 0.0
+      }
+    },
+    "200": {
+      "Student-t": {
+        "coverage": 0.954,
+        "degenerate_rate": 0.0
+      },
+      "Basic Bootstrap": {
+        "coverage": 0.9544,
+        "degenerate_rate": 0.0
+      },
+      "Percentile Bootstrap": {
+        "coverage": 0.9443,
+        "degenerate_rate": 0.0
+      },
+      "BCa Bootstrap": {
+        "coverage": 0.9298,
+        "degenerate_rate": 0.0
+      }
+    }
+  },
+  "Lognormal(0,1)": {
+    "5": {
+      "Student-t": {
+        "coverage": 0.8243,
+        "degenerate_rate": 0.0
+      },
+      "Basic Bootstrap": {
+        "coverage": 0.6993,
+        "degenerate_rate": 0.0
+      },
+      "Percentile Bootstrap": {
+        "coverage": 0.7248,
+        "degenerate_rate": 0.0
+      },
+      "BCa Bootstrap": {
+        "coverage": 0.7369,
+        "degenerate_rate": 0.0
+      }
+    },
+    "10": {
+      "Student-t": {
+        "coverage": 0.8379,
+        "degenerate_rate": 0.0
+      },
+      "Basic Bootstrap": {
+        "coverage": 0.7672,
+        "degenerate_rate": 0.0
+      },
+      "Percentile Bootstrap": {
+        "coverage": 0.8021,
+        "degenerate_rate": 0.0
+      },
+      "BCa Bootstrap": {
+        "coverage": 0.8276,
+        "degenerate_rate": 0.0
+      }
+    },
+    "15": {
+      "Student-t": {
+        "coverage": 0.8537,
+        "degenerate_rate": 0.0
+      },
+      "Basic Bootstrap": {
+        "coverage": 0.802,
+        "degenerate_rate": 0.0
+      },
+      "Percentile Bootstrap": {
+        "coverage": 0.8312,
+        "degenerate_rate": 0.0
+      },
+      "BCa Bootstrap": {
+        "coverage": 0.8541,
+        "degenerate_rate": 0.0
+      }
+    },
+    "20": {
+      "Student-t": {
+        "coverage": 0.8632,
+        "degenerate_rate": 0.0
+      },
+      "Basic Bootstrap": {
+        "coverage": 0.8244,
+        "degenerate_rate": 0.0
+      },
+      "Percentile Bootstrap": {
+        "coverage": 0.8521,
+        "degenerate_rate": 0.0
+      },
+      "BCa Bootstrap": {
+        "coverage": 0.8663,
+        "degenerate_rate": 0.0
+      }
+    },
+    "30": {
+      "Student-t": {
+        "coverage": 0.8801,
+        "degenerate_rate": 0.0
+      },
+      "Basic Bootstrap": {
+        "coverage": 0.8432,
+        "degenerate_rate": 0.0
+      },
+      "Percentile Bootstrap": {
+        "coverage": 0.8746,
+        "degenerate_rate": 0.0
+      },
+      "BCa Bootstrap": {
+        "coverage": 0.8856,
+        "degenerate_rate": 0.0
+      }
+    },
+    "50": {
+      "Student-t": {
+        "coverage": 0.895,
+        "degenerate_rate": 0.0
+      },
+      "Basic Bootstrap": {
+        "coverage": 0.8702,
+        "degenerate_rate": 0.0
+      },
+      "Percentile Bootstrap": {
+        "coverage": 0.891,
+        "degenerate_rate": 0.0
+      },
+      "BCa Bootstrap": {
+        "coverage": 0.8992,
+        "degenerate_rate": 0.0
+      }
+    },
+    "100": {
+      "Student-t": {
+        "coverage": 0.9162,
+        "degenerate_rate": 0.0
+      },
+      "Basic Bootstrap": {
+        "coverage": 0.8965,
+        "degenerate_rate": 0.0
+      },
+      "Percentile Bootstrap": {
+        "coverage": 0.9134,
+        "degenerate_rate": 0.0
+      },
+      "BCa Bootstrap": {
+        "coverage": 0.9165,
+        "degenerate_rate": 0.0
+      }
+    },
+    "200": {
+      "Student-t": {
+        "coverage": 0.9291,
+        "degenerate_rate": 0.0
+      },
+      "Basic Bootstrap": {
+        "coverage": 0.916,
+        "degenerate_rate": 0.0
+      },
+      "Percentile Bootstrap": {
+        "coverage": 0.9275,
+        "degenerate_rate": 0.0
+      },
+      "BCa Bootstrap": {
+        "coverage": 0.9282,
+        "degenerate_rate": 0.0
+      }
+    }
+  },
+  "Exponential(1)": {
+    "5": {
+      "Student-t": {
+        "coverage": 0.886,
+        "degenerate_rate": 0.0
+      },
+      "Basic Bootstrap": {
+        "coverage": 0.7687,
+        "degenerate_rate": 0.0
+      },
+      "Percentile Bootstrap": {
+        "coverage": 0.7909,
+        "degenerate_rate": 0.0
+      },
+      "BCa Bootstrap": {
+        "coverage": 0.8063,
+        "degenerate_rate": 0.0
+      }
+    },
+    "10": {
+      "Student-t": {
+        "coverage": 0.8994,
+        "degenerate_rate": 0.0
+      },
+      "Basic Bootstrap": {
+        "coverage": 0.838,
+        "degenerate_rate": 0.0
+      },
+      "Percentile Bootstrap": {
+        "coverage": 0.859,
+        "degenerate_rate": 0.0
+      },
+      "BCa Bootstrap": {
+        "coverage": 0.8715,
+        "degenerate_rate": 0.0
+      }
+    },
+    "15": {
+      "Student-t": {
+        "coverage": 0.9137,
+        "degenerate_rate": 0.0
+      },
+      "Basic Bootstrap": {
+        "coverage": 0.8709,
+        "degenerate_rate": 0.0
+      },
+      "Percentile Bootstrap": {
+        "coverage": 0.89,
+        "degenerate_rate": 0.0
+      },
+      "BCa Bootstrap": {
+        "coverage": 0.9017,
+        "degenerate_rate": 0.0
+      }
+    },
+    "20": {
+      "Student-t": {
+        "coverage": 0.9172,
+        "degenerate_rate": 0.0
+      },
+      "Basic Bootstrap": {
+        "coverage": 0.8843,
+        "degenerate_rate": 0.0
+      },
+      "Percentile Bootstrap": {
+        "coverage": 0.9011,
+        "degenerate_rate": 0.0
+      },
+      "BCa Bootstrap": {
+        "coverage": 0.9098,
+        "degenerate_rate": 0.0
+      }
+    },
+    "30": {
+      "Student-t": {
+        "coverage": 0.9262,
+        "degenerate_rate": 0.0
+      },
+      "Basic Bootstrap": {
+        "coverage": 0.9035,
+        "degenerate_rate": 0.0
+      },
+      "Percentile Bootstrap": {
+        "coverage": 0.9175,
+        "degenerate_rate": 0.0
+      },
+      "BCa Bootstrap": {
+        "coverage": 0.9212,
+        "degenerate_rate": 0.0
+      }
+    },
+    "50": {
+      "Student-t": {
+        "coverage": 0.935,
+        "degenerate_rate": 0.0
+      },
+      "Basic Bootstrap": {
+        "coverage": 0.9181,
+        "degenerate_rate": 0.0
+      },
+      "Percentile Bootstrap": {
+        "coverage": 0.9294,
+        "degenerate_rate": 0.0
+      },
+      "BCa Bootstrap": {
+        "coverage": 0.9338,
+        "degenerate_rate": 0.0
+      }
+    },
+    "100": {
+      "Student-t": {
+        "coverage": 0.9416,
+        "degenerate_rate": 0.0
+      },
+      "Basic Bootstrap": {
+        "coverage": 0.932,
+        "degenerate_rate": 0.0
+      },
+      "Percentile Bootstrap": {
+        "coverage": 0.937,
+        "degenerate_rate": 0.0
+      },
+      "BCa Bootstrap": {
+        "coverage": 0.9371,
+        "degenerate_rate": 0.0
+      }
+    },
+    "200": {
+      "Student-t": {
+        "coverage": 0.9446,
+        "degenerate_rate": 0.0
+      },
+      "Basic Bootstrap": {
+        "coverage": 0.9378,
+        "degenerate_rate": 0.0
+      },
+      "Percentile Bootstrap": {
+        "coverage": 0.942,
+        "degenerate_rate": 0.0
+      },
+      "BCa Bootstrap": {
+        "coverage": 0.9434,
+        "degenerate_rate": 0.0
+      }
+    }
+  },
+  "Pareto(2.5)": {
+    "5": {
+      "Student-t": {
+        "coverage": 0.7817,
+        "degenerate_rate": 0.0
+      },
+      "Basic Bootstrap": {
+        "coverage": 0.6403,
+        "degenerate_rate": 0.0
+      },
+      "Percentile Bootstrap": {
+        "coverage": 0.6784,
+        "degenerate_rate": 0.0
+      },
+      "BCa Bootstrap": {
+        "coverage": 0.6941,
+        "degenerate_rate": 0.0
+      }
+    },
+    "10": {
+      "Student-t": {
+        "coverage": 0.7914,
+        "degenerate_rate": 0.0
+      },
+      "Basic Bootstrap": {
+        "coverage": 0.719,
+        "degenerate_rate": 0.0
+      },
+      "Percentile Bootstrap": {
+        "coverage": 0.7569,
+        "degenerate_rate": 0.0
+      },
+      "BCa Bootstrap": {
+        "coverage": 0.7893,
+        "degenerate_rate": 0.0
+      }
+    },
+    "15": {
+      "Student-t": {
+        "coverage": 0.8133,
+        "degenerate_rate": 0.0
+      },
+      "Basic Bootstrap": {
+        "coverage": 0.7558,
+        "degenerate_rate": 0.0
+      },
+      "Percentile Bootstrap": {
+        "coverage": 0.7966,
+        "degenerate_rate": 0.0
+      },
+      "BCa Bootstrap": {
+        "coverage": 0.8247,
+        "degenerate_rate": 0.0
+      }
+    },
+    "20": {
+      "Student-t": {
+        "coverage": 0.8219,
+        "degenerate_rate": 0.0
+      },
+      "Basic Bootstrap": {
+        "coverage": 0.7734,
+        "degenerate_rate": 0.0
+      },
+      "Percentile Bootstrap": {
+        "coverage": 0.812,
+        "degenerate_rate": 0.0
+      },
+      "BCa Bootstrap": {
+        "coverage": 0.8409,
+        "degenerate_rate": 0.0
+      }
+    },
+    "30": {
+      "Student-t": {
+        "coverage": 0.8501,
+        "degenerate_rate": 0.0
+      },
+      "Basic Bootstrap": {
+        "coverage": 0.8093,
+        "degenerate_rate": 0.0
+      },
+      "Percentile Bootstrap": {
+        "coverage": 0.8476,
+        "degenerate_rate": 0.0
+      },
+      "BCa Bootstrap": {
+        "coverage": 0.8686,
+        "degenerate_rate": 0.0
+      }
+    },
+    "50": {
+      "Student-t": {
+        "coverage": 0.866,
+        "degenerate_rate": 0.0
+      },
+      "Basic Bootstrap": {
+        "coverage": 0.8355,
+        "degenerate_rate": 0.0
+      },
+      "Percentile Bootstrap": {
+        "coverage": 0.8666,
+        "degenerate_rate": 0.0
+      },
+      "BCa Bootstrap": {
+        "coverage": 0.8857,
+        "degenerate_rate": 0.0
+      }
+    },
+    "100": {
+      "Student-t": {
+        "coverage": 0.8846,
+        "degenerate_rate": 0.0
+      },
+      "Basic Bootstrap": {
+        "coverage": 0.8624,
+        "degenerate_rate": 0.0
+      },
+      "Percentile Bootstrap": {
+        "coverage": 0.8865,
+        "degenerate_rate": 0.0
+      },
+      "BCa Bootstrap": {
+        "coverage": 0.8989,
+        "degenerate_rate": 0.0
+      }
+    },
+    "200": {
+      "Student-t": {
+        "coverage": 0.9047,
+        "degenerate_rate": 0.0
+      },
+      "Basic Bootstrap": {
+        "coverage": 0.8887,
+        "degenerate_rate": 0.0
+      },
+      "Percentile Bootstrap": {
+        "coverage": 0.9074,
+        "degenerate_rate": 0.0
+      },
+      "BCa Bootstrap": {
+        "coverage": 0.9152,
+        "degenerate_rate": 0.0
+      }
+    }
+  },
+  "Beta(0.5,0.5)": {
+    "5": {
+      "Student-t": {
+        "coverage": 0.9264,
+        "degenerate_rate": 0.0
+      },
+      "Basic Bootstrap": {
+        "coverage": 0.7978,
+        "degenerate_rate": 0.0
+      },
+      "Percentile Bootstrap": {
+        "coverage": 0.8531,
+        "degenerate_rate": 0.0
+      },
+      "BCa Bootstrap": {
+        "coverage": 0.8769,
+        "degenerate_rate": 0.0
+      }
+    },
+    "10": {
+      "Student-t": {
+        "coverage": 0.9454,
+        "degenerate_rate": 0.0
+      },
+      "Basic Bootstrap": {
+        "coverage": 0.885,
+        "degenerate_rate": 0.0
+      },
+      "Percentile Bootstrap": {
+        "coverage": 0.9166,
+        "degenerate_rate": 0.0
+      },
+      "BCa Bootstrap": {
+        "coverage": 0.947,
+        "degenerate_rate": 0.0
+      }
+    },
+    "15": {
+      "Student-t": {
+        "coverage": 0.9465,
+        "degenerate_rate": 0.0
+      },
+      "Basic Bootstrap": {
+        "coverage": 0.9053,
+        "degenerate_rate": 0.0
+      },
+      "Percentile Bootstrap": {
+        "coverage": 0.9245,
+        "degenerate_rate": 0.0
+      },
+      "BCa Bootstrap": {
+        "coverage": 0.9487,
+        "degenerate_rate": 0.0
+      }
+    },
+    "20": {
+      "Student-t": {
+        "coverage": 0.947,
+        "degenerate_rate": 0.0
+      },
+      "Basic Bootstrap": {
+        "coverage": 0.9159,
+        "degenerate_rate": 0.0
+      },
+      "Percentile Bootstrap": {
+        "coverage": 0.9327,
+        "degenerate_rate": 0.0
+      },
+      "BCa Bootstrap": {
+        "coverage": 0.9486,
+        "degenerate_rate": 0.0
+      }
+    },
+    "30": {
+      "Student-t": {
+        "coverage": 0.9463,
+        "degenerate_rate": 0.0
+      },
+      "Basic Bootstrap": {
+        "coverage": 0.9228,
+        "degenerate_rate": 0.0
+      },
+      "Percentile Bootstrap": {
+        "coverage": 0.9342,
+        "degenerate_rate": 0.0
+      },
+      "BCa Bootstrap": {
+        "coverage": 0.9462,
+        "degenerate_rate": 0.0
+      }
+    },
+    "50": {
+      "Student-t": {
+        "coverage": 0.9433,
+        "degenerate_rate": 0.0
+      },
+      "Basic Bootstrap": {
+        "coverage": 0.9292,
+        "degenerate_rate": 0.0
+      },
+      "Percentile Bootstrap": {
+        "coverage": 0.9356,
+        "degenerate_rate": 0.0
+      },
+      "BCa Bootstrap": {
+        "coverage": 0.9416,
+        "degenerate_rate": 0.0
+      }
+    },
+    "100": {
+      "Student-t": {
+        "coverage": 0.9514,
+        "degenerate_rate": 0.0
+      },
+      "Basic Bootstrap": {
+        "coverage": 0.9434,
+        "degenerate_rate": 0.0
+      },
+      "Percentile Bootstrap": {
+        "coverage": 0.9485,
+        "degenerate_rate": 0.0
+      },
+      "BCa Bootstrap": {
+        "coverage": 0.9519,
+        "degenerate_rate": 0.0
+      }
+    },
+    "200": {
+      "Student-t": {
+        "coverage": 0.9546,
+        "degenerate_rate": 0.0
+      },
+      "Basic Bootstrap": {
+        "coverage": 0.9499,
+        "degenerate_rate": 0.0
+      },
+      "Percentile Bootstrap": {
+        "coverage": 0.9512,
+        "degenerate_rate": 0.0
+      },
+      "BCa Bootstrap": {
+        "coverage": 0.9519,
+        "degenerate_rate": 0.0
+      }
+    }
+  }
+}

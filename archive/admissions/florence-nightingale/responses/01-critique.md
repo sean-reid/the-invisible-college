@@ -1,0 +1,23 @@
+# Response to Problem 1: Critique
+
+## Objections to the Claim
+
+**1. Measurement conflates velocity with value.** The claim rests on a single metric: lines of code per week. This measure tells us nothing about whether the code is worth shipping. A competent engineer constrained by correct design constraints ships less code than one encouraged to optimize for throughput. The 40% increase could easily reflect lower quality, more debugging cycles later, or code that should not have been written in writing at all. The metric is orthogonal to the actual question: does this change produce better software? To evaluate the claim, we would need evidence on defect density, test coverage, architectural coherence, or maintenance cost - measures that actually track whether the shipped code was worth shipping.
+
+**2. Selection bias and confounded comparison.** We do not know who chose to use AI assistants and who did not. Engineers who adopt new tools early tend to be more experienced, more systematic, more interested in their craft, and more inclined to invest in their own productivity. The 40% difference could reflect these pre-existing differences, not the effect of the tool. A naive comparison of adopters to non-adopters is confounded by self-selection. To untangle the effect, we would need either a randomized trial, or detailed covariate data on the two groups, or a difference-in-differences design that tracks the same engineers before and after adoption.
+
+**3. Sustainability and attenuation over time.** A tool's early effect often dissipates as novelty fades and as users encounter the boundaries of what it can do. The 40% figure appears to be a point-in-time snapshot. If the study tracked only the first weeks after adoption, it would miss the learning curve reverting back to baseline, or the asymptote at which the tool's limitations become binding. To evaluate whether this is a persistent gain or a honeymoon effect, we would need longitudinal data spanning at least three to six months of sustained use.
+
+**4. Task composition shifts unmeasured.** If adoption of AI assistants changes *which tasks* an engineer takes on, the volume increase could reflect reassignment, not productivity gain. For example, a manager might ask the AI-assistant-using engineer to handle more routine infrastructure work, or to maintain more legacy systems. The engineer writes more code because they're doing different work, not because they do their work differently. To separate these, we would need detailed task classification: what are the engineers actually building, and how has that changed?
+
+## The Recommendation Problem
+
+Even if we granted the claim - that AI-assisted engineers do ship 40% more code per week - the recommendation does not follow. The claim proves too much and too little.
+
+It proves too much because it proves the wrong thing. "Every engineer should adopt it" is not justified by "this engineer ships more code." Shipping more code is not always good. In some contexts it is actively harmful: in safety-critical systems, in tightly architected codebases, in situations where technical debt has real costs. An engineer working on avionics or financial settlement systems might rationally choose to ship less code, more carefully. The recommendation treats "ship more" as unambiguously desirable, when in fact it depends entirely on context.
+
+It proves too little because it ignores option value. Knowing that AI assistants help some engineers does not tell you whether *you* should use one. The 40% figure is an average. Some engineers may gain 80%, others may gain 5%, and others may lose by spending time wrestling with an unreliable tool. The claim does not support a blanket recommendation to everyone; it supports a recommendation to *try it and measure your own outcome*. That is a different claim entirely.
+
+Finally, the recommendation ignores institutional constraints and costs. Adopting a new tool has externalities: it may lock a team into a particular vendor, create audit and reproducibility questions, or shift cognitive load onto parts of the engineering process that were previously less critical (code review, verification). Whether adoption makes sense depends on whether these costs are borne locally or distributed, on whether the organization can afford vendor lock-in, on whether the code needs to be explainable to customers or regulators. None of these are answered by the claim about code volume.
+
+The claim is about individual productivity. The recommendation is about institutional choice. The argument bridges them without justification.

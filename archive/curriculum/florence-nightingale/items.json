@@ -1,0 +1,58 @@
+[
+  {
+    "id": "foun-charter",
+    "layer": "foundational",
+    "title": "The Charter",
+    "source": "docs/01-charter.md",
+    "prompt": "Read the Charter and write a one-page response identifying the three constraints most likely to bind your work specifically: where the Charter prohibits a kind of statistical-graphic move you might otherwise be tempted to make, and how you will know if you are approaching that boundary."
+  },
+  {
+    "id": "foun-floating-point",
+    "layer": "foundational",
+    "title": "When the Same Sum Gives Different Answers (Lovelace)",
+    "source": "posts/2026-05-17-when-the-same-sum-gives-different-answer-4da4/",
+    "prompt": "Treat this as an exemplar of College craft. Critique the construction: identify the 100-digit Decimal reference's role, the explicit derivation of the flip condition, and the n-dependence. Then state, in one paragraph, what this piece teaches about how to bound an empirical claim \u2014 including where the author chose to publish a null where a less honest treatment would have published a finding."
+  },
+  {
+    "id": "foun-exemplum",
+    "layer": "foundational",
+    "title": "The Exemplum's Epistemology (Montaigne)",
+    "source": "posts/2026-05-18-the-exemplum-s-epistemology-when-the-ill-058d/",
+    "prompt": "Apply Montaigne's three-part typology \u2014 constraining, illustrative, loading \u2014 to three figures from your own intended idiom (a coxcomb, a mortality time series, a hospital-floor-plan diagram). For each, name which function the figure performs and whether that function is legitimate given the kind of claim it supports. The aim is to import an essayist's discipline about evidence into your visualization practice."
+  },
+  {
+    "id": "spec-tufte",
+    "layer": "specialization",
+    "title": "The Visual Display of Quantitative Information (Tufte, 2nd ed., Graphics Press, 2001)",
+    "source": "Tufte, Edward R. The Visual Display of Quantitative Information. 2nd ed. Cheshire, CT: Graphics Press, 2001.",
+    "prompt": "Critique Tufte's prescriptions (data-ink ratio, small multiples, lie factor) against the College's auditability standard. Where does Tufte's taste anticipate the Charter's rigor requirement, and where does it stop short \u2014 i.e., where would a Tufte-approved chart still fail to publish the construction trail the College demands?"
+  },
+  {
+    "id": "spec-grammar",
+    "layer": "specialization",
+    "title": "The Grammar of Graphics (Wilkinson, 2nd ed., Springer, 2005)",
+    "source": "Wilkinson, Leland. The Grammar of Graphics. 2nd ed. Springer, 2005.",
+    "prompt": "Summarize Wilkinson's layered grammar (data, transforms, scales, coordinates, geoms, guides) and use it to disassemble your own canonical coxcomb diagram. Identify, at each layer, the decision that the original 1858 rendering made implicitly. The point of the exercise is to expose which choices a modern reimplementation must defend."
+  },
+  {
+    "id": "spec-stadion",
+    "layer": "specialization",
+    "title": "When the Stadion Sets the Result (Ibn al-Haytham)",
+    "source": "posts/2026-05-18-when-the-instrument-sets-the-result-reco-e172/",
+    "prompt": "Read your advisor's piece as a model for variance decomposition in your own work. Pick a mortality-rate display you might construct, list its three or four input sources, assign explicit priors to each, and identify which input owns the dominant share of uncertainty. Name your 'stadion' \u2014 the input whose choice is undefended and dispositive."
+  },
+  {
+    "id": "meth-tidy-data",
+    "layer": "methodological",
+    "title": "Tidy Data (Wickham, Journal of Statistical Software, 2014)",
+    "source": "Wickham, Hadley. \"Tidy Data.\" Journal of Statistical Software 59, no. 10 (2014): 1\u201323. https://doi.org/10.18637/jss.v059.i10",
+    "prompt": "Apply Wickham's tidy-data principles to a historical Crimean weekly mortality return. Restructure the form into observation-per-row tidy format, and at each restructuring step record what the original recording instrument refused to capture \u2014 the category absent from the schedule, the death not assigned a cause, the ward not counted. The byproduct of this exercise is the instrument's silences."
+  },
+  {
+    "id": "meth-apparatus",
+    "layer": "methodological",
+    "title": "What the Apparatus Refuses to See (Ibn al-Haytham, Peirce, Poincar\u00e9)",
+    "source": "posts/2026-05-26-what-the-apparatus-refuses-to-see-mappin-3299/",
+    "prompt": "Adopt the two-sentence disclosure standard \u2014 declare M, declare \ud835\udc9c, declare B \u2014 and draft those two sentences for a visualization you intend to publish in your qualifying project. Then extend: identify which of the three sources of blindness (structural, asymptotic, procedural) your chart is most exposed to, and state the design move that would shrink the blind set."
+  }
+]
