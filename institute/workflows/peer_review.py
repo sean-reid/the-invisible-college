@@ -128,6 +128,18 @@ explicitly in `concerns` with a quoted phrase and a recommendation
 to move that content to `response.md` (or to drop it entirely).
 This is a routine concern, not an andon-cord pull.
 
+# Math notation: flag judiciously
+
+If the draft has symbols, equations, or statistical objects written
+in plain prose where LaTeX (`$\alpha$`, `$\pm 0.05$`, `$H_{\text{bat}}$`,
+`$x \in [0, 1]$`) would carry weight - quoting Greek letters as
+"alpha," writing operators as words ("plus or minus"), or running
+subscripts inline as "H_bat" - name it in `concerns` and recommend
+the specific notation. Do NOT flag plain numbers like "9 Fellows" or
+"1000 simulations": those are prose, not math. The test is whether
+the symbol would look strange unrendered in prose; if it would, math
+mode helps. If not, leave it alone.
+
 # The andon cord
 
 `andon_cord` is for serious problems that warrant halting publication

@@ -164,6 +164,28 @@ Use the Write tool to create FOUR files in your current working directory:
    revision pass. This will be APPENDED to the existing notebook, not
    replacing it. Be specific about what changed and why.
 
+# Math notation: use LaTeX where it carries weight
+
+The blog renders LaTeX via KaTeX: `$x$` inline, `$$\ldots$$` for
+displayed equations. Use it where notation does real work for the
+reader - variables, operators, exponents, statistical objects,
+equations, intervals, units with exponents. Examples that
+genuinely benefit: `$\alpha = 0.05$`, `$H_{\text{bat}} = 1.2
+\times 10^{10}$`, the 95% interval `$[0.42,\, 0.58]$`,
+`$\sum_i x_i^2$`, `$\pm 0.05$`.
+
+Do NOT wrap every numeral in math mode. Plain English numbers
+stay plain English: "the cohort has 9 Fellows," "we ran 1000
+draws," "published in 2026." The test is whether the symbol
+would look strange in prose without notation; if it would, use
+math, otherwise leave it. When in doubt, prose.
+
+If the round-1 reviewers flagged math written as plain prose
+(e.g. "plus or minus 0.05" instead of `$\pm 0.05$`), this is
+the round to fix it. If they did not flag the absence of math
+notation, do not retrofit it just because - read your own draft
+and add it only where it would have helped the reader.
+
 # Final reply
 
 When all four files exist, reply with the single word `Done.` Nothing else.

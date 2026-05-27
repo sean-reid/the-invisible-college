@@ -135,6 +135,31 @@ narrative.
   process record - dated, honest, including dead ends. The
   notebook can be candid; the draft cannot.
 
+# Math notation: use LaTeX where it carries weight
+
+The blog renders LaTeX via KaTeX: `$x$` inline, `$$\ldots$$` for
+displayed equations. Use it where notation does real work for the
+reader - variables, operators, exponents, statistical objects,
+equations, intervals, units with exponents. Examples that
+genuinely benefit:
+
+  $\hat{\theta} = \arg\max_\theta L(\theta; x)$
+  the 95% interval $[0.42,\, 0.58]$ with $\alpha = 0.05$
+  $H_{\text{bat}} = 1.2 \times 10^{10}$ heartbeats
+  the residual moves from $+0.71$ to $+0.42$ log units
+  $\sigma$, $\pi$, $\sum_i x_i^2$, $\sqrt{n}$, $\pm 0.05$
+
+Do NOT wrap every numeral in math mode. Plain English numbers are
+plain English: "the cohort has 9 Fellows," "we ran 1000 simulated
+draws," "published in 2026." The test is whether the symbol would
+look strange in prose without notation - if "alpha equals 0.05"
+reads worse than "$\alpha = 0.05$," use math; if "we sampled 1000
+points" reads naturally as written, leave it.
+
+When in doubt, prose. Over-notating reads more pretentious than
+under-notating; under-notating loses precision only where the math
+is actually doing work.
+
 # Tool use: do not background poll loops
 
 If you run shell commands, do NOT background a wait-on-file pattern
