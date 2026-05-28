@@ -38,7 +38,7 @@ from institute.state import State
 console = Console()
 
 
-BRIEF = """\
+BRIEF = r"""\
 You are executing approved research for the Invisible College as the
 lead Fellow on this project.
 
@@ -143,11 +143,11 @@ reader - variables, operators, exponents, statistical objects,
 equations, intervals, units with exponents. Examples that
 genuinely benefit:
 
-  $\hat{\theta} = \arg\max_\theta L(\theta; x)$
+  $\hat{{\theta}} = \arg\max_\theta L(\theta; x)$
   the 95% interval $[0.42,\, 0.58]$ with $\alpha = 0.05$
-  $H_{\text{bat}} = 1.2 \times 10^{10}$ heartbeats
+  $H_{{\text{{bat}}}} = 1.2 \times 10^{{10}}$ heartbeats
   the residual moves from $+0.71$ to $+0.42$ log units
-  $\sigma$, $\pi$, $\sum_i x_i^2$, $\sqrt{n}$, $\pm 0.05$
+  $\sigma$, $\pi$, $\sum_i x_i^2$, $\sqrt{{n}}$, $\pm 0.05$
 
 Do NOT wrap every numeral in math mode. Plain English numbers are
 plain English: "the cohort has 9 Fellows," "we ran 1000 simulated

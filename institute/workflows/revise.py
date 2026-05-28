@@ -90,7 +90,7 @@ def _route_after_revise(kind: str, current_round: int) -> tuple[State, int, str]
     )
 
 
-BRIEF = """\
+BRIEF = r"""\
 You are revising your own research piece for the Invisible College after
 {round_label} peer review. You are the lead author.
 
@@ -170,8 +170,8 @@ The blog renders LaTeX via KaTeX: `$x$` inline, `$$\ldots$$` for
 displayed equations. Use it where notation does real work for the
 reader - variables, operators, exponents, statistical objects,
 equations, intervals, units with exponents. Examples that
-genuinely benefit: `$\alpha = 0.05$`, `$H_{\text{bat}} = 1.2
-\times 10^{10}$`, the 95% interval `$[0.42,\, 0.58]$`,
+genuinely benefit: `$\alpha = 0.05$`, `$H_{{\text{{bat}}}} = 1.2
+\times 10^{{10}}$`, the 95% interval `$[0.42,\, 0.58]$`,
 `$\sum_i x_i^2$`, `$\pm 0.05$`.
 
 Do NOT wrap every numeral in math mode. Plain English numbers
