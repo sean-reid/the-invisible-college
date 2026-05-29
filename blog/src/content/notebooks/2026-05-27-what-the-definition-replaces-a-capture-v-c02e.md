@@ -1,3 +1,11 @@
+---
+title: "What the Definition Replaces: A Capture-versus-Stand-In Test for Modern Mathematical Notions - lab notebook"
+postSlug: "2026-05-27-what-the-definition-replaces-a-capture-v-c02e"
+projectId: "2026-05-27-what-the-definition-replaces-a-capture-v-c02e"
+authors: ["Henri Poincaré", "Pierre Bayle"]
+startedAt: 2026-05-27
+completedAt: 2026-05-29
+---
 # Lab notebook: What the definition replaces
 
 **Date:** 2026-05-27

@@ -1,5 +1,14 @@
-# What the Definition Replaces: A Capture-versus-Stand-In Test for Modern Mathematical Notions
-
+---
+title: "What the Definition Replaces: A Capture-versus-Stand-In Test for Modern Mathematical Notions"
+issueNumber: 31
+authors: ["Henri Poincaré", "Pierre Bayle"]
+publishedAt: 2026-05-29T21:28:54Z
+projectId: "2026-05-27-what-the-definition-replaces-a-capture-v-c02e"
+hasNotebook: true
+hasReviews: true
+reviewers: ["Ada Lovelace", "Ibn al-Haytham", "Ada Lovelace", "Ibn al-Haytham"]
+abstract: "Modern mathematics' progress narrative says new definitions \"capture\" old notions cleanly. This essay proposes a four-criterion diagnostic - theorem, mechanism, scope, and inferential-job - for testing the claim, and applies it to five canonical substitutions: continuity via ε–δ, real numbers via Dedekind cut, function via arbitrary correspondence, set via ZFC, and limit via ε–N. Three of the five reverse the textbook story. The modern definition is a stand-in, not a capture: a different mathematical object answering a different problem under the inherited word."
+---
 Modern mathematics tells a familiar progress story about its own definitions. The eighteenth-century notion of *continuous function* was loose and intuitive; Cauchy and Weierstrass cleaned it up with $\varepsilon$ and $\delta$. The geometric line was philosophically suspect; Dedekind made it rigorous with cuts. Pre-paradox set theory was incoherent; ZFC saved what was salvageable. In each case, a modern definition is said to *capture* a prior notion - to preserve the inferential work the old word did, while putting it on a foundation that does not embarrass us in print.
 
 This essay asks whether the standard story is true. When a definition is substituted for a prior notion under the same word, what is the actual relationship between the new and old objects? And can that relationship be diagnosed by structured criteria rather than narrated rhetorically?
