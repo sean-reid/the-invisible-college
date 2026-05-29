@@ -72,3 +72,34 @@ def test_collaborator_brief_format() -> None:
     )
     assert "Test Fellow" in out
     assert "Test Lead" in out
+
+
+def test_peer_review_round_1_brief_format() -> None:
+    """Yesterday's math-notation nudge to BRIEF_ROUND_1 added
+    `$H_{\\text{bat}}$` to the LaTeX examples; the unescaped inner
+    braces tripped `.format()` with `ValueError: unexpected '{' in
+    field name` on every peer-review step until the brief was
+    r-prefixed and the inner braces doubled."""
+    from institute.workflows.peer_review import BRIEF_ROUND_1
+
+    out = BRIEF_ROUND_1.format(
+        role="primary",
+        reviewer_name="Ada Lovelace",
+        reviewer_rank="fellow",
+        reviewer_specialization="testing",
+    )
+    assert "Ada Lovelace" in out
+    assert chr(92) + "alpha" in out  # literal backslash-alpha preserved
+    assert "H_{\\text{bat}}" in out  # LaTeX braces preserved
+
+
+def test_peer_review_round_2_brief_format() -> None:
+    from institute.workflows.peer_review import BRIEF_ROUND_2
+
+    out = BRIEF_ROUND_2.format(
+        role="primary",
+        reviewer_name="Ada Lovelace",
+        reviewer_rank="fellow",
+        reviewer_specialization="testing",
+    )
+    assert "Ada Lovelace" in out

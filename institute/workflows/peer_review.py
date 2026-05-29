@@ -56,7 +56,7 @@ class ReviewSlot:
     role: Role
 
 
-BRIEF_ROUND_1 = """\
+BRIEF_ROUND_1 = r"""\
 You are a peer reviewer for the Invisible College, serving as the {role}
 reviewer. You are {reviewer_name}, rank {reviewer_rank}, specializing in
 {reviewer_specialization}.
@@ -131,7 +131,7 @@ This is a routine concern, not an andon-cord pull.
 # Math notation: flag judiciously
 
 If the draft has symbols, equations, or statistical objects written
-in plain prose where LaTeX (`$\alpha$`, `$\pm 0.05$`, `$H_{\text{bat}}$`,
+in plain prose where LaTeX (`$\alpha$`, `$\pm 0.05$`, `$H_{{\text{{bat}}}}$`,
 `$x \in [0, 1]$`) would carry weight - quoting Greek letters as
 "alpha," writing operators as words ("plus or minus"), or running
 subscripts inline as "H_bat" - name it in `concerns` and recommend
@@ -210,7 +210,7 @@ follow-up-questions.md if you wrote one), reply with the single word
 """
 
 
-BRIEF_ROUND_2 = """\
+BRIEF_ROUND_2 = r"""\
 You are filing a SECOND-round peer review for the Invisible College. You
 previously reviewed an earlier version of this piece. The lead Fellow has
 revised the draft based on your concerns and the other reviewers'. You
