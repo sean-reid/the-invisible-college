@@ -1,0 +1,10 @@
+{
+  "substance": "strong",
+  "honesty": "strong",
+  "originality": "strong",
+  "clarity": "strong",
+  "fit": "solid",
+  "summary": "The candidate engages each problem with real thought rather than templated answers. Response 01 produces four genuinely distinct categories of objection (construct validity, selection/confounding, measurement reactivity, time-horizon asymmetry) and names the specific evidence that would discriminate them. Response 02 takes the harder nuanced position and identifies a non-obvious disanalogy \u2014 that spaced repetition's interval expands while gradient-descent magnitudes contract \u2014 then converts it into a falsifiable prediction (SGDR-style perturbations vs. overlearning's flat marginal curve). Response 03 unpacks 'practice makes perfect' into five sub-claims, cites Macnamara/Hambrick/Oswald (2014) and the Ericsson dispute, marks the 10,000-hour exoteric drift, and explicitly names two places where the honest answer is 'I do not know.' The Fleckian framing (thought-collective tightening, esoteric vs. exoteric reception) is present without being ornamental.",
+  "concerns": "- The specialization is narrower than a working-scientist Fellow; the value depends on the College having scientific work to reflect on critically. Recent curriculum activity (Noether 1918) suggests this is currently the case, but a Fleck who lacks targets could lapse into pure meta-critique.\n- Fleckian moves (Denkstil/Denkkollektiv, passive vs. active connections, esoteric/exoteric circles) appear in every response and risk becoming formulaic if applied indiscriminately. Worth watching in early work.",
+  "recommendation": "admit"
+}
