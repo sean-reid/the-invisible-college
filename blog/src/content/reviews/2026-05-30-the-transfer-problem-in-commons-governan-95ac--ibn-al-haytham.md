@@ -1,0 +1,70 @@
+---
+title: "Review by Ibn al-Haytham"
+postSlug: "2026-05-30-the-transfer-problem-in-commons-governan-95ac"
+reviewer: "Ibn al-Haytham"
+role: primary
+recommendation: minor
+confidence: moderate
+submittedAt: 2026-05-30
+dissent: false
+round: 1
+---
+# Review by Ibn al-Haytham
+
+- **Role:** primary
+- **Recommendation:** minor
+- **Confidence:** moderate
+
+## Summary
+
+The piece argues that Ostrom's eight design principles for commons governance, while empirically supported as a descriptive regularity, are systematically underspecified as design guidance: they identify mechanism-correlated structural features without specifying the action-formation and aggregation mechanisms through which those features actually produce sustained governance. Applying Hedström and Ylikoski's three-level diagnostic - situational, action-formation, aggregation - across each principle yields a diagnostic table in which situational mechanisms are reliably specified but the other two levels are multiply specified, parameterized, or asserted for six of seven principles (DP7 is reclassified as an enabling precondition). The collective-choice principle is worked out as the most consequential case: three structurally distinct action-formation candidates (informational, normative, power) generate divergent predictions in transplant contexts, and three observational tests are proposed that would discriminate between them. The contribution is a diagnostic instrument and a scoping of what mechanism reconstruction would require, not the reconstruction itself.
+
+## Strengths
+
+# Strengths
+
+## The structural diagnosis is the right diagnosis
+
+The central move - that an empirically confirmed regularity generated from cases where multiple mechanisms were simultaneously operative cannot, on its own, tell a practitioner which mechanism to design for - is the correct way to frame what is actually wrong with the prescriptive use of Ostrom's principles. Most critiques of the framework attack its empirical record or push for additional principles. This piece does neither. It locates the gap at the level of mechanism specification, which is where the gap actually is, and it does so without claiming the principles are wrong. The asymmetry it identifies between description and design is the load-bearing claim, and the piece earns it.
+
+## The diagnostic table is a portable instrument
+
+The 8×3 table on lines 45–54 crystallizes the underspecification claim into a form that can be inspected, contested, and reused. Each cell is a separate verdict; the verdicts collectively expose a pattern (situational specified throughout; action-formation and aggregation systematically underspecified) that no individual case discussion could make visible at the same compression. The verdict vocabulary - *well-specified, multiply specified, parameterized, asserted* - is precise enough to carry argumentative weight. This is the kind of analytical artifact the College's diagnostic essays should aim to produce.
+
+## The DP7 reclassification is the right call and handled correctly
+
+The observation that DP7 (minimal recognition of rights to organize) "specifies a condition external to the institution... rather than a feature of its internal design" is genuinely important. Other commentators have noted that DP7 is different in kind, but few state cleanly that the three-level diagnostic does not apply in the same way and that DP7 functions as a precondition under which the other principles' mechanisms can operate. The piece handles this without making it more than it is - DP7 is set aside from the table's logic in one paragraph, and the reader is left with a clear understanding of why.
+
+## The DP3 worked example has teeth
+
+The three candidates (informational, normative, power) are not merely named; they are shown to generate divergent predictions in the transplant context where formal participation structures exist without genuine community decision-making authority. The framing - "Under DP3-I... should largely succeed... Under DP3-N... should fail" - converts what could have been a typology into a predictive instrument. The piece then proposes three observational tests (information test, obligation test, elite-capture test) keyed to the three candidates. This is the proportioning a worked example should have: enough detail to demonstrate the diagnostic's bite, not so much that the structural argument is buried.
+
+## The "lost in transmission" framing is generous and historically accurate
+
+The observation on lines 100–102 - that "Ostrom's own case analyses often contain more mechanism reasoning than the eight-principle synthesis suggests" and that the mechanism material "was lost in transmission to the portable checklist" - is the historiographically correct read. The Törbel and Spanish-irrigation treatments in *Governing the Commons* do contain mechanism-level reasoning that the eight-principle summary strips. Naming this as a diagnosis of the abstraction rather than of the original analyst is the right move and lets the piece make its critical point without becoming a takedown.
+
+## Methodological coherence with the College's prior work
+
+This piece is recognizably the next instalment of the institutional research program begun in #18 (*Does the Referral Hiring Mechanism Meet Its Own Standard?*). The three-level Hedström–Ylikoski audit is being applied to a second domain, and the cross-reference to #25 (*Compliance as Selection*) at DP5 ties the new diagnosis to a prior mechanism account from the same author. The College is accumulating a methodology, not just publishing essays, and the consistency is visible.
+
+## Concerns
+
+# Concerns
+
+1. **The Nepal and West Africa empirical claims are not anchored to specific sources, and they are doing real argumentative work.** The piece states: "In Nepal's community forestry program, retrospective analysis of lower-performing forest user groups consistently identified that communities did not experience participation as genuine: project timelines, funding-conditionality, and technical prerequisites had effectively pre-determined the outcomes before collective-choice processes were run." No citation. Then: "In several West African cases, formal participatory resource management structures operated alongside unimpaired resource degradation." Again no citation, and "several" is doing a lot of work. These two passages are the only empirical anchor for the claim that "the empirical pattern from failed transplants is more consistent with DP3-N than DP3-I" - the most consequential mechanism-discrimination claim in the piece. The reader cannot audit a "consistently identified" claim against an unnamed literature. At minimum, the piece needs Agrawal and Ostrom's work on Nepal community forestry, and a named West African study (Ribot's work on decentralization, Benjaminsen's pastoral commons cases, or whatever the underlying source actually is). The piece's own methodological commitments make these citations not optional but constitutive of the claim's evidential standing.
+
+2. **The framing "ex ante discrimination" overstates what the three DP3 tests actually deliver.** The piece names the *ex ante discrimination problem* as the practitioner's need to determine which mechanism is operative *before installation*. But the three tests proposed - the information test ("compare locally-generated rules to externally-designed alternatives using ecological monitoring data"), the obligation test ("if two communities receive functionally equivalent rules - one through a genuine collective process, one through an imposed process - and compliance differs..."), and the elite-capture test - all require some institutional intervention or comparator already to have been run. The information test requires that locally-generated rules already exist to compare. The obligation test requires that two communities have already received the contrasting treatments. These are diagnostic instruments for *early stages of deployment with paired comparators*, not for *pre-deployment scoping*. The framing should distinguish these two senses of "before installation," or the tests deliver less than the framing claims. A short qualifier - that what is "ex ante" is the diagnostic instrumentation, applied during pilot or paired-comparator phases, rather than before any contact with the host setting - would close this.
+
+3. **The three DP1 channels may be less distinct than the framing presents them.** Lines 27 lists "(a) a *property rights channel* in which defined membership internalizes the cost of over-extraction to identifiable individuals, (b) an *identity channel* in which group membership creates normative obligation to comply with group norms, and (c) an *information channel* in which identifiable users enable monitors to attribute resource-condition changes to specific actors." But (a) and (c) appear to share substantial mechanism territory: internalization of external costs onto identifiable individuals (a) is partly *enabled by* attribution of resource changes to those individuals (c). A practitioner reading this would have difficulty separating "internalization-via-property-rights" from "internalization-via-attribution-capacity." Either the piece needs a sentence distinguishing the two - what (a) requires that (c) does not, and vice versa - or one of them should be collapsed into the other. The DP3 typology is rigorously distinct; the DP1 typology reads as if it has not had the same scrutiny.
+
+4. **The diagnostic table does not encode the second-order regress at DP4.** The piece writes: "However, a second-order gap is present: the mechanism that keeps monitors monitoring is not specified. Monitoring is itself a collective good, and 'accountable to users' names a property of the monitor without specifying the mechanism that produces accountability." This is a structurally important observation - it implies that the framework has a regress problem (who monitors the monitors, and by what mechanism are they kept accountable). But the diagnostic table on lines 45–54 records DP4 as "well-specified (deterrence), second-order gap" in the action-formation column, and the table's verdict vocabulary has no slot for the regress. Either the second-order gap deserves its own row or column entry (so the diagnostic is honest about where the underspecification lives), or the piece needs a sentence saying explicitly that the table records first-order specification only and the second-order gap is named in the prose but outside the table's scope. As it stands, a reader scanning only the table would conclude DP4's action-formation is "well-specified" with a minor footnote, when the prose argues something stronger.
+
+5. **The standard for distinguishing "asserted" from "specified" aggregation is never made explicit.** The aggregation column reads "asserted" for DP1, DP2, DP3 (under one reading), DP6, and DP8 - five of eight principles. But the piece never says what a *non-asserted* aggregation mechanism would look like. For DP4, "parameterized" is used: "compliance converges to sustainability at some threshold fraction of monitored actors, but the threshold is not specified." For DP1, would a non-asserted aggregation be a derivation of how individual exclusion-driven incentives sum across the user population to total extraction below the resource's regeneration rate? The piece needs a one-sentence positive specification of what the verdict "asserted" *contrasts with* - otherwise the table's most populated column verdict floats free of testable content. The piece acknowledges in passing that "Ostrom's own case analyses often contain more mechanism reasoning than the eight-principle synthesis suggests" (line 100), which is the right qualifier; the diagnostic table should distinguish "underspecified in the eight-principle summary" from "underspecified in the supporting case literature."
+
+6. **The DP5 cross-reference to *Compliance as Selection* is asserted in one sentence and deserves more.** The piece writes: "I have argued elsewhere that fixed monitoring regimes can concentrate undetectable violations by clearing the detectable end of the distribution - graduated sanctions partially address that problem, but which channel is doing the work shapes what calibration the sanctions require." If the selection-effect argument bears on DP5 calibration, the connection deserves either a full paragraph or - if a paragraph would unbalance the section - to be marked as out-of-scope and slated for a follow-up. As it stands, the sentence promises an analytical connection it does not deliver, which is the kind of move the piece otherwise disciplines well.
+
+7. **Minor: "compliance burden" in DP2 needs a half-sentence of unpacking.** Line 29: "locally congruent rules reduce compliance burden, but the direction of influence from 'congruence' to 'reduced burden' is not articulated." The phrase "compliance burden" carries different meanings across the literature - opportunity cost of compliance, cognitive cost of understanding rules, legitimacy cost of following rules at odds with local norms. The three action-formation candidates that follow (*efficiency*, *legitimacy*, *ecological accuracy*) implicitly disambiguate, but a reader meeting "compliance burden" before the three candidates encounters an undefined construct doing argumentative work. One clause stating what the burden is in this context would help.
+
+8. **Process-language check.** The draft is clean. The first-person constructions present - "The standard against which I audit Ostrom's framework..." (line 21), "I have argued elsewhere..." (DP5) - are appropriate to the essay form and do not surface a review history. The piece reads as a freestanding artifact, which is what a public publication should be.
+
+9. **Math notation check.** The piece uses LaTeX where it needs to (`$p_d$`, `$s$`, `$p_d \cdot s$` in the DP4 deterrence discussion on line 33). No instances of Greek letters spelled out in prose, no inline operator-words where symbols would carry more weight. Nothing to flag.

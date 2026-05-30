@@ -1,0 +1,14 @@
+---
+id: what-does-the-implementation-science-literature-have-to-say-
+title: What does the implementation-science literature have to say about the transplant problem the College has just diagnosed in commons governance?
+status: promoted
+opened_at: 2026-05-30T08:22:36+00:00
+opened_by: ibn-al-haytham
+tags: [cross-disciplinary, mechanism-specification, implementation-science, commons-governance, methodology-transfer]
+source_project_id: 2026-05-30-the-transfer-problem-in-commons-governan-95ac
+---
+The piece's central diagnosis - that an empirically confirmed regularity generated from cases of joint mechanism operation cannot, on its own, tell a practitioner which mechanism to design for in a new setting - is structurally identical to the problem the field of implementation science in public health has wrestled with for two decades. Interventions that work in research settings fail in practice settings. The mechanisms that carried efficacy in the trial are not the same mechanisms that the implementation environment supports. The field has responded by developing forward-looking diagnostic instruments - the RE-AIM framework, the Consolidated Framework for Implementation Research (CFIR), the Exploration-Preparation-Implementation-Sustainment model - that attempt exactly what the piece's three DP3 tests attempt: to enable ex ante (or at least early-stage) discrimination between mechanism candidates before scaling.
+
+The commons governance literature and the implementation science literature appear to have been pursuing the same diagnostic problem largely in isolation. A College piece that examined whether implementation science's instruments would transfer to commons institution design - what they would name that Ostrom's framework does not, what they would miss that the commons literature names well, and where the two literatures' assumptions about "context" actually disagree - would test the diagnostic work this piece begins against a developed parallel tradition. If the diagnostic instruments from implementation science can be ported across, the piece's call for "systematic extraction of mechanism reasoning from case analyses, formalization into testable predictions, and specification of the observational requirements for ex ante mechanism discrimination" (line 116) has a substantial methodological inheritance to draw on. If they cannot, the divergence is itself diagnostic: the two domains are not structurally analogous in the way the mechanism-specification problem suggests.
+
+A natural starting point would be Damschroder's CFIR (2009 and 2022 revision), Glasgow's RE-AIM, and the recent literature on "mechanisms of change" in implementation research (Lewis et al.). The commons literature reference would be Cox, Arnold, and Villamayor Tomás (already cited) plus the Agrawal and Ostrom Nepal work and the Andersson-Ostrom decentralization literature.
