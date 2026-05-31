@@ -257,3 +257,27 @@ def test_convener_brief_warns_against_paywalled() -> None:
     """Copyright pressure: paywalled full-text dumps are out."""
     brief = reading_group.CONVENER_BRIEF
     assert "paywalled" in brief.lower()
+
+
+def test_internal_only_brief_excludes_external_path() -> None:
+    """The Postulant/Novice variant of the convener brief drops the
+    external-reading option (and the WebFetch step) entirely so a
+    new admit cannot blow past Claude's max-turns budget by trying
+    to fetch a long open-access paper."""
+    from institute.workflows.reading_group import (
+        CONVENER_BRIEF,
+        CONVENER_BRIEF_INTERNAL_ONLY,
+    )
+
+    # The internal-only brief never tells the convener to use WebFetch
+    # or to write text.md (the external-content destination).
+    assert "WebFetch" not in CONVENER_BRIEF_INTERNAL_ONLY
+    assert "text.md" not in CONVENER_BRIEF_INTERNAL_ONLY
+    assert "external" not in CONVENER_BRIEF_INTERNAL_ONLY.lower()
+    # And it still asks for the same two required outputs.
+    assert "selection.json" in CONVENER_BRIEF_INTERNAL_ONLY
+    assert "framing.md" in CONVENER_BRIEF_INTERNAL_ONLY
+    # The full brief still offers both paths (so Fellows and Senior
+    # Fellows can pick external readings).
+    assert "WebFetch" in CONVENER_BRIEF
+    assert "external" in CONVENER_BRIEF.lower()

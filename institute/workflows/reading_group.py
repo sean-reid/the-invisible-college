@@ -221,6 +221,72 @@ with `Done.` Nothing else.
 """
 
 
+# Internal-only variant: dropped the external-reading branch and the
+# WebFetch instruction. Given to Postulant and Novice conveners
+# because the external path on a long open-access paper can blow
+# past Claude's internal turn budget on a single propose step, and
+# because new admits should be reading the cohort's own work first.
+CONVENER_BRIEF_INTERNAL_ONLY = """\
+You are convening a reading group of the Invisible College. The
+College rotates the conveners across the cohort so that the texts
+selected for collective reading reflect the breadth of the
+institution, not just one person's interests.
+
+Your job here is to **propose a College publication for collective
+reading and write a brief framing note**. The two-pass discussion
+itself runs separately - you and the other participants will each
+respond to the text independently and then to each other.
+
+# Inputs in your workspace
+
+- `archive-index.md`     every publication the College has produced,
+                         newest first.
+- `agenda.md`            the College's standing research agenda,
+                         five to nine durable institutional priorities.
+- `your-genome.md`       a short note on who you are (specialization,
+                         recent work), for grounding.
+- `prior-conveners.md`   who has convened past sessions, if any.
+
+Read all of them with the Read tool. You are choosing a text the
+group will read together.
+
+# What you select
+
+Pick **a College publication you did NOT author.** Cross-pollination
+within the institution: something whose ideas you want to put in
+front of your colleagues. The slug must match an entry in
+`archive-index.md`; do not invent.
+
+The reading should be **worth substantive engagement**. A text
+worth the group's time has something a thoughtful Fellow could
+defensibly disagree with. Avoid pieces that everyone will simply
+nod at.
+
+# What you must produce
+
+Use the Write tool to create TWO files in your workspace.
+
+1. `selection.json`:
+
+   ```
+   {
+     "kind": "internal",
+     "post_slug": "<slug from archive-index.md>",
+     "title": "<the publication's title verbatim>"
+   }
+   ```
+
+2. `framing.md` - 150 to 300 words. Your angle on this reading.
+   What you want the group to engage with. Why now. What you would
+   like to see the discussion press on. Write in your own voice.
+
+# Final reply
+
+When both files exist and `selection.json` parses, reply with
+`Done.` Nothing else.
+"""
+
+
 def _slugify(text: str) -> str:
     out: list[str] = []
     last_dash = True
@@ -643,12 +709,20 @@ def convene_with_rotating_leader(*, target_participants: int = 3) -> Path | None
             p.unlink()
 
     console.print(f"[dim]Convener {convener.name} is proposing a reading...[/dim]")
+    # Postulants and Novices get the internal-only variant of the
+    # brief. The external-reading path requires WebFetch on
+    # potentially large open-access content, which can blow past
+    # Claude's max-turns budget on a single propose step. New
+    # admits should also be reading the cohort's own work first;
+    # bringing in outside texts is a Fellow-and-up move.
+    is_junior = convener.rank in {"postulant", "novice"}
+    brief = CONVENER_BRIEF_INTERNAL_ONLY if is_junior else CONVENER_BRIEF
     claude_runner.invoke(
         FellowTask(
             genome=convener,
             project_id="reading-group:propose",
             step="reading-group:propose",
-            brief=CONVENER_BRIEF,
+            brief=brief,
             workspace=workspace,
             extra_dirs=(paths.DOCS, paths.ARCHIVE),
         )

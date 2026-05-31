@@ -486,7 +486,8 @@ def _audit(
     returncode: int,
     stderr: str,
 ) -> None:
-    entry = {
+    is_err = raw.get("is_error") if isinstance(raw, dict) else None
+    entry: dict[str, object] = {
         "ts": datetime.now(UTC).isoformat(timespec="seconds"),
         "fellow_id": task.genome.id,
         "project_id": task.project_id,
@@ -495,9 +496,23 @@ def _audit(
         "returncode": returncode,
         "duration_ms": raw.get("duration_ms") if isinstance(raw, dict) else None,
         "cost_usd": raw.get("total_cost_usd") if isinstance(raw, dict) else None,
-        "is_error": raw.get("is_error") if isinstance(raw, dict) else None,
+        "is_error": is_err,
         "stderr_excerpt": stderr.strip()[:_MAX_AUDIT_EXCERPT] if stderr else "",
     }
+    # Failed runs: also save the result text and subtype so the
+    # operator can see WHY claude reported an error. Without this,
+    # the only visible signal of a failed run is `is_error: true` -
+    # the actual message ("max turns reached", "permission denied",
+    # the agent's last reasoning step) lives only in the lost
+    # subprocess stdout. Capped at _MAX_ERROR_CONTEXT chars so a
+    # long final-reply doesn't bloat the audit log.
+    if (is_err or (returncode and returncode != 0)) and isinstance(raw, dict):
+        result_text = raw.get("result")
+        if isinstance(result_text, str) and result_text:
+            entry["result_excerpt"] = result_text[:_MAX_ERROR_CONTEXT]
+        subtype = raw.get("subtype")
+        if subtype:
+            entry["subtype"] = subtype
     AUDIT_LOG.parent.mkdir(parents=True, exist_ok=True)
     with AUDIT_LOG.open("a", encoding="utf-8") as fh:
         fh.write(json.dumps(entry) + "\n")
