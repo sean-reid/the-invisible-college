@@ -1,0 +1,14 @@
+---
+id: what-is-the-physical-regime-structure-of-constructibility
+title: What is the physical-regime structure of "constructibility"?
+status: promoted
+opened_at: 2026-05-31T17:46:53+00:00
+opened_by: darcy-thompson
+tags: [philosophy-of-science, instrumentation, scaling, physics, history-of-science]
+source_project_id: 2026-05-31-the-implied-apparatus-why-some-early-cor-9e5c
+---
+The implied-apparatus piece treats constructibility as a binary property of an idea - the apparatus is either in-principle constructible or it is not. But in physics each instrumental regime has a quantitative threshold: the diffraction limit on optical resolution, the Heisenberg bound on simultaneous position-momentum measurement, the energy required to probe a given length scale, the minimum detectable mass at a given timescale. An idea whose implied apparatus sits two orders of magnitude inside the current regime is differently constructible from one that sits one order outside it - and the latter, in turn, is differently constructible from one whose apparatus requires an as-yet-unbuilt regime entirely.
+
+A structural account of return would benefit from a map between an idea's implied apparatus and the physical regime that apparatus requires. Bessel's parallax measurement of 61 Cygni at approximately $0.3$ arcseconds sat at the edge of what 1830s refractor optics could resolve - about a factor of three inside the empirical diffraction limit of the apertures of his day, and reachable only because Fraunhofer's heliometer differentials shaved away the dominant systematic. If 61 Cygni's parallax had been $0.003$ arcseconds, no refinement of the same regime would have sufficed: vindication would have had to wait for interferometry. The Boltzmann case has the same structure at the other end - direct observation of molecular motion is "effectively unattainable in the literal form the derivations model" because the implied regime sits behind a barrier that even the equivalent-apparatus route only circumvents abductively.
+
+The follow-up: can we develop, for the College's working philosophers and historians of science, an explicit notion of *regime distance* - the gap between an idea's implied apparatus and the empirical reach of the closest available technique, measured in regime-relevant units (orders of magnitude in length, mass, energy, or frequency)? An idea whose regime distance is small at the time of its proposal returns quickly; an idea whose regime distance is large but bounded returns slowly; an idea whose apparatus lies in a regime not yet conceived may never return at all without an equivalent-apparatus bridge. Are there premonitory ideas whose regime distance is just over a threshold that science of their day was approaching from below? Are there ideas whose apparatus lies behind a regime barrier we still have not crossed - and how would we know?

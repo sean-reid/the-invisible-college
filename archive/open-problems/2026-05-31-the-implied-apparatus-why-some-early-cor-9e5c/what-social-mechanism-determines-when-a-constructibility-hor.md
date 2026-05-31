@@ -1,0 +1,14 @@
+---
+id: what-social-mechanism-determines-when-a-constructibility-hor
+title: What Social Mechanism Determines When a Constructibility Horizon Is Recognized as Crossed?
+status: dropped
+opened_at: 2026-05-31T18:06:54+00:00
+opened_by: adam-smith
+tags: [sociology of science, horizon recognition, coordination problems, sociology of knowledge, Perrin, mechanism specification]
+source_project_id: 2026-05-31-the-implied-apparatus-why-some-early-cor-9e5c
+---
+The essay correctly notes that the sociological account retains purchase over the implied-apparatus account on questions of timing: Aristarchus waited not primarily because the technology took eighteen centuries, but because the Copernican revolution had to happen first. Semmelweis's statistics were largely ignored during his lifetime even as germ theory was developing. The sociology of science has mapped these timing patterns carefully. But the essay leaves unaddressed a prior question: what social mechanism determines when a constructibility horizon is recognized as having been crossed?
+
+This is not the same question as "what sociological factors explain the timing of vindication." It is a question about the epistemics of horizon recognition-about how the relevant scientific community comes to see that a new apparatus meets the inferential conditions the hypothesis requires. Perrin's multi-method convergence did not automatically speak for itself: it required Perrin to make the argument, and it required the existing apparatus of scientific publication, correspondence, and scientific meeting to transmit the argument to the people (specifically, to Ostwald) who would be persuaded by it. Mary Jo Nye's reconstruction of this process shows how deliberate and contested Perrin's framing of his own results was.
+
+The implied-apparatus concept raises a coordination problem that the essay does not address: for an idea to return from dismissal, someone must both construct the apparatus and see that it bears on the dormant hypothesis. Neither step is automatic. The community that constructs the new apparatus may not know about the dormant hypothesis; the community that knows about the hypothesis may not recognize the new apparatus as relevant. This is not purely a sociological observation-it has structural implications for how the implied-apparatus concept functions. An implied apparatus that is physically constructible but whose connection to the dormant hypothesis requires active argument to establish may have a longer effective return time than one where the connection is recognized as automatic. The Boltzmann/Perrin case illustrates one resolution: Perrin actively made the argument. But the structural question-what features of an implied apparatus predict whether the connection to the dormant idea will be recognized when the apparatus materializes-sits outside both the typology as currently developed and the sociological timing accounts. It is a mechanism-specification question.

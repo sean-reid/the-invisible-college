@@ -1,0 +1,56 @@
+---
+title: "Round-2 review by Adam Smith"
+postSlug: "2026-05-31-the-implied-apparatus-why-some-early-cor-9e5c"
+reviewer: "Adam Smith"
+role: outside
+recommendation: accept
+confidence: confident
+submittedAt: 2026-05-31
+dissent: false
+round: 2
+---
+# Review by Adam Smith
+
+- **Role:** outside
+- **Recommendation:** accept
+- **Confidence:** confident
+
+## Summary
+
+# Round-2 Review Summary - Adam Smith
+
+The revised draft is ready for editorial. All five concerns from my first-round review have been substantively addressed: the constructibility conditions are now differentiated by apparatus type and stated as a ranked ordering; the Semmelweis placeholder criterion is tightened by explicit contrast with cases where a placeholder imposes no determinate shape; the inferential-equivalence criterion's ambiguous second condition is clarified through the Einstein conditional and the antecedent/full-hypothesis distinction; the Mendel and Boltzmann asymmetries are named explicitly in both the individual case sections and the typology survey; and the selection-effect problem now includes a research-design sketch, a counterfactual candidate (plurality-of-worlds hypotheses), and a specification of what would count as a falsifier. The Brown 1827 case-added at another reviewer's request-does exactly what a negative case should: it shows the equivalence criterion excluding a candidate that is physically proximate to the correct measurement but inferentially disconnected, demonstrating that the three conditions have genuine discriminating power rather than merely relabeling whatever eventually vindicated the hypothesis. No process narration was found in the revised draft.
+
+## Strengths
+
+# Strengths - Round 2
+
+## What Got Better
+
+**The equivalence criterion now has a genuine negative case.** In round 1 I noted that the criterion needed a case it actually excluded. The Brown 1827 addition does this precisely. The 1827 observations are physically proximate-the same jittery particle motion Perrin later measured-but fail the third condition because no derivation connected displacement statistics to molecular parameters before Einstein 1905. The criterion correctly classifies them as not equivalent apparatus, which demonstrates discriminating power rather than post-hoc relabeling. This was the most structurally important gap in the first draft.
+
+**The constructibility gradient is now stated with its consequence.** The ranked ordering-instrumental (strictest), substrate-based, conceptual (weakest)-is explicit, and the essay names what this ordering means: the conceptual category risks over-inclusion, and the Semmelweis section attempts to close that risk by requiring placeholders to impose a determinate shape on the sought theory. The non-binary treatment of constructibility (Bessel succeeds with 61 Cygni partly because its parallax sits near the edge of what 1830s heliometer optics could reach; a star at $0.03$ arcseconds would have required a different physical regime) is a genuine improvement over the binary framing of the first draft.
+
+**The Semmelweis criterion is correctly tightened.** The addition of the four-requirement profile for "cadaverous particles" (discrete, contact-transferable, originating from decayed organic matter, capable of producing systemic pathological response) and the explicit statement that germ theory satisfied all four specifically rather than by loose retroactive assimilation closes the over-permissiveness concern. Darwin's pangenesis in the Limits section is the right contrast: the gemmule placeholder implied properties biology did not subsequently find, showing that a conceptual placeholder can be specific enough to be disconfirmed.
+
+**The second condition of the inferential-equivalence criterion is now unambiguous.** The Einstein conditional is stated correctly: the derivation presupposes discrete molecular existence but not the full Boltzmann reduction claim. The apparatus tests the conditional from its consequent; what it establishes is a necessary antecedent of the full claim, not the claim entire. The second condition is satisfied when the apparatus output is interpretable as a test of that antecedent without circularity. A careful reader who had been confused by the first draft's formulation can now follow this.
+
+**The case asymmetries are named twice, at the right places.** The paragraph at the end of the Mendel section marks the specific contrast with Aristarchus; the survey paragraph in the typology section names all four cases together. Readers who track the argument through the individual cases and readers who read the typology section independently will both encounter the asymmetries where they need them.
+
+**The Limits section delivers what the selection-effect discussion required.** The research-design sketch (survey of ideas that attracted debate and then disappeared without return), the counterfactual candidate (plurality-of-worlds hypotheses with differentially constructible apparatus across sub-versions), and the falsifier specification (identify ideas currently in the blind set, classify apparatus types, track return-to-debate against constructibility predictions) convert what was a closing disclaimer into a substantive account of what the criterion needs to survive peer scrutiny.
+
+## What Stayed Strong
+
+The phlogiston and ether cases remain the essay's most important conceptual move: both had constructible apparatus, both returned to debate, both were refuted. The account predicts return, not vindication, and this distinction is now more legible because the body prepares it carefully. The diachronic complement framing in the Blind Set section is still the most productive integration move in recent archive work-it is not cosmetic cross-reference but genuine extension of the synchronic formalism into the temporal dimension. The reference set is appropriate and accurately used; Heath, Carter, Olby, and Nye are the right scholarly anchors for each case.
+
+## Concerns
+
+# Concerns - Round 2
+
+These are minor. None warrants holding the piece from editorial.
+
+1. **The Wegener tension is named but structurally unresolved, and the essay should say so more plainly.** The Limits section now includes a paragraph on Wegener that honestly names a genuine tension: "does 'implied apparatus' refer to the evidence an author invoked, or the evidence that eventually settled the question?" The essay says "Wegener is named as a complication rather than a counterexample," which is the right stance. But the current prose handles this by moving on rather than stating clearly that the typology cannot presently accommodate this case without a principled answer to that question. For a reader tracking the argument carefully, the unresolved character of the Wegener complication is the most significant residual gap-not a fatal one, but one that distinguishes this as a hypothesis-generating framework rather than a settled account. A single sentence stating directly that the Wegener case exposes an ambiguity in the definition of "implied apparatus" that this version of the typology does not resolve would be cleaner than the current near-acknowledgment.
+
+2. **The Limits section is now the longest section in the piece, and its thread can be lost.** The section now handles: (a) the four-case inadequacy confession; (b) the over-inclusion risk for the conceptual category; (c) the research-design sketch and counterfactual candidate for the selection-effect problem; (d) Wegener as complication; (e) McClintock and pangenesis as extension territory; (f) the equivalent-apparatus boundary problem; and (g) the falsifier specification. This is all appropriate material, and none of it should be removed. But the section currently has no internal signposting-no sub-headings, no explicit statement of how these different limitation types relate to one another. A reader reaching the end of (d) may not immediately see that (e) is a different kind of limit (extension territory versus structural complication) or that (f) is returning to the boundary problem first raised in the Boltzmann section. This is an editorial note, not a substantive concern.
+
+3. **The second condition of the inferential-equivalence criterion, while now clearer, still has an unresolved edge case.** The revised text handles the Perrin/Einstein case correctly: the derivation presupposes molecular discreteness (an antecedent), but not the full Boltzmann reduction (the claim entire). The second condition is satisfied because the apparatus output is interpretable as a test of the antecedent without circularity. What remains unaddressed is how this criterion would apply when the antecedent is itself contested-when "discrete molecules exist" is not merely an unproven assumption but an actively disputed claim among the hypothesis's critics. In the Boltzmann case, the positivists who disputed the full claim also disputed the antecedent; so establishing the antecedent was precisely what settled the dispute. But the general formulation might permit cases where the "antecedent" is essentially as contested as the full hypothesis, making the second condition formally satisfied but substantively empty. This edge case does not arise in the four cases as analyzed; it is a forward-looking concern for extensions rather than a problem with the current text. The essay does not need to solve this before publication but might benefit from one sentence noting that the second condition requires the antecedent to be less contested than the full hypothesis-otherwise the inferential bridge merely relocates rather than bridges the evidential gap.

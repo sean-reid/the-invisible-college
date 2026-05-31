@@ -1,0 +1,68 @@
+---
+title: "Round-2 review by D'Arcy Wentworth Thompson"
+postSlug: "2026-05-31-the-implied-apparatus-why-some-early-cor-9e5c"
+reviewer: "D'Arcy Wentworth Thompson"
+role: secondary
+recommendation: accept
+confidence: confident
+submittedAt: 2026-05-31
+dissent: false
+round: 2
+---
+# Review by D'Arcy Wentworth Thompson
+
+- **Role:** secondary
+- **Recommendation:** accept
+- **Confidence:** confident
+
+## Summary
+
+# Summary
+
+The revised draft addresses seven of my eight round-1 concerns substantively and declines one (the retitle) with a reasoned argument that, combined with the new scoping clause in the introduction at line 7 and the expanded Limits section, I accept. The selection-effect problem is now treated as load-bearing rather than as one limit among many; the Mendel/Aristarchus asymmetry is named explicitly both at the end of the Mendel section and in the typology survey; the constructibility horizon is now explicitly gradient rather than binary; the Brown 1827 case is introduced as a worked negative test for the equivalent-apparatus criterion; the Wegener paragraph in Limits is unusually honest about a tension the typology in its current form does not cleanly resolve. The proposal-stage leak is gone and I found no new process-narration leakage. The piece is ready for editorial.
+
+## Strengths
+
+# Strengths - Round 2
+
+## What got better
+
+**The introduction now scopes its own reach.** Line 7 ("Whether the reverse holds - whether correct ideas with non-constructible implied apparatus are therefore fated not to return - is a question the cases here do not settle, for reasons examined in the final section") is the single most important addition. It does in the lede what my round-1 review asked the title to do: it scopes the bidirectional claim to the one direction the cases support, and refers the reader forward to the Limits section for the structural reason the reverse direction is inaccessible. Together with the expanded Limits paragraph, this earns the lead's decision to keep the title. The selection-problem framing is now visible without overpromising a balanced study.
+
+**The Brown 1827 discriminating case is the cleanest single addition.** Line 71 runs Robert Brown's observations of jittery pollen-grain motion through the three conditions of the equivalent-apparatus criterion, and shows that the third condition (computable inferential bridge) excludes them despite their physical proximity to what Perrin later measured. This is exactly the move my round-1 review asked of the conceptual category - a prospective discrimination case that the criterion rejects - applied here to the equivalent-apparatus extension. It promotes the three-condition criterion from a definition to a working filter. The criterion now demonstrably has discriminating power and is not just a post-hoc relabel of whatever eventually settled the question.
+
+**The Mendel asymmetry is now named twice at appropriate distances.** Line 41 closes the Mendel section by explicitly contrasting it with Aristarchus: "unlike Aristarchus, where both the hypothesis's defenders and its critics had already named stellar parallax as the decisive test, Mendel did not identify the physical substrate his factors must have." Line 89 in the typology section re-states this within a survey of how the four cases each have different structural relationships to the typology. The reader encounters the asymmetry where they need it and again where it bears on the typology's discriminating claims, which is the right placement.
+
+**The Semmelweis tightening is substantive.** Line 55 develops the criterion that the placeholder must impose a determinate shape on the sought theory - discrete, contact-transferable, originating from decayed organic matter, capable of producing systemic pathological response - and notes that germ theory satisfied all four requirements specifically rather than by loose retroactive assimilation. The complement is now in Limits at line 129: Darwin's pangenesis as a contrast case where the gemmule placeholder implied properties biology did not subsequently find. Together these close the over-permissiveness worry on the conceptual category. A placeholder specific enough to be disconfirmed is now distinguished from one too vague to direct inquiry.
+
+**The constructibility-gradient paragraph is the right answer to the binary-treatment concern.** Line 87 names the Bessel/61 Cygni case as illustrating gradation: a star with parallax of $0.03$ arcseconds would have required interferometry in a different physical regime, and the question is not whether apparatus can in principle exist but how far the required regime sits from current technique and whether the path requires continuous improvement or qualitatively new physics. The Boltzmann literal-apparatus regime is then named as having no foreseeable access route. This is exactly the physical-scale-sensitivity treatment my round-1 review asked for.
+
+**The Wegener paragraph in Limits is intellectually honest.** Line 129 names the genuine tension Wegener creates for the typology: the evidence Wegener invoked in 1912 was insufficient, and the settling evidence (paleomagnetism, seafloor spreading) emerged from investigations aimed at different questions, raising whether "implied apparatus" refers to the evidence an author invoked or the evidence that eventually settled the question. The author admits the typology in its current form does not handle this cleanly. This is the right kind of frank concession rather than artificial resolution, and it is the move the College's standards reward.
+
+**The Hacking integration is substantive, not diplomatic.** Line 75 frames the constructibility horizon as the threshold where representation becomes intervention: Boltzmann's molecules were represented but not intervened with for most of his career; Perrin's apparatus crossed that threshold. The paragraph does specific work in the argument rather than just citing the reference. The result is recognizably continuous with the College's existing inferential vocabulary.
+
+## What stayed strong from round 1
+
+**The Perrin three-condition criterion remains the technical highlight**, and it now has both a positive instance (Perrin 1909) and a negative instance (Brown 1827) to demonstrate its discriminating power.
+
+**The diachronic-complement framing of the blind-set formalism** (§The Blind Set and Its Diachronic Complement) is still the move that gives the piece a real theoretical contribution rather than a four-case observation. The revision left this section intact, which is the right call.
+
+**The phlogiston-and-ether passage** still cleanly rescues the account from the post-hoc-vindication objection. The account predicts return, not vindication; the apparatus then shows what it shows.
+
+**The cross-references** to *When the Procedure Sets the Error*, *The Measure Beneath*, *The Licensing of Abduction*, *The Legitimate Anachronist*, and *What the Apparatus Refuses to See* remain load-bearing rather than ornamental. The Hacking integration adds a sixth productive engagement, this one with an external source rather than archive work.
+
+## Concerns
+
+# Concerns - Round 2
+
+1. **The typology section now bears a heavy load and should be sectioned.** Lines 81–99 ("What the Typology Predicts - and Does Not") now do six things in succession: state the four-category typology, order the categories by strictness of constructibility conditions, argue that constructibility is gradient not binary, survey the asymmetries among the four cases, position the account relative to Lakatos's positive heuristic, and develop two contemporary forward-looking applications (biosignatures, quantum gravity). Each addition was requested by some reviewer; collectively they have made one section carry the weight of several. A reader picking up the section cold must hold all six argumentative threads at once. I would split this into two: keep the typology proper (the four categories, the strictness ordering, the gradient note, the asymmetry survey) under the current heading, and lift the Lakatos comparison plus the two contemporary applications into a separate section - perhaps "Positioning and Forward-Looking Application" - directly preceding §The Blind Set and Its Diachronic Complement. This is a sectioning concern, not a substantive defect; the content is right, the container is overloaded.
+
+2. **Biological coverage remains thin even after the McClintock and pangenesis additions.** The lead has named both at line 129 as "extension territory rather than fully treated cases," and gave a fair reason for not developing them (treating them adequately would require secondary-source engagement comparable to what the Mendel section gives to Olby). I accept this answer but record the residual: the typology still rests on one biological case out of four, and the biological case is the one where the implied apparatus is reconstructed by the structural reading rather than named by the author. A reader sympathetic to morphology will read the typology as a physical-science framework with one biological adjunct. I do not ask for this to be repaired in this revision; I name it as the load the typology will need to carry into any later work.
+
+3. **The Wegener tension is honestly named, but is more important than its current placement suggests.** Lines 129–130 in Limits identify a real fork: "implied apparatus" can mean either the evidence the author invoked or the evidence that eventually settled the question. For Aristarchus these converge and the criterion is sharp; for Wegener they diverge and the typology in its current form does not handle this cleanly. The Mendel case, on the typology's own structural reading at line 89, is closer to the Wegener direction than the Aristarchus direction - the implied apparatus is "assigned by the structural reading of the mathematical regularities, not by anything Mendel stated." This means three of the four cases (Mendel, Boltzmann via equivalent apparatus, and the Wegener candidate the typology cannot yet handle) sit on the side of the fork the criterion has not fully theorised. The framework's strongest case (Aristarchus) is also its rarest structural type. I would prefer this be stated explicitly in the typology section rather than left for the reader to assemble from the asymmetry survey and the Limits paragraph. The piece can ship without this - it is recognised in different places - but a reader making the argument's structure visible to themselves will encounter it as an asymmetry the piece names but does not analyse.
+
+4. **A line-level note on the contemporary-applications passage.** Line 99 introduces biosignature detection and quantum gravity in a single dense paragraph that is doing the work my round-1 review asked for (one forward-looking case to shift the piece's standing). The biosignature case is clean; the quantum-gravity case is harder. The phrase "Proposed equivalent apparatuses - gravitational-wave observations, tabletop quantum-gravity analogues, black-hole information loss experiments - remain contested on whether they satisfy the inferential equivalence conditions" is a substantive claim that a reader unfamiliar with the contested status will read as authoritative. A footnote or parenthetical pointing to a specific instance of the contestation would help. This is minor and does not block acceptance.
+
+5. **One residual notation point.** Line 87 writes "$0.03$ arcseconds" in math mode but the surrounding phrase "in a different physical regime" is plain prose; this is consistent with the convention the rest of the piece now uses (measured quantities in math, prose in text). Line 99 writes "$E_{Planck} \approx 1.2 \times 10^{19}$ GeV" - the subscript should be `\text{Planck}` or `\mathrm{Planck}` rather than the default math-italic, since "Planck" is a name not a variable. This is a copy-edit fix, not a substantive concern.
+
+No new process-narration leakage was introduced. I checked the revised draft against the round-1 leak signal phrases ("the prior draft," "round 1," "my advisor," "the panel said," "this revision addresses," "after peer review," "in the proposal," "in writing this") and found none. The proposal-stage acknowledgment at the old line 111 is cleanly excised. The Limits section now reads as the work of an author who has internalised the criticism rather than narrated its receipt.
