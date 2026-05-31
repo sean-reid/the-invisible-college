@@ -176,6 +176,64 @@ def test_pick_convener_skips_retired_fellows(isolated: Path) -> None:
     assert convener.id == "ada"
 
 
+def test_pick_convener_demotes_fellows_with_failed_propose_attempts(
+    isolated: Path,
+) -> None:
+    """A Fellow who has been picked as convener but whose
+    `reading-group:propose` step kept returning non-zero should be
+    pushed down the rotation, not re-picked every cycle. Without
+    this the picker is permanently stuck on the first never-convened
+    Fellow until they succeed - and a Fellow whose subprocess keeps
+    erroring out burns budget every wake-up."""
+    with db.connection() as conn, db.transaction(conn):
+        _seed(conn, "alex", "Alex")
+        _seed(conn, "ada", "Ada")
+        # Alex has tried twice and both step_failures landed in the
+        # audit log. Ada has never been picked.
+        conn.execute(
+            "INSERT INTO audit_log (at, actor, action, project_id, detail) VALUES "
+            "('2026-05-31T17:07:57+00:00', 'orchestrator,alex', 'step_failure', "
+            "'reading-group:propose', 'x')"
+        )
+        conn.execute(
+            "INSERT INTO audit_log (at, actor, action, project_id, detail) VALUES "
+            "('2026-05-31T20:09:38+00:00', 'orchestrator,alex', 'step_failure', "
+            "'reading-group:propose', 'x')"
+        )
+
+    with db.connection() as conn:
+        convener = reading_group.pick_convener(conn)
+    # Ada, never-tried, wins over Alex who has failed.
+    assert convener.id == "ada"
+
+
+def test_pick_convener_falls_back_to_failed_proposer_if_only_option(
+    isolated: Path,
+) -> None:
+    """When every other Fellow has already convened successfully and
+    only the failed-propose Fellow is in the never-convened tier,
+    they still get picked - one more try is better than blocking the
+    rotation forever."""
+    with db.connection() as conn, db.transaction(conn):
+        _seed(conn, "alex", "Alex")
+        _seed(conn, "ada", "Ada")
+        # Ada has convened; Alex has only failed.
+        conn.execute(
+            "INSERT INTO audit_log (at, actor, action, detail) VALUES "
+            "('2026-05-20T12:00:00+00:00', 'ada', 'reading_group', 'x')"
+        )
+        conn.execute(
+            "INSERT INTO audit_log (at, actor, action, project_id, detail) VALUES "
+            "('2026-05-31T17:07:57+00:00', 'orchestrator,alex', 'step_failure', "
+            "'reading-group:propose', 'x')"
+        )
+
+    with db.connection() as conn:
+        convener = reading_group.pick_convener(conn)
+    # Alex (failed-tier=1) ranks above Ada (convened-tier=2).
+    assert convener.id == "alex"
+
+
 # ---------------------------------------------------------------------------
 # CONVENER_BRIEF mentions the external option
 # ---------------------------------------------------------------------------

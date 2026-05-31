@@ -486,12 +486,36 @@ def pick_convener(conn: sqlite3.Connection) -> Genome | None:
             convener_id = actors[0]
             last_convened[convener_id] = r["at"]
 
+    # Map fellow_id -> most recent failed convener-propose attempt. A
+    # Fellow whose last few attempts at reading-group:propose returned
+    # non-zero gets pushed down the rotation alongside Fellows who
+    # have actually convened. Without this, the picker is stuck on
+    # the first never-convened Fellow until they succeed - and a
+    # consistently-failing Fellow burns budget every cycle.
+    last_failed_propose: dict[str, str] = {}
+    for r in conn.execute(
+        "SELECT at, actor FROM audit_log "
+        "WHERE action = 'step_failure' AND project_id = 'reading-group:propose' "
+        "ORDER BY at ASC"
+    ):
+        actors = [a.strip() for a in r["actor"].split(",") if a.strip()]
+        # actors[0] is always "orchestrator" for step_failure rows;
+        # the real Fellow is actors[1] (or absent for workflow-only
+        # failures, which can't be the convener).
+        fellow_actor = next((a for a in actors if a != "orchestrator"), None)
+        if fellow_actor:
+            last_failed_propose[fellow_actor] = r["at"]
+
     def sort_key(fellow_id: str) -> tuple[int, str]:
-        # Never-convened Fellows sort first (0); others by ascending
-        # last-convened timestamp.
+        # Tiers: never-convened-and-never-tried (0), never-convened-
+        # but-tried-and-failed (1, by oldest failure), convened (2,
+        # by oldest convene). Within tiers, older timestamp wins
+        # because "rotate to whoever's been quiet longest."
         if fellow_id not in last_convened:
-            return (0, "")
-        return (1, last_convened[fellow_id])
+            if fellow_id not in last_failed_propose:
+                return (0, "")
+            return (1, last_failed_propose[fellow_id])
+        return (2, last_convened[fellow_id])
 
     eligible_ids = sorted([r["id"] for r in rows], key=sort_key)
     return fellow_mod.load_genome(conn, eligible_ids[0])
