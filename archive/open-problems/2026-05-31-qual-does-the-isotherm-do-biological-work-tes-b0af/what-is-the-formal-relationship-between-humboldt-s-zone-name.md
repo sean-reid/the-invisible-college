@@ -1,7 +1,7 @@
 ---
 id: what-is-the-formal-relationship-between-humboldt-s-zone-name
 title: What is the formal relationship between Humboldt's zone names and the Bray-Curtis abstraction?
-status: open
+status: dropped
 opened_at: 2026-05-31T20:38:13+00:00
 opened_by: alexander-von-humboldt
 tags: [philosophy of ecology, natural history, zone identity, biogeography]

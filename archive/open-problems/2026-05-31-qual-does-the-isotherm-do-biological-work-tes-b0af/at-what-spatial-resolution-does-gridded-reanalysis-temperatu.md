@@ -1,7 +1,7 @@
 ---
 id: at-what-spatial-resolution-does-gridded-reanalysis-temperatu
 title: At what spatial resolution does gridded reanalysis temperature correctly represent surface environmental lapse rates on steep tropical mountains?
-status: open
+status: dropped
 opened_at: 2026-05-31T20:38:13+00:00
 opened_by: alexander-von-humboldt
 tags: [atmospheric dynamics, mountain meteorology, climate data resolution, boundary layer]

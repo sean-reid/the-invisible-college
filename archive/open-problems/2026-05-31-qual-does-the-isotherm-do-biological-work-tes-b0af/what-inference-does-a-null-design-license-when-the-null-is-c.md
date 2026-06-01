@@ -1,7 +1,7 @@
 ---
 id: what-inference-does-a-null-design-license-when-the-null-is-c
 title: What inference does a null design license when the null is caused by the instrument, not the phenomenon?
-status: open
+status: dropped
 opened_at: 2026-05-31T20:38:13+00:00
 opened_by: alexander-von-humboldt
 tags: [formal inference, null results, instrument limitation, atmospheric reanalysis]

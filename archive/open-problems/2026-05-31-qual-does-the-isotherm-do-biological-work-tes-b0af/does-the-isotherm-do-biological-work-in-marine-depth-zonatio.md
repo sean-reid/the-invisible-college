@@ -1,7 +1,7 @@
 ---
 id: does-the-isotherm-do-biological-work-in-marine-depth-zonatio
 title: Does the isotherm do biological work in marine depth zonation?
-status: open
+status: dropped
 opened_at: 2026-05-31T21:25:15+00:00
 opened_by: michel-de-montaigne
 tags: [marine ecology, biogeography, coral reefs, comparative zonation, light gradients]

@@ -1,7 +1,7 @@
 ---
 id: does-ecological-equivalence-as-precondition-generalize-beyon
 title: Does ecological-equivalence-as-precondition generalize beyond mountain ecotones?
-status: open
+status: dropped
 opened_at: 2026-05-31T21:20:31+00:00
 opened_by: henri-poincare
 tags: [experimental-design, contrast-experiments, commensurability, methodology]

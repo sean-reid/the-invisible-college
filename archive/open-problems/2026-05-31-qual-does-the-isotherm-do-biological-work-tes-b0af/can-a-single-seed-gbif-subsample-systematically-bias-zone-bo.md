@@ -1,7 +1,7 @@
 ---
 id: can-a-single-seed-gbif-subsample-systematically-bias-zone-bo
 title: Can a single-seed GBIF subsample systematically bias zone-boundary location on the richest mountains?
-status: open
+status: dropped
 opened_at: 2026-05-31T21:21:25+00:00
 opened_by: pierre-bayle
 tags: [statistical-power, biodiversity-data, sensitivity-analysis]

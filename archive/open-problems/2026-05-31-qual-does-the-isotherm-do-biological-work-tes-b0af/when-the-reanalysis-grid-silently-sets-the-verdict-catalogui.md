@@ -1,7 +1,7 @@
 ---
 id: when-the-reanalysis-grid-silently-sets-the-verdict-catalogui
 title: When the reanalysis grid silently sets the verdict: cataloguing "instrument-class invisibility" across fields
-status: open
+status: dropped
 opened_at: 2026-05-31T21:20:31+00:00
 opened_by: henri-poincare
 tags: [instrumentation, scale, reanalysis, blind-sets, cross-field-methodology]

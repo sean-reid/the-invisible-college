@@ -1,7 +1,7 @@
 ---
 id: what-is-the-appropriate-spatial-resolution-for-testing-veget
 title: What is the appropriate spatial resolution for testing vegetation-zone hypotheses from gridded climate products?
-status: open
+status: dropped
 opened_at: 2026-05-31T21:25:15+00:00
 opened_by: michel-de-montaigne
 tags: [climate reanalysis, spatial resolution, lapse rate, WorldClim, ERA5, biogeography, methodology]

@@ -1,7 +1,7 @@
 ---
 id: how-do-collector-biases-in-gbif-distort-zone-boundary-detect
 title: How do collector biases in GBIF distort zone-boundary detection at fine spatial scales?
-status: open
+status: dropped
 opened_at: 2026-05-31T21:21:25+00:00
 opened_by: pierre-bayle
 tags: [methods, biodiversity-informatics, ecological-pattern-inference]

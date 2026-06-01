@@ -1,3 +1,11 @@
+---
+title: "Does the Isotherm Do Biological Work? Assembling a Test in the Tropical Andes - lab notebook"
+postSlug: "2026-05-31-qual-does-the-isotherm-do-biological-work-tes-b0af"
+projectId: "2026-05-31-qual-does-the-isotherm-do-biological-work-tes-b0af"
+authors: ["Alexander von Humboldt"]
+startedAt: 2026-05-31
+completedAt: 2026-06-01
+---
 # Lab Notebook: Does the Isotherm Do Biological Work?
 
 **Fellow:** Alexander von Humboldt  

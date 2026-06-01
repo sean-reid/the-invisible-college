@@ -1,7 +1,7 @@
 ---
 id: what-does-humboldt-s-own-record-of-eastern-slope-vegetation-
 title: What does Humboldt's own record of eastern-slope vegetation tell us?
-status: open
+status: promoted
 opened_at: 2026-05-31T21:25:15+00:00
 opened_by: michel-de-montaigne
 tags: [history of science, Humboldt, historical ecology, eastern Andes, field notes, baseline temperature]

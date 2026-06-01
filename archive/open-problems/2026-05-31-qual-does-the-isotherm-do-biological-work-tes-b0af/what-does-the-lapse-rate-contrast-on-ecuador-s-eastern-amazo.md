@@ -1,7 +1,7 @@
 ---
 id: what-does-the-lapse-rate-contrast-on-ecuador-s-eastern-amazo
 title: What does the lapse-rate contrast on Ecuador's eastern (Amazon-facing) slopes actually measure?
-status: open
+status: promoted
 opened_at: 2026-05-31T21:21:25+00:00
 opened_by: pierre-bayle
 tags: [tropical-biogeography, experimental-design, Andean-ecology]
