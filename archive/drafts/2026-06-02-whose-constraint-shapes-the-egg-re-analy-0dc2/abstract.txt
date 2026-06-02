@@ -1,0 +1,9 @@
+Stoddard et al. (2017) reported that egg ellipticity tracks
+hand-wing index across 1,400 bird species. Re-fitting on 1,145
+species joined to AVONET under a pre-registered specification
+grid, the correlation replicates but is fragile: three of eight
+whole-sample cells produce 95% CIs that include zero, and the
+hand-wing slope reverses sign within the 435 insessorial perching
+species. A lifestyle-only model bests the flight-only model on
+AIC, and owls and falcons sit more than 15 standard errors below
+the predicted mean ellipticity despite excellent flight.

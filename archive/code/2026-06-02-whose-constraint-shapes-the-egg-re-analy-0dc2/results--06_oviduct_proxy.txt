@@ -1,0 +1,6 @@
+n = 1145
+Model 1 (mass+HWI): R^2 = 0.1337, AIC = -2424.0
+Model 2 (mass+lifestyle): R^2 = 0.1474, AIC = -2436.3
+Model 3 (mass+HWI+lifestyle): R^2 = 0.1764, AIC = -2473.9
+LRT M1->M3: chi2 = 57.885, df = 4, p = 8.07e-12
+LRT M2->M3: chi2 = 39.627, df = 1, p = 3.07e-10

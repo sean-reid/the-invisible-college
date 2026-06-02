@@ -1,0 +1,133 @@
+# Replication on matched sample (n = 1145)
+# Species coverage: 145 families, 35 orders
+
+## OLS, ellipticity ~ log_mass + HWI
+                            OLS Regression Results                            
+==============================================================================
+Dep. Variable:            ellipticity   R-squared:                       0.134
+Model:                            OLS   Adj. R-squared:                  0.132
+Method:                 Least Squares   F-statistic:                     88.15
+Date:                Tue, 02 Jun 2026   Prob (F-statistic):           2.51e-36
+Time:                        12:26:31   Log-Likelihood:                 1215.0
+No. Observations:                1145   AIC:                            -2424.
+Df Residuals:                    1142   BIC:                            -2409.
+Df Model:                           2                                         
+Covariance Type:            nonrobust                                         
+==============================================================================
+                 coef    std err          t      P>|t|      [0.025      0.975]
+------------------------------------------------------------------------------
+Intercept      0.2982      0.007     41.545      0.000       0.284       0.312
+log_mass       0.0238      0.003      6.887      0.000       0.017       0.031
+HWI            0.0013      0.000      7.737      0.000       0.001       0.002
+==============================================================================
+Omnibus:                       26.046   Durbin-Watson:                   0.987
+Prob(Omnibus):                  0.000   Jarque-Bera (JB):               53.185
+Skew:                           0.055   Prob(JB):                     2.83e-12
+Kurtosis:                       4.050   Cond. No.                         106.
+==============================================================================
+
+Notes:
+[1] Standard Errors assume that the covariance matrix of the errors is correctly specified.
+
+## OLS, asymmetry ~ log_mass + HWI
+                            OLS Regression Results                            
+==============================================================================
+Dep. Variable:              asymmetry   R-squared:                       0.069
+Model:                            OLS   Adj. R-squared:                  0.067
+Method:                 Least Squares   F-statistic:                     42.00
+Date:                Tue, 02 Jun 2026   Prob (F-statistic):           2.50e-18
+Time:                        12:26:31   Log-Likelihood:                 1420.6
+No. Observations:                1145   AIC:                            -2835.
+Df Residuals:                    1142   BIC:                            -2820.
+Df Model:                           2                                         
+Covariance Type:            nonrobust                                         
+==============================================================================
+                 coef    std err          t      P>|t|      [0.025      0.975]
+------------------------------------------------------------------------------
+Intercept      0.1181      0.006     19.692      0.000       0.106       0.130
+log_mass      -0.0049      0.003     -1.691      0.091      -0.011       0.001
+HWI            0.0013      0.000      8.949      0.000       0.001       0.002
+==============================================================================
+Omnibus:                       84.159   Durbin-Watson:                   0.629
+Prob(Omnibus):                  0.000   Jarque-Bera (JB):              148.247
+Skew:                           0.519   Prob(JB):                     6.44e-33
+Kurtosis:                       4.425   Cond. No.                         106.
+==============================================================================
+
+Notes:
+[1] Standard Errors assume that the covariance matrix of the errors is correctly specified.
+
+## Sanity check: log(egg length) is a proxy for body mass.
+slope log10(egg_len) on log10(mass) = 0.2767, R^2 = 0.936
+   (geometric isometry predicts slope 1/3 = 0.333)
+
+## Mixed-effects: ellipticity ~ log_mass + HWI, random intercept by Order
+          Mixed Linear Model Regression Results
+=========================================================
+Model:            MixedLM Dependent Variable: ellipticity
+No. Observations: 1145    Method:             REML       
+No. Groups:       35      Scale:              0.0043     
+Min. group size:  1       Log-Likelihood:     1431.0495  
+Max. group size:  588     Converged:          Yes        
+Mean group size:  32.7                                   
+----------------------------------------------------------
+            Coef.  Std.Err.    z     P>|z|  [0.025  0.975]
+----------------------------------------------------------
+Intercept   0.193     0.021   9.110  0.000   0.152   0.235
+log_mass    0.069     0.005  14.099  0.000   0.059   0.079
+HWI         0.001     0.000   2.989  0.003   0.000   0.001
+Group Var   0.008     0.035                               
+=========================================================
+
+
+## Mixed-effects: ellipticity ~ log_mass + HWI, random intercept by Family
+          Mixed Linear Model Regression Results
+=========================================================
+Model:            MixedLM Dependent Variable: ellipticity
+No. Observations: 1145    Method:             REML       
+No. Groups:       145     Scale:              0.0029     
+Min. group size:  1       Log-Likelihood:     1544.5296  
+Max. group size:  47      Converged:          Yes        
+Mean group size:  7.9                                    
+----------------------------------------------------------
+            Coef.  Std.Err.    z     P>|z|  [0.025  0.975]
+----------------------------------------------------------
+Intercept   0.256     0.013  19.697  0.000   0.230   0.281
+log_mass    0.055     0.005  11.408  0.000   0.046   0.065
+HWI         0.001     0.000   3.678  0.000   0.000   0.001
+Group Var   0.006     0.016                               
+=========================================================
+
+
+## OLS with cluster-robust SEs by Order
+                            OLS Regression Results                            
+==============================================================================
+Dep. Variable:            ellipticity   R-squared:                       0.134
+Model:                            OLS   Adj. R-squared:                  0.132
+Method:                 Least Squares   F-statistic:                     8.715
+Date:                Tue, 02 Jun 2026   Prob (F-statistic):           0.000880
+Time:                        12:26:32   Log-Likelihood:                 1215.0
+No. Observations:                1145   AIC:                            -2424.
+Df Residuals:                    1142   BIC:                            -2409.
+Df Model:                           2                                         
+Covariance Type:              cluster                                         
+==============================================================================
+                 coef    std err          z      P>|z|      [0.025      0.975]
+------------------------------------------------------------------------------
+Intercept      0.2982      0.024     12.667      0.000       0.252       0.344
+log_mass       0.0238      0.010      2.472      0.013       0.005       0.043
+HWI            0.0013      0.001      2.632      0.008       0.000       0.002
+==============================================================================
+Omnibus:                       26.046   Durbin-Watson:                   0.987
+Prob(Omnibus):                  0.000   Jarque-Bera (JB):               53.185
+Skew:                           0.055   Prob(JB):                     2.83e-12
+Kurtosis:                       4.050   Cond. No.                         106.
+==============================================================================
+
+Notes:
+[1] Standard Errors are robust to cluster correlation (cluster)
+
+## Cluster bootstrap by Order, ellipticity ~ log_mass + HWI
+Cluster-bootstrap n=2000 (orders resampled with replacement)
+log_mass : mean = +0.03761  95% CI [+0.00925, +0.08150]
+HWI      : mean = +0.00168  95% CI [+0.00024, +0.00355]
