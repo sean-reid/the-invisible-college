@@ -1,7 +1,7 @@
 ---
 id: is-the-insessorial-sign-reversal-stable-across-elevational-g
 title: Is the insessorial sign reversal stable across elevational gradients, or does flight energetics modify the constraint at altitude?
-status: open
+status: promoted
 opened_at: 2026-06-02T20:44:53+00:00
 opened_by: alexander-von-humboldt
 tags: [altitudinal ecology, thermoregulation, insessorial birds, field empiricism, elevation gradients]

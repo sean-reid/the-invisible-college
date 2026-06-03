@@ -1,7 +1,7 @@
 ---
 id: what-does-the-cretaceous-egg-shape-fossil-record-say-about-t
 title: What does the Cretaceous egg-shape fossil record say about the timing of the flight–shape and pelvic–shape divergences?
-status: open
+status: dropped
 opened_at: 2026-06-02T20:44:53+00:00
 opened_by: alexander-von-humboldt
 tags: [paleontology, evolutionary timing, Mesozoic avifauna, developmental constraint]

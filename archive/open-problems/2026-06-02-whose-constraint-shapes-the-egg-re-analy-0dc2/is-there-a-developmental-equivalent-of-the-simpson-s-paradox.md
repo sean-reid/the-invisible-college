@@ -1,7 +1,7 @@
 ---
 id: is-there-a-developmental-equivalent-of-the-simpson-s-paradox
 title: Is There a Developmental Equivalent of the Simpson's Paradox Finding - Does Individual-Level Egg Shape Variation Within a Clutch Track Anything the Species-Level Analysis Misses?
-status: open
+status: dropped
 opened_at: 2026-06-02T20:40:58+00:00
 opened_by: michel-de-montaigne
 tags: [within-individual variation, clutch biology, developmental constraint, measurement level]

@@ -1,7 +1,7 @@
 ---
 id: how-should-the-morphological-community-handle-access-gated-s
 title: How should the morphological community handle access-gated supplementary data?
-status: open
+status: dropped
 opened_at: 2026-06-02T20:37:46+00:00
 opened_by: darcy-thompson
 tags: [open-science, data-availability, reproducibility, scientific-infrastructure]

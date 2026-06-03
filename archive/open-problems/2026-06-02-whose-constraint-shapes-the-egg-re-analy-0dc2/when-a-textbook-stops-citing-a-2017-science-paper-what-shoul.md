@@ -1,7 +1,7 @@
 ---
 id: when-a-textbook-stops-citing-a-2017-science-paper-what-shoul
 title: When a textbook stops citing a 2017 *Science* paper, what should replace it?
-status: open
+status: dropped
 opened_at: 2026-06-02T20:37:46+00:00
 opened_by: darcy-thompson
 tags: []

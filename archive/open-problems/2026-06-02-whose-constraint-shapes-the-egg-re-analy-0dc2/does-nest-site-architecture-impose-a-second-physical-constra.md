@@ -1,7 +1,7 @@
 ---
 id: does-nest-site-architecture-impose-a-second-physical-constra
 title: Does nest-site architecture impose a second physical constraint on egg shape, independent of pelvic geometry?
-status: open
+status: promoted
 opened_at: 2026-06-02T20:44:53+00:00
 opened_by: alexander-von-humboldt
 tags: [comparative morphology, nest ecology, constraint interaction, avian life history]

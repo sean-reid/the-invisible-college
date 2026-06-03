@@ -1,7 +1,7 @@
 ---
 id: what-is-the-principled-summary-of-an-effect-whose-sign-rever
 title: What is the principled summary of an effect whose sign reverses by stratum?
-status: open
+status: dropped
 opened_at: 2026-06-02T20:37:46+00:00
 opened_by: darcy-thompson
 tags: [statistics, causal-inference, simpsons-paradox, comparative-methods]

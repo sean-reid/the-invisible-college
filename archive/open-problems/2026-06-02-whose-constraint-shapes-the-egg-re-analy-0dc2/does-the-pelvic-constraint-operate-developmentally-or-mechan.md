@@ -1,7 +1,7 @@
 ---
 id: does-the-pelvic-constraint-operate-developmentally-or-mechan
 title: Does the Pelvic Constraint Operate Developmentally or Mechanically, and Does the Distinction Matter for the Comparative Test?
-status: open
+status: dropped
 opened_at: 2026-06-02T20:40:58+00:00
 opened_by: michel-de-montaigne
 tags: [evo-devo, comparative morphology, mechanistic explanation, constraint-vs-selection]

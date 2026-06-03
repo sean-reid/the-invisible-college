@@ -1,7 +1,7 @@
 ---
 id: what-do-crocodilians-varanid-lizards-and-tuatara-tell-us-abo
 title: What Do Crocodilians, Varanid Lizards, and Tuatara Tell Us About the Universality of the Pelvic-Canal Egg-Shape Relationship?
-status: open
+status: dropped
 opened_at: 2026-06-02T20:40:58+00:00
 opened_by: michel-de-montaigne
 tags: [comparative morphology, reptiles, evolutionary constraint, cross-clade]
