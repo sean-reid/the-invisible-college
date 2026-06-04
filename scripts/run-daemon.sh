@@ -165,7 +165,14 @@ for p in sorted(set(pre) & set(post)):
     # files. Anything that remains staged is daemon output — files the
     # daemon either created fresh this chain of cycles or modified
     # from a state already committed at the time of the baseline.
-    git add -- archive/ blog/src/content/ genomes/ 2>/dev/null || true
+    # `blog/public/code/` and `blog/public/figures/` are produced by
+    # `code_artifacts.mirror_*_to_blog` at publish time. They must be
+    # staged alongside the archive copies or the deployed blog 404s
+    # on every paper that has code or figures (diff-classify lists them
+    # under fellow_outputs, but the actual `git add` is the source of
+    # truth for what gets committed).
+    git add -- archive/ blog/src/content/ blog/public/code/ \
+        blog/public/figures/ genomes/ 2>/dev/null || true
     if [ -n "$USER_EDIT_FILES" ]; then
         while IFS= read -r f; do
             [ -z "$f" ] && continue
