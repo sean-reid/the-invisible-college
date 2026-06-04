@@ -47,13 +47,16 @@ from institute.state import State
 console = Console()
 
 
-# Matches `![alt text](filename.ext)` where the filename has no slashes
-# and an image-like extension. The published markdown emits bare-filename
-# references that the Fellow wrote (e.g. `![](fig_residuals.png)`); these
-# must be rewritten to absolute URLs that resolve against
-# `blog/public/figures/<project_id>/` once mirrored.
+# Matches `![alt text](src.ext)` where `src` is a relative path (no
+# leading slash, no protocol) ending in an image extension. The
+# published markdown emits bare-filename or subdir-prefixed references
+# that the Fellow wrote (e.g. `![](fig.png)`, `![](figures/fig.png)`);
+# both must be rewritten to absolute URLs that resolve against
+# `blog/public/figures/<project_id>/` once mirrored. Absolute and
+# protocol paths (`http(s)://...`, `/already/absolute/...`) are excluded
+# by the leading-character class so they pass through unchanged.
 _IMAGE_REF_RE = re.compile(
-    r"!\[(?P<alt>[^\]]*)\]\((?P<src>[^/)\s][^/)]*\.(?:png|jpe?g|svg|gif|webp))\)",
+    r"!\[(?P<alt>[^\]]*)\]\((?P<src>[^/)\s][^)\s]*?\.(?:png|jpe?g|svg|gif|webp))\)",
     re.IGNORECASE,
 )
 
@@ -65,14 +68,17 @@ def _rewrite_figure_refs(body: str, *, project_id: str, available: set[str]) -> 
     `--`-flattened paths, e.g. `analysis--fig.png` for a Fellow who put
     the file in an `analysis/` subdir of their workspace).
 
-    Matching is two-step:
-      1. Exact match against `available`. Used when the Fellow wrote
-         the image at the workspace root.
-      2. Suffix match: if exactly one archived filename ends with the
-         referenced name (preceded by either `--` or start-of-string),
-         use it. Used for subdir-archived figures where the markdown
-         references the bare basename. Ambiguous matches (more than
-         one candidate) are left alone rather than guessing.
+    Matching against `available` happens in this order:
+      1. Exact match (bare filename at the workspace root).
+      2. Subdir-to-flatten translation: `figures/fig.png` -> try
+         `figures--fig.png`. This is the canonical translation our
+         `sweep_figures` performs, so a markdown ref that names the
+         workspace subdir prefix resolves cleanly.
+      3. Suffix match: if exactly one archived filename ends with the
+         basename, use it. Used when the Fellow references the bare
+         basename but the file was archived under a subdir flatten.
+         Ambiguous (multiple candidates) is left alone rather than
+         guessing.
 
     References that resolve to no archived figure are left alone -
     the broken ref is then surfaced by the figure-lint at publish
@@ -83,10 +89,15 @@ def _rewrite_figure_refs(body: str, *, project_id: str, available: set[str]) -> 
     def resolve(name: str) -> str | None:
         if name in available:
             return name
-        # Suffix-match: archived filename ending in `--<name>` (one
-        # subdir level of flattening), or exact match with different
-        # case, etc. Require exactly one candidate to avoid guessing.
-        candidates = [a for a in available if a == name or a.endswith("--" + name)]
+        # Subdir-prefix translation: `a/b/fig.png` -> `a--b--fig.png`.
+        if "/" in name:
+            flattened = name.replace("/", "--")
+            if flattened in available:
+                return flattened
+        # Suffix-match by basename. `figures/fig.png` looks up by
+        # `fig.png`; `fig.png` already covered by the exact check.
+        basename = name.rsplit("/", 1)[-1]
+        candidates = [a for a in available if a == basename or a.endswith("--" + basename)]
         if len(candidates) == 1:
             return candidates[0]
         return None

@@ -105,10 +105,21 @@ def test_rewrite_figure_refs_does_not_rewrite_absolute_paths() -> None:
     assert out == body
 
 
-def test_rewrite_figure_refs_does_not_rewrite_relative_paths() -> None:
-    """A reference like `./subdir/fig.png` is intentional; do not flatten."""
+def test_rewrite_figure_refs_handles_dot_relative_paths() -> None:
+    """A `./assets/fig.png` reference resolves by basename if the file
+    is archived. The Fellow's intent is still 'this image' - the
+    archive layout, not the markdown's directory structure, decides
+    where it actually lives at serve time."""
     body = "![](./assets/fig.png)\n"
     out = publish._rewrite_figure_refs(body, project_id="p1", available={"fig.png"})
+    assert "/the-invisible-college/figures/p1/fig.png" in out
+
+
+def test_rewrite_figure_refs_leaves_unresolvable_relative_paths() -> None:
+    """If the basename has no match in the archive, the reference is
+    left alone so the publish-time hard-fail can surface it."""
+    body = "![](./assets/missing.png)\n"
+    out = publish._rewrite_figure_refs(body, project_id="p1", available={"other.png"})
     assert out == body
 
 
@@ -171,3 +182,40 @@ def test_unresolved_figure_refs_empty_after_full_rewrite() -> None:
     body = "![](fig.png)\n"
     out = publish._rewrite_figure_refs(body, project_id="p1", available={"fig.png"})
     assert publish._unresolved_figure_refs(out) == []
+
+
+def test_rewrite_resolves_subdir_prefix_in_markdown() -> None:
+    """The egg-paper regression: the Fellow wrote
+    `![](figures/fig3.png)` (subdir prefix in the markdown ref);
+    sweep_figures archived the workspace file as
+    `figures--fig3.png` (flatten with `--`). The rewriter must
+    translate the slash to `--` and resolve."""
+    body = "![Order residuals](figures/fig3_order_residuals.png)\n"
+    out = publish._rewrite_figure_refs(
+        body,
+        project_id="p1",
+        available={"figures--fig3_order_residuals.png"},
+    )
+    assert (
+        "![Order residuals](/the-invisible-college/figures/p1/figures--fig3_order_residuals.png)"
+        in out
+    )
+
+
+def test_rewrite_subdir_prefix_falls_back_to_basename() -> None:
+    """If subdir-translation finds nothing but basename-suffix
+    matches a single archived figure, use that."""
+    body = "![](figures/fig3.png)\n"
+    out = publish._rewrite_figure_refs(body, project_id="p1", available={"analysis--fig3.png"})
+    assert "/the-invisible-college/figures/p1/analysis--fig3.png" in out
+
+
+def test_unresolved_figure_refs_catches_subdir_prefix() -> None:
+    """A `figures/X.png` ref with no matching archive entry must be
+    surfaced by `_unresolved_figure_refs` so the publish hard-fail
+    catches it instead of letting CI discover the broken markdown."""
+    body = "![](figures/missing.png)\n"
+    out = publish._rewrite_figure_refs(body, project_id="p1", available=set())
+    assert out == body  # left alone for the lint to catch
+    refs = publish._unresolved_figure_refs(out)
+    assert "figures/missing.png" in refs

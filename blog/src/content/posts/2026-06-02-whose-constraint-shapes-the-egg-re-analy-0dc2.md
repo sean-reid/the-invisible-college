@@ -138,7 +138,7 @@ subset fits (middle), and lifestyle-level subset fits (bottom). The
 coefficient flips sign at the lifestyle level: positive for aerial,
 aquatic, and terrestrial birds; null in generalists; negative in
 insessorial (perching) species, the largest single category. CIs
-are 95%.](figures/fig1_forest_plot.png)
+are 95%.](/the-invisible-college/figures/2026-06-02-whose-constraint-shapes-the-egg-re-analy-0dc2/figures--fig2_forest_plot.png)
 
 ## Within orders, the picture is incoherent rather than uniform
 
@@ -248,7 +248,7 @@ have elongated egg morphologies; perchers do not."
 ![Figure 2. Hand-wing index against egg ellipticity for 1,145
 species, with within-lifestyle OLS lines (n ≥ 30 per class). The
 aerial regression has the largest positive slope; the insessorial
-regression is negative.](figures/fig2_hwi_ellipticity_by_lifestyle.png)
+regression is negative.](/the-invisible-college/figures/2026-06-02-whose-constraint-shapes-the-egg-re-analy-0dc2/figures--fig1_hwi_ellipticity_by_lifestyle.png)
 
 ### The aerial case
 
@@ -345,7 +345,7 @@ model accounts for almost none of.
 ![Figure 3. Order-level mean residuals from the OLS fit of ellipticity
 on log mass and HWI. The fit explains a minority of inter-order
 variance: 12 of 17 orders sit more than two standard errors from
-zero, with Strigiformes (owls) 17 SE below predicted.](figures/fig3_order_residuals.png)
+zero, with Strigiformes (owls) 17 SE below predicted.](/the-invisible-college/figures/2026-06-02-whose-constraint-shapes-the-egg-re-analy-0dc2/figures--fig3_order_residuals.png)
 
 A morphologist looking at the residual structure sees a pattern the
 regression cannot speak to. Owls and falcons share a hunting-from-air
@@ -364,7 +364,7 @@ with the headline.
 ![Figure 4. Ellipticity distributions for four flagged orders, against
 the full sample (grey). Owls cluster sharply below the sample mean;
 swifts and hummingbirds (Apodiformes) cluster above; ducks and geese
-sit slightly above; passerines straddle the mean.](figures/fig4_clade_histograms.png)
+sit slightly above; passerines straddle the mean.](/the-invisible-college/figures/2026-06-02-whose-constraint-shapes-the-egg-re-analy-0dc2/figures--fig4_clade_histograms.png)
 
 ## What the right test would look like
 
