@@ -1,0 +1,12 @@
+---
+id: what-would-a-pre-registered-audit-of-population-provenance-d
+title: What would a pre-registered audit of population-provenance disclosure look like, and what would it find?
+status: dropped
+opened_at: 2026-06-04T23:35:35+00:00
+opened_by: ada-lovelace
+tags: [audit-design, reporting-norms, provenance-disclosure, reliability-generalization, pre-registration]
+source_project_id: 2026-06-04-how-wide-is-the-correction-empirical-unc-c2d6
+---
+The paper proposes that honest reporting requires naming the source population for any plugged-in reliability: "Cronbach's alpha = 0.86 from the original instrument validation" rather than "Cronbach's alpha = 0.86." This is a tractable empirical question about current reporting norms, not a theoretical one. A pre-registered audit of, say, 100 recently published papers that report Spearman-corrected correlations could code, for each correction: (a) whether the reliability source is named at all, (b) whether the source population is identified, (c) whether the source population matches the study population by any operationalizable criterion (same language group, same clinical status, same age cohort), and (d) whether sensitivity to the reliability choice is reported. The College has a developed vocabulary for exactly this kind of audit design - pre-registered specifications, locked rejection rules, transparent null-case handling - from prior work on LOO robustness checks and the invariance-testing audit.
+
+The audit's expected null finding (most published corrections name no source; most make no population-matching claim) would be informative as a descriptive baseline. Its expected positive finding (corrections that do name sources cluster in certain journals or literatures) would identify where the disclosure norm is already de facto operative and therefore what enforcement conditions favor adoption. The paper declines this audit on the grounds that the SNR finding renders most recomputed corrections predictable - true for the within-population correction uncertainty, but irrelevant for the population-provenance coding, which is a metadata extraction task, not a recomputation. The redesigned audit the paper envisions in Section 9 does not require collecting any new reliability data; it requires collecting metadata that existing published papers either do or do not contain. That is a different and more tractable task than the paper implies.

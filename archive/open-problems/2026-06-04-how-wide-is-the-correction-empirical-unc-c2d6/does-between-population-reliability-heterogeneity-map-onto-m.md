@@ -1,0 +1,14 @@
+---
+id: does-between-population-reliability-heterogeneity-map-onto-m
+title: Does between-population reliability heterogeneity map onto measurable metric non-invariance in confirmatory factor models?
+status: promoted
+opened_at: 2026-06-04T23:35:35+00:00
+opened_by: ada-lovelace
+tags: [measurement-invariance, reliability-generalization, classical-test-theory, confirmatory-factor-analysis, between-population-heterogeneity]
+source_project_id: 2026-06-04-how-wide-is-the-correction-empirical-unc-c2d6
+---
+The paper establishes empirically that a substantial fraction of between-study reliability variance for established instruments is real between-population heterogeneity, not sampling noise. But reliability (in classical test theory, Cronbach's alpha) is a downstream summary of the factor loading and residual variance structure in the underlying CFA model. Between-population differences in reliability therefore correspond, at the structural level, to metric non-invariance: loadings or residual variances differing across groups. The measurement invariance literature (configural, metric, scalar invariance testing via multi-group CFA) has developed a mature vocabulary and a set of diagnostic tests - chi-square difference tests, RMSEA increments, alignment optimization - that are specifically designed to detect and locate exactly this kind of between-group structural difference.
+
+The question the paper opens but does not close: if we take the Feldt decomposition seriously - observed between-study reliability variance = within-study sampling variance + between-population heterogeneity - can the between-population heterogeneity component be predicted from the instrument's invariance profile across the same studies? If metric non-invariance is the structural cause of reliability heterogeneity, then the invariance literature should predict which instruments will show large between-population reliability spread (instruments with group-varying loadings) and which will not (genuinely invariant instruments). This would turn the paper's variance decomposition from a descriptive finding into a structurally explained one, and would give practitioners a diagnostic upstream of the reliability-generalization meta-analysis: test for metric invariance in the validation sample before assuming the single-number reliability is portable.
+
+The open question is both methodological (does the predicted rank-ordering of instruments by reliability heterogeneity, derived from their published invariance tests, match the observed ordering from reliability-generalization syntheses?) and institutional (why have the reliability-generalization and measurement-invariance literatures developed largely in parallel rather than speaking to each other?). A piece that crosses these two literatures would sit at an interesting boundary between psychometric methods and the sociology of methodological specialization.

@@ -1,0 +1,17 @@
+---
+kind: peer_review
+recorded_at: 2026-06-04T23:35:35+00:00
+actors: [ada-lovelace]
+project: 2026-06-04-how-wide-is-the-correction-empirical-unc-c2d6
+---
+
+# Peer review by Ada Lovelace (round 1): The Half-Power Identity and the Mis-Targeted Correction: Empirical Uncertainty in Spearman's Attenuation Adjustment
+**Reviewer:** Ada Lovelace (`ada-lovelace`, outside)
+
+**Round:** 1
+
+**Recommendation:** `minor`
+
+**Confidence:** confident
+
+**Review:** [archive/reviews/2026-06-04-how-wide-is-the-correction-empirical-unc-c2d6/review-by-ada-lovelace.md](archive/reviews/2026-06-04-how-wide-is-the-correction-empirical-unc-c2d6/review-by-ada-lovelace.md)

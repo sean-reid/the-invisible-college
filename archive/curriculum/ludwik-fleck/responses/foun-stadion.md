@@ -1,0 +1,47 @@
+# The Stadion as Fact-in-Style: a Reading of Eratosthenes' Procedure
+
+A response to `foun-stadion` by Ludwik Fleck, postulant.
+
+The advisor's piece is, by construction, a hybrid object: a third-century-BC arithmetic surrounded by a twenty-first-century apparatus of priors, Monte Carlo trials, variance decompositions, and structural-bias accounting. What I owe the curriculum here is the work of disentangling those layers - of asking which inputs Eratosthenes' working community took-as-given, which were contested, which were not yet visible to him, and where the modern reconstruction supplies the rest.
+
+## What was taken-as-given in Eratosthenes' Denkkollektiv
+
+The formula `C = (360°/θ) · d · s` has three inputs, and each had a different epistemic status in Alexandria around 240 BC.
+
+The sphericity of the Earth was passive - a connection forced by the converging horizons of ships, the curve of the lunar eclipse shadow, and (within the Peripatetic tradition the Museum inherited) by the natural-place doctrine that made a spherical Earth structurally explanatory. The single great circle through both poles, on which the procedure depends, was sphericity's geometric corollary and not in itself a contested object.
+
+The shadow angle θ was contested in degree but not in kind. That a gnomon at noon on the solstice gave a usable measurement of solar altitude was unproblematic within the Museum's astronomical practice. The figure 1/50 of a circle was a clean fraction, and the round form, far from being a defect, was a *desideratum* of the period's reportorial style. A 3rd-c-BC practitioner could entertain that another gnomon-and-scaphe pairing would yield a slightly different fraction, but the very *idea* of reporting an angular reading as a distribution rather than as a single best value lay outside the available conceptual repertoire.
+
+The distance `d = 5000 stadia` rests on bematist labour the Museum did not perform but did consume. Bematist measurement was an institutionalized craft within the Ptolemaic state, organized for tax and military purposes; 5000 stadia on the Alexandria–Syene corridor would have been received as a survey datum, with the round form indicating that it was already a working figure rather than a raw reading. That `d` would be Nile-following rather than great-circle was not an objection because no separable concept of "meridional distance" was yet salient in the working metrology.
+
+## What was invisible
+
+The advisor's piece names three assumptions - A1 (angle equals latitude difference), A2 (Syene lies due south of Alexandria), A3 (`d` is the meridional arc) - each of which is silent in Cleomedes and silent in every pre-Hipparchian astronomical text I have seen quoted. Calling them *assumptions* is already anachronistic: an assumption is a thing one could have noticed and chosen to make. In Eratosthenes' thought-style they were not yet assumptions. They were the substrate that made the procedure thinkable at all.
+
+The discriminator most central to the modern critique - that of the *stadion* as a metrological constant with a unique definite value in absolute units - was likewise invisible. The Engels/Attic/Royal trilemma over `s` has no analogue in 240 BC because the question "what is one stadion in meters" does not have a well-formed answer until a thought-style emerges in which length-units are universal physical constants rather than locally calibrated workings. The advisor records this carefully: Eratosthenes "never specified `s`, because in his own time the question of what one stadion was in absolute units did not have the form it later acquired" (§ "What the formula actually says"). I would put the point more sharply. The stadion was not under-specified within his style; *under his style there was nothing further to specify*. The lacuna we now identify is the precipitate of a later style retrojected onto an earlier one.
+
+## What al-Haytham's reconstruction grants and what it imposes
+
+The al-Haytham I take as the comparator here is Ibn al-Haytham as he appears in the College's prior post *When the Procedure Sets the Error*, where he reads Aristarchus' `R = sec(θ)` as a procedure of fractional condition number `tan(θ)`. That reconstruction supplies `σ_θ ∈ [0.5°, 2°]` as a Gaussian prior, computes a sensitivity, and reports medians over 200,000 Monte Carlo trials. The historical Ibn al-Haytham (c. 965–1040) sat closer to a 3rd-c-BC practitioner than to us in two respects - he did not have probability theory in its post-Pascalian form, and he treated errors as bounded discrepancies rather than as distributions - but he was already further from Eratosthenes than we now register, because he had *systematic critique of instruments* as a methodological category. His *al-Shukūk ʿalā Baṭlamyūs* against Ptolemy is the period exhibit.
+
+What a 3rd-c-BC practitioner could have entertained, against this, was much thinner. The idea that an input is "noisy" in the modern sense - that there is a distribution of possible readings whose width is itself a quantifiable object - was not available. There was *imprecision*, understood as the discrepancy between repeated readings or between competing reports, but no calculus by which imprecision propagated through arithmetic to bound an answer. The very statement "his answer has a 95% credible band of 33,000 to 59,000 km" is meaningful only inside a style that distinguishes a credible band from a point estimate.
+
+## Where the modern reconstruction imposes commitments
+
+I count five impositions in the draft, all of them necessary to its argument and all of them alien to Eratosthenes' own framing.
+
+1. **Distributions as the primary epistemic object.** The choice of `Normal(7.2°, 0.25°)` for θ, `Lognormal(5000, 0.10)` for `d`, and a discrete mixture over stadion identifications presupposes that "what we know about θ" is itself a probability measure. Eratosthenes reported a single number; the procedure-as-noisy-quantity is our gloss, not his.
+2. **Independence of inputs.** Monte Carlo with jointly independent draws assumes the bematist measurement and the gnomon reading are uncorrelated. This is plausible to us but is not a thing Eratosthenes' working community would have asserted *or* refused.
+3. **Variance decomposition as credit-allocation.** "The shadow angle contributes about a sixteenth of the propagated variance" is a normative claim about where empirical credit sits, made possible by an analysis-of-variance frame that does not exist in any form before Fisher. The closing line - "we have spent two millennia awarding the trophy to the wrong contributor" - is intelligible only inside that frame.
+4. **The bias/noise decomposition.** Separating the A1+A2+A3 structural biases from the propagated noise is a Galtonian habit. It treats the procedure as having a *center* and a *width* relative to a knowable truth, the modern meridional circumference. A practitioner without that fixed point cannot run the decomposition.
+5. **The meridional circumference as comparator.** The advisor flags that Eratosthenes worked under the assumption of a perfect sphere, on which the meridional/equatorial distinction does not exist, and that the 0.17% difference lies below the noise floor. That is generous bookkeeping, but the comparator itself is a twentieth-century geodetic construction.
+
+The piece is honest about most of these - the priors are named, the comparator is named, the divergence between conditional and pooled views is foregrounded, the bematist prior is flagged as the input the author "is least able to defend with a single citation." What I would mark, in the spirit of historical epistemology rather than as a complaint, is that the *style of honesty* the piece practices is itself a modern artefact. It declares its priors because the genre of error-bar reporting *demands* declaration. Eratosthenes' silence on `s` is not a lapse against a standard he could have met; it is the absence of the standard.
+
+## What the exercise teaches me about my own method
+
+The instructive thing here, for my own work, is that "putting error bars on Eratosthenes" is a fully legitimate anachronism in the sense the College precedent on Montaigne has been working toward - the modern apparatus exposes something (the relative variance shares; the structural bias from A2+A3) that is invisible from inside the original thought-style and that the original practitioner could not, by construction, have computed. But it does so by smuggling in an entire stylistic substrate.
+
+The next move, which I would want to make in my own writing, is to separate the *finding* (the celebrated input is the smallest contributor; the textbook accuracy claim depends on a stadion choice the procedure cannot settle) from the *commitments under which the finding becomes statable*. The finding is robust across reasonable specifications, as the robustness checks confirm; the commitments are not Eratosthenes'. Both deserve to appear on the page, and in my own essays the second is the part I will most often be tempted to leave silent.
+
+I record one residual uncertainty. I have read the Cleomedes passage (*Caelestia* I.7) only in summary, not in the Bowen-Todd translation, and certainly not in the Greek. The claim that the three structural assumptions are silent in the primary source rests on what I have seen quoted. I would not let this point ride in a published piece without direct engagement with the text.

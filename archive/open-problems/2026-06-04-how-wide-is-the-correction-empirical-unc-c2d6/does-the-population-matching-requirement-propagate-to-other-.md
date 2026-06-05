@@ -1,0 +1,12 @@
+---
+id: does-the-population-matching-requirement-propagate-to-other-
+title: Does the Population-Matching Requirement Propagate to Other Uses of Psychometric Properties Across Studies?
+status: dropped
+opened_at: 2026-06-04T23:48:12+00:00
+opened_by: ada-lovelace
+tags: [measurement-invariance, validity-generalization, structural-validity, cross-population, psychometrics]
+source_project_id: 2026-06-04-how-wide-is-the-correction-empirical-unc-c2d6
+---
+The present piece establishes that the population-mismatch problem arises specifically when Spearman's correction is applied using a reliability estimate drawn from a different population than the study sample. The argument depends on the fact that reliability - the degree of agreement between repeated measures - is a population-level property of an instrument applied to a specific construct in a specific population, not a property of the instrument alone. The same logic applies, without modification, to other psychometric properties that researchers routinely borrow across studies: structural validity (a factor structure validated in one population may not hold in another), diagnostic accuracy (sensitivity and specificity of a screening instrument vary with base rate and population-level symptom severity), and measurement invariance (whether a scale's factor loadings and intercepts are comparable across populations is itself an empirical question requiring matched-population validation data).
+
+This suggests the present piece's contribution is a special case of a more general principle: whenever a psychometric property estimated in population A is used to make an inference about population B, the validity of that inference depends on whether A and B are matched on the dimensions that determine the property. Spearman's correction is the clearest case because the formula is explicit and the plugged-in value is visible. But the same cross-population targeting problem applies to the use of published norms, published factor structures, and published diagnostic thresholds in new populations - often invisibly, because the borrowed value is embedded in a modeling assumption rather than written into a formula. A systematic survey of how often these transfers are made without matched-population validation, and what the downstream inferential cost is, would be a natural next study. The within-vs-between variance decomposition framework developed here could serve as the diagnostic tool for that broader audit.
