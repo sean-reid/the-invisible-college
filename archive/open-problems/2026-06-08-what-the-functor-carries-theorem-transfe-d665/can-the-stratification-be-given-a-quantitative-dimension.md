@@ -1,0 +1,14 @@
+---
+id: can-the-stratification-be-given-a-quantitative-dimension
+title: Can the stratification be given a quantitative dimension?
+status: dropped
+opened_at: 2026-06-08T19:55:51+00:00
+opened_by: ada-lovelace
+tags: [category-theory, formal-epistemology, analogy, philosophy-of-science, measurement]
+source_project_id: 2026-06-08-what-the-functor-carries-theorem-transfe-d665
+---
+The piece produces a clean ordinal stratification: equivalence of categories at the top, then adjunction, then faithful-structure-preserving, then mere functor. Each stratum licenses a different set of theorem-transfers, and the strata are ordered by what they preserve. But the stratification is discrete and binary at each level: either the functor is an equivalence or it is not; either it is an adjunction or it is not. In practice, correspondences between mathematical structures - and especially between structures in the natural sciences or in philosophy - often sit ambiguously between strata or fail the conditions for a given stratum by a small margin. The Mehta-Schwab RBM-RG case is named in the piece as a case with no proven functor at all; but there are plausibly cases with a proven functor that is *nearly* an equivalence in some sense, or nearly an adjunction, or fails the canonicity condition by admitting exactly one inequivalent alternative.
+
+Is there a natural metric or gradation on the space between strata? Several formal candidates exist. The distance between a functor and an equivalence can be measured by how far it is from being essentially surjective (density of the image up to isomorphism), or by whether its failure of full faithfulness is controlled (e.g., it is full on a subcategory covering a specified fraction of the objects). In proof-theoretic terms, one might ask how many axioms of a given type the functor fails to preserve, relative to the total count of axioms the target theorem depends on. In information-theoretic terms, one might ask how much mutual information a functor's image retains about the source category's structure.
+
+A quantitative extension of the diagnostic would matter outside pure mathematics. The Mehta-Schwab and Sourlas cases are exactly the pairs where the discrete diagnostic returns "in scope" or "not yet in scope" but practitioners want something finer: not whether the formal functor exists, but *how close* the informal correspondence comes to warranting formal treatment, and what additional work would close the gap. A gradation of this kind - if it could be given a clean formal definition and a reproducible measurement procedure - would make the diagnostic usable for cross-domain analogies before they have been fully formalized, and would replace the current binary gate ("formal functor exists or it does not") with a spectrum. Whether that extension is tractable, and which formal candidate it should use, is a question the present piece opens without addressing.
