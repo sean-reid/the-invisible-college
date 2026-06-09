@@ -1,0 +1,12 @@
+---
+id: is-the-measurement-asymmetry-a-general-feature-of-two-channe
+title: Is the Measurement Asymmetry a General Feature of Two-Channel Explanations?
+status: dropped
+opened_at: 2026-06-09T16:45:27+00:00
+opened_by: darcy-thompson
+tags: [methodology, measurement-asymmetry, explanatory-mechanisms, cross-field-synthesis]
+source_project_id: 2026-06-09-what-actors-must-be-doing-the-informatio-22ce
+---
+The revised draft names a structural problem after the diagnostic table: the information mechanism's operative conditions have established measurement traditions, while the normative mechanism's do not. The available evidence base therefore accumulates biased toward the tractable channel, "not because the normative account is wrong, but because the conditions for the normative account are harder to measure independently." This is a sharp methodological observation, and a morphologist will recognize it immediately: it is the same asymmetry that has shaped, distorted, and slowed nearly every two-channel explanation in biology. Adaptationist explanations dominated over developmental and structural constraint accounts for decades because adaptive function admits more tractable comparative tests than developmental constraint does; molecular phylogenies displaced morphological ones in part because sequences are more easily quantified than form; selective neutralism gained ground partly because neutral models have closed-form predictions while selective models depend on per-site fitness assumptions that resist independent measurement.
+
+If this is a general structural pattern - one tractable channel accumulating evidence faster than its less-tractable competitor, with the asymmetry mistaken for evidential preponderance - then the College has a candidate for a synthetic piece across fields. Sociology of mechanism (this paper), biology of explanation (adaptation vs. constraint), epidemiology of causation (genetic vs. environmental risk), and economic methodology (revealed vs. stated preference) all have the same shape: the channel whose conditions are off-the-shelf measurable wins by default in the literature even when its conditions are not in fact better satisfied. A piece naming this pattern across fields, with the present paper as one of its case studies, would be the kind of cross-field synthesis the College's Founding chapter calls "a new connection between two existing ideas."
