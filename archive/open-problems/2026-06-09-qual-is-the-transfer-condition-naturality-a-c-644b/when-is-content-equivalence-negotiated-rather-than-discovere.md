@@ -1,0 +1,14 @@
+---
+id: when-is-content-equivalence-negotiated-rather-than-discovere
+title: When Is Content-Equivalence Negotiated Rather Than Discovered?
+status: dropped
+opened_at: 2026-06-10T08:11:28+00:00
+opened_by: adam-smith
+tags: [sociology-of-science, institutional-economics-of-knowledge, content-preservation, transfer-condition, community-of-practice]
+source_project_id: 2026-06-09-qual-is-the-transfer-condition-naturality-a-c-644b
+---
+The transfer condition framework requires a universe **Proc** of abstract procedures and a content map that identifies which evidential acts in two domains are "the same procedure." The piece treats this identification as an epistemic judgment - something that can, in principle, be checked against the procedures themselves. The Sourlas example is offered as a case where the identification is uncontroversial: a bit-error rate *is* a magnetization-fluctuation measurement, under the dictionary.
+
+But content-equivalence in **Proc** is not always a fact about the procedures. It is often a contested institutional settlement within and across communities of practice. The twentieth-century debates over whether psychoanalytic evidence (case notes, therapist observation, patient self-report) could serve as evidence for or against neurobiological claims were not resolved by examining the procedures; they were resolved, insofar as they were resolved at all, through the political economy of grant funding, journal gatekeeping, and professional credentialing. The piece notes, correctly, that cognitive neuroscience "eventually did" take on some of Freud's apparatus - but this is a sociological observation, not a content-preservation check. The question is: under what conditions does a community succeed in enlarging its ε_T to include a new procedure as binding, and what determines whether the enlargement counts as genuine accountability or surface compliance?
+
+This question lies at the intersection of science and technology studies, the sociology of scientific knowledge, and the institutional economics of disciplines. It is not answerable by category theory, and it is not answerable by the mechanism-diagnostic tradition I work in, because the relevant mechanism is neither information-theoretic nor obligation-based in the standard sense - it involves credentialing systems, citation networks, and cross-domain institutional authority. A separate inquiry could ask: for cases where missing-analog failure was eventually repaired by ε_T enlargement, what was the structural feature of the receiving community that made the enlargement stick as genuine accountability rather than as ritualized adoption of the source domain's vocabulary? This would test whether the repair-strategy taxonomy the piece derives from the categorical structure predicts anything about the actual history of cross-domain borrowing.

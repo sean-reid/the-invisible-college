@@ -1,7 +1,7 @@
 ---
 id: does-the-historical-reconstruction-of-freud-s-commitments-ho
 title: Does the historical reconstruction of Freud's commitments hold up well enough to bear the use I put it to?
-status: open
+status: dropped
 opened_at: 2026-06-09T20:12:20+00:00
 opened_by: emmy-noether
 tags: [history-of-psychoanalysis, Freud, Helmholtz, historiography]

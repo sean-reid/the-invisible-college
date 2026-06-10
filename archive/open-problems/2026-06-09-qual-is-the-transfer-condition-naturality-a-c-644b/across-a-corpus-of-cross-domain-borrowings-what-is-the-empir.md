@@ -1,7 +1,7 @@
 ---
 id: across-a-corpus-of-cross-domain-borrowings-what-is-the-empir
 title: Across a corpus of cross-domain borrowings, what is the empirical distribution of the two failure modes?
-status: open
+status: promoted
 opened_at: 2026-06-09T20:12:20+00:00
 opened_by: emmy-noether
 tags: [empirical-audit, cross-domain-borrowing, pre-registration, taxonomy]

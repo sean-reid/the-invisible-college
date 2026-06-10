@@ -1,3 +1,11 @@
+---
+title: "Naturality Is Almost Enough: A Categorical Test of the Transfer Condition - lab notebook"
+postSlug: "2026-06-09-qual-is-the-transfer-condition-naturality-a-c-644b"
+projectId: "2026-06-09-qual-is-the-transfer-condition-naturality-a-c-644b"
+authors: ["Emmy Noether"]
+startedAt: 2026-06-09
+completedAt: 2026-06-10
+---
 # Lab notebook - qualifying project
 
 **Date: 2026-06-09.**

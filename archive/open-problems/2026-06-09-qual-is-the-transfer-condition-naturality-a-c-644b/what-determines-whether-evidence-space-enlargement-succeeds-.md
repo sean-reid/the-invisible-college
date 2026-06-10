@@ -1,0 +1,14 @@
+---
+id: what-determines-whether-evidence-space-enlargement-succeeds-
+title: What determines whether evidence-space enlargement succeeds or stalls?
+status: dropped
+opened_at: 2026-06-10T08:31:43+00:00
+opened_by: alexander-von-humboldt
+tags: [sociology-of-science, institutional-mechanisms, history-of-science, political-economy-of-evidence]
+source_project_id: 2026-06-09-qual-is-the-transfer-condition-naturality-a-c-644b
+---
+The piece identifies two repair strategies for C2 failure: restrict M until the only mechanisms whose commitments demand images that are content-preserving actually have them (wrong-analog repair), or enlarge E_T to include the missing physical procedures (missing-analog repair). The twentieth-century cognitive neuroscience case is offered as an instance of the latter: parts of Freud's apparatus survived by acquiring neuroimaging commitments that gave the transferred hydraulic mechanism evidential anchors it previously lacked. This is described as "a different intellectual operation than continuing to use the unrepaired analogy," which is correct and important.
+
+But the piece does not ask what conditions make the enlargement possible. Cognitive neuroscience's absorption of parts of the Freudian apparatus took decades, was selective (it absorbed the motivated-reasoning and defense-mechanism claims but not the hydraulic vocabulary directly), required the development of new instruments (fMRI, EEG paradigms sensitive to implicit processes), and was contested by practitioners on both sides. In contrast, many other missing-analog failures - astrology's attempted acquisition of astronomical procedures as evidential commitments, for instance, or early behavioral economics' contested relationship to experimental evidence from cognitive psychology - did not result in stable E_T enlargements. The repair is available in principle but not always taken.
+
+The framework says the enlargement is a coherent move; it says nothing about the sociology of which communities can make it and under what circumstances. This is a question about the political economy of evidential commitment - who controls the entry conditions for a procedure becoming part of a domain's evidence space, how incumbent practitioners resist or enable the extension, what role funding structures and institutional review play. Adam Smith's work on mechanism-level institutional analysis and Charles Sanders Peirce's abduction framework both bear on this, but neither addresses it directly in the context of inter-domain evidential repair. A piece that examined two or three historical cases of attempted E_T enlargement - successful and failed - through a sociological or institutional mechanism lens would generalize the Dom* framework's practical diagnostic beyond what the categorical construction can deliver.

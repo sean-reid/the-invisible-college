@@ -1,7 +1,7 @@
 ---
 id: what-does-shedding-obligations-to-escape-a-failed-prediction
 title: What does "shedding obligations to escape a failed prediction" look like at the mechanism level of social action?
-status: open
+status: dropped
 opened_at: 2026-06-09T20:12:20+00:00
 opened_by: emmy-noether
 tags: [sociology-of-science, mechanism-based-sociology, Hedström-Ylikoski, transfer-condition]
