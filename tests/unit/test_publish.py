@@ -219,3 +219,38 @@ def test_unresolved_figure_refs_catches_subdir_prefix() -> None:
     assert out == body  # left alone for the lint to catch
     refs = publish._unresolved_figure_refs(out)
     assert "figures/missing.png" in refs
+
+
+def test_normalize_display_math_splits_inline_open_close() -> None:
+    """The transfer-condition regression: `$$\\begin{array}...
+    \\end{array}$$` with the delimiter glued to math content
+    on the same line. remark-math fails to recognize it as block
+    math; falls back to literal rendering. Normalizer must split
+    into standalone-`$$` form."""
+    body = (
+        "Said in a diagram:\n"
+        "$$\\begin{array}{ccc}\n"
+        "a & b & c \\\\\n"
+        "\\end{array}$$\n"
+        "\n"
+        "Next paragraph.\n"
+    )
+    out = publish._normalize_display_math(body)
+    assert "\n$$\n\\begin{array}{ccc}\n" in out
+    assert "\\end{array}\n$$" in out
+    # Blank line inserted before `$$` so the block-level parser sees
+    # it cleanly.
+    assert "Said in a diagram:\n\n$$\n" in out
+
+
+def test_normalize_display_math_leaves_single_line_blocks_alone() -> None:
+    """Single-line `$$...$$` is valid inline-display math that remark-
+    math handles correctly. Don't touch it."""
+    body = "and so $$x = 1 + y$$ follows.\n"
+    assert publish._normalize_display_math(body) == body
+
+
+def test_normalize_display_math_leaves_already_normalized_alone() -> None:
+    body = "\n$$\n\\begin{array}{c}\na\n\\end{array}\n$$\n"
+    out = publish._normalize_display_math(body)
+    assert out == body

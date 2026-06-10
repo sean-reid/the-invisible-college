@@ -125,6 +125,42 @@ def _unresolved_figure_refs(body: str) -> list[str]:
     return [m.group("src") for m in _IMAGE_REF_RE.finditer(body)]
 
 
+# Multi-line display-math block where `$$` opens or closes on the
+# same line as the math content (e.g. `$$\begin{array}{ccc}`...
+# `\end{array}$$`). remark-math treats `$$` with adjacent content as
+# inline; a multi-line block then never finds its closing delimiter
+# and the entire rest of the document renders as raw markdown
+# source. We normalize these to the standalone-`$$` form so the
+# block-level parser sees them correctly.
+_INLINE_OPEN_DISPLAY_MATH_RE = re.compile(
+    r"(^|\n)\$\$(?P<head>[^\n$]+)\n(?P<body>.*?)\n(?P<tail>[^\n$]+)\$\$(?=\n|\Z)",
+    re.DOTALL,
+)
+
+
+def _normalize_display_math(body: str) -> str:
+    """Reformat multi-line `$$...$$` blocks so `$$` is alone on its line.
+
+    Pattern matched: `$$<head>\\n<body>\\n<tail>$$` where head and tail
+    have non-`$` content on their lines. Output: a blank line before
+    `$$`, the opening `$$` alone on its line, the original head/body/
+    tail content in between, the closing `$$` alone on its line.
+
+    Single-line `$$...$$` blocks are not touched - they render as
+    inline math and that's the right behavior. Only multi-line blocks
+    where the delimiter is glued to content trigger the rewrite.
+    """
+
+    def _sub(m: re.Match[str]) -> str:
+        prefix = m.group(1)
+        # Ensure a blank line before `$$` if there isn't already one.
+        if prefix == "\n":
+            prefix = "\n\n"
+        return f"{prefix}$$\n{m.group('head')}\n{m.group('body')}\n{m.group('tail')}\n$$"
+
+    return _INLINE_OPEN_DISPLAY_MATH_RE.sub(_sub, body)
+
+
 def _strip_title_heading(draft_md: str) -> tuple[str, str]:
     """Extract the level-1 title from a draft and return (title, body)."""
     match = re.match(r"\s*#\s+(.+?)\s*\n", draft_md)
@@ -395,6 +431,16 @@ def _write_publication_artifacts(
     # body (and notebook) to absolute paths under blog/public/figures/.
     # Done before the publication wrapper is composed so the rewritten
     # body is what lands in both the archive and the blog.
+    # Normalize multi-line display-math blocks so `$$` is alone on
+    # its line. Without this, a Fellow's `$$\begin{array}...
+    # \end{array}$$` (delimiter glued to math content) renders as
+    # raw markdown source on the published site - the parser fails
+    # to recognize the block and falls back to literal rendering
+    # for the rest of the document.
+    body = _normalize_display_math(body)
+    if notebook_md is not None:
+        notebook_md = _normalize_display_math(notebook_md)
+
     mirrored_figures = code_artifacts.mirror_figures_to_blog(project_id)
     available_figures = {p.name for p in mirrored_figures}
     body = _rewrite_figure_refs(body, project_id=project_id, available=available_figures)

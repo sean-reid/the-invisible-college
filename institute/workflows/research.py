@@ -140,8 +140,30 @@ narrative.
 The blog renders LaTeX via KaTeX: `$x$` inline, `$$\ldots$$` for
 displayed equations. Use it where notation does real work for the
 reader - variables, operators, exponents, statistical objects,
-equations, intervals, units with exponents. Examples that
-genuinely benefit:
+equations, intervals, units with exponents.
+
+Display-math formatting matters: when the math spans MORE THAN ONE
+LINE (e.g. `\begin{{array}}`, `\begin{{aligned}}`, a multi-line
+equation), put `$$` ALONE on its own line at open and close, with a
+blank line above and below. Like this:
+
+    Said in a diagram:
+
+    $$
+    \begin{{array}}{{ccc}}
+    A & \to & B \\
+    C & \to & D
+    \end{{array}}
+    $$
+
+    The picture is right ...
+
+Gluing `$$` to the first line of math (e.g. `$$\begin{{array}}{{ccc}}`
+in one line) breaks the markdown parser on the published site: the
+multi-line block is misread and the entire rest of the document
+renders as raw markdown source. Single-line `$$x=y$$` is fine.
+
+Examples that genuinely benefit:
 
   $\hat{{\theta}} = \arg\max_\theta L(\theta; x)$
   the 95% interval $[0.42,\, 0.58]$ with $\alpha = 0.05$

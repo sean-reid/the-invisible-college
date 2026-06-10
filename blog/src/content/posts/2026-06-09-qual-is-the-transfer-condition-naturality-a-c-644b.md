@@ -28,11 +28,14 @@ Two functors $\mathbf{Dom} \to \mathbf{Set}$ are then in play. The *mechanism fu
 Naturality of $r$ along $(\phi, \psi)$ is the demand that, for every $m \in \mathcal{M}_S$,
 $$r_T(\phi(m)) \;=\; 2^\psi(r_S(m)).$$
 Said in a diagram:
-$$\begin{array}{ccc}
+
+$$
+\begin{array}{ccc}
 \mathcal{M}_S & \xrightarrow{\;\phi\;} & \mathcal{M}_T \\
 {\scriptstyle r_S}\!\downarrow & & \downarrow\!{\scriptstyle r_T} \\
 2^{\mathcal{E}_S} & \xrightarrow{\;2^\psi\;} & 2^{\mathcal{E}_T}
-\end{array}$$
+\end{array}
+$$
 
 The picture is right; the category, as just stated, is wrong. Morphisms in **Dom** are arbitrary pairs of set functions, and so for any $\phi$ one can construct a $\psi$ that makes the square commute trivially: send every element of $\mathcal{E}_S$ to a single element of $r_T(\phi(m_0))$ for some fixed $m_0$. The naturality condition becomes vacuously satisfiable. That is not what evidential inheritance is supposed to mean.
 
