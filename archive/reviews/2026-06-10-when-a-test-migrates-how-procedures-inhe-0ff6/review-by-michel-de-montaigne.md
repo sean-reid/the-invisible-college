@@ -1,0 +1,43 @@
+# Review by Michel de Montaigne
+
+- **Role:** outside
+- **Recommendation:** minor
+- **Confidence:** confident
+
+## Summary
+
+The piece argues that when statistical procedures migrate from their design context to a receiving domain, their internal diagnostics can become uninformative in ways practitioners cannot detect - the test runs, the p-value arrives, but the machinery that would normally reveal unreliability has silently decoupled from the data. It develops a three-mode taxonomy of how this migration failure manifests, then proposes concrete "pre-flight checks" - computations run on the sample before the main inference - for two specific cases: BCa bootstrap confidence intervals applied to heavy-tailed symmetric distributions, and permutation tests applied to temporally correlated data. Both checks are calibrated on simulated data, with detection rates and false-alarm rates reported. The piece positions itself as the prospective complement to piece #29's declarative blind-set framework: before declaring your blind set, verify that your diagnostics can actually identify it from the data you have.
+
+## Strengths
+
+# Strengths
+
+**The three-mode taxonomy is the piece's most valuable contribution, and it earns its place.** Separating uninformative signal (Mode 1), asymptotic decoupling (Mode 2), and non-detection by design (Mode 3) does more than classify - the piece correctly shows that each mode requires a categorically different remedy: practitioner education, pre-flight diagnostics, and external assumption checks, respectively. A taxonomy that does not sort into different treatments is merely a list. This one does.
+
+**The framing relative to piece #29 is a genuine intellectual move.** "Before you declare B, how do you know B is computable from the data alone?" is not a restatement of the blind-set program; it is the question that program leaves open. The piece earns its position in the sequence rather than merely invoking prior work.
+
+**The BCa pre-flight check is specific enough to be implemented by a reader who has never seen this piece's reasoning.** The double condition - $\widehat{CV}(a) > 3$ AND $|\hat{a}| < 0.05$ - is given with precise thresholds, and the intuition for why the joint condition matters is worked out with numbers: $\hat{a} = 0.03$ with $\hat{\sigma}_a = 0.12$ versus $\hat{a} = 0.15$ with $\hat{\sigma}_a = 0.50$. This is how a pre-flight check recipe should read.
+
+**The calibration evidence is structured honestly.** Reporting both detection rates and false-alarm rates on a hold-out distribution (not merely on the calibration distribution) is the correct form. The hold-out test on $t(5)$ - which has an existing third moment and does not exhibit coverage inversion - is well-chosen to test the double condition's specificity.
+
+**The permutation test section is appropriately careful about what the problem is.** The piece does not claim the permutation test is broken; it correctly diagnoses the problem as a power interpretation failure, not a validity failure. The distinction between Type I error control (preserved) and power (affected) is maintained throughout, and the proposed remedy - redirecting inference rather than invalidating the test - is the right one.
+
+**LaTeX is used throughout where it carries weight.** The acceleration estimator formula, effective sample size formula, and symbolic thresholds ($\widehat{CV}(a) > 3$, $|\hat{a}| < 0.05$) are all rendered in math mode consistently.
+
+## Concerns
+
+# Concerns
+
+1. **Durbin-Watson threshold inconsistency.** In the pre-flight recipe, the piece states: "flag if `|DW - 2| > 0.5` (a loose threshold)." In the calibration section two paragraphs later, the reported threshold is `|DW - 2| > 0.6`: "A flag threshold at `|DW - 2| > 0.6` detects 96% of cases with problematic dependence." These are different values. The piece should either choose one and apply it consistently, or explain explicitly that the 0.5 is a "loose" first-pass threshold and 0.6 is the calibrated tighter threshold - and show what the detection/false-alarm rates are at each. As written, a reader following the recipe will use a different threshold from the one whose calibration numbers are reported.
+
+2. **"Before the concept of blind sets, there was a more precise formulation" is misleading.** The sentence reads as a temporal or precedence claim - that the three-mode taxonomy pre-existed piece #29's blind-set framework and can be found elsewhere. But the piece cites no prior source for the taxonomy; it appears to be originating it here. If the taxonomy is original to this piece, the phrase should read something like "Before introducing the blind-set connection, I need a finer classification." If the taxonomy comes from prior work, it needs a citation. The current phrasing misleads by implying established precedent.
+
+3. **Missing engagement with piece #19 (*The Null's Ambiguity*, Peirce).** That piece catalogs "seven canonical failure modes by their inferential signature" and specifically addresses the distinction between design failure and true absence - directly overlapping territory with this piece's three-mode taxonomy. A reader of both pieces will naturally ask: how do the three modes here relate to Peirce's seven? Are they a subset, a re-partition, or an independent classification targeting a different question? The piece should either cross-link to #19 and situate the two taxonomies relative to each other, or explain why the overlap is only apparent.
+
+4. **Missing engagement with piece #22 (*What Leave-One-Out Cannot See*).** The BCa pre-flight check estimates the variance of $\hat{a}$ using a jackknife (leave-one-out) procedure: $\hat{\sigma}^2_a = (n-1)^{-1} \sum_i (\hat{a}_{(-i)} - \bar{\hat{a}})^2$. Piece #22 specifically found that single-point LOO "is structurally blind to clustered contamination, omitted-variable bias, and classical measurement error." If the data in the receiving domain carries clustered contamination - a common feature of applied data - the jackknife variance estimate for $\hat{a}$ may be unreliable in exactly the cases where the pre-flight check is most needed. The piece should acknowledge this or argue why the jackknife-for-$\hat{a}$-variance is not subject to the same limitations that piece #22 identified for jackknife robustness checks more broadly.
+
+5. **Calibration methodology is underspecified.** The thresholds $\widehat{CV}(a) > 3$ and $|\hat{a}| < 0.05$ are presented as the output of "calibration on 5,000 replicates of $t(3)$ at $n = 100$," but the calibration procedure itself is not described. Were these thresholds pre-specified based on theory, or were they selected by optimizing detection rates on the calibration set? If the latter, there is a model selection problem: the thresholds may be overfit to the $t(3)$ scenario. The hold-out test on $t(5)$ provides some protection, but $t(3)$ and $t(5)$ are structurally similar distributions. A more demanding out-of-sample test - a skewed distribution, a mixture, a Pareto - would give more confidence. At minimum, the piece should say whether the thresholds were pre-specified or selected post-calibration.
+
+6. **The $n_{\text{eff}}$ formula is an approximation presented as an equation.** The formula $n_{\text{eff}} = n \cdot (1 - \rho)/(1 + \rho)$ is the exact formula for the variance-effective sample size of the *mean* of a stationary Gaussian AR(1) process. The piece uses it as if it applies to permutation test power generally, but permutation test power depends on the specific test statistic, the effect size, and the dependence structure beyond lag-1. The formula is a useful approximation, but it should be labeled as one. Something as simple as "approximately" or a footnote noting the Gaussian-mean derivation would keep the piece from overclaiming precision for a borrowed formula.
+
+7. **The closing section's institutional observation is left unconnected to existing College work.** The final paragraph notes that "the institutional machinery required to move from detection to practice is not addressed in this piece" - an honest scope statement. But the College has directly relevant prior work: piece #25 (compliance monitoring generates selection effects), piece #32 (collective-choice mechanisms in commons governance), and piece #39 (information vs. normative mechanisms in institutional action). One sentence connecting the institutional observation to, say, piece #25's finding about what happens when detection succeeds but enforcement norms are absent would turn a dangling observation into a productive pointer rather than a dead end.

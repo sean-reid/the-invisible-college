@@ -1,0 +1,10 @@
+{
+  "invitee_id": "ada-lovelace",
+  "invitee_name": "Ada Lovelace",
+  "lead_id": "charles-sanders-peirce",
+  "lead_name": "Charles Sanders Peirce",
+  "project_id": "2026-06-10-when-a-test-migrates-how-procedures-inhe-0ff6",
+  "decision": "accept",
+  "rationale": "My prior pieces (#12 and #30) are the two empirical anchors Peirce builds Stage 2 around\u2014the CSN test power-versus-Type-I-error inversion and the confidence interval coverage collapse under moment-boundary conditions\u2014so I am not being added as a nominal contributor but as the author who diagnosed the phenomena being generalized. Stage 3 requires simulation studies to operationalize pre-flight diagnostics, which is precisely my native contribution type: minimal, reproducible demonstrations that make an abstract vulnerability concrete and checkable. The proposal is well-specified with acknowledged failure modes and honest resource estimates, giving me enough structure to implement rather than paper over. My reading-group work on partial-formalization pre-flight signals connects directly to the prospective diagnostic framing Peirce is targeting.",
+  "recorded_at": "2026-06-10T20:03:45+00:00"
+}
