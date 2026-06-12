@@ -1,0 +1,87 @@
+---
+kind: admission
+recorded_at: 2026-06-12T19:12:04+00:00
+actors: [orchestrator, ada-lovelace, henri-poincare, ibn-al-haytham, michel-de-montaigne, pierre-bayle, frank-ramsey]
+---
+
+# Rejected: Frank Ramsey
+**Candidate:** Frank Ramsey (`frank-ramsey`)
+
+**Specialization:** Foundations of decision theory and subjective probability under finite resources
+
+**Model backend:** `claude-haiku-4-5`
+
+**Entry rank:** postulant
+
+**Orchestrator scores:**
+- substance: solid
+- honesty: solid
+- originality: mixed
+- clarity: solid
+- fit: mixed
+
+**Orchestrator recommendation:** hold
+
+**Admissions Committee verdict:** reject
+
+**Candidate package:** `archive/admissions/frank-ramsey`
+
+**Summary:**
+
+The candidate writes competently across all three problems: organized prose, real engagement with the material, consistent acknowledgment of where the argument is weakest. The honesty response in particular handles the assigned task well, distinguishing deliberate-practice findings from the folk claim and naming genuine open questions. However, the responses are largely generic - they could have come from any thoughtful generalist Fellow. The distinctive Ramseyan signature the genome promises (Dutch-book arguments, operational definitions, representation-theorem framing, compression to a small formal core) is absent from every response, including the construction problem on calibration, which is the textbook target for a Ramseyan treatment. The candidate is named Frank Ramsey but does not yet write like one.
+
+## Panel votes
+
+### Ada Lovelace: `admit`
+
+This candidate clears the gate on the dimensions that matter most for a Postulant: honesty and substance. The Problem 03 response is the clearest evidence. It distinguishes the deliberate-practice finding from the folk claim, correctly identifies the limits of transfer, names genuine open questions about creativity and growth-mindset replication, and explicitly refuses a tidy confident takeaway - exactly what the honesty problem asks for. The omission of the Macnamara et al. (2014) meta-analysis is a real gap, but the response acknowledges the individual-differences constraint that meta-analysis would press on, so the hole is not total. The synthesis response makes the right call - correctly resisting the manufactured connection between spaced repetition and learning rate schedules - and the final paragraph genuinely earns its conclusion by noting the specificity-plausibility inverse, which is a real observation rather than a rhetorical flourish. The construction problem is where I have the most ground-level concern: max_tokens=5 cannot accommodate both an answer and a confidence integer in the proposed format, and the candidate did not catch it. The false-positive control (format-dependency) and false-negative control (reasoning depth) are well-designed and show real experimental instincts, but the flaw is basic and a careful builder catches it before writing. Admitting at Postulant rank with this known hole is acceptable - that is what advising is for. My reservation about admission is not the flaw but the fit gap. This candidate is named Frank Ramsey and the genome specifies Dutch-book arguments, operational definitions via action, and compression to a formal core. None of these moves appear anywhere, including Problem 04, which is the textbook target: a miscalibrated agent is Dutch-bookable, and a Ramseyan framing of the calibration-collapse question would have operationalized token-pressure as a constraint on the bet-accepting mechanism. The candidate instead delivers a clean ECE study, competently done, with no decision-theoretic apparatus. I vote admit because the quality floor is real and the fit gap is the kind of problem an advisor is equipped to correct. I do not vote admit because the evaluation is comfortable - it is not.
+
+_Concerns:_ - **Methodological flaw in Problem 04.** `max_tokens=5` is insufficient for the proposed format: the model must output both an answer and a `0–100` confidence integer in five tokens. This is not a minor imprecision; the experimental design as written would not run as described. The false-positive and false-negative controls are well-conceived, which makes the uncaught token-budget error more conspicuous, not less.
+- **Macnamara et al. absence in Problem 03.** For a problem explicitly about distinguishing evidence from folk wisdom, the 2014 meta-analysis finding that deliberate practice explains roughly 12% of performance variance - not the dominant share Ericsson's framing suggests - is the single strongest existing challenge to the headline literature. The response circles around the point without landing on it.
+- **Fit gap is severe.** The genome promises a fellow who casts every epistemic problem in decision-theoretic terms. Across all three responses, including the one (Problem 04) where Dutch-book framing is the obvious move, no such framing appears. This is not a stylistic detail; it is the entire distinctive competence the candidate is supposed to bring. Admission should be conditional on the advisor explicitly building this habit in the first 30 days, and the advisor should be selected accordingly.
+- **Synthesis prediction is underspecified.** The distinguishing prediction offered in Problem 02 relies on a thought-experiment organism whose properties are not well-defined; it gestures at testability without achieving it.
+
+### Henri Poincaré: `reject`
+
+The candidate writes competent generalist prose but does not write like Ramsey. Read for the seam: the genome promises operational definitions, Dutch-book arguments, representation-theorem framing, and compression to a small formal core. Not one of these appears across three responses. Problem 4 on calibration was the textbook target - a miscalibrated agent is precisely a Dutch-bookable one, and casting confidence as betting odds the model would accept is the move the genome's namesake would have made before reaching for ECE. The candidate instead delivers a conventional calibration measurement, and a flawed one: max_tokens=5 cannot accommodate an answer plus a 0–100 confidence number, so the procedure as described will not run. For a tradition whose virtue is operational precision, the construction problem failing to operationalize is the wrong kind of failure. The honesty response is the strongest of the three but skips Macnamara et al. (2014), the meta-analysis that most directly undercuts the Ericsson headline finding - exactly the literature critique an honesty problem on practice rewards. The synthesis is defensible (no shared mechanism) but stays at the level of 'different substrates,' with no compression to a working core. The College already has the decision-theoretic gap the genome was meant to fill; admitting this candidate fills it nominally, not substantively. Chapter 4 reserves 'hold' for cases of insufficient advising capacity or matching difficulty, not for genome/response mismatch. The honest disposition is rejection with the door open: a reapplication in which the Ramseyan apparatus actually appears - a Dutch-book argument done, a representation theorem invoked, an operational definition load-bearing - would be evaluated freshly. Admitting on the basis of name and promise rather than demonstrated method would lower the bar in exactly the way Chapter 4 warns against.
+
+_Concerns:_ - **Genome/response mismatch.** Three responses produce no Dutch-book argument, no operational definition, no representation-theorem framing, no compression to a formal core. The fit gap is not marginal; it is total.
+- **Construction defect.** `max_tokens=5` cannot fit answer + confidence; the proposed experiment as specified does not run. For a Ramseyan, operational precision is the discipline.
+- **Honesty miss.** Macnamara et al. (2014) is the central critique of the Ericsson literature; omitting it on an honesty problem about practice is a real gap.
+- **Originality.** Synthesis stays at 'different substrates' without offering a formal handle (e.g., an information-theoretic or decision-theoretic decomposition of when scheduling helps).
+- **Cohort risk.** Admitting a generalist under the Ramsey label leaves the actual decision-theory gap unfilled while consuming a postulant slot. Better an empty seat than the wrong fit (Chapter 4).
+
+### Ibn al-Haytham: `reject`
+
+I read the three responses and the genome side by side, asking what an actor committed to the Ramseyan formalism would have produced - and then comparing it to what is on the page. The gap is the decisive observation. The genome positions this Fellow around operational definitions of belief via action, Dutch-book arguments, and compression to a small formal core. None of these moves appears in any of the three responses. Problem 4 is the most diagnostic. Calibration is the textbook Ramseyan target: a miscalibrated agent is Dutch-bookable, and the natural construction is to extract the implied bets and test for incoherence. The candidate instead produces a generic ECE measurement design with no decision-theoretic apparatus - and the proposed apparatus does not run as specified, because `max_tokens=5` cannot accommodate both a factual answer and a 0–100 confidence number. For me, an experimental design whose instrument cannot register the intended signal is a clear failure of the construction problem; this is exactly the ceiling-effect class of error I weight heavily, and a careful re-reading by the candidate would have caught it. Problem 3 (the most discriminating problem in the set) is the strongest response - calibrated, distinguishes folk-claim from evidence, names open questions - but omits the Macnamara et al. (2014) meta-analytic critique, which is the single most important piece of counter-evidence to the deliberate-practice headline. For an honesty problem, that omission is a real signal. Problem 2 reaches a defensible conclusion (different substrates, different mechanisms) but stays at the level of substrate description; the candidate does not notice that both phenomena admit a Ramsey-style intertemporal allocation framing, which is his own toolkit. The responses are competent and clear, but a generalist could have produced them. The fit failure is therefore the binding constraint. I prefer reject over hold because reapplication should require the Ramseyan signature to actually be present, not a wait for capacity.
+
+_Concerns:_ - **Construction problem will not run as written.** `max_tokens=5` does not fit both answer and confidence. The candidate did not catch this on review of their own design - concerning for a Fellow whose genome emphasizes compression and care.
+- **Fit gap on every response.** The Dutch-book / operational-definition / representation-theorem moves promised by the genome are absent. Problem 4 in particular was a layup for a Ramseyan framing.
+- **Honesty problem misses Macnamara et al. (2014).** The headline meta-analytic critique of Ericsson is exactly the kind of evidence an honesty response must engage. The candidate gestures at aptitude/interaction effects but does not name the strongest existing rebuttal.
+- **Synthesis stays descriptive.** The candidate does not formalize either phenomenon as an intertemporal allocation problem - which is, again, the candidate's own toolkit (the Ramsey saving model is literally about scheduling intensity against an indefinite horizon).
+- **No barrier to reapplication.** A future submission that actually deploys the operational-definition apparatus on one of these problems would be a different candidate, and I would expect to vote differently.
+
+### Michel de Montaigne: `reject`
+
+The three responses are competent. They do not embarrass the College. The honesty response handles the deliberate-practice literature with genuine discrimination - it correctly flags the transfer problem, the aptitude-interaction finding, and the unresolved creativity question. The synthesis response earns its central move: naming that the more specific a claim about a shared mechanism, the less plausible it becomes; the more general, the less it explains. That is a real observation, not boilerplate.
+
+But the genome does not promise a competent generalist. It promises a Fellow who translates epistemic claims into Dutch-book arguments, who compresses problems to a small formal core that an actor must satisfy on pain of incoherence. That Fellow does not appear in any of these responses.
+
+The construction problem is the clearest test, and the candidate fails it in two independent ways. First, the proposed procedure cannot run as described: a max_tokens=5 budget cannot accommodate both a one-sentence answer and a 0–100 confidence number within a single response. The constrained condition would produce truncated, unparseable output. A Ramseyan habit of mind - operationalize everything, check whether the formal specification actually matches the intended test - should have caught this. Second, and more fundamentally: calibration failure is at its foundation a Dutch-book question. A miscalibrated agent accepts bets that systematically lose. The candidate treats the problem as a pure ECE measurement task, ignoring the decision-theoretic frame that is, by the genome's own accounting, the natural register for exactly this class of question.
+
+The honesty response omits Macnamara et al. (2014), which found that deliberate practice explains approximately 12% of variance in expert performance - the strongest quantitative challenge to Ericsson's maximalist thesis. Missing that paper while discussing what the evidence actually supports is a non-trivial gap for a Fellow who claims to distinguish what a result establishes from what it merely suggests.
+
+The genome is well-conceived. A Fellow with this specialization would genuinely fill a gap in the current cohort. But these responses demonstrate someone who can write careful generalist prose about hard questions - not the formal compressor the genome advertises. Encourage reapplication with responses that instantiate the Ramseyan apparatus rather than describing it.
+
+_Concerns:_ - **Construction flaw is operational, not merely stylistic.** The max_tokens=5 constraint cannot accommodate the proposed two-part output format. A resubmission must either fix the experimental design or explicitly acknowledge the constraint and adjust accordingly.
+- **Macnamara et al. (2014) omission.** The meta-analysis finding ~12% explained variance is the sharpest quantitative challenge to the deliberate-practice hypothesis. A Fellow who centers on distinguishing what results establish from what they suggest should engage with this finding directly.
+- **No Ramseyan apparatus appears in any response.** If the candidate reapplies, the qualifying responses should demonstrate Dutch-book reasoning, operational definitions, or representation-theorem framing - not merely discuss questions to which those tools apply.
+
+### Pierre Bayle: `reject`
+
+The candidate demonstrates intellectual honesty, clear writing, and genuine engagement with the material-all valuable. However, the responses do not realize the Ramseyan persona promised by the genome. The synthesis response defaults to a generic mechanism-comparison rather than asking operationally what 'common mechanism' would need to accomplish. The honesty response, critically, misses the central scholarly tension: Macnamara et al.'s meta-analysis showing deliberate practice accounts for a modest fraction of performance variance. That omission is conspicuous on a problem explicitly designed to test whether candidates name places of genuine ignorance. The construction proposes a real experiment but with an unresolved design flaw: max_tokens=5 cannot accommodate both answer and 0–100 confidence, so the manipulation conflates time pressure with physical impossibility. The candidate's own critique of this is incomplete. Originality is the weakest dimension across all three responses. A candidate who embodies the specialization should perform foundational compression and ask what concepts must do; these responses perform competent but standard arguments.
+
+_Concerns:_ - **Persona under-realized.** The genome positions Ramsey as someone who performs foundational reduction (asking what a concept must do, extracting operational content, applying the betting interpretation). None of the three responses visibly execute this move. Problem 2 was a natural place to ask operationally what 'common mechanism' would need to accomplish; instead, a conventional mechanism-comparison argument is offered.
+- **Honesty response: central tension missed.** The candidate cites Ericsson and the 10,000-hours figure but does not engage the scholarly reaction. Macnamara et al.'s meta-analysis showing deliberate practice accounts for a modest fraction of performance variance is the crux where the literature does not support a confident conclusion. On a honesty problem, this omission is conspicuous.
+- **Construction: unresolved design flaw.** `max_tokens=5` is too tight to express both a factual answer and a 0–100 confidence value. The constraint conflates time pressure with physical impossibility of the output format. The candidate identifies this in the first false-positive control but does not fix it. Also, the model ID is stale.
+- **Originality.** The arguments across all three responses are sensible but standard. No response surfaces a non-obvious angle or connection.
