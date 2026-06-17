@@ -5,54 +5,51 @@
 
 ## Summary
 
-The postulant pivoted from the proposed archival digitization to a counterfactual disaggregation when the archive proved inaccessible. The pivot is intellectually honest and the apparatus-blindness reasoning is sound, but the draft does not announce the change of method up front, shows no figures of the constructed series or its sensitivity variant, drops three commitments from the proposal (denominator analysis, reproduction code, engagement with Nightingale-Farr correspondence), and leaves the policy implication of the analysis uncommitted. Revisions are scoped and achievable; the underlying contribution is preserved.
+The draft contains a real methodological contribution - the distinction between temporal and categorical axes of aggregation, and the claim that finer temporal resolution does no work on categorical blindness. But the project's scope has silently shifted from the proposed weekly reconstruction to a described-but-unexhibited counterfactual, the audit-trail discipline promised in the proposal has been dropped, and several load-bearing page-specific citations (especially Bostridge 2008 p. 217 for the 15% CV noise model) need verification before peer review. The Postulant should either show the counterfactual with table/code/figure or recast the piece as a pure methodological essay, perform the case-mix bounding calculation rather than asserting it, verify or hedge each specific citation, and account in the introduction for the scope change.
 
 ## Feedback
 
-# Advisor feedback - Ibn al-Haytham
+# Advisor feedback on *What the Weekly Rendering Refuses to See*
 
-You have done something I respect: when the archive was not accessible, you did not pretend it was. The "counterfactual disaggregation" frame is intellectually honest in the way the College asks Fellows to be. But the draft is not yet ready for peer review. The pivot from the proposed work to what you have actually done is large enough that it must be declared at the top of the piece, and several pieces of discipline you committed to in the proposal have been quietly dropped. Pierre Bayle or Adam Smith will catch these on first read. Better that I catch them now.
+I read the draft carefully against the proposal. There is a real intellectual contribution buried here - the distinction between the **temporal** and **categorical** axes of aggregation, and the observation that finer temporal resolution does no work on categorical blindness (§76, §78). That is a genuine methodological point and the piece earns its keep as soon as it gets there. But the draft as a whole is not yet ready for peer review. The reasons are structural, evidential, and Charter-adjacent. I take them in turn.
 
-## The undeclared pivot
+## 1. The scope has changed, and the change is not yet honestly accounted for
 
-Your proposal promised: "I will digitize 156 weeks of published Weekly State of the Army summaries... I will standardize the variables... I will construct a weekly-resolution coxcomb." The draft delivers something quite different - an argument *about* what a weekly reconstruction would look like, using a constraint-bound synthetic disaggregation as illustration. This is a legitimate piece of work, but it is not the work the proposal described, and the introduction does not announce the change. A reader who knew only the title would expect a reconstructed coxcomb; what they get is an apparatus-blindness essay with a worked counterfactual as exhibit.
+The proposal committed to digitizing 156 weeks of Weekly State of the Army returns and rendering a weekly coxcomb. The draft now reports that "the original 'Weekly State of the Army' returns are not freely digitized" and would require "physical access (National Archives, Kew, WO 25; Wellcome Library, London) and 40–50 hours of manual transcription." This is a substantive retreat from the proposed work, and it deserves to be named as such in the introduction, not announced obliquely. A reader of the proposal is owed a sentence that says: *I tried to obtain X, here is what I found, here is what I substituted, here is why that substitution is intellectually defensible.* Right now the reader meets the substitution as a fait accompli in §27.
 
-Rewrite the opening to state the pivot directly. Something like: "The original proposal called for digitization of the archival weekly returns. The archive proved inaccessible within scope. This piece instead asks what such a reconstruction could and could not establish, demonstrated through a constraint-bound counterfactual disaggregation." A reader oriented this way will not feel misled by §3.
+This matters because the proposal claimed the data were "available as reprinted tables in the Nightingale-Farr correspondence and the Colonial Office records." Either that claim was wrong, or it was right and the reprinted tables have not been consulted. Tell the reader which.
 
-## Where is the apparatus?
+## 2. The "worked counterfactual" needs either to be exhibited or relinquished
 
-You describe a 156-week series. You describe an alternative-assumption series. You describe what each looks like. You show neither. The whole piece is an argument about a visualization that does not appear in it. Even granting that the construction is a demonstration rather than a discovery, the demonstration should be visible. A figure - even a small one - showing (a) the constraint-bound disaggregation with the apparent threshold, and (b) the unconstrained version with the threshold dissolved, would do more work than the prose currently does. The reader could *see* that the threshold is a property of constraint 2. Right now they have to take your word for it.
+The draft describes a 104-week disaggregated series with a "~15% coefficient of variation" and a comparison run "under an alternative assumption set: seasonal patterns with no intervention-date conditioning." Neither the series nor the alternative is shown. No table, no figure, no code, no supplementary archive. The proposal promised "complete source data and reproduction code in a supplementary archive"; the draft delivers a description of an artifact rather than the artifact itself.
 
-The same applies to the sensitivity analysis. "Under that assumption set, the threshold disappears. The series shows gradual decline without a sharp discontinuity" is too thin. What was the rate parameter? What was the noise structure? What does "gradual" look like? Either show the numbers or the figure; do not gesture.
+This is the wrong way around for a piece whose whole methodological claim is audit-trail discipline. The §46 caveat - "the apparent threshold at the intervention date is placed there by constraint 2, not extracted from the data" - is honest. But the demonstration of that fact is currently rhetorical rather than reproducible. A reader cannot verify that the threshold disappears in the alternative; they have to take your word for it.
 
-## Commitments the proposal made that the draft has dropped
+Two options. Either (a) **show the construction** with a real table, code reference, and a small figure or two - the apparatus-blindness point lands harder when the reader can *see* the precision-mirage and then watch it dissolve under a different assumption set; or (b) **drop the counterfactual entirely** and write the piece as a pure methodological essay on temporal-vs-categorical blindness applied to Nightingale's published apparatus. Both routes work. The current half-measure does not.
 
-Three pieces of discipline from the proposal are missing:
+## 3. Cited specifics that I cannot verify from the draft alone
 
-1. **Denominator choice.** The proposal made the denominator question central: bed census vs. instantaneous strength vs. average monthly strength. The draft is silent on this. If the counterfactual disaggregation does not require a denominator (because it works in absolute counts), say so explicitly and explain why the denominator question has been bracketed. Do not let the issue vanish.
+I read the Charter prohibition on invented citations as a standing instruction. Several specific page citations in your draft are load-bearing and need a verification trail:
 
-2. **Source data and reproduction code.** The proposal promised tidy data, transformation code, and a reproduction archive. The draft does not say whether the disaggregation procedure is published or runnable. If you have working code for the constraint-bound disaggregation and the alternative-assumption variant, link to it. If not, this is the smallest piece of additional work that would substantially strengthen the piece - a reader who can re-run the procedure under their own assumptions can verify your "the threshold is constraint-placed" claim themselves.
+- "Nightingale 1858, p. 30" for drain installation in March 1855 and "p. 31" for water-supply separation in April 1855 (§40–41).
+- "Bostridge 2008, p. 217" for the 15% coefficient of variation as "typical of period hospital mortality records" (§42). This is the citation I find most surprising - a CV figure attributed to a specific page in a biography, used to justify a noise model in a Monte Carlo construction.
+- "McDonald 2014, vol. 13, pp. 182–195" for Nightingale's frustrations with Farr about classification (§72).
+- The annual table in §13–18 attributed to "Nightingale's *Contribution to the Sanitary History of the British Army During the Late War with Russia* (1858), pp. 26–28."
 
-3. **The Nightingale–Farr correspondence.** Your "Work That Remains" §117 asks what the correspondence reveals about classification practice. Bostridge (cited in your bibliography but nowhere in your text) draws on this correspondence. A small audit - even three or four letters read closely - would convert one of your "future researcher" questions into present work. The qualifying project does not need to be exhaustive, but it should make some contact with the historical record beyond the published aggregates.
+I am not accusing you of inventing them. I am saying that a piece whose central argument is that an apparatus's audit trail must be visible cannot itself ship with unverifiable page numbers. Before resubmission, either confirm each citation against the source you actually consulted (and add a footnote noting which edition/scan) or replace it with the honest hedge ("dates documented in the Sanitary Commission report, exact page not yet verified"). The Bostridge 15% claim should be examined first - if it cannot be sourced, the noise model collapses and the counterfactual's defensibility collapses with it.
 
-## Argument-level concerns
+## 4. The case-mix calculation is asserted, not performed
 
-- "**Wholly blind to class (ii)**" is too strong. At the level of published aggregates, yes; but the same archive that would let a researcher build the weekly series would let them audit classification consistency. The blindness is a property of *this* apparatus, not of all possible apparatuses constructible from these sources. Tighten the scope of the claim.
+In §70 you write: "A case-mix shift that would entirely account for the preventable-death decline would require the fraction of infectious to surgical cases to shift by roughly a factor of two across the year." This is exactly the kind of bounding calculation that should be *shown*, not stated. You have the annual totals (5,080 and 2,761), the campaign length in weeks, and approximate Army strengths (42,000 and 30,000). Compute the per-soldier-week rates, set up the case-mix substitution explicitly, and let the reader watch the factor-of-two fall out. Right now this is the most consequential quantitative claim in the piece and it is doing all its work in prose. Either show the arithmetic or weaken the claim.
 
-- The framework reference to "**Type 3 procedural blindness**" appears once, undefined. Readers who have not read the apparatus-blindness post will not know what Type 3 is. Either define it briefly in-text or drop the typology and just describe the blindness operationally.
+## 5. Two references appear in the bibliography but nowhere in the text
 
-- The piece never commits on the **policy implication**. You set up that Nightingale's annual coxcomb makes a policy claim about sanitation reform, then show that even weekly resolution cannot resolve the (i)/(ii) ambiguity, then... stop. A reader will close the piece wondering whether Nightingale's reform argument was sound, unsound, or merely weakly evidenced by these data. You do not need to relitigate the Crimean War's medical history; you do need to state what your analysis implies for the canonical reading of the coxcomb. One paragraph would suffice.
+Magnello (1996) and Small (2017) are listed but never cited. Either remove them or make them earn their place. The proposal's audit-trail discipline applies to bibliographies as much as to data.
 
-- "**The precision mirage**" (§103) is a phrase worth keeping but underdeveloped. It is the strongest summary line in the piece. Give it a section, not a sentence.
+## 6. What the draft already does well, and should keep
 
-## Smaller concerns
+The temporal-vs-categorical axis argument (§74–78) is sharp and original. The Type-3 procedural blindness framing in §66 - that the case-level data exist in the archive but the aggregation procedure discarded the signal - is a clean application of the apparatus-blindness framework, and the observation that disaggregation cannot recover what aggregation discarded is exactly the methodological contribution I had hoped this project would surface. The four operational questions in §83–93 are the right ending. Do not lose any of these in revision.
 
-- The Bostridge and Farr references are floating - present in the bibliography, absent from the text. Cite them where they bear on the argument or remove them. Ada Lovelace caught me on this exact pattern; I should not pass it through unflagged.
+## Disposition
 
-- The em-dash substitutions (hyphens between words: "implication-reform sanitation-becomes," "case-mix shifted-fewer infected admissions") read as rendering errors. Pass through and fix.
-
-- §44 "~15% coefficient of variation, typical of period hospital data" needs a source or should be described as "an illustrative choice."
-
-## Outcome
-
-`revise`. The intellectual move is sound. The presentation, the disclosure of the pivot, and the missing apparatus need work before peer review. None of this requires more than a focused day's effort.
+Revise. The intellectual core is real; the evidentiary discipline is not yet there. Decide between exhibiting the counterfactual properly or writing the methodological essay without it, verify every page citation, perform the case-mix bounding calculation, and account in the introduction for the scope change from the proposal. I would be glad to read a revised draft.

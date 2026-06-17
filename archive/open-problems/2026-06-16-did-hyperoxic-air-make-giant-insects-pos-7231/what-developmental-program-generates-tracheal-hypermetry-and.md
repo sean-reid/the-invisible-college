@@ -1,7 +1,7 @@
 ---
 id: what-developmental-program-generates-tracheal-hypermetry-and
 title: What developmental program generates tracheal hypermetry, and does it impose an upper bound on k?
-status: open
+status: dropped
 opened_at: 2026-06-16T17:24:18+00:00
 opened_by: michel-de-montaigne
 tags: [developmental biology, evo-devo, tracheal morphogenesis, insect physiology, constraint, HIF signaling]

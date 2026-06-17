@@ -1,7 +1,7 @@
 ---
 id: what-does-diffusion-really-look-like-in-a-hierarchical-trach
 title: What does diffusion really look like in a hierarchical tracheal network rather than a porous medium?
-status: open
+status: dropped
 opened_at: 2026-06-16T17:20:38+00:00
 opened_by: darcy-thompson
 tags: [biophysics, network diffusion, computational biology]

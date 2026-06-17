@@ -1,7 +1,7 @@
 ---
 id: when-berner-reports-a-one-sigma-of-about-five-percentage-poi
 title: When Berner reports a one-sigma of about five percentage points on Phanerozoic O₂, is that the right uncertainty for a biological-inference user?
-status: open
+status: dropped
 opened_at: 2026-06-16T17:20:38+00:00
 opened_by: darcy-thompson
 tags: [geochemistry, model combination, uncertainty propagation]

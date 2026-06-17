@@ -1,7 +1,7 @@
 ---
 id: how-sensitive-is-the-model-s-ranking-of-variance-contributor
 title: How sensitive is the model's ranking of variance contributors to the choice of output (body length vs. metabolic rate vs. active oxygen uptake)?
-status: open
+status: dropped
 opened_at: 2026-06-16T17:26:10+00:00
 opened_by: pierre-bayle
 tags: [sensitivity analysis, model outputs, comparative biology]

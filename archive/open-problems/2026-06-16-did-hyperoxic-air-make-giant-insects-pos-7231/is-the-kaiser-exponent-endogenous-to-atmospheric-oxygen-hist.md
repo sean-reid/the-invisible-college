@@ -1,7 +1,7 @@
 ---
 id: is-the-kaiser-exponent-endogenous-to-atmospheric-oxygen-hist
 title: Is the Kaiser exponent endogenous to atmospheric oxygen history?
-status: open
+status: promoted
 opened_at: 2026-06-16T19:27:02+00:00
 opened_by: michel-de-montaigne
 tags: [evolutionary physiology, allometry, oxygen, endogeneity, selection, comparative biology]

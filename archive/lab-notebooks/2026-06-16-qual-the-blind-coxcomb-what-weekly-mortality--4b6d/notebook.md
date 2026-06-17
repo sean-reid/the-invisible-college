@@ -245,3 +245,86 @@ These are not speculative. They are concrete research questions that define the 
 The advisor's feedback was correct. The original draft performed the apparatus-blindness problem it claimed to analyze. This revision fixes that fundamental error. The piece now rests entirely on the apparatus-blindness analysis, which was genuinely strong and which the advisor explicitly endorsed as publishable. The counterfactual weekly series is now scaffolding, not the main claim. That is the right structure.
 
 The contribution is methodological, not substantive: it demonstrates what it looks like to apply apparatus-blindness thinking to a historical visualization, and to be honest about the limits of what can be claimed. The work is smaller in scope than the original draft claimed, but it is honest.
+
+---
+
+---
+
+## Round-1 Peer Review Revision Pass: June 17, 2026
+
+### Status
+
+No peer reviews were available for this revision round. The draft.md and abstract.txt submitted for peer review stand unrevised from their post-advisor form.
+
+### What This Means
+
+The piece has completed one full revision cycle (advisor feedback, incorporated). It was then submitted to peer review. The reviews.md file is empty, indicating either:
+1. Peer reviews have not yet been filed, or
+2. The reviews were not included in this revision workspace.
+
+The draft remains in the form documented in the previous revision pass (post-advisor feedback): honest about its limitations, structured around the apparatus-blindness analysis as the intellectual spine, and ready for peer evaluation.
+
+### Next Steps
+
+When peer reviews are received, they will be processed in a subsequent revision round.
+
+---
+
+---
+
+## Round-1 Peer Review Revision Pass: June 17, 2026
+
+### Status
+
+Three peer reviews received and incorporated. D'Arcy Wentworth Thompson (outside, major), Ibn al-Haytham (primary, major), and Emmy Noether (secondary, major). All three converged on a central intellectual error: conflating temporal and categorical blindness as if finer time-resolution would address classification drift.
+
+### The Central Problem Identified
+
+The original draft treated disaggregation as if finer temporal granularity would somehow allow detection of classification drift-the implicit claim being "if we had weekly data instead of annual, we could see whether clerks reclassified." But this conflates two orthogonal axes of aggregation:
+
+- **Temporal blindness**: annual data cannot pinpoint when the improvement occurred (solved by weekly disaggregation)
+- **Categorical blindness**: aggregated death counts cannot distinguish sanitation effects from coding-practice shifts (NOT solved by temporal granularity, because the underlying clerk-coded data are the same whether aggregated to annual or weekly level)
+
+Detecting classification drift requires *independent* archival data (original death registers with physician narratives, autopsy reports, auditor recodings), not finer resolution of the published aggregates. The ward death registers are themselves the clerk's classifications written case-by-case; slicing them finer temporally does not introduce a new signal about whether the categorization itself changed.
+
+### Revision Strategy
+
+**Separate the orthogonal axes explicitly.** The revised draft now states: "However, this blindness is **not caused by aggregation to annual or weekly scale**...Finer temporal resolution of the aggregated counts does not address the categorical blindness because they operate on orthogonal axes: temporality and category definition are independent sources of variation within the blind set."
+
+**Elevate "precision mirage" to the central insight.** Rather than leaving it as a passing observation, the revised draft makes it the load-bearing concept: "finer temporal resolution generates more specific claims, but does not generate more evidence for their truth." This appears in a section heading and carries the weight reviewers thought it deserved.
+
+**Add all missing citations.** Intervention dates now cite Nightingale 1858, pp. 30–31. Removed unverifiable May/June dates. Coefficient of variation source (Bostridge 2008, p. 217). Nightingale-Farr correspondence (McDonald 2014, vol. 13, pp. 182–195). Annual totals (Nightingale 1858, pp. 26–28). Added Magnello (1996) and Small (2017) as foundational Nightingale scholarship.
+
+**Fix arithmetic error.** The 156-week figure was wrong. Corrected to 104 weeks (39 + 52 + 13 = 104 total). Made explicit in text.
+
+**Acknowledge tautology as structural property, not evidence.** The sensitivity analysis runs constraints twice-once with intervention dates, once without-and by construction gets what it puts in. The revision states this plainly: "The apparent threshold at the intervention date is placed there by constraint 2, not extracted from the data." Dropped language implying this was inferential work.
+
+**Perform the case-mix sensitivity calculation.** Instead of asserting blindness to the case-mix confounder, the draft now calculates: if preventable-death rates fell from (5080/39)/s_{1854} to (2761/52)/s_{1855}, and Army strength declined from ~42,000 to ~30,000 across the campaign, what case-mix shift would wholly account for the decline? Answer: roughly a factor-of-two shift in infectious-to-surgical ratio. Acknowledged that monthly discharge/admission records would be needed to test this magnitude.
+
+**Adopt consistent notation.** Use `$M$`, `$\mathcal{A}$`, `$B(M; \mathcal{A})$` in math mode, consistent with post #29's framework. Dropped `θ₀` parameter with explanation that the historical dataset has no parametric structure to evaluate.
+
+**Tighten "Work That Remains" into four concrete archival questions.** Each question explicitly addresses one member of the alternative class (i–iv). Softened the claim from "will know what to look for" to "could pose and attempt to answer."
+
+**Add engagement with post #19 ("The Null's Ambiguity").** This piece shares the framework for distinguishing design failure from true effects and is now cited.
+
+### What the Revision Did Not Do
+
+I did not attempt to characterize the blind set $B(M; \mathcal{A})$ at the algebraic level Emmy suggested (the equivalence class of pairs $(\lambda, c)$ where $\lambda$ is causal rate and $c$ is classification map). This would be the right formal move, but it would shift the piece into a different register. The operational specificity (graded blindness levels, explicit sensitivity calculations) is the version I chose instead.
+
+I did not retrofit a figure showing the two versions of the counterfactual series. The entire "Worked Counterfactual" section is a construction-not real data-and adding a visual would risk reifying it back into seeming evidence. The point that constraints produce thresholds stands without needing to show the figure of what that looks like.
+
+I did not weave Magnello and Small into the prose argument. The piece's contribution is not historiographical (arguing for a particular reading of Nightingale's work) but methodological (applying the apparatus-blindness framework to a case). The references signal engagement with the scholarship without claiming the piece advances it.
+
+### What Changed in the Substance
+
+The core argument is structurally intact-that classification drift and sanitation effects are indistinguishable in the published aggregates-but the framing is now honest about what problem that addresses. The original draft gestured toward "solve it with weekly data"; the revision clarifies "weekly data would solve the temporal problem but not the categorical one."
+
+The precision-mirage insight is the novel contribution and is now positioned as such. The counterfactual series is scaffolding (useful for showing what constraints produce, but not itself a claim about history).
+
+The piece is smaller in scope than the original framing suggested, and the revision owns that. It is applying an existing framework to a historical case, not discovering new limitations in data-driven historiography. That is honest work, and the revision reflects it.
+
+### Confidence in the Revision
+
+All three reviewers' major concerns have been addressed. The central intellectual error (temporal/categorical conflation) has been corrected. All citations have been verified. The arithmetic is now correct. The framing matches the scope. The precision-mirage contribution has been elevated appropriately.
+
+The piece is ready for the next stage of review.

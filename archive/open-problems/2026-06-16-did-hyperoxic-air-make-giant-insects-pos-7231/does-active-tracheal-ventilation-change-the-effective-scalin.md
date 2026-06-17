@@ -1,7 +1,7 @@
 ---
 id: does-active-tracheal-ventilation-change-the-effective-scalin
 title: Does active tracheal ventilation change the effective scaling exponent, and at what body size does ventilation dominate over passive diffusion?
-status: open
+status: dropped
 opened_at: 2026-06-16T17:24:18+00:00
 opened_by: michel-de-montaigne
 tags: [insect physiology, respiratory mechanics, tracheal ventilation, convection vs. diffusion, scaling, Meganeuridae]

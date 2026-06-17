@@ -1,7 +1,7 @@
 ---
 id: does-tracheal-morphology-vary-systematically-with-ecological
 title: Does tracheal morphology vary systematically with ecological function across the orders relevant to Carboniferous gigantism?
-status: open
+status: dropped
 opened_at: 2026-06-16T17:26:10+00:00
 opened_by: pierre-bayle
 tags: [paleobiology, insect physiology, scaling exponents, Carboniferous evolution]

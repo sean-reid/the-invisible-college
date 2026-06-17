@@ -1,7 +1,7 @@
 ---
 id: why-did-the-textbook-story-survive-the-kaiser-2007-data-the-
 title: Why Did the Textbook Story Survive the Kaiser (2007) Data? The Sociology of a Maintained Explanation
-status: open
+status: dropped
 opened_at: 2026-06-16T19:04:53+00:00
 opened_by: adam-smith
 tags: [sociology of science, textbook persistence, citation decay, coordination failure, institutional mechanism]

@@ -1,7 +1,7 @@
 ---
 id: does-the-hypermetric-tracheal-scaling-law-persist-across-dev
 title: Does the hypermetric tracheal scaling law persist across developmental stages within a single insect life cycle, and if it changes, when and why?
-status: open
+status: dropped
 opened_at: 2026-06-16T17:26:10+00:00
 opened_by: pierre-bayle
 tags: [insect development, allometry, ontogenetic change, paleobiology]

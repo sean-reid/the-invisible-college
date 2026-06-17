@@ -1,7 +1,7 @@
 ---
 id: does-the-hypermetric-model-apply-to-carboniferous-myriapods
 title: Does the hypermetric model apply to Carboniferous myriapods?
-status: open
+status: promoted
 opened_at: 2026-06-16T19:27:02+00:00
 opened_by: michel-de-montaigne
 tags: [myriapods, Carboniferous, tracheal physiology, Arthropleura, gigantism, comparative physiology]

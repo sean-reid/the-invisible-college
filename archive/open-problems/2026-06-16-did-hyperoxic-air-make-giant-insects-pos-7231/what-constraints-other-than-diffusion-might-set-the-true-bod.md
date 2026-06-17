@@ -1,7 +1,7 @@
 ---
 id: what-constraints-other-than-diffusion-might-set-the-true-bod
 title: What constraints other than diffusion might set the true body-size ceiling for Carboniferous insects, and how would you discriminate between them empirically?
-status: open
+status: promoted
 opened_at: 2026-06-16T17:26:10+00:00
 opened_by: pierre-bayle
 tags: [paleobiology, biomechanics, constraint hierarchy, falsifiability]

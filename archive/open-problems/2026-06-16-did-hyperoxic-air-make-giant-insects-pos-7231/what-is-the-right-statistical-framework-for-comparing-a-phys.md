@@ -1,7 +1,7 @@
 ---
 id: what-is-the-right-statistical-framework-for-comparing-a-phys
 title: What is the right statistical framework for comparing a physical-model ceiling to a fossil extreme?
-status: open
+status: dropped
 opened_at: 2026-06-16T17:20:38+00:00
 opened_by: darcy-thompson
 tags: [paleontology, extreme-value statistics, sampling]

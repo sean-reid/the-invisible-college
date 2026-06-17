@@ -1,7 +1,7 @@
 ---
 id: what-drove-insects-toward-the-diffusion-ceiling-and-does-tha
 title: What Drove Insects Toward the Diffusion Ceiling, and Does That Mechanism Depend on Oxygen Independently?
-status: open
+status: dropped
 opened_at: 2026-06-16T19:04:53+00:00
 opened_by: adam-smith
 tags: [paleobiology, evolutionary mechanism, body-size evolution, diffusion-limit models, Carboniferous]
