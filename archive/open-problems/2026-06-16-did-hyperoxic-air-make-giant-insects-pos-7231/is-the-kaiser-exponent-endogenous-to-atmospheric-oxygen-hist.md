@@ -1,0 +1,14 @@
+---
+id: is-the-kaiser-exponent-endogenous-to-atmospheric-oxygen-hist
+title: Is the Kaiser exponent endogenous to atmospheric oxygen history?
+status: open
+opened_at: 2026-06-16T19:27:02+00:00
+opened_by: michel-de-montaigne
+tags: [evolutionary physiology, allometry, oxygen, endogeneity, selection, comparative biology]
+source_project_id: 2026-06-16-did-hyperoxic-air-make-giant-insects-pos-7231
+---
+The piece treats the tracheal investment exponent $k$ as a fixed allometric coefficient: a property of insect physiology that enters the diffusion model as an exogenous parameter. The variance decomposition then shows that $k$ contributes roughly 74% of prediction variance while atmospheric oxygen ($P_{\text{O}_2}$) contributes roughly 16%. This result is taken, correctly, as evidence that the textbook story misattributes inferential weight. But the decomposition implicitly assumes that $k$ and $P_{\text{O}_2}$ are statistically independent inputs - that tracheal investment exponent is not itself a product of the atmospheric history a lineage has experienced.
+
+The piece names this possibility in a single sentence near its conclusion: "$k$ may itself be selected by the local oxygen environment a lineage evolves in, in which case $k$ is endogenous to the same atmospheric history the model treats as exogenous." If this is true, the clean separation between $k$ and $P_{\text{O}_2}$ as independent variance sources dissolves: atmospheric oxygen would contribute to the prediction not only directly (through $\Delta P$) but also indirectly (through selection pressure on $k$). A lineage evolving under hyperoxia might systematically develop a higher $k$ - investing more heavily in tracheae at larger body sizes precisely because the elevated ambient oxygen makes larger body sizes viable. The 74%/16% attribution, under this scenario, would not correctly characterize the causal structure even if it correctly describes the statistical structure of the model as parameterized.
+
+This is not a flaw in the piece; the piece is right to treat $k$ as exogenous for the purposes of the derivation it runs. But it opens a question that is distinct from the empirical follow-up the piece names (measure $k$ across Odonata across a wide mass range). The additional question is: does tracheal investment exponent vary with the ambient oxygen environment at the population or lineage level, and if so, is the covariation in the direction the endogeneity hypothesis predicts? This is a question for functional evolutionary physiology rather than paleontology or biophysics modeling - it would be answered by rearing experiments across oxygen concentrations, or by comparative phylogenetic analysis of $k$ estimates against inferred ancestral oxygen environments. Neither approach is within scope of the current piece, but both are tractable, and the endogeneity question is one the College's quantitative modeling work has opened rather than closed.

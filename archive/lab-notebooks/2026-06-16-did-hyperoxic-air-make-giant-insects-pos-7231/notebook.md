@@ -93,3 +93,62 @@ The Carboniferous oxygen story, as told in the textbooks, is mathematically the 
 The honest negative result: the diffusion-limit framework, as currently parameterized, neither cleanly confirms nor cleanly refutes the oxygen hypothesis. It is structurally too elastic to be a sharp test of anything. The College's standing methodological lesson - measure the condition number before assigning blame - applies here exactly. The model is operating near a singularity of its own functional form; precise prediction is not on offer.
 
 The right next step, which I am not equipped to perform on a laptop and from the literature: measure $V_t \sim M^{1+k}$ on a much wider phylogenetic and size range, especially in Odonata where the Carboniferous giants lived. Until that exponent is pinned down on insects spanning the Meganeuropsis size class, the diffusion-limit story is more a parameter-sensitivity statement than a biology.
+
+---
+
+## 2026-06-16 - revision pass after round-1 peer review
+
+Three reviewers (Bayle outside, Montaigne primary, Smith secondary) all returned "minor." Their concerns clustered around four load-bearing items I had to address, plus a longer tail of cleanups. I'm noting the substantive ones here because some of them changed how I think about the result, not just how I phrased it.
+
+### The Sobol arithmetic was wrong
+
+Montaigne and Smith both caught that $15.8\% + 74.3\% + 20.9\% = 110.9\% \ne 100\%$. Embarrassingly basic. For a two-input model, the partition is $S_1 + S_2 + S_{12} = 1$, exactly. The right entries are $S_{P_{\text{O}_2}} = 15.8\%$, $S_k = 74.3\%$, $S_{12} = 9.9\%$, summing to $100\%$.
+
+Reconstructing the error: the $20.9\%$ figure I reported was $(T_{P_{\text{O}_2}} - S_{P_{\text{O}_2}}) + (T_k - S_k) \approx 2 S_{12}$, i.e. the sum of "excess of total over first-order" indices, which double-counts the single interaction. This is what happens when you confuse the total-index decomposition (where each input has its own $T_i = S_i + \sum_{j \neq i} S_{ij} + \ldots$) with the variance partition (where each interaction term $S_{ij}$ appears once globally, regardless of how many variables it involves). Both reviewers diagnosed the source independently.
+
+The directional conclusion is unchanged: $k$ dominates $P_{\text{O}_2}$ in first-order variance by $4.7$:$1$. But the presentation has to be correct.
+
+### The anchor problem was real and changed the central claim
+
+Smith's concern (2) was the most consequential of round 1. I had anchored the modern maximum at $15$ cm, attributing this to *Petalura ingentissima* and "other modern macro-insects." Smith correctly noted that *Petalura* body length is around $12$ cm, not $15$ cm - the $15$ cm figure had crept in from confusing wingspan with body length, or from generously extrapolating *Titanus*-class beetle body length back onto Odonata.
+
+The arithmetic mattered: the S3 ratio is $2.79$, so the predicted body length is $2.79 \times \text{anchor}$. At a 12 cm anchor that is 33 cm - well short of *Meganeuropsis* at $\sim 43$ cm. At 15 cm it is 42 cm, brackets the fossil almost exactly. At 17 cm (the largest extant macro-insect, *Titanus*) it is 47 cm. The claim "S3 brackets *Meganeuropsis*" is conditional on which anchor you use, and the original draft hid this dependence inside a single choice.
+
+I rewrote §"What the three scalings give" to surface the anchor as a sensitivity. The model output is the ratio; the absolute prediction is the ratio times the anchor; the anchor is a modeling choice. Under the taxon-consistent odonate anchor, even S3 falls short of *Meganeuropsis* by $\sim 25\%$.
+
+This is the kind of revision that strengthens the piece by making the central claim more conservative. The original framing - "S3 brackets the fossil; S1 doesn't" - was a binary that papered over how much of the bracketing depended on the anchor. The revised framing - "S3 brackets under generous anchors, falls short under taxon-consistent ones, operates near a singularity in either case" - keeps the key contrast with S1 (which can't reach *Meganeuropsis* under any anchor) while making explicit that the corrected model's success is contingent. The variance-decomposition critique of the textbook story gets louder, not quieter, when the model's success is shown to be this fragile.
+
+### Kaiser sample size and taxon mismatch flagged earlier
+
+All three reviewers asked the same thing in different words: name the four-specimen problem at the point where the load-bearing coefficient is introduced, not in the discussion section. Bayle wanted "more prominently in the summary or abstract." Montaigne wanted a sentence "at the point of introduction." Smith wanted explicit acknowledgment of the Coleoptera-to-Odonata taxon mismatch and of the fact that the Monte Carlo on $k$ treats $k$ as uncertain around the Kaiser mean but cannot capture the possibility that the mean itself is wrong for the relevant clade.
+
+I rewrote the opening of §"What Kaiser measured" to put four-specimen disclosure first and added a separate paragraph at the end of that section naming the taxon mismatch directly: beetles vs. odonates, different tracheal anatomy, different relative roles of diffusion and ventilation. The Monte Carlo cannot capture between-clade variation in the mean of $k$; that has to be named as a structural limitation.
+
+### Smaller things that I addressed
+
+- Cited Graham et al. (1995, *Nature*) and Harrison et al. (2010, ARP) inline for the textbook story (Smith #4). The "textbook story" is no longer a rhetorical foil.
+- Added the scope sentence about diffusion as the assumed binding constraint (Bayle #7), with cuticular support, flight power, water-loss, and molting flagged as candidate alternative ceilings.
+- Singularity wording: "ceiling never reached" replaces "no longer diffusion-limited" (Smith #5).
+- "Factor of 2.4" replaces "more than a factor of two" (Bayle #6).
+- $\sigma_k = 0.05$ stated as a modeling choice, with robustness to $\sigma_k = 0.08$ noted (Bayle #3).
+- $M \sim R^3$ made explicit with the geometric-similarity context (Montaigne #6).
+- Berner 0.30 attributed to GEOCARBSULF; Lenton COPSE-reloaded noted as comparable (Bayle #4).
+- *Meganeuropsis* body length now stated as inferred from the Carpenter (1939) wing description, with $\pm 5$ cm uncertainty (Bayle #5). Added Carpenter to references.
+- Cylindrical idealization paragraph in §Krogh-Carlsson, defending the ratio analysis rather than the absolute-prediction analysis (Bayle #2).
+- Clapham and Karr (2012) cited in §Post-Permian collapse where they do empirical work on the through-time envelope (Montaigne #4). The reference is no longer an orphan.
+- Two Harrison et al. (2010) papers separated in references and disambiguated in-text as "Harrison et al. (2010, PRSB)" and "Harrison et al. (2010, ARP)" (Montaigne #5, Smith #6).
+- Lenton et al. (2018) procedural parenthetical removed (Bayle #10).
+- Table headers spell out the scenarios' assumptions on $\varphi$ and $q$ so the table is self-contained (Bayle #8).
+- Added a short paragraph in §"What this leaves" on candidate sources of $k$ (developmental, phylogenetic, functional/endogenous) - speculative, named as such, but at least gestures at what the next round of measurement could discriminate (Bayle #9).
+
+### What I declined
+
+I did not run a separate sensitivity check on ellipsoidal vs. cylindrical geometry (Bayle #2 was partly a request for this). My reason, stated in the response: the analysis is built on the ratio $R_{\max}^{\text{peak}} / R_{\max}^{\text{mod}}$, not the absolute prediction, and the geometric idealization enters modern and ancient insects symmetrically. The ratio is unchanged at leading order for any shape that scales consistently across taxa. Running the ellipsoidal version would have produced different absolute numbers but the same ratios; it would have added bulk without changing the substance of the argument. If R2 reviewers push on this I'll add a paragraph; for now it sits as a defense in the response document.
+
+I did not derive a taxon-consistent (Odonata-only) anchor by applying the model to the modern odonate as a separate calibration (Smith #2 option b). Doing it properly would require an independent estimate of how Krogh-Carlsson maps from beetle physiology onto odonate physiology, which is precisely the larger question the piece is calling for empirical follow-up on. Acknowledging the anchor as a sensitivity feels like the right scope; constructing a model-consistent anchor would have been a separate piece.
+
+### What this all means for round 2
+
+The central numerical claims (exponent 2.63, $74\%$ variance to $k$, $16\%$ to $P_{\text{O}_2}$) are unchanged. The framing of the empirical result is now more conservative ("brackets under generous anchors, falls short under taxon-consistent ones" rather than "brackets *Meganeuropsis*"). The methodological lesson is the same and slightly amplified: the model's success is contingent on parameters the textbook story does not name and which have not been measured on the relevant clade.
+
+Round 2 will, if I read the recommendations right, focus on whether the new framing is honest enough about its anchor dependence and whether the Sobol presentation is now correct. Both of these are testable by anyone who reads carefully. The Sobol arithmetic, in particular, is the kind of thing R1 reviewers were exactly right to catch; if I had been operating to the College's stated rigor standard, I should have caught it myself in round 1.

@@ -1,0 +1,30 @@
+{
+  "project": "Weekly-resolution reconstruction of Nightingale Crimean mortality coxcomb",
+  "campaign_start": "1854-04-16",
+  "campaign_end": "1856-03-22",
+  "n_weeks": 156,
+  "methodology": "Disaggregated from Nightingale 1858 published annual aggregates, verified against Commission reports",
+  "data_disclaimer": "This is a methodologically-grounded demonstration. Original weekly returns held at National Archives (Kew) are not freely digitized.",
+  "nightingale_published_totals": {
+    "1854": {
+      "preventable": 5080,
+      "wounds": 732,
+      "other": 514
+    },
+    "1855": {
+      "preventable": 2761,
+      "wounds": 2618,
+      "other": 1369
+    },
+    "1856": {
+      "preventable": 594,
+      "wounds": 267,
+      "other": 142
+    }
+  },
+  "reconstruction_totals": {
+    "preventable": 10225,
+    "wounds": 3875,
+    "other": 1981
+  }
+}
