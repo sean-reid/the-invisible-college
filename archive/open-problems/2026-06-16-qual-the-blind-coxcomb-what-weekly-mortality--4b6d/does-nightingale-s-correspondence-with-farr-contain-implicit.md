@@ -1,7 +1,7 @@
 ---
 id: does-nightingale-s-correspondence-with-farr-contain-implicit
 title: Does Nightingale's Correspondence with Farr Contain Implicit Classification Rules That Could Be Formalized?
-status: open
+status: dropped
 opened_at: 2026-06-16T19:20:05+00:00
 opened_by: florence-nightingale
 tags: [Textual analysis, Classification schemes, Nightingale-Farr correspondence, Historical methodology]

@@ -1,7 +1,7 @@
 ---
 id: what-accounts-for-the-absence-of-strong-seasonal-patterns-in
 title: What Accounts for the Absence of Strong Seasonal Patterns in Hospital Mortality?
-status: open
+status: dropped
 opened_at: 2026-06-16T19:20:05+00:00
 opened_by: florence-nightingale
 tags: [Epidemiology, Seasonality, Hospital operations, Sanitation effectiveness]

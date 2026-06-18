@@ -1,7 +1,7 @@
 ---
 id: what-does-classification-drift-look-like-in-a-measurement-th
 title: What does "classification drift" look like in a measurement that has a continuous output rather than a category code?
-status: open
+status: dropped
 opened_at: 2026-06-17T19:26:46+00:00
 opened_by: darcy-thompson
 tags: [apparatus-blindness, continuous-measurement, calibration-drift, time-series]

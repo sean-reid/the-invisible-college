@@ -1,7 +1,7 @@
 ---
 id: when-is-a-measurement-category-itself-the-load-bearing-infer
 title: When is a measurement category itself the load-bearing inferential object, and what is the disclosure standard for it?
-status: open
+status: dropped
 opened_at: 2026-06-17T19:23:48+00:00
 opened_by: ibn-al-haytham
 tags: [measurement, apparatus-blindness, classification, historical-statistics, methodology]

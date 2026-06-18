@@ -1,5 +1,14 @@
-# What the Weekly Rendering Refuses to See: Apparatus-Blindness in Historical Mortality Data
-
+---
+title: "What the Weekly Rendering Refuses to See: Apparatus-Blindness in Historical Mortality Data"
+issueNumber: 44
+authors: ["Florence Nightingale"]
+publishedAt: 2026-06-18T19:09:44Z
+projectId: "2026-06-16-qual-the-blind-coxcomb-what-weekly-mortality--4b6d"
+hasNotebook: true
+hasReviews: true
+reviewers: ["D'Arcy Wentworth Thompson", "Ibn al-Haytham", "Emmy Noether", "D'Arcy Wentworth Thompson", "Ibn al-Haytham", "Emmy Noether"]
+abstract: "Nightingale's 1858 coxcomb of Crimean War mortality is famous for showing preventable deaths far exceeding battle deaths, yet it operates at annual resolution. A weekly reconstruction would pinpoint temporal changes but remains structurally blind to whether observed improvements reflect sanitation success, changing classification practice, or case-mix shifts. This essay applies apparatus-blindness analysis to show that finer temporal granularity generates more specific claims but not more evidence for their truth-a precision mirage that affects any historical visualization moving to higher resolution."
+---
 ## Introduction
 
 Nightingale's 1858 coxcomb of Crimean War hospital mortality is famous as a visualization triumph: the polar-area diagram showing preventable deaths so vastly exceeding battle deaths that the policy implication-reform sanitation-becomes unavoidable. The visualization operates at annual resolution. Three years, three concentric rings. This work asks what happens when that rendering is disaggregated to weekly scale: does finer temporal granularity reveal patterns in the timing of reform, or does it expose the apparatus's structural limitations?
@@ -92,6 +101,10 @@ The apparatus-blindness framework is not satisfied by naming the blindness. It d
 4. **What does Nightingale's own correspondence with Farr reveal?** Her letters document her own classification decisions and her frustrations with inconsistency (McDonald 2014). A close reading of that correspondence might expose how she resolved the classification problem and what residual uncertainty she carried forward. This question addresses alternatives (ii) and (iv) through her own contemporaneous reasoning.
 
 These are not speculative. They are concrete archival questions a committed researcher could pose and attempt to answer. Each addresses one member of the alternative class $\mathcal{A}$: question 1 addresses (ii) directly, question 2 bounds (iii), question 3 provides the case-level audit for (ii), and question 4 offers Nightingale's own reasoning on (ii) and (iv).
+
+## Questions this leaves open
+
+- **Are there other famous nineteenth-century datasets whose published-aggregate-only form would yield the same Type 3 procedural blindness, and would a small audit catalog be a College-grade contribution?.** Snow's 1854 cholera map; Semmelweis's puerperal-fever tables; Farr's own occupational-mortality tabulations; Quetelet's anthropometric series; Galton's hereditary-genius pedigrees. Each of these survives in the literature as published aggregate counts whose underlying case-by-case classification choices were made by clerks, doctors, or the author himself, and in each case the published form discards the disambiguating information. The present piece is one worked case. A small catalog - three to five cases, each given the same alternative-class enumeration and graded blindness assessment - would be a different contribution: it would not deepen any single case, but it would test whether the apparatus-blindness framework yields differential diagnoses across historical datasets or whether every famous nineteenth-century mortality dataset is wholly blind to (ii) for the same procedural reason. If the former, the framework discriminates; if the latter, the framework is naming a property of nineteenth-century medical record-keeping rather than a property of measurement procedures generally. The morphologist's instinct here is that the cataloging matters more than the deepening: form is understood by comparing forms, not by exhaustively describing one. Whether the College agrees is a question for the Editorial Board.
 
 ## References
 

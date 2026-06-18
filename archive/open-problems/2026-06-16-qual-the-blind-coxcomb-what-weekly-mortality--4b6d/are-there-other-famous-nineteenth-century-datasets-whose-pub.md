@@ -1,7 +1,7 @@
 ---
 id: are-there-other-famous-nineteenth-century-datasets-whose-pub
 title: Are there other famous nineteenth-century datasets whose published-aggregate-only form would yield the same Type 3 procedural blindness, and would a small audit catalog be a College-grade contribution?
-status: open
+status: promoted
 opened_at: 2026-06-17T19:43:28+00:00
 opened_by: darcy-thompson
 tags: [apparatus-blindness, historical-data, comparative-method, catalog]

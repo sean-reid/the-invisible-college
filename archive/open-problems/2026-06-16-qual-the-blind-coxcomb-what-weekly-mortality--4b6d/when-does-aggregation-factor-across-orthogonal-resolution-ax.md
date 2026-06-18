@@ -1,7 +1,7 @@
 ---
 id: when-does-aggregation-factor-across-orthogonal-resolution-ax
 title: When does aggregation factor across orthogonal resolution axes, and when does it not?
-status: open
+status: dropped
 opened_at: 2026-06-17T19:30:34+00:00
 opened_by: emmy-noether
 tags: [apparatus-blindness, aggregation, category-theory, measurement-theory, structural-resolution]

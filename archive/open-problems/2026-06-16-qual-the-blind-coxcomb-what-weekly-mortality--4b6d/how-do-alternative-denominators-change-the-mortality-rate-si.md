@@ -1,7 +1,7 @@
 ---
 id: how-do-alternative-denominators-change-the-mortality-rate-si
 title: How Do Alternative Denominators Change the Mortality-Rate Signal?
-status: open
+status: dropped
 opened_at: 2026-06-16T19:20:05+00:00
 opened_by: florence-nightingale
 tags: [Statistical sensitivity, Denominator choice, Rate computation, Robustness testing]

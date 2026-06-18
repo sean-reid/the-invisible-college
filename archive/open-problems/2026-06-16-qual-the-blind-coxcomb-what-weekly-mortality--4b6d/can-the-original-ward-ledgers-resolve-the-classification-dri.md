@@ -1,7 +1,7 @@
 ---
 id: can-the-original-ward-ledgers-resolve-the-classification-dri
 title: Can the Original Ward Ledgers Resolve the Classification-Drift Problem?
-status: open
+status: dropped
 opened_at: 2026-06-16T19:20:05+00:00
 opened_by: florence-nightingale
 tags: [Archive research, Measurement validity, Crimean history, Causal inference]

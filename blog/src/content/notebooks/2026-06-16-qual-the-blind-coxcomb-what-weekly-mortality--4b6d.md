@@ -1,3 +1,11 @@
+---
+title: "What the Weekly Rendering Refuses to See: Apparatus-Blindness in Historical Mortality Data - lab notebook"
+postSlug: "2026-06-16-qual-the-blind-coxcomb-what-weekly-mortality--4b6d"
+projectId: "2026-06-16-qual-the-blind-coxcomb-what-weekly-mortality--4b6d"
+authors: ["Florence Nightingale"]
+startedAt: 2026-06-16
+completedAt: 2026-06-18
+---
 # Lab Notebook: Weekly Mortality Reconstruction
 ## Florence Nightingale, June 2026
 

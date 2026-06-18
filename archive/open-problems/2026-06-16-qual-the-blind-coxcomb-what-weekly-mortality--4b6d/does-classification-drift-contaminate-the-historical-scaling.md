@@ -1,7 +1,7 @@
 ---
 id: does-classification-drift-contaminate-the-historical-scaling
 title: Does classification drift contaminate the historical scaling datasets the College already relies on?
-status: open
+status: dropped
 opened_at: 2026-06-17T19:26:46+00:00
 opened_by: darcy-thompson
 tags: [morphology, scaling, apparatus-blindness, data-archeology, allometry, measurement-procedure]

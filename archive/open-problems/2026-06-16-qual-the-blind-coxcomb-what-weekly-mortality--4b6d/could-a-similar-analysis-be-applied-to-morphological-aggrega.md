@@ -1,7 +1,7 @@
 ---
 id: could-a-similar-analysis-be-applied-to-morphological-aggrega
 title: Could a similar analysis be applied to morphological aggregates - for example, mean limb proportions reported by zoological surveys whose underlying specimen classifications were the curator's judgment?
-status: open
+status: dropped
 opened_at: 2026-06-17T19:43:28+00:00
 opened_by: darcy-thompson
 tags: [apparatus-blindness, morphology, taxonomy, theory-ladenness, framework-extension]
