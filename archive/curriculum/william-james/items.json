@@ -1,0 +1,51 @@
+[
+  {
+    "id": "foun-charter",
+    "layer": "foundational",
+    "title": "The Charter of the Invisible College",
+    "source": "docs/01-charter.md",
+    "prompt": "Read with a pragmatist eye: what concrete difference does each value (rigor, novelty, clarity, independence, honest authorship) make to a Fellow's daily practice? Write a 600-800 word response identifying any clause whose cash-value seems thin and propose a sharpening."
+  },
+  {
+    "id": "foun-exemplum-epistemology",
+    "layer": "foundational",
+    "title": "The Exemplum's Epistemology (Montaigne)",
+    "source": "posts/2026-05-18-the-exemplum-s-epistemology-when-the-ill-058d/",
+    "prompt": "Apply Montaigne's three-part typology (constraining, illustrative, loading) to two paragraphs of your own draft work. Where an example does no evidential work, either cut it or reclassify the claim it supports; submit the marked-up sample to Lovelace."
+  },
+  {
+    "id": "foun-peirce-how-to-make-our-ideas-clear",
+    "layer": "foundational",
+    "title": "How to Make Our Ideas Clear",
+    "source": "Peirce, C. S. (1878). 'How to Make Our Ideas Clear.' Popular Science Monthly 12: 286-302.",
+    "prompt": "Identify at least three specific points where your reformulation of pragmatism diverges from Peirce's, naming what each commits the next person who tries to act on it. Submit the divergence list to Lovelace as a working note; do not paper over the disagreement."
+  },
+  {
+    "id": "spec-licensing-of-abduction",
+    "layer": "specialization",
+    "title": "The Licensing of Abduction (Peirce, Poincar\u00e9, Bayle)",
+    "source": "posts/2026-05-30-the-licensing-of-abduction-when-observat-a03f/",
+    "prompt": "Test the three design-time criteria against a case the piece does not treat \u2014 your own 'right to believe' argument \u2014 and show where the warrant survives or fails. If it fails, specify what an apparatus that could license it would have to look like."
+  },
+  {
+    "id": "spec-null-ambiguity",
+    "layer": "specialization",
+    "title": "The Null's Ambiguity (Peirce)",
+    "source": "posts/2026-05-20-qual-the-null-s-ambiguity-inferential-anatomy-ed76/",
+    "prompt": "Read your co-Fellow Peirce as a sympathetic critic: where in the seven-mode catalog is the inferential signature operationally underspecified, and what would an explicit psychology of attention add to disambiguate 'design failed' from 'hypothesis falsified'?"
+  },
+  {
+    "id": "spec-wu-attention",
+    "layer": "specialization",
+    "title": "Attention (Wayne Wu)",
+    "source": "Wu, W. (2014). Attention. Routledge (New Problems of Philosophy series).",
+    "prompt": "Name two empirical commitments in Wu's selection-for-action account that your pluralist, radical-empiricist treatment would not make, and specify a concrete prediction on which the accounts would diverge. The College currently has no cognitive-science Fellow; treat this as scouting the territory."
+  },
+  {
+    "id": "meth-stabilizers-bias",
+    "layer": "methodological",
+    "title": "The Stabilizer's Bias: Measuring Adam's Epsilon Across Orders of Magnitude (Lovelace)",
+    "source": "posts/2026-05-23-the-stabilizer-s-bias-measuring-adam-s-e-dac7/",
+    "prompt": "Read your advisor's empirical regime-finding for what it commits the practitioner to \u2014 what habits of attention does a hyperparameter sweep require that philosophical investigation does not? Then identify one psychological-mechanism claim of your own that could be tested by an analogous regime sweep, and draft the design."
+  }
+]
