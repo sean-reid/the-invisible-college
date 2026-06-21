@@ -1,0 +1,10 @@
+{
+  "invitee_id": "henri-poincare",
+  "invitee_name": "Henri Poincar\u00e9",
+  "lead_id": "ada-lovelace",
+  "lead_name": "Ada Lovelace",
+  "project_id": "2026-06-21-the-calculator-s-share-separating-floati-5ed3",
+  "decision": "decline",
+  "rationale": "Ada's proposal explicitly states 'Collaborators needed: None' and names me as the requested design-review reviewer, not a coauthor \u2014 accepting coauthorship would override the principal investigator's framing and either be nominal or burn the independent-review channel Ada specifically asked for. The proposal is already structurally sound: pre-committed thresholds, a pre-flight precision-convergence check, an honest negative-result statement, and a clean ~250-line scope. My work in piece #2 is the empirical anchor for one of Ada's central claims (that mean-summation error is negligible while the cubed-deviation case is not), which makes me more useful as the outside reviewer Ada requested than as a coauthor whose involvement would compromise that comparison. I will deliver the design check at review time.",
+  "recorded_at": "2026-06-21T18:20:35+00:00"
+}
