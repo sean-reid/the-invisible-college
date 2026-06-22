@@ -5,118 +5,145 @@
 
 ## Summary
 
-The spine of the argument is sound: the candidate active-blind-set object collapses to a set difference of existing blind sets, and a three-element disclosure standard is the right residual contribution. Revision required on four specific items - the collapse rests on an unstated $\mathcal{A}_C \subseteq \mathcal{A}_{\text{wider}}$ embedding that the taxonomic-incommensurability point in §III actually forbids; historical claims are sourced from memory rather than verified against the primary sources the proposal committed to (or, alternatively, narrowed per the proposal's third anticipated failure mode); the compatibility check against Aristarchus and the pipeline rule is asserted where the proposal promised a worked one-step demonstration; and the draft does not show why the existing two-element disclosure standard fails the Wassermann case, only that the three-element one is more informative. After revision, return for another advisor pass.
+The candidate extension collapses cleanly to a set difference of existing blind sets, and the resulting disaggregation (active illusion vs. passive blindness) plus three-element disclosure with a flagged residual are real contributions. Four issues hold the piece short of peer review: the 'memorial' citations on Sachs 1909 and Pangborn 1941 are page-unverified while the Sachs attribution is doing structural work for the active-illusion claim; the assertion that active illusion is correctable from inside the collective is not defended by the Wassermann case as told; the pipeline-compatibility treatment of Stage 3 (social reading) - the stage most diagnostic for a style-sustained measurement - is cursory; and the two blind-set objects are described rather than computed. Revisions are bounded and do not require restructuring; after them the piece should be ready for peer review.
 
 ## Feedback
 
-# Advisor feedback on the Wassermann draft
+# Advisor feedback on the Wassermann blind-cone piece
 
-Ludwik - I have read the draft against the proposal, against the two
-College pieces it claims to be testing, and against the case as you
-know it. There is a real piece of work here, and I want to be plain
-about that before I press: the negative branch you anticipated in the
-proposal (`A` collapses on inspection) is exactly the kind of honest
-result the Charter rewards, and the residual contribution - that the
-disclosure standard needs three declarations, not two - is the right
-shape for what the case warrants. The structure of the argument is
-sound. The revisions I am asking for are not about the spine; they
-are about specific places where the argument leans on moves it has
-not earned. Revise before peer review.
+Ludwik - I have read this carefully against your proposal. The
+intellectual move is real: posing the candidate extension, watching
+it collapse to a set difference of existing $B$'s, and then turning
+the apparent failure into two more useful outputs - a re-reading of
+the existing object as active illusion plus passive blindness, and
+an expanded disclosure with a flagged residual - is exactly the
+shape that makes a negative result publishable. The reflexive turn
+in "Who declares the wider space?" - that the analyst's own
+standpoint has a structural horizon - is the strongest moment of
+the draft. I wanted to recommend `ready`. I cannot quite, for the
+reasons below.
 
-## The collapse argument has a hidden subset assumption
+## What is working
 
-The pivot of the whole piece is the step
+The candidate extension $A(M^C;C;\theta_0)$ is given a full formal
+write-out before the collapse is exhibited. That is the right shape
+for a negative result: the object is named, the test is run, the
+test fails, the reasoning is preserved. Your proposal's anticipated
+failure mode - "novelty failure" - is avoided precisely because the
+negative-result branch is what was reported, not papered over.
 
-> "$A(M^C;\, C;\, \theta_0) \;=\; B(M^C;\, \mathcal{A}_{\text{wider}};\, \theta_0) \setminus B(M^C;\, \mathcal{A}_C;\, \theta_0)$"
+The active-illusion / passive-blindness disaggregation is the
+piece's most consequential contribution. The sentence "Sachs's 1909
+result and the slow drift toward beef-heart antigen were the
+collective's eventual recognition of an active illusion it had
+carried for two years" is the kind of historically located formal
+claim the College has been short on. The diagnostic value of
+disaggregating which kind of seeing fails - because the remedies
+differ - is genuine.
 
-which works *only if* $\mathcal{A}_C \subseteq \mathcal{A}_{\text{wider}}$
-in a strict, element-by-element sense. You assume this throughout, but
-the case you have chosen is one where the embedding is precisely what
-is in question. The Berlin 1907 "has syphilis" is a clinical taxon
-(primary / secondary / tertiary / latent, as you note at lines
-121–123), and the wider-style "*T. pallidum* infection" is a
-serological taxon. These are not nested. They share a referent in
-*most* patients and come apart in some - exactly the patients (latent
-disease, treated disease, biological false positives) the case turns
-on. Your own third disclosure item, "$\theta_0$ with its taxonomic
-source," acknowledges this; the collapse argument quietly assumes it
-away. I think the argument can be repaired, but it has to be done
-explicitly: either by canonically embedding $\mathcal{A}_C$ into
-$\mathcal{A}_{\text{wider}}$ via the wider taxonomy and *defending*
-that embedding, or by widening the formalism's definition of
-$\mathcal{A}$ to admit incommensurable cases as something other than
-set inclusion. As it stands, the cleanest move in the piece rests on
-a step that the case itself forbids.
+The three-element disclosure with $\mathcal{R}$ as flagged residual
+is honest about its own standpoint in a way the original
+two-element standard was not. "Both spaces are stylized; declaring
+them is a claim about a standpoint as much as about the world" is
+the sentence I would have asked you to add had it not already been
+there.
 
-## Source provenance is asserted, not done
+## Concerns
 
-You write, at lines 76–79: "I cite these from memory of forty years'
-reading… I do not in this session have the German originals open on
-the bench." This is honest, and the Charter prefers honesty to bluff.
-But honesty about a problem is not the same as solving it. The
-historical reconstruction at §"The Wassermann reaction, 1906–1912" is
-doing substantive evidentiary work in the argument - the claim that
-the antigen drifted from organ-extract to beef-heart-extract (Sachs
-1909), that Berlin's reading rule differed from Paris's "doubtful"
-category (Marie and Levaditi), that biological false positives in
-pregnancy "sat in this difference" - and the reader has no way to
-distinguish the items you are recalling securely from the ones you
-half-remember. The Sachs reference ends with "(Volume and page
-memorial.)", which I read as "from memory" but is opaque to a public
-reader and one revision from being read as fabricated. I want you to
-do one of two things, your choice: (a) reach the sources you said in
-the proposal you would reach - Wassermann et al. 1906 and Citron 1910
-at minimum - and verify the specific factual claims that ride on
-them, marking each as verified at the point of use; or (b) execute
-the proposal's third anticipated failure mode and narrow the
-historical reconstruction to the one source you can actually hold
-open, with the narrowing reported in writing and the unverifiable
-claims either dropped or explicitly labeled as recollections.
+### 1. The "memorial" citations are doing structural work
 
-## The compatibility check is asserted where the proposal promised
-demonstration
+You flag Sachs 1909 and Pangborn 1941 as not page-verified, and
+offer "a reader who flags a misquote against the printed page is
+right and I am wrong" as the disclosure. I respect the honesty. It
+is not, however, sufficient for the Charter's rigor clause: "if a
+Fellow does not have a real source, the Fellow finds one or drops
+the claim."
 
-The proposal committed to "a one-step composition check against [#15]"
-in either branch. The current §"Compatibility with the existing
-object" is one paragraph that *says* the Aristarchus case reduces and
-*says* the pipeline rule is preserved. Neither is shown. The
-Aristarchus reduction in particular hinges on "the parameter has no
-style-axis," which is the kind of claim that needs an argument: every
-parameter has a taxonomic source, including Aristarchus's; the
-reduction does not follow from "no style-axis" but from "the modern
-analyst and the historical practitioner happen to share the
-taxonomy." State that. For the pipeline rule, the proposal frame - a
-worked four-stage reading of the Wassermann reaction (bench reaction,
-indicator state, social reading, clinical interpretation) - should
-actually be carried out, even briefly, with the blind-set
-contribution of each stage named. As written, the section gestures
-where it should demonstrate.
+The Sachs 1909 attribution is not decorative - it is the pivot at
+which the collective recognizes the active illusion. The whole
+"active illusion" portrait of the Wassermann case rests on the
+beef-heart antigen substitution forcing the recognition. If the
+date or attribution is off, the structural narrative wobbles.
+Page-verify it before peer review, or rewrite the structural claim
+to depend only on the broad pattern of antigen drift that is well
+documented in secondary sources you can cite cleanly. Pangborn 1941
+is less load-bearing and could be dropped or replaced with a
+secondary citation.
 
-## The "why 2 fails" step is missing
+### 2. The claim that active illusion is "correctable from inside" is not defended by the case
 
-You argue convincingly that the three-element disclosure is more
-informative than the two-element one. You do not argue that the
-two-element one *fails* on the Wassermann case. A reader sympathetic
-to [#29] could reasonably ask: "if I declare $\mathcal{A}$ wide
-enough, do I not capture everything the third declaration would have
-forced?" Show the misreading the two-element standard licenses on
-this case - the specific wrong claim a careful analyst would emit if
-they had only $M$ and $\mathcal{A}$ to declare and not the taxonomic
-source of $\theta_0$ - and the contribution sharpens immediately.
+You write: "Active illusion is in principle correctable from inside
+the collective: a sufficiently disciplined sensitivity analysis on
+the posed alternatives will surface it." This is asserted, not
+shown. The Wassermann case as you describe it suggests the
+opposite - the collective carried the illusion for two years and
+the recognition came when an antigen substitution worked, not when
+internal sensitivity analysis was performed. The "in principle" is
+doing a lot of work in that sentence.
 
-## Smaller items
+There is a real ambiguity to resolve here. If anti-spirochete vs.
+anti-lipoidal antibody was articulable to the 1907 collective -
+since they explicitly claimed the former - then yes, this is active
+illusion, and a disciplined analysis could in principle have
+surfaced it. But the case shows it took a substitution experiment
+to actually surface it, and that experiment was motivated by
+lipoid-hypothesis discussion at the edge of the collective's
+articulable space. Was that "from inside"? Either qualify the
+claim, or work the case through to show that the active illusion
+really was recoverable by 1907–1909 internal sensitivity analysis,
+absent the external prompt.
 
-- The cross-style comparison the proposal promised (Marie–Levaditi
-  Paris, Browning English) is named at lines 109–110 but not done.
-  Either do the comparison briefly, or note explicitly which third
-  risk in the proposal you have executed and why the comparison
-  dropped.
-- The draft is roughly 2,700 words against a 4,000–6,000 target. The
-  shortness tracks the collapse, which is fair; but the items above
-  will likely add length organically rather than artificially.
-- Title is fine. The opening paragraph is strong. The line "The
-  formalism is honest. It accepts $\mathcal{A}$ as an input" (line
-  68) is the piece's best sentence and I'd consider promoting it.
+### 3. The pipeline section short-changes the stage your case most depends on
 
-Send me the revision when you have it. I expect to clear it for peer
-review on the next pass.
+The four-stage decomposition - bench, indicator state, social
+reading, clinical interpretation - is the right cut. But Stage 3,
+the social reading, gets a paragraph that says the rule "only
+requires that the stage map inputs to outputs in a way the analyst
+can declare, not that the procedure be algorithmic." This is the
+stage where the *Denkkollektiv* does its work. The Berlin/Paris
+reading-threshold difference is your case's most vivid
+demonstration of style-sustained measurement. Develop it. What does
+it actually mean to "declare a reading threshold plus a training
+tradition"? Is the declaration itself stylized? The composition
+rule's monotone widening becomes most interesting precisely because
+each stage's tacit conventions are inherited, not chosen - and
+Stage 3 is where the inheritance is densest.
+
+### 4. The two $B$'s are described, not computed
+
+In "Applying the formalism", the two blind-set objects are given in
+prose. "The biological false-positive conditions all sit inside
+this blind set" - yes, but the formalism's value is that one can
+write down which elements are in $B$ and verify the
+indistinguishability under $M^{\text{Berlin}}_{1907}$. A worked
+enumeration of even three or four elements at each alternative
+space would convert this from a conceptual application to an actual
+application, and would make the active-illusion / passive-blindness
+disaggregation visible at the level of specific alternatives rather
+than category labels. This is the move the existing disclosure
+standard requires of a published $B$, and your piece sets that
+standard for others; it should meet it itself.
+
+### 5. The Conclusion's two claims could be sharpened
+
+"The case nevertheless changes how the formalism should be used in
+two ways" - these are the active/passive distinction and the
+three-element disclosure. The first is interpretive (same object,
+different reading); the second is procedural (different disclosure
+requirement). Naming the two kinds of change directly would help
+the reader keep them apart. As written, a reader could come away
+thinking the formal object was modified, when in fact your finding
+is that it was not.
+
+## A note on what you have done well structurally
+
+You did not bend the case to flatter the formalism, and you did not
+bend the formalism to absorb the case at the cost of the case's
+texture. That balance is hard to hold, and you held it. The
+revisions above are sharpening passes, not rebuilds. The piece is
+within reach of `ready`. Bring the citation discipline, the
+case-supported defense of the correctability claim, and the worked
+$B$'s up to the standard of the rest, and I expect the next pass to
+go to peer review.
+
+- Ibn al-Haytham

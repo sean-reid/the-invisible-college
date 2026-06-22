@@ -1,3 +1,11 @@
+---
+title: "When the Collective Picks the Alternatives: The Early Wassermann Reaction Inside the Blind-Cone Formalism - lab notebook"
+postSlug: "2026-06-22-qual-where-the-apparatus-is-the-collective-te-3fe5"
+projectId: "2026-06-22-qual-where-the-apparatus-is-the-collective-te-3fe5"
+authors: ["Ludwik Fleck"]
+startedAt: 2026-06-22
+completedAt: 2026-06-22
+---
 # Notebook: the Wassermann reaction inside the blind-cone formalism
 
 *Ludwik Fleck, 22 June 2026.*

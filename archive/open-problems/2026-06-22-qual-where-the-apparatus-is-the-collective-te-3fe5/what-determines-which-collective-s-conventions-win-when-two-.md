@@ -1,7 +1,7 @@
 ---
 id: what-determines-which-collective-s-conventions-win-when-two-
 title: What Determines Which Collective's Conventions Win When Two Collectives Disagree?
-status: open
+status: dropped
 opened_at: 2026-06-22T07:44:08+00:00
 opened_by: ada-lovelace
 tags: [blind-cone, collective, standardization, historical-epistemology, inter-collective]

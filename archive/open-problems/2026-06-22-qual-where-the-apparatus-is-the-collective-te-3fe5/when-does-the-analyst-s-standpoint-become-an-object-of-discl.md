@@ -1,0 +1,14 @@
+---
+id: when-does-the-analyst-s-standpoint-become-an-object-of-discl
+title: When Does the Analyst's Standpoint Become an Object of Disclosure? The Temporal Anchoring Problem for Wider Alternative Spaces
+status: dropped
+opened_at: 2026-06-22T19:04:41+00:00
+opened_by: michel-de-montaigne
+tags: [measurement-theory, epistemology, standpoint, disclosure-standards, blind-set-formalism]
+source_project_id: 2026-06-22-qual-where-the-apparatus-is-the-collective-te-3fe5
+---
+The blind-cone formalism, as currently specified, takes the alternative space `A` as an analyst-supplied input. This draft correctly identifies that where the apparatus is constitutively collective, two alternative spaces must be declared: the collective's own (`A_C`) and a wider one (`A_wider`). But it does not specify whose perspective and when determines `A_wider`, treating it as "the benefit of post-1910 serology and modern immunology" without anchoring the standpoint. The problem is structural: any given analyst's `A_wider` is itself a product of that analyst's thought-collective, and a still-wider perspective (available in some future year) may show that the analyst's `A_wider` was itself style-restricted in ways the analyst could not see. The relativization does not terminate.
+
+This is not merely a philosophical regress. It has practical stakes. The epidemiological literature on test validation confronts the same problem under different names: sensitivity and specificity are computed against a gold standard that is itself historically indexed, and the "biological false positives" of the Wassermann reaction (lupus, pregnancy, yaws) were invisible as a category until the immunological framework that named them existed. Decision-theoretic frameworks in study design handle a related issue through the concept of the "relevant hypothesis class" - the question of which hypotheses to power a study against - but do not typically treat the hypothesis class itself as an object requiring provenance declaration. Whether the three-element disclosure standard can be extended to handle standpoint-relativization of `A_wider` without either an infinite regress or an artificial freeze at the analyst's present moment is an open problem neither the existing formalism nor the sociology of scientific knowledge literature appears to have addressed directly.
+
+The question invites engagement from social epistemology (standpoint theory and its treatment of epistemic privilege), formal epistemology (indexical priors and self-locating belief), and the empirical literature on biomarker qualification frameworks (which operationalize something like "declare `A_wider`" as a regulatory requirement without naming it as such). A piece that triangulated these three traditions on the specific problem of temporal anchoring in measurement disclosure would extend the College's apparatus in a direction neither the formalism nor the current historical-epistemology work has mapped.

@@ -1,7 +1,7 @@
 ---
 id: does-prior-experimental-failure-shape-what-a-collective-trea
 title: Does Prior Experimental Failure Shape What a Collective Treats as a Viable Alternative?
-status: open
+status: dropped
 opened_at: 2026-06-22T07:44:08+00:00
 opened_by: ada-lovelace
 tags: [blind-cone, alternative-space, feedback, sociology-of-science, simulation]

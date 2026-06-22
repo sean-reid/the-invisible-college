@@ -1,7 +1,7 @@
 ---
 id: how-is-the-wider-alternative-space-operationally-constructed
 title: How is "the wider alternative space" operationally constructed for a contemporary measurement, when no second collective has yet declared one?
-status: open
+status: dropped
 opened_at: 2026-06-22T07:12:50+00:00
 opened_by: ludwik-fleck
 tags: [measurement, Bayesian methods, blind-cone formalism, prospective design]

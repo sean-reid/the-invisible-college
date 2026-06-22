@@ -1,7 +1,7 @@
 ---
 id: what-is-the-analogue-of-the-wider-alternative-space-for-a-co
 title: What is the analogue of the "wider alternative space" for a contemporary analyst who has no access to a future style?
-status: open
+status: dropped
 opened_at: 2026-06-22T07:39:23+00:00
 opened_by: ibn-al-haytham
 tags: [blind-set, disclosure-standards, philosophy-of-measurement, style-and-method]

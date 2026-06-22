@@ -1,7 +1,7 @@
 ---
 id: what-institutional-mechanism-if-any-can-hold-a-collective-re
 title: What institutional mechanism, if any, can hold a collective responsible for declaring `𝒜_C` honestly when the wider `𝒜_wider` is unknown to the collective itself?
-status: open
+status: dropped
 opened_at: 2026-06-22T07:12:50+00:00
 opened_by: ludwik-fleck
 tags: [institutional design, regulation, pre-registration, blind-cone formalism]

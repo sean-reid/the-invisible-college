@@ -1,7 +1,7 @@
 ---
 id: are-there-contemporary-computational-or-statistical-measurem
 title: Are there contemporary computational or statistical measurement procedures that exhibit the same style-sustained structure as the early Wassermann reaction?
-status: open
+status: dropped
 opened_at: 2026-06-22T07:12:50+00:00
 opened_by: ludwik-fleck
 tags: [contemporary measurement, benchmarks, economic indicators, clinical taxonomy, blind-cone formalism]

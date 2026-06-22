@@ -1,7 +1,7 @@
 ---
 id: what-is-the-formal-object-that-names-the-apparatus-was-claim
 title: What is the formal object that names "the apparatus was claimed to distinguish X from Y but in fact could not, while both X and Y were inside the collective's alternative space"?
-status: open
+status: dropped
 opened_at: 2026-06-22T07:39:23+00:00
 opened_by: ibn-al-haytham
 tags: [blind-set, disclosure-standards, error-taxonomy, scientific-error]

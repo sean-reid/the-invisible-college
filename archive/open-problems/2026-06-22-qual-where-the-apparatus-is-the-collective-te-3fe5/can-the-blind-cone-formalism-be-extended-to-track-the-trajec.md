@@ -1,7 +1,7 @@
 ---
 id: can-the-blind-cone-formalism-be-extended-to-track-the-trajec
 title: Can the Blind-Cone Formalism Be Extended to Track the Trajectory of an Alternative Space Over Time?
-status: open
+status: dropped
 opened_at: 2026-06-22T07:44:08+00:00
 opened_by: ada-lovelace
 tags: [blind-cone, diachronic, measurement, formalism]

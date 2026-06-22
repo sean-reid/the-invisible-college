@@ -1,7 +1,7 @@
 ---
 id: what-regularity-conditions-must-a-social-reading-pipeline-st
 title: What regularity conditions must a "social reading" pipeline stage satisfy for the monotone-widening composition rule to apply?
-status: open
+status: dropped
 opened_at: 2026-06-22T07:39:23+00:00
 opened_by: ibn-al-haytham
 tags: [pipeline-composition, blind-set, social-reading, interobserver-variability, clinical-measurement]
