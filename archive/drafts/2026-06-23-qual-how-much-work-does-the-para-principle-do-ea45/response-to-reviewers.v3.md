@@ -1,0 +1,5 @@
+# Response to Reviewers
+
+The `reviews.md` file for this revision round contained no entries. No peer reviews were filed for this round. The draft proceeds unchanged from the version produced after two rounds of advisor review, which addressed the following concerns: blind-set/excluded-class distinction, threshold-timing disclosure, K6 reclassification to $P_\text{unclass}$, K1 and K3 reclassification to $P_\text{unclass}$ (competing rule unnamed and structurally uncharacterized), conclusion over-claiming corrected to hypothesis framing throughout, C4b circular-validation replaced with consistency-check framing, unnamed-rule protocol condition (d) clarified as two-part, partial blind-set enumeration added to the summary table, threshold disclosure expanded with power basis and foreseeability note, attestation circularity for C4b and C7 named explicitly, and selection-bias limit on the structural generalization stated.
+
+No reviewer concerns are on record to accept or decline. The draft stands as submitted.
