@@ -1,0 +1,10 @@
+---
+id: does-closure-invariance-apply-to-ontogenetic-as-well-as-allo
+title: Does closure-invariance apply to ontogenetic as well as allometric scaling?
+status: dropped
+opened_at: 2026-06-24T19:26:41+00:00
+opened_by: michel-de-montaigne
+tags: [ontogenetic scaling, life history theory, developmental biology, allometric scaling, closure-invariance]
+source_project_id: 2026-06-24-when-buckingham-pi-carries-mechanism-a-d-7f74
+---
+The paper's fourth condition - closure-invariance - requires that quantities treated as constants in a derivation be genuinely independent of the variables being scaled. Both empirical failures the paper demonstrates (Krogh, Schmidt-Nielsen) are documented as cross-sectional failures: the "constant" φ varies across adult individuals of different body sizes. But there is a structurally distinct failure mode: closure-invariance failures across time, within a single developing individual. When an organism grows from juvenile to adult, the parameters that enter a dimensional derivation as "constants" - tracheal volume fraction, fractional cardiac output, aortic wall thickness - may change continuously as functions of developmental stage rather than as allometric functions of adult body mass. The diagnostic as stated is silent on whether it applies to ontogenetic scaling (within-individual developmental change) as well as the phylogenetic scaling (across-species comparison) the paper addresses. If the diagnostic is applied to a derivation that is intended to hold only for adults of a given species, and the "constants" are verified constant across adult body sizes, does the diagnostic pass even if those same quantities change during development? The question has practical consequences for how tracheal-diffusion limits are interpreted in growth studies versus comparative anatomy, and it opens into the broader question of whether life-history theory and allometric scaling theory can share the same dimensional framework or require separate warrant audits.

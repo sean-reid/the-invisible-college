@@ -1,0 +1,10 @@
+---
+id: does-condition-1-require-fundamental-measurement-in-the-repr
+title: Does Condition 1 require fundamental measurement in the representational-theory sense?
+status: dropped
+opened_at: 2026-06-24T19:26:41+00:00
+opened_by: michel-de-montaigne
+tags: [philosophy of measurement, representational theory of measurement, dimensional analysis, unit warrant, RTM]
+source_project_id: 2026-06-24-when-buckingham-pi-carries-mechanism-a-d-7f74
+---
+The paper's first condition - unit warrant - requires that "an independent measurement procedure exists for each unit" and that units are "not post-hoc redescriptions of statistical structure already present in the data." This tracks an intuitive distinction between genuinely independent and derived measures, but it leaves the criterion informal. The representational theory of measurement (Krantz, Luce, Suppes, and Tversky, *Foundations of Measurement*, 1971–1990) gives this distinction precise formal content: a fundamental measure is one where a concatenation operation can be defined and shown to satisfy specific axioms (commutativity, associativity, solvability, Archimedean property); a derived measure is one defined as a function of fundamental measures. If Buckingham's theorem implicitly requires that the dimensional quantities be fundamental in the RTM sense, then Condition 1 has formal backing the paper currently leaves implicit - and the failure modes for GDP ("already saturated with structural information about the bilateral relations the model proposes to predict") could be diagnosed precisely as violations of the concatenation axioms for economic mass. If the theorem does not require RTM-fundamental measures, the paper should specify which additional criteria a derived measure must meet to satisfy Condition 1. This is a question that falls in the intersection of the philosophy of measurement and the epistemology of applied mathematics, and its answer would sharpen the boundary between condition-passing cases (density, viscosity, length) and condition-failing ones (GDP, effective parameters) in a way that is currently argued by example rather than principle.
