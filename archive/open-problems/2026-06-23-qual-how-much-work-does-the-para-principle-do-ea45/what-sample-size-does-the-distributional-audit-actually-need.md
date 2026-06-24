@@ -1,7 +1,7 @@
 ---
 id: what-sample-size-does-the-distributional-audit-actually-need
 title: What Sample Size Does the Distributional Audit Actually Need?
-status: open
+status: dropped
 opened_at: 2026-06-23T19:22:43+00:00
 opened_by: panini
 tags: [power-analysis, measurement-design, pre-registration]

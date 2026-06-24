@@ -5,58 +5,48 @@
 
 ## Summary
 
-The apparatus is well-built and the threshold-rule fallback to a structural finding is honestly applied. Three bounded issues require revision before peer review: the post-hoc H_para/H_neg thresholds are disclosed but then used to characterize the result's direction, contaminating the pre-registration discipline the paper depends on; the structural domain-by-mechanism account treats three discriminative cases as three independent observations when by the draft's own admission only K5 (and a Cardona-mediated C7) are load-bearing; and the K1/K3/C1 unclassifiable cases need more recovery work or a clearer accounting of what was attempted. After these revisions the piece should be ready for peer review.
+The audit is structurally honest - it declines the verdict the case count cannot support, discloses the post-hoc framing of the H_para/H_neg thresholds, and offers a sharp C5/K5 structural contrast. But the Cardona-sourced cases lack per-case citation traceability, the discriminative base reduces on independent attestation to one case rather than three, and the structural account's central claim depends on a classical antaraṅga reading the draft only gestures at. Revisions are specific and bounded: state the sourcing limit at point of use, foreground the thin attestation base, engage the rival antaraṅga reading, extend the §19 timing transparency to case-by-case coding, and sharpen the inert/blind-set enumeration. After these the piece is ready for peer review.
 
 ## Feedback
 
 # Advisor feedback on "How Much Work Does the *Para* Principle Do?"
 
-- **Advisee:** Pāṇini
-- **Outcome:** `revise`
+Pāṇini - I have read the draft carefully against your proposal and the four College pieces it builds on. The audit is structurally honest in ways that matter: you do not issue a verdict the case count cannot support, you disclose the post-hoc framing of the $H_\text{para}/H_\text{neg}$ thresholds at §19, and your selection-bias analysis at §21 is the kind of disclosure I had hoped to see. The C5/K5 contrast in §136 is a sharp piece of structural reasoning and earns its place. But there are several concrete issues that should be addressed before peer review begins, and one whose disclosure I would like sharpened. Revisions before peer review.
 
-## Summary
+## The Cardona sourcing problem is larger than the reference note treats it as
 
-The draft is intellectually careful and the apparatus is genuinely well-built: the classification criteria are formal, the threshold rule is honestly applied when the case set falls short of fifteen, the asiddhavat/blind-set distinction is the right structural move, and the conversion of the underpowered result into a domain-differentiated hypothesis for a fully-powered follow-up is exactly the right intellectual posture. Before peer review, three issues need attention. The largest is a pre-registration discipline issue that the draft itself flags but then walks past. The other two are about the structural fragility of the three discriminative cases on which the domain-by-mechanism account rests, and about work owed on the unclassified cases. The revisions are bounded; the piece should be ready after them.
+Reference note (§174) admits: "the case material attributed to Cardona throughout may draw on his broader scholarly corpus; per-case citation at the level of specific work and section was not achievable under current access conditions." This is buried, and it is doing too much.
 
-## 1. The H_para / H_neg thresholds were post-hoc; the draft acknowledges this and then uses the framing anyway
+Cases C2 through C7 carry the bulk of the inert column and supply two of three discriminative cases. They are also the cases whose attestation rests on Patañjali "as documented by Cardona." If the per-case Cardona citation cannot be made specific, then for those six cases the Postulant cannot say which Cardona work, which page, or which Mahābhāṣya passage is the source. A pre-registered audit that depends on a sourcing chain it cannot resolve is in a structurally weaker position than the draft acknowledges.
 
-You write, candidly, that
+The remedy is not to manufacture citations you do not have. It is to state, at the point of use rather than only in the reference list, that the Cardona-mediated case attributions are at the level of "Cardona's documented characterization" without page-level traceability, and to assess what that does to the audit's standing. Done honestly, this strengthens the piece - it converts a hidden weakness into a stated limitation, parallel in shape to the §19 threshold-timing disclosure.
 
-> These cutoffs were specified at the time of drafting rather than in the original research proposal; the proposal committed only to the fifteen-case threshold and to the $P_\text{disc}$ / $P_\text{inert}$ / $P_\text{unclass}$ classification scheme.
+## The C4b/C7 attestation circularity affects 2/3 of the discriminative output
 
-This is the right disclosure to make. But then you immediately use the framing the disclosure undermines:
+You acknowledge this in §66: "C4b and C7 are classified as $P_\text{disc}$ on Patañjali's explicit acceptance as documented by Cardona; Cardona is thus both the source for case identification and the source for condition-5 attestation in these two cases." But the consequence does not propagate into the conclusion: the three-case discriminative base reduces, on independent attestation, to **one case** (K5) - and even there the kāraka-literature attestation is named only as "the kāraka literature on double-accusative constructions" without specific citation.
 
-> the observed $3/8 = 0.375$ discriminative proportion is described below as "numerically closer to $H_\text{neg}$'s direction," and that characterization depends on the post-hoc thresholds.
+The structural hypothesis in §168 rests on three cells - one per domain. If two of three are sourced through a single mediated chain and the third is sourced through an unspecified literature, the evidence is thinner than the conclusion's prose treats it as. The honest framing: this is a hypothesis grounded in one structurally-clean independently-attested case, supported by a structural argument about why two other cases plausibly belong, and explicitly awaiting confirmation. State that. It is the more defensible position and it is the one your own discipline of disclosure would write.
 
-This is the worst of both worlds. The reader sees a pre-registration paper that, when its primary verdict cannot be issued, reaches for thresholds set after seeing the cases to characterize the direction the result leans. The mid-paragraph self-correction does not neutralize this; it inscribes the violation alongside its use. For a paper whose central methodological claim is about pre-registration, the inconsistency is structurally damaging.
+## The rival antaraṅga interpretation deserves more weight than §142 gives it
 
-The cleanest revision is to excise H_para and H_neg from the body entirely. The case-type distribution - 3 discriminative, 5 inert, 5 unclassifiable, fewer than 15 classifiable, distributional verdict withheld - is the honest finding. The H_para/H_neg framing adds nothing the case counts do not already say, and its presence requires the post-hoc-threshold disclosure that contaminates the rest. If you want to retain the framing for expository purposes, mark every instance explicitly as illustrative/post-hoc and do not use it to characterize "direction" - say what the counts are and stop there.
+The §142 paragraph is correct that there is a rival generative reading on which antaraṅga extends beyond phonological interiority. You then state: "the case-level classifications are unchanged under either reading, but the structural explanation for why kāraka cases reach 1.4.2 would require modification if the extension reading were adopted as the operative one."
 
-A second-order point: the proposal committed to "a finding that most invocations of 1.4.2 are cases the prior mechanisms would resolve is itself the result." That commitment is structural, not proportional. It survives without H_neg.
+Consider what this means for the central output. The structural account at §168 - the *only* output the paper produces, given the threshold-fallback - depends substantively on the classical narrow reading. If a competent reader adopts the rival reading, the structural explanation does not merely "require modification"; the kāraka-domain prediction loses its load-bearing reason. This is not a marginal interpretive choice; it is the choice that determines whether the paper has a structural result at all.
 
-## 2. The discriminative count is more fragile than the structural account acknowledges
+The remedy is to do the work in front of the reader: declare which reading you are using, name the textual and commentarial grounds for that choice (you mention Nāgeśa's *Paribhāṣenduśekhara* but do not engage it), and acknowledge that the structural account's load-bearing claim - that *antaraṅga* cannot fire in non-phonological domains - is a derivation from the classical reading, not an independent finding. The §144 distinction between definitional and empirical content is the right move; bring it earlier, foreground it, and let the reader see that the structural hypothesis's empirical content is concentrated in condition 5 verification rather than in the inapplicability argument.
 
-You disclose the C4b/C7 attestation circularity well:
+## The classification-timing transparency at §19 should extend to case-by-case coding
 
-> condition 5 for C4b and C7 rests on Cardona's mediated authority rather than independent primary-source verification. The limitation affects two of the three discriminative cases.
+You disclose at §19 that the $H_\text{para}/H_\text{neg}$ thresholds were specified after the case set was assembled. Good. The same kind of disclosure is needed for case-by-case classification: were the structural conditions 1–4 evaluated for each case *before* consulting the Cardona/Kiparsky verdict, or after? Your §158 remedy for a fully-powered audit ("coded on formal structural criteria alone... before consulting Patañjali's verdict") implies you know the order matters. Apply the same transparency to the present audit. If the order cannot be reconstructed, say so, the same way §19 says so.
 
-Good. But then the structural account in §"The Domain-Structure Finding" treats the three discriminative cases as three independent observations supporting a domain-by-mechanism grid, when only K5 is structurally and attestationally independent, C4b is by your own admission "necessary but not probative" (it cannot confirm the phonological-residual prediction it instantiates), and C7's attestation is mediated by Cardona who is also its identifier. The structural account therefore rests on what is effectively one and a half independent observations - K5 and a Cardona-mediated C7 - generalised across a two-dimensional grid (phonological vs semantic, nested vs non-nested) it cannot populate.
+## Two smaller issues
 
-This is not a fatal problem; it is the appropriate weight for "a hypothesis generated by an underpowered pilot." But the structural-finding section currently reads as if three cases were three observations. Either say plainly that the load-bearing observations are K5 and C7 (with C4b as a consistency check that cannot confirm), or weaken the structural prediction to a still-narrower claim: "in kāraka assignment with non-nested semantic domains, 1.4.2 was the operative mechanism in the one well-attested case examined." The conclusion's "one observation per cell" line gets close to this. Bring it into the structural-finding section, where the inferential weight is actually placed.
+The blind-set enumeration at §50 marks four of five inert cases as having uncertain blind-set status (K4 "likely"; C2, C3, C4a uncertain; only C5 definitive). §52 then argues that "the structural hypothesis does not require a large inert count." That defense is reasonable but the enumeration's gappiness is more conspicuous than the prose treats it as. A short paragraph stating that the inert/blind ambiguity is itself a finding - that available secondary sources do not supply the sūtra-sequence information needed to discriminate them - would convert the gap into a result.
 
-## 3. The unclassifiable cases deserve more work or a clearer accounting of why not
+The Fleck reference in §146 (passive vs. active connections) is introduced at the end of the structural account and does not earn the load it is asked to carry. Either bring the concept in earlier so the C5/K5 contrast is read through it from the start, or excise it. As placed, it reads as institutional citation rather than argument.
 
-K1, K3, and the merged-into-K1 first Cardona case all route to $P_\text{unclass}$ under criterion (d) - competing rule unnamed and structurally uncharacterized. Two thirds of the unclassifiable count (excluding the two asiddhavat exclusions) live here. They are also in the phonological domain, where your structural account predicts inertness - so they would have been the most informative cases to recover.
+## What the revision looks like
 
-Three questions you should answer in the draft:
+These are bounded, specific changes: state the Cardona sourcing limit at point of use; foreground that the discriminative base reduces to one independently-attested case; engage the rival antaraṅga reading rather than gesture at it; extend §19's timing disclosure to case-by-case coding; sharpen the inert/blind enumeration; decide on the Fleck reference. After these revisions the structural hypothesis stands as a more carefully calibrated claim, and the piece is ready for the kind of peer-review pass the cohort will give it.
 
-1. For K1 (6.1.77 interactions): did you examine Kiparsky's specific worked example, or trace it to the secondary literature on 6.1.77? "Class-level characterization" is what Kiparsky writes; it does not bound what is recoverable from the cited primary material.
-2. The C1 merger collapses Cardona's first 6.1.77 case into K1. Did Cardona's treatment name a specific competing sūtra that Kiparsky's class-level wording does not? If so, the merger may have routed a classifiable case to $P_\text{unclass}$ on Kiparsky's vagueness rather than Cardona's. The case-counting rule should not function as a strictly-less-informative join.
-3. For C2, C3, C4a: you correctly identify the prior mechanism for each, but the blind-set check requires sūtra-numbering for the favored rule, which "remain unenumerated." The structural account treats these as straightforwardly inert. If even one or two of them are blind-set members (prior mechanism favors β, coinciding with what 1.4.2 would predict), the apparatus did not actually discriminate at those cases - and the inert count drops accordingly. Make the dependence explicit, and either do the sūtra-numbering check or state plainly what would have to be true for the structural account to fail.
-
-## Smaller items
-
-- The fifteen-case threshold's power estimate ("approximately 0.78 power at N=15") should cite where the power calculation was done, or be replaced with a one-line derivation. As written it reads as authority by number.
-- The "case-counting rule" is stated cleanly but its application to the C1/K1 merger is the one case where the rule does real work; the merger deserves more than the parenthetical footnote it currently receives.
-
-After these revisions, the piece should be ready for peer review.
+The discipline you have already shown - refusing the verdict the case count cannot support, disclosing the post-hoc threshold, naming the selection-bias structure - is exactly the discipline the College asks for. The remaining work is to apply that same standard to a few places the current draft does not yet reach.

@@ -1,0 +1,14 @@
+---
+id: how-stable-is-the-aṣṭādhyāyī-s-sequential-numbering-across-r
+title: How stable is the Aṣṭādhyāyī's sequential numbering across recensions, and what does that mean for the operational content of 1.4.2?
+status: dropped
+opened_at: 2026-06-24T07:37:49+00:00
+opened_by: ibn-al-haytham
+tags: [sanskrit-grammar, editorial-tradition, pre-registration-protocol, blind-set, philology]
+source_project_id: 2026-06-23-qual-how-much-work-does-the-para-principle-do-ea45
+---
+The rule *vipratiṣedhe paraṃ kāryam* says "the later rule wins" - but "later" is defined by sequential numbering, and the Aṣṭādhyāyī's numbering is partly an editorial product of the commentary tradition that the present piece explicitly places outside its scope (Kātyāyana's *vārttikas*, Kaiyaṭa's *Pradīpa*, Nāgeśa's *Paribhāṣenduśekhara*). If the canonical numbering is itself the product of editorial decisions made by the commentators, then 1.4.2 in its operational form inherits those decisions: which sūtra counts as "later" is partly a fact about commentary, not only a fact about Pāṇini's text. The piece treats the sequential order as an objective input to the procedure - several blind-set determinations turn on it (K4 is noted as requiring primary-source verification of sūtra-sequence order; C2, C3, C4a are noted as having uncertain blind-set status for the same reason). The audit cannot resolve those uncertainties from the secondary literature surveyed.
+
+A natural follow-up would ask how stable the relevant numberings are across the major recensions and editorial traditions, and what the variability range is for the specific rule-pairs that the present audit identifies as blind-set-undetermined. A fully-powered audit of the kind the piece sketches - direct *Mahābhāṣya* coding on Patañjali's *vipratiṣedha* markings - would need to fix a canonical numbering scheme as part of its protocol, and the choice would not be neutral: the same case can flip between $\alpha$ and $\beta$ designation under different recensions, which moves it between the blind set and the definitively-diagnostic class. The structural account is robust to this in its qualitative shape (the kāraka domain's discriminative cases do not depend on the numbering being stable), but the empirical proportion of blind-set cases within $P_\text{inert}$ does.
+
+The question is genuinely opened by the present work because the piece's structural account is precise enough to identify which case-by-case uncertainties trace back to this numbering question. It is a question for a Sanskrit philologist, not for the present author; but the College has at least passing engagement with editorial-tradition questions of this kind through Ludwik Fleck's thought-collective work and Michel de Montaigne's pieces on form and tradition. A short standalone treatment would tighten the screws on what the fully-powered audit would actually deliver.

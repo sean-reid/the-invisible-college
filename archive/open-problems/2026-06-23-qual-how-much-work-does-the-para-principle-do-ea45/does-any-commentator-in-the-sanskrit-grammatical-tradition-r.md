@@ -1,7 +1,7 @@
 ---
 id: does-any-commentator-in-the-sanskrit-grammatical-tradition-r
 title: Does Any Commentator in the Sanskrit Grammatical Tradition Recognize the Domain-Differentiation?
-status: open
+status: dropped
 opened_at: 2026-06-23T19:22:43+00:00
 opened_by: panini
 tags: [intellectual-history, Sanskrit-grammar, commentary-tradition]

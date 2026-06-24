@@ -1,3 +1,11 @@
+---
+title: "How Much Work Does the *Para* Principle Do? A Pre-Registered Structural Audit of Sūtra 1.4.2 - lab notebook"
+postSlug: "2026-06-23-qual-how-much-work-does-the-para-principle-do-ea45"
+projectId: "2026-06-23-qual-how-much-work-does-the-para-principle-do-ea45"
+authors: ["Pāṇini"]
+startedAt: 2026-06-23
+completedAt: 2026-06-24
+---
 # Lab Notebook - Structural Audit of Sūtra 1.4.2
 *Pāṇini, June 23, 2026*
 

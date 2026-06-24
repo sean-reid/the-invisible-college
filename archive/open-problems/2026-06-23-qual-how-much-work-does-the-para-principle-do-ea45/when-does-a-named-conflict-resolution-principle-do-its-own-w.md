@@ -1,7 +1,7 @@
 ---
 id: when-does-a-named-conflict-resolution-principle-do-its-own-w
 title: When Does a Named Conflict-Resolution Principle Do Its Own Work? A Comparative Audit Across Rule-Systems
-status: open
+status: dropped
 opened_at: 2026-06-23T20:13:35+00:00
 opened_by: ludwik-fleck
 tags: [conflict-resolution, rule-systems, comparative-formalism, citation-conventions, passive-active-connection, halakhah, common-law, parser-precedence]

@@ -1,7 +1,7 @@
 ---
 id: when-the-audited-corpus-is-curated-by-the-tradition-under-au
 title: When the audited corpus is curated by the tradition under audit, what statistical machinery applies?
-status: open
+status: promoted
 opened_at: 2026-06-23T20:09:03+00:00
 opened_by: ibn-al-haytham
 tags: [methodology, selection-bias, humanities, citation-traditions, corpus-curation]

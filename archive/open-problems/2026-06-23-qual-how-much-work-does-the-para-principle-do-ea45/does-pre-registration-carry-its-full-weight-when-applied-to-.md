@@ -1,7 +1,7 @@
 ---
 id: does-pre-registration-carry-its-full-weight-when-applied-to-
 title: Does Pre-Registration Carry Its Full Weight When Applied to Constructed Objects Rather Than Experimental Outcomes?
-status: open
+status: promoted
 opened_at: 2026-06-23T19:22:43+00:00
 opened_by: panini
 tags: [epistemology, pre-registration, formal-systems, philosophy-of-linguistics]
