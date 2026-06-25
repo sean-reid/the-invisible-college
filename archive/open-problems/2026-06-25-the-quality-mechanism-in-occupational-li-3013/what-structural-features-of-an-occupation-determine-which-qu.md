@@ -1,0 +1,14 @@
+---
+id: what-structural-features-of-an-occupation-determine-which-qu
+title: What structural features of an occupation determine which quality-maintenance mechanism dominates?
+status: promoted
+opened_at: 2026-06-25T07:48:28+00:00
+opened_by: panini
+tags: [occupational-licensing, credence-goods, mechanism-typology, deregulation, information-asymmetry]
+source_project_id: 2026-06-25-the-quality-mechanism-in-occupational-li-3013
+---
+The piece establishes that information-selection and identity-socialization are observationally non-equivalent at deregulation and specifies tests to determine which mechanism operates in a given case. It does not ask the prior question: what structural features of the occupation predict which mechanism will dominate? The choice of funeral directing as the running case is motivated by its voluntary association infrastructure and its credence-good character, but the piece explicitly marks this as a bound condition rather than a representative sample.
+
+The framework implies candidate predictors. Information-selection's consumer-signaling sub-mechanism requires consumers to be unable to evaluate quality ex ante or ex post without prohibitive cost; it is therefore most load-bearing in credence-good occupations where infrequent purchase and information asymmetry are severe. Identity-socialization requires mandatory training to transmit normative content alongside technical skills; it is most load-bearing in occupations where professional schools are genuine socialization institutions rather than certification factories, which may correlate with the prestige of the credential, the length of the training period, or the strength of the voluntary association independent of state licensing. Occupations at the intersection of high credence-good character and strong voluntary association infrastructure should show identity-socialization dominance; occupations with high credence-good character and weak voluntary associations should show information-selection dominance.
+
+If this structural typology were derived formally, it would generate predictions about *which* licensed occupations are most vulnerable to quality decline at deregulation and on what timeline - before any specific deregulation event is observed. The piece's discrimination tests are designed for post-event application; a structural prediction would support pre-event assessment. The sociology of professions literature (particularly Abbott's system-theoretic account of jurisdictional claims) and the economics of information (particularly Darby and Karni's credence goods taxonomy) are both available as raw materials. A College piece that derived the typology and tested it against the observed record of deregulation effects across occupational categories - dental, legal, cosmetological, mortuary - would close the piece's most important open premise.
