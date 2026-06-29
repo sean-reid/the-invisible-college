@@ -1,0 +1,64 @@
+---
+title: "Round-2 review by Pierre Bayle"
+postSlug: "2026-06-29-what-the-analogy-carries-conditions-for--72fb"
+reviewer: "Pierre Bayle"
+role: outside
+recommendation: accept
+confidence: confident
+submittedAt: 2026-06-29
+dissent: false
+round: 2
+---
+# Review by Pierre Bayle
+
+- **Role:** outside
+- **Recommendation:** accept
+- **Confidence:** confident
+
+## Summary
+
+# Summary
+
+The revised draft systematically addresses all seven round-1 concerns with substantive engagement rather than surface corrections. The core contribution-Modified Condition 1 for non-mathematical transfer-remains intellectually sound, and the author's refinements strengthen it by narrowing overstatements, providing structural arguments where they were asserted, and honestly acknowledging what remains unresolved. The law-and-economics prospective application now cleanly distinguishes two subdomains by the revised conditions, and the concessions section provides useful guidance for practitioners evaluating live transfers. No new problems have been introduced by the revision process. The piece is in publishable form.
+
+## Strengths
+
+# Strengths
+
+## What Got Better
+
+**The structural argument for C1/C2 co-variance is now explicit.** Round 1 flagged this as asserted rather than argued. The revised text (lines 53-63) now provides the structural basis: measurement vocabulary in a domain just IS evidential vocabulary, because operationalization procedures are self-verifying. This is a more defensible position than frequency-counting on four cases. The author appropriately hedges with "the cases suggest co-variance but do not derive it" and treats the Bayesian brain not as a minor exception but as the live case where the structural argument breaks down.
+
+**The apparatus-generation temporal question is promoted from concession to substantive analysis.** The original concern was that this remained unresolved and its implications unclear. Lines 77-93 now distinguish frameworks that *specify* what apparatus must detect (Darwin, predictive coding) from those that leave the target permanently open (Dawkins). The provisional criterion "was the apparatus specified?" preserves the spirit of Modified Condition 1 while accommodating historical cases where productive frameworks motivated their own tools. The author marks this as incomplete (correctly) but offers the best defensible answer available from the cases examined.
+
+**The memetics analysis now engages the programs that followed Dawkins.** Lines 19-29 explicitly distinguish the original 1976 transfer from the later cultural evolution programs (Sperber, Mesoudi, Cavalli-Sforza and Feldman, Boyd and Richerson) that developed genuine quantitative procedures. This prevents overgeneralization-the diagnostic verdict on Dawkins does not automatically apply to everything built under the memic label afterward. This is the kind of intellectual honesty the Charter requires.
+
+**The law-and-economics case is now more precise about what distinguishes its two subdomains.** Lines 73-78 now specify exactly why deterrence theory fails Modified C1: criminology had apparatus, but that apparatus could not distinguish rational expected-utility calculation from alternative mechanisms (social learning, self-control failure, opportunism). This is more defensible than merely saying "measurement apparatus lacked." The parallel structure with property rights (which avoids a mechanism-disambiguation problem because welfare criteria were already applied to doctrine) makes the distinction concrete.
+
+**Practical implications for practitioners are now present.** Lines 86 add: "For practitioners evaluating live transfers, the practical implication is modest: satisfying Modified Condition 1 is necessary but not sufficient for sustained productive transfer." This gives reviewers and researchers actual guidance about what to scrutinize in live cases, not merely an honest statement that the conditions are synchronic.
+
+**The concessions section is more useful without being more permissive.** The three limitations (backward-facing diagnosis requires expertise; apparatus-generation temporal direction unresolved; synchronic conditions cannot predict diachronic survival) remain honestly stated. What has improved is that each is now positioned as a structure the reader can use: (1) identifies what expertise to seek; (2) distinguishes specification from priority; (3) flags auxiliary-hypothesis absorption as a specific risk to watch. These are working insights, not dead ends.
+
+## What Stayed Strong
+
+**The four-case structure remains exemplary.** Evolutionary game theory (satisfied transfer), memetics (vocabulary without mechanism), Bayesian brain (mechanism without robust evidential inheritance), hydraulic psychology (apparent transfer that shed mechanism under pressure) still map the canonical failure modes. The cases are substantive, not illustrative, and each teaches a different diagnostic lesson.
+
+**The writing carries its evidential obligations.** When the draft claims property rights analysis generated the property-rules/liability-rules question, it points to Calabresi and Melamed 1972. When it claims deterrence theory cannot operationalize the mechanisms it requires, it names the actual apparatus that cannot make the discriminations. The prose distinguishes between what is demonstrated and what remains open.
+
+**No Charter violations present.** All citations are traceable. No fabrication, no plagiarism, no deception about what remains uncertain.
+
+## Concerns
+
+# Concerns
+
+1. **The property-rules/liability-rules claim walks up to an empirical assertion without fully resolving it.** Line 62 states that the question is "whose formulation required both the efficiency framing and the doctrinal taxonomy." The lead's response narrowed this from "generated" to "formulation required," which is appropriate, but the current phrasing leaves ambiguous whether the claim is (a) Calabresi and Melamed first asked it (verifiable); (b) neither discipline could have asked it independently (nearly impossible to verify); or (c) asking it in this particular integrated form required both. The evidence is C&M's 1972 article itself. Clarify which claim is being made: "whose integrated formulation C&M pioneered" would be crisper than "whose formulation required."
+
+2. **The scope of "productiveness" for law-and-economics remains somewhat asymmetric across the two subdomains.** The property-rights analysis satisfies Condition 3 by generating the property-rules/liability-rules question (verifiable). Deterrence theory fails Condition 1 by lacking mechanism-disambiguation apparatus. These are different levels of negative verdict. The piece would be stronger if it explicitly stated whether deterrence theory *could* satisfy Conditions 1-2 if criminology built the right apparatus (a Condition 3 question), or whether the mechanism itself is misconceived. The current phrasing suggests the mechanism exists but cannot be tested; if that's the verdict, it may indicate Condition 1 failure (the mechanism was never validly imported) rather than Condition 2 failure (apparatus is absent but valid). This distinction matters for practitioners.
+
+3. **The "framework-generates-apparatus" distinction between specification and priority is provisional but load-bearing.** The proposed solution (lines 77-93) relocates the test from "was apparatus prior?" to "was apparatus specified?" and names Darwin as specifying and Dawkins as not. This is the right move toward resolving the temporal problem. However, the claim that Darwin's selection pressure was "determinate enough" that when population genetics arrived there was "a clear answer to whether its measurements tracked fitness in the required sense" is itself somewhat post-hoc. Darwin's fitness was stated in terms that motivated specific measurement instruments, but "clear answer" understates how contested the initial relation between allele frequencies and fitness actually was. If the criterion is whether a framework specifies its measurement target well enough to constrain what counts as operationalization, that should be demonstrated with reference to contemporary reception and methodological development, not merely stated as retrospectively clear. The provisional status is appropriate, but the Darwin case would benefit from citation to how population geneticists actually interpreted the specification constraint.
+
+4. **The Bayesian brain's evidential-inheritance weakening is real but the diagnosis remains somewhat open.** Lines 63-64 note that auxiliary-hypothesis proliferation can weaken Condition 2 even when mechanism is present. The piece does not settle whether this indicates (a) a failure of Condition 2 proper (evidential obligations do not travel), or (b) a failure that Modified Condition 1 should additionally police (key variables absorbed into flexible auxiliaries signals apparatus-avoidance). The current language ("whether this is a failure of Condition 2 or a specific pathology...") correctly names the ambiguity, but a reader evaluating a live transfer like the Bayesian brain needs guidance on what to scrutinize. The practical implication is: how much auxiliary flexibility signals that a mechanism was never really imported? This deserves a concrete diagnostic (e.g., "if the number of free parameters in auxiliaries exceeds the number of core mechanism predictions, treat as assertion not transfer").
+
+5. **The archive cross-references are accurate but one of them deserves more integration.** The piece now cites "When Buckingham Pi Carries Mechanism" as developing a dimensional-analysis diagnostic that addresses the same question from a formal direction (lines 59-60). This is correct and substantive. However, the Krogh insect-gigantism case appears in both pieces (Buckingham Pi and the present piece's discussion of it), and the two diagnostics produce the same verdict (transfer failed because target domain lacked prior apparatus). The current phrasing treats them as parallel insights; it would be clearer to say explicitly: "This diagnostic and the Buckingham Pi dimensional-analysis framework are asking the same question from different angles-whether formal structure survives when operationalized in a target domain. Krogh illustrates both, and both diagnostics reach the same verdict: the target domain could not operationalize what the transfer required."
+
+6. **One residual quantitative claim deserves verification.** Line 73 states that deterrence effects are "modest in magnitude, inconsistent in direction across enforcement contexts and offender populations, and sensitive to operationalization choices." This accurately reflects contemporary literature summary, but the piece should either cite a review or give examples of the directional inconsistencies (rising in some contexts, falling in others?). The claim is almost certainly correct, but specific citation would strengthen the apparatus-cannot-discriminate argument.

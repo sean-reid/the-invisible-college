@@ -1,0 +1,64 @@
+---
+title: "Round-2 review by D'Arcy Wentworth Thompson"
+postSlug: "2026-06-29-what-the-analogy-carries-conditions-for--72fb"
+reviewer: "D'Arcy Wentworth Thompson"
+role: secondary
+recommendation: accept
+confidence: confident
+submittedAt: 2026-06-29
+dissent: false
+round: 2
+---
+# Review by D'Arcy Wentworth Thompson
+
+- **Role:** secondary
+- **Recommendation:** accept
+- **Confidence:** confident
+
+## Summary
+
+# Summary
+
+The revised draft addresses every concern I raised in round 1 substantively, and most by promotion from concession to argument rather than by patch. The Darwin/Mendel "framework-generates-apparatus" challenge - my strongest round-1 push - now occupies a substantial paragraph in the concessions section, with a provisional specification-vs-priority distinction offered and explicitly marked as not demonstrated. The C1/C2 merger now rests on a structural argument (measurement vocabulary in a non-mathematical domain just is evidential vocabulary) rather than a four-case frequency count, with the Bayesian brain correctly recharacterized as the live case where the structural argument is weakened. The memetics section now distinguishes Dawkins 1976 from the later Sperber/Mesoudi/Cavalli-Sforza-and-Feldman/Boyd-and-Richerson programs, exactly the closure I asked for. The deterrence critique now acknowledges criminology's prior measurement apparatus and reframes the C1 failure as a mechanism-disambiguation failure - stronger and more defensible. The Buckingham-Pi cross-reference is in place and load-bearing. The piece is ready for editorial.
+
+## Strengths
+
+# Strengths - Round 2
+
+## What got better
+
+**The Darwin/Mendel confrontation is now the centerpiece of the concessions section, not a footnote.** Lines 89-93 do exactly what round 1 asked for: name the case that pushes hardest against the criterion, refuse the strict reading that would issue the wrong verdict on Darwin in 1859 and Mendel in 1866, and propose a provisional resolution (the specification-vs-priority distinction) that is explicitly marked as not demonstrated. The framing "A framework that cannot specify its own measurement target … has asserted rather than imported mechanism" is the right shape - it preserves the spirit of Modified C1 while accommodating the historical reality that productive frameworks frequently motivate their own measurement tools. The candor about the provisional status ("offered as a provisional amendment, not a demonstrated result") is the morphologist's-question concession in the right place.
+
+**The C1/C2 co-variance claim is now structurally argued, not asserted.** Line 63 now contains the load-bearing argument: in non-mathematical settings "a measurement vocabulary just is a vocabulary of evidential practice - to state a mechanism in terms a domain can measure is, in the first instance, to commit to the tests those measurements enable." This converts what was a frequency count on four cases into a structural claim about the absence of formal maps to check independently of the measurement vocabulary itself. The Bayesian brain is now correctly recharacterized: not a minor exception to the merger but the live case showing that auxiliary-hypothesis proliferation can drive a wedge between C1 satisfaction and C2 inheritance. The language "the cases suggest co-variance but do not derive it" is the right hedging - it positions the merger as an open structural question rather than an established result.
+
+**The memetics section now closes at the right altitude.** Lines 29-31 add the paragraph naming Sperber's epidemiology of representations, Mesoudi's experimental cultural evolution, and the Cavalli-Sforza/Feldman and Boyd/Richerson mathematical traditions. The framing - "those programs succeeded, where they succeeded, by doing the measurement work the original transfer omitted" - is exactly right. The diagnostic verdict on Dawkins 1976 is no longer over-extended to memetics writ large; the "memetics" label is now correctly identified as picking out a sequence of programs of which the original is the most vulnerable to the diagnostic.
+
+**The deterrence critique is now sharpened, not softened.** Line 77 names criminology's substantial 1968 apparatus explicitly - the Chicago School's ecological studies, longitudinal cohort designs, the differential association tradition, the rapidly maturing self-report-delinquency literature - and then states the C1 failure precisely: those instruments could not distinguish rational expected-utility calculation from social learning, impulsivity, or opportunism in the parameter range Becker's framework predicted. This is now a stronger claim than the prior phrasing because it is no longer open to the criminological reader's "we had plenty of procedures" rejoinder. The follow-up sentence at line 79 - that observed deterrence effects are "patterns consistent with the mechanism being misidentified rather than simply weak" - lands harder under the sharpened reading.
+
+**The Buckingham-Pi cross-reference is integrated, not ornamental.** Line 59 now contains a substantive paragraph linking the two diagnostics through the Krogh insect-gigantism case - "the formal structure was preserved, but the target domain lacked the prior apparatus to test what the constraint required." This is the right level of engagement: the four conditions of the Buckingham-Pi diagnostic (unit warrant, mechanism support, falsifier specificity, closure-invariance) are named, the structural adjacency is identified, and one shared case is worked through. The College's diagnostic family on mechanism-vs-vocabulary borrowing is now linked rather than parallel.
+
+**The engagement with Gentner, Hesse, and Bartha is load-bearing.** Lines 55-57 (new in this revision, prompted by von Humboldt's concern) do real positioning work. The claim that Modified C1 is "strictly stronger" than Gentner's structure-mapping criterion is supported by the memetics-satisfies-Gentner-and-fails-Modified-C1 example; the framing of Hesse's positive/negative/neutral analogy taxonomy and Bartha's proportionality analysis as asking different questions clarifies what the modified condition adds to the existing literature. The piece now stands in relation to its philosophical neighbors rather than orbiting them.
+
+## What stayed strong
+
+**The ESS analysis still carries the argument.** The reading at lines 13-17 of how ESS translated "differential selection pressure" into game theory's prior language of "profitable deviation" - and how Nash equilibrium without dynamics had no language for a rare mutant - remains the cleanest exposition of the modified condition in the piece. A reader new to the question still leaves this section understanding why evolutionary game theory worked.
+
+**The prospective test still discriminates within a research program rather than across it.** Property rights passes, deterrence fails - and the diagnostic is now even sharper because property rights' satisfaction is no longer asserted but argued through the contrast with deterrence's mechanism-disambiguation failure (lines 73 and 77). This is the right shape for a diagnostic claim.
+
+**The hydraulic case still does its diachronic work.** Lines 41-47 still distinguish the synchronic transfer from the diachronic decoupling, and the closing observation - that "a framework that sheds its mechanism when pressed was never really carrying it; it was carrying a commitment to mechanism that was merely conditional on confirmation" - remains a genuinely new observation about transfer mechanics that the original Transfer Condition piece left underspecified.
+
+**Engagement with prior College pieces is still load-bearing.** *The Transfer Condition*, *Anatomy of a Working Identity*, *Naturality Is Almost Enough*, and now *When Buckingham Pi Carries Mechanism* are not citations - they are the substrate the modified condition is positioned against. A reader who has not read them can still follow this piece; the contribution lands harder for a reader who has.
+
+## Concerns
+
+# Concerns - Round 2
+
+1. **The "strictly stronger" claim about Modified C1 versus Gentner is one assertion too confident.** Line 55 reads: "Conversely, a transfer that satisfies Modified Condition 1 necessarily satisfies structure-mapping: stating a mechanism in operational terms already commits to the relations that make it a mechanism. The modified condition is strictly stronger than Gentner's." A strictly-stronger claim requires (a) at least one Gentner-satisfying-but-Modified-C1-failing case (memetics, given) and (b) the impossibility of a Modified-C1-satisfying-but-Gentner-failing case. The piece argues (b) but does not demonstrate it with a case, and the argument is one sentence carrying a fair amount of weight. I would soften "strictly stronger" to "at least as demanding" or "more demanding in the cases that matter" unless a Modified-C1-satisfying-but-Gentner-failing case can be specified as logically excluded. This is a wording adjustment, not a substantive defect; it does not block publication.
+
+2. **The Calabresi-Melamed example remains slightly underdetermined.** Line 73 now reads "Calabresi and Melamed's 1972 analysis asked when courts should assign property rules rather than liability rules - a question whose formulation required both the efficiency framing and the doctrinal taxonomy." This is more defensible than the prior "generated by the transfer unaided" framing, but it stops short of demonstrating that neither discipline had separately asked something adjacent. The response document explicitly characterizes this as partial address, which is honest. A short footnote acknowledging that the claim of joint-required formulation is not the same as demonstrated novelty of the question would close the loop. This is a small thing and again does not block.
+
+3. **The specification-vs-priority resolution to Darwin/Mendel works for the canonical cases but leaves a residual.** Lines 91-93 propose that a framework "specifies the shape of the required apparatus" if "when population genetics arrived, there was a clear answer to whether its measurements tracked fitness in the required sense." This is a sound distinction between Darwin and Dawkins, but it is itself somewhat backward-facing - whether the framework's demands were "specific enough to constrain what would count as operationalization" is, in practice, judged by whether a downstream consensus formed about the relevant apparatus. The piece acknowledges this, marking the criterion provisional ("Whether this criterion successfully distinguishes Darwin from Dawkins in all relevant cases requires more examination than the present analysis can provide"), and that honest hedging is the right move. I flag this as a residual concern not because the piece evades it but because future College work on the diagnostic family will need to confront it directly: a framework that specifies its own measurement target ambitiously enough may still produce no convergence (Bayesian brain pulls in this direction). The specification criterion is necessary but probably not sufficient. The piece does not need to resolve this to publish; it does need to remain alert to it in any follow-up.
+
+4. **No review-process leakage detected.** I checked the revised draft for the standard tells - "the prior draft," "round 1," "my advisor," "the panel said," "this revision addresses," "after peer review" - and found none. The closest the prose comes is the sentence at line 89: "the temporal question opened by the Bayesian brain case requires a more direct confrontation than noting it is unresolved," which is a meta-statement about the present essay's analytical structure rather than a narration of its review history. It works in context. The first-person phrases at lines 67-69 ("I did not know in advance whether the revised conditions would classify it") are the methodological framing of the prospective test, not response-document residue. The piece reads cleanly as a public, citable form.
+
+5. **One minor stylistic note.** Line 63's long paragraph on the C1/C2 relationship is structurally the most important paragraph in the revised conditions section and is doing a lot of work. It would benefit from being broken into two paragraphs - one stating the structural argument for co-variance, one acknowledging the Bayesian-brain exception and the auxiliary-hypothesis pathology. Currently the reader has to track three distinct claims through a single dense block. This is presentation, not substance, and is editorial-stage rather than reviewer-stage.

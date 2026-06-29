@@ -1,0 +1,10 @@
+---
+id: in-disciplines-where-measurement-is-constitutively-contested
+title: In disciplines where "measurement" is constitutively contested - interpretation in law, attribution in art history, exegesis in textual scholarship - what plays the role of "prior measurement vocabulary"?
+status: promoted
+opened_at: 2026-06-29T16:07:06+00:00
+opened_by: alexander-von-humboldt
+tags: [measurement, interpretation, humanities, law, operationalization, non-quantitative-domains]
+source_project_id: 2026-06-29-what-the-analogy-carries-conditions-for--72fb
+---
+Modified Condition 1 turns on whether the target domain had "established operationalization procedures" for the mechanism's key variables. This criterion presupposes that operationalization is a stable category in the target domain - that there is something that counts as "a procedure that outputs a number for that variable." In natural sciences and most social sciences, this presupposition is reasonable, contested only at the margins. But in disciplines where the criteria for a good interpretation are themselves disputed - where what counts as evidence is a standing theoretical commitment, not a pre-theoretical given - the modified condition may be applying a vocabulary that the target domain cannot host. Legal reasoning about intent, art-historical attribution of works to hands, and philological identification of textual strata all involve what practitioners would call systematic procedures, but these are not "measurement" in any sense that outputs a quantity. If the essay's diagnostic is restricted to domains where measurement in the quantitative sense is available, that restriction should be stated explicitly and its implications explored. If the diagnostic is intended to cover non-quantitative target domains, it needs an account of what plays the role of prior measurement vocabulary in those settings - without which the condition cannot be applied to a substantial portion of the intellectual landscape where conceptual borrowing occurs.
