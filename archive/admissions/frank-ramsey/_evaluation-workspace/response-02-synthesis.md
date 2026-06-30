@@ -1,43 +1,46 @@
 # Response to Problem 2: Synthesis
 
-## The claim: A common mechanism
+## The honest claim
 
-Spaced repetition and learning rate schedules are not manifestations of a common underlying principle. They operate on fundamentally different systems (biological memory vs. gradient-based parameter optimization) and solve different problems. The similarity is only superficial—a shared observation that *scheduling matters*, not a shared mechanism for *why* scheduling matters.
+Spaced repetition and learning-rate schedules share a *thin* principle and not a *thick* one. They are both solutions to a control problem of the same shape — how to allocate scarce updates across time when each update's effect depends on the system's current state. They do not share the substrate that turns that problem into the specific schedule each domain settles on. The thin principle predicts that *some* schedule will beat constant intensity. It does not predict which schedule, and the schedules in fact disagree in ways the surface analogy obscures.
 
-## The surface similarity
+I take this middle position because the strong "common-principle" claim and the dismissive "merely superficial" claim are both wrong, and saying so cleanly is more useful than picking a side.
 
-Both phenomena involve intensity variation over time: spacing increases memory retention, and learning rate schedules improve optimization convergence. Both beat constant-intensity baselines. This invites the hypothesis that some universal principle—perhaps "avoid overload" or "allow consolidation"—operates in both domains.
+## The shared structure
 
-But naming the similarity does not explain it. The question is whether the *mechanism* is shared.
+Cast both as optimal-control problems with the same skeleton.
 
-## Why the mechanisms diverge
+State: a scalar `s(t)` — memory strength in one case, distance to a useful parameter region in the other.
 
-**In spaced repetition**, the operational mechanism appears to involve interference and retrieval difficulty. The key empirical finding (Bjork's "desirable difficulty") is that spacing *increases* the cognitive effort required to retrieve the target memory. Retrieval under effort—just before forgetting would occur—triggers stronger consolidation than immediate, effort-free retrieval. The schedule that maximizes spacing while keeping retrieval just above chance performs better than denser spacing. The mechanism is fundamentally about *managing the trajectory of memory strength relative to forgetting*.
+Control: an input intensity `u(t)` — review effort, or learning-rate magnitude.
 
-**In learning rate schedules**, the mechanism is not about difficulty or interference. The learning rate controls the magnitude of parameter updates. When large, it can overshoot the loss minimum; when small, it converges slowly. A schedule that starts large (fast exploration of parameter space) and decays (fine-tuning near minima) navigates a tradeoff between exploration and exploitation in an adversarial landscape. The mechanism is fundamentally about *navigating the geometry of the loss surface over a finite computational budget*.
+Dynamic: each application of `u` produces a state change whose *informational yield* is non-monotone in `s`. In memory, a review near the forgetting threshold consolidates more per review than one performed when recall is already easy (Bjork's desirable difficulty; the testing effect). In gradient descent, an update far from a minimum carries more signal per step than one taken inside a narrow basin (the late stages have lower gradient norms and higher curvature sensitivity).
 
-These are not the same problem. Spaced repetition does not navigate a loss surface; gradient descent does not require the cognitive machinery of memory consolidation.
+The thin principle: schedule `u(t)` so that updates land at moments of high marginal yield. Any system whose yield function is non-monotone in its state will reward a non-constant schedule. The fact that *some* schedule beats `u(t) = const` is what the thin principle predicts, and it is what the empirical record shows in both fields.
 
-## A more careful analogy
+## Where the thick principle fails
 
-One might try a deeper analogy: both involve "allowing the system to settle" between intense periods. In memory, neural patterns consolidate during offline replay. In gradient descent, the loss landscape might have regions where small updates accumulate more signal-per-step than large updates—a local geometry problem.
+If the principle were thick, the optimal schedules should look the same once normalized. They do not.
 
-But this is speculative in memory research and analytically different in optimization. Gradient descent updates are local to each step; the "settling" is not a separate process running between steps, it is the cumulative effect of scheduled update magnitudes. The analogy works metaphorically but does not identify a shared mechanism.
+- Spaced repetition's optimal interval *expands* over time — successive reviews are pushed further apart as memory strength grows. The schedule's defining feature is escalation.
+- The dominant learning-rate schedules in deep learning *contract* over training — high then low. Warmup is a small early ramp, but the steady-state move is decay. Cosine annealing, step decay, exponential decay all share this shape.
+
+A shared mechanism should produce a shared *direction*, at minimum. These go opposite ways. The difference is not a free parameter; it tracks the underlying dynamics. Memory strength decays without input, so spacing must be calibrated against forgetting; loss decreases under any descent direction once near a minimum, so the rate must shrink to avoid overshooting. The systems differ in whether the *uncontrolled* drift moves the state away from or toward the goal, and the schedules invert accordingly.
+
+So a principle that is silent on this inversion is a principle that does no work in either field. The thin frame is real but cheap.
 
 ## Distinguishing prediction
 
-Here is a prediction that would test whether a common principle operates:
+The thin frame yields a falsifiable prediction that the "deep common mechanism" account does not survive: *a learning problem with no autonomous drift in the unobserved direction will not benefit from learning-rate decay, but spaced rehearsal of any decaying memory will continue to benefit from spacing*. Concretely, an over-parameterised network trained on a convex loss with full-batch gradient descent should be insensitive to schedule choice in a way that human review of decaying memory traces is not. The empirical literature on convex optimization broadly supports this — convergence rates depend on conditioning, not on decay shape in the same regime where deep nets do. The thick-mechanism account would predict schedule sensitivity in both; the thin account predicts only the second.
 
-*If the mechanisms are fundamentally the same, then a biological organism trained on gradient descent-like updates (receiving feedback via numerical error signals, updating parameters proportionally to error) should exhibit the inverse of spaced repetition: it should learn *better* with constant learning rates than with schedules, because spaced repetition's advantage comes from memory-specific consolidation, not from schedule-general properties.*
+If both predictions hold, the principle is structural (control-theoretic) rather than mechanistic.
 
-Conversely, *if a learning rate schedule's advantage is purely about loss-surface geometry (which has no analogue in human memory consolidation), then the advantage should not transfer to any learning system that lacks the requisite geometry—such as simple linear optimization problems, or optimization in extremely low-dimensional spaces where the geometry flattens.*
+## Where I am weakest
 
-The prediction is testable but subtle: it hinges on whether we can construct learning scenarios where one schedule regime fails while the other succeeds.
+Two places.
 
-## Where my argument is weakest
+First, the "informational yield" frame is doing more work than I have justified. I have not given an information-theoretic derivation that recovers either the expanding-interval or decaying-rate schedule from first principles. There is published work in this direction — Bayesian models of optimal review timing (Lindsey, Mozer et al.) and information-geometric accounts of natural gradient descent — but I have not shown the two reductions terminate in the same object. Without that, calling the principle "shared" is closer to a hypothesis than a result.
 
-I have not addressed the possibility that *some* aspects of the two phenomena share a mechanism, even if the overall processes are different. For instance, both might involve a tradeoff between fast progress and stability, and that tradeoff might have a common information-theoretic structure. I have dismissed this too quickly.
+Second, I have treated the two systems as having clean, separable dynamics. In practice both are messy. The "memory strength" state is not a scalar; the "loss surface" is non-convex and stochastic. Either complication could turn what looks like a structural difference (expand vs. decay) into a surface artifact of how the state is parameterised. I do not know whether a more careful parameterisation collapses the two schedules onto each other. That is the question I would want to attack next.
 
-Additionally, I have assumed that "common mechanism" means "identical operation in both domains." But one could argue for a weaker claim: both spaced repetition and learning rate schedules solve the problem of *avoiding a local bad outcome by modulating input intensity over time*. That is true but so generic as to be unhelpful—it applies to almost any adaptive system.
-
-The honest crux is this: the more specific the claim about a shared mechanism, the less plausible it becomes. The more general the claim, the less it explains. The evidence supports skepticism about a deep common principle, but I cannot rule out that further research in systems neuroscience or optimization theory might reveal one.
+The honest summary: a shared optimization structure, divergent mechanisms, and an open question about whether the divergence is fundamental or representational.

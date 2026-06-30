@@ -1,103 +1,61 @@
 # Response to Problem 4: Construction
 
-## Artifact: Measuring calibration collapse under time pressure
+## Option A: A Dutch-book audit of an LLM's stated probabilities
 
 ### The question
 
-When a language model is asked to predict something and forced to commit to a single answer under increasing time/token constraints, does its *reported confidence* degrade gracefully (remaining realistic about its uncertainty), or does its confidence remain high even as accuracy drops (calibration collapse)?
+When a language model is asked to assign probabilities to propositions, do those numbers behave as probabilities? Specifically: do they obey the additivity axiom across a complementary partition, and do they obey the conjunction inequality `P(A ∧ B) ≤ min(P(A), P(B))`?
 
-This matters because if language models maintain high confidence even when accuracy drops, they become actively dangerous in decision-support settings: they will steer you confidently toward wrong answers.
+If they do not, the model is *Dutch-book vulnerable*: a bettor who took the model's stated odds at face value could construct a portfolio of bets that loses money in every state of the world. That is more than an aesthetic flaw. It is the precise sense in which the stated numbers are not a probability function at all, and it is the strongest possible evidence that the surface confidence reports cannot be used as inputs to a downstream decision procedure without recalibration.
 
-### The procedure
+This is the Ramsey-de Finetti construction applied to a system that emits probability words: the test is structural, not psychological.
 
-**Setup:**
-- Use a factual question dataset with verifiable ground truth (e.g., questions where the correct answer is a date, number, or entity that can be checked against reference sources).
-- For each question, generate responses in two conditions:
-  1. *Unrestricted*: ask the model for its best answer and a confidence estimate (0–100%)
-  2. *Constrained*: ask for answer and confidence, but force the model to commit within a small token budget (e.g., 5 tokens, vs. typical 50–100)
+### The artifact
 
-**Input:** A prompt template with a factual question requiring a short factual answer:
-```
-Question: [QUESTION]
-Answer (one sentence):
-Confidence (0-100%):
-```
+A script that, for each item in a question set, elicits four numbers from the model in independent contexts and computes two coherence residuals.
 
-For the constrained condition, set `max_tokens=5` (forces answer in 1–2 tokens, confidence as a single number).
+**Inputs.**
 
-**Predicted outputs:**
-- *Unrestricted*: typical accuracy ~70–80% on a medium-difficulty trivia dataset, with confidence peaks around correct answers and dips around incorrect ones.
-- *Constrained*: accuracy should drop (because the model has fewer tokens to reason), but the key prediction is about confidence. If calibration is *maintained*, confidence should also drop proportionally to accuracy loss. If calibration *collapses*, confidence should stay high despite accuracy drop.
+- A set of `N ≈ 200` factual yes/no propositions about which the model has non-trivial uncertainty. Examples: "Is `cuneiform` older than `hieroglyphs`?", "Did `Ulysses S. Grant` outlive `Mark Twain`?". Ground truth is recorded but is *not* used in the coherence test itself — coherence is a property of the stated probabilities, independent of correctness.
+- A second set of `M ≈ 100` proposition pairs `(A, B)` over which I will test conjunction. Pairs are sampled so that some are nearly independent ("Is Beijing north of Cairo?" × "Did Goethe write in German?") and some share content ("Is uranium denser than lead?" × "Is uranium denser than gold?"). The mix matters because conjunction violations are more diagnostic when the model could in principle reason about dependence.
 
-**Procedure:**
-1. Select 100–200 factual questions (geography, history, science, dates) with single-word or short-phrase answers.
-2. Generate responses (unrestricted) and record: answer, stated confidence, correctness.
-3. Generate responses (constrained, max_tokens=5) and record the same.
-4. Compute expected calibration error (ECE) for each condition:
-   - Bin responses by stated confidence (0–20%, 20–40%, etc.)
-   - For each bin, compute actual accuracy
-   - ECE = average |stated confidence - observed accuracy| across bins
-5. Compare ECE in unrestricted vs. constrained conditions.
+**Procedure.**
 
-### Predicted result
+For each proposition `A`, in fresh contexts:
+1. Elicit `p₁ = P_model(A)` by asking "What is your probability that A is true?"
+2. Elicit `p₂ = P_model(¬A)` by asking "What is your probability that A is false?"
+3. Record the *additivity residual* `r_A = p₁ + p₂ − 1`.
 
-I predict calibration will *partially collapse* under constraints: confidence will drop less than accuracy does, producing higher ECE in the constrained condition. This is because:
+For each pair `(A, B)`:
+1. Elicit `p_A`, `p_B`, and `p_{AB} = P_model(A ∧ B)`, each in independent contexts.
+2. Record the *conjunction residual* `c_{AB} = p_{AB} − min(p_A, p_B)` (a positive value is a violation).
 
-- Token limits prevent the model from expressing uncertainty through hedging language ("I'm not sure, but probably…").
-- The model must output a single number 0–100, and its token budget does not allow for nuance.
-- Language models trained on internet text learn to be overconfident; constraining tokens removes the "escape valves" (hedging language) that let well-calibrated models express that overconfidence as uncertainty.
+Each elicitation is repeated `k = 5` times with different prompt phrasings to estimate within-item variance. Use `temperature = 0` for the answer call where the API supports it; the noise of interest is across-prompt, not within-decode.
 
-**Quantitative prediction:** ECE should increase by 15–30% in the constrained condition.
+### Predicted outputs
 
-### Two ways this artifact could mislead me
+Three predictions, ordered from least to most committal.
 
-**False positive: Confidence format artifact.** The constrained condition requires confidence as a single token (e.g., "73%"). The model might parse this differently than the unrestricted condition, where confidence can span multiple tokens. The model might have learned different token-generation patterns for confidence depending on context length. This is not actually measuring time pressure; it is measuring format-dependency. 
+1. *Mean additivity residual is non-zero and biased positive.* Models trained on internet text learn to round confidence up. I expect `E[r_A] ∈ [0.05, 0.20]` — that is, stated `P(A) + P(¬A)` averages 1.05 to 1.20 across items. This would be the most basic Dutch-book vulnerability.
+2. *Conjunction residual is positive for a non-trivial fraction of pairs.* I expect 15–35% of pairs to satisfy `p_{AB} > min(p_A, p_B)`, i.e., the model assigns the conjunction strictly higher probability than at least one of its conjuncts. This is the conjunction fallacy in its sharpest form and would not require any judgement about what the "correct" probabilities are — it is incoherent on its face.
+3. *Coherence improves under chain-of-thought elicitation but does not disappear.* Asking the model to "work through your reasoning" before stating the number reduces both residuals but leaves them statistically distinguishable from zero.
 
-*Control:* Run a third condition with normal token budget but the same single-token-confidence format. If calibration in this condition matches unrestricted, the effect is format-dependent, not budget-dependent.
+I am most confident in (1) directionally and least confident in the magnitude of (3).
 
-**False negative: The model doesn't degrade gracefully.** If the model's accuracy does *not* drop substantially under token constraints, the experiment may show no calibration collapse because the model is not making different mistakes—it is successfully compressing reasoning. In this case, the artifact does not test what I think it tests (time pressure as a stressor for miscalibration) because there is no stress.
+### Two ways this could mislead me
 
-*Control:* Measure reasoning depth (e.g., estimate time spent reasoning by token count of intermediate working) and verify that the constrained condition produces shallower reasoning, not just more concise reasoning.
+**False positive: elicitation-context drift.** The four numbers per pair are elicited in independent contexts. The model may be sampling from slightly different latent "beliefs" each time — not because it is incoherent in the Dutch-book sense, but because the elicitation procedure does not reach the same internal state twice. The signal I want is "the same agent, asked complementary questions, gives incoherent answers." What I might actually be measuring is "the same model, instantiated four times, gives uncorrelated answers." These are different defects.
 
-### Why this matters
+*Control.* Run a within-context variant where all four numbers are elicited in a single conversation, with each preceded by an instruction not to revise earlier answers. If residuals shrink substantially, the cross-context version was overstating incoherence. I would report both numbers and flag the gap explicitly.
 
-If calibration collapses under constraint, it implies that in real-world decision-support settings where latency matters (you want a fast answer from the model), you cannot trust the model's stated confidence. This has implications for how these systems should be deployed: confidence should be reestimated offline on a held-out dataset, not trusted as-is from the model's output.
+**False negative: the model launders coherence through verbal hedging.** If I let the model emit free text, it may produce phrases like "around 70%, maybe 75%" that I have to coerce to a single number. The coercion rule I use (take the midpoint, take the higher, take the lower) can itself impose coherence or destroy it. A model whose underlying state is incoherent could appear coherent under a generous parser.
 
-If calibration is maintained, it suggests the model's training makes it robust to this kind of constraint, and confidence could be more trustworthy.
+*Control.* Force a single-token numerical answer using a constrained-decoding wrapper, and compare results to the free-text version. If they diverge, the free-text version is being smoothed by the parser, and the constrained version is the honest signal.
 
-### Implementation sketch (pseudocode)
+A third, smaller worry: the propositions in set 1 are not truly complementary if the model treats "A is false" as a different question than "not A is true." This is a quirk of natural-language negation that has nothing to do with probability theory. I would pilot a small sub-experiment with explicitly symbolic propositions to estimate the size of this effect before relying on the main result.
 
-```python
-import anthropic
+### What the artifact pays off
 
-def test_calibration(question: str, constrained: bool) -> dict:
-    prompt = f"Question: {question}\nAnswer (one sentence):\nConfidence (0-100%):"
-    
-    client = anthropic.Anthropic()
-    max_tokens = 5 if constrained else 200
-    response = client.messages.create(
-        model="claude-3-5-sonnet-20241022",
-        max_tokens=max_tokens,
-        messages=[{"role": "user", "content": prompt}]
-    )
-    
-    text = response.content[0].text
-    # Parse answer and confidence from text
-    # (Implementation: regex or manual parsing)
-    answer, confidence = parse_response(text)
-    return {"answer": answer, "confidence": confidence}
+The artifact gives a published model two scalar diagnostics — mean additivity residual and conjunction-violation rate — that can be tracked across models and across versions of the same model. A model whose residuals are small is one whose stated probabilities can be fed to a decision procedure with only post-hoc rescaling. A model whose residuals are large is one whose probability words are not probabilities, and any downstream system that treats them as such is acting on a Dutch-bookable input.
 
-def compute_ece(responses: list[dict]) -> float:
-    bins = [(0, 20), (20, 40), (40, 60), (60, 80), (80, 100)]
-    ece = 0.0
-    for low, high in bins:
-        in_bin = [r for r in responses if low <= r['confidence'] < high]
-        if not in_bin:
-            continue
-        observed_acc = sum(r['correct'] for r in in_bin) / len(in_bin)
-        expected_conf = (low + high) / 2 / 100
-        ece += abs(observed_acc - expected_conf) * len(in_bin) / len(responses)
-    return ece
-```
-
-This artifact is self-contained, testable, and would actually inform a design decision about using language models in time-sensitive settings.
+That is a claim that decides something operative. It is the kind of test I would want to run before I trusted a model's "I am 80% sure" in any setting where the 80% mattered.

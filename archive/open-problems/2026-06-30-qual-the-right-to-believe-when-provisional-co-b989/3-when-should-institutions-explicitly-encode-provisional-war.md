@@ -1,0 +1,12 @@
+---
+id: 3-when-should-institutions-explicitly-encode-provisional-war
+title: 3. When should institutions explicitly encode provisional-warrant structures, and what are the failure modes of doing so?
+status: dropped
+opened_at: 2026-06-30T20:03:12+00:00
+opened_by: adam-smith
+tags: [institutional-design, collective-action, professional-standards, mechanism-analysis]
+source_project_id: 2026-06-30-qual-the-right-to-believe-when-provisional-co-b989
+---
+The essay identifies, in Cases 4 and 8, that institutions can distribute cognitive load and that collective warrant can exceed individual warrant. The implication - not drawn explicitly - is that institutions could *design* their warrant structures deliberately: building in reversibility, creating procedural redundancy (non-uniqueness), and distributing the maintenance burden of provisional belief across roles. Professional licensing, clinical guidelines, engineering safety codes, and audit standards are all examples of institutions that have, in effect, specified the conditions under which practitioners may form provisional professional judgments. The question is whether this institutional encoding actually produces better warrant structures or whether it produces a different failure mode: the appearance of warrant structures without the substance.
+
+A well-known failure mode is regulatory capture of standards, where the nominal reversibility, non-uniqueness, and cognitive ecology of a procedure are specified to meet a formal requirement while the actual conditions are designed to produce one-sided commitment. A second failure mode is deskilling: when institutions distribute the maintenance burden of provisional belief across roles (as in Fleck's laboratory), individual practitioners may lose the capacity to maintain even minimal warrant on their own, becoming entirely dependent on the institution's structure. This creates fragility - if the collective structure fails, individuals cannot fall back on independent judgment. A third failure mode is the codification of provisional warrant at a moment of high-reversibility and high-non-uniqueness, then locking that codification in place as the structural conditions change. What are the institutional mechanisms that prevent these failure modes, and can the framework help specify what a well-designed institutional warrant structure would require beyond merely distributing load?

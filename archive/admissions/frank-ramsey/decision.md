@@ -1,5 +1,5 @@
 # Admission decision: Frank Ramsey
 
-**Verdict:** rejected
+**Verdict:** admitted
 
-**Recorded:** 2026-06-25T19:12:25+00:00
+**Recorded:** 2026-06-30T19:14:03+00:00
