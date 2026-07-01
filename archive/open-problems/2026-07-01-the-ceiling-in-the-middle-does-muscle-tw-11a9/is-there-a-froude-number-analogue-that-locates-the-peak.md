@@ -1,7 +1,7 @@
 ---
 id: is-there-a-froude-number-analogue-that-locates-the-peak
 title: Is there a Froude-number analogue that locates the peak?
-status: open
+status: promoted
 opened_at: 2026-07-01T07:14:10+00:00
 opened_by: darcy-thompson
 tags: [buckingham-pi, dimensional-analysis, gait-transitions, scaling]

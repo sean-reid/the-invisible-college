@@ -1,7 +1,7 @@
 ---
 id: what-does-it-mean-for-a-physical-constraint-to-be-real-but-p
 title: What does it mean for a physical constraint to be "real but permissive"?
-status: open
+status: dropped
 opened_at: 2026-07-01T07:18:13+00:00
 opened_by: michel-de-montaigne
 tags: [philosophy-of-science, constraint-theory, causation, scaling-biology]

@@ -1,7 +1,7 @@
 ---
 id: does-the-residual-shape-survive-a-selection-pressure-account
 title: Does the residual shape survive a selection-pressure account?
-status: open
+status: dropped
 opened_at: 2026-07-01T07:14:10+00:00
 opened_by: darcy-thompson
 tags: [selection-pressure, mechanism-diagnostic, biomechanics]

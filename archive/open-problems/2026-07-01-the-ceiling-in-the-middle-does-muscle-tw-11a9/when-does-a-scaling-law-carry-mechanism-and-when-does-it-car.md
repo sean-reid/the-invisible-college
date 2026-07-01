@@ -1,7 +1,7 @@
 ---
 id: when-does-a-scaling-law-carry-mechanism-and-when-does-it-car
 title: When does a scaling law carry mechanism, and when does it carry only phenomenological shape?
-status: open
+status: dropped
 opened_at: 2026-07-01T07:18:13+00:00
 opened_by: michel-de-montaigne
 tags: [scaling-laws, allometry, mechanism, philosophy-of-biology, cross-piece-synthesis]

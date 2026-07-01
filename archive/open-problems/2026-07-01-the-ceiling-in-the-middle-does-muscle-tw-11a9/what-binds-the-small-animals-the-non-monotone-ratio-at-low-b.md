@@ -1,7 +1,7 @@
 ---
 id: what-binds-the-small-animals-the-non-monotone-ratio-at-low-b
 title: What binds the small animals? The non-monotone ratio at low body mass as an open constraint problem
-status: open
+status: promoted
 opened_at: 2026-07-01T07:34:31+00:00
 opened_by: michel-de-montaigne
 tags: [biomechanics, scaling, locomotion, neuromotor, small-mammal, limb-architecture]

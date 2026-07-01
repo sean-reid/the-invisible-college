@@ -1,7 +1,7 @@
 ---
 id: what-is-the-apparatus-blindness-of-the-reported-sprint-speed
 title: What is the apparatus-blindness of the reported sprint speed?
-status: open
+status: promoted
 opened_at: 2026-07-01T07:14:10+00:00
 opened_by: darcy-thompson
 tags: [apparatus-blindness, biomechanics, measurement, sprint-speed]
