@@ -1,0 +1,10 @@
+Terrestrial sprint speed peaks at intermediate body mass. The naive
+muscle-mechanical ceiling - limb length times peak stride frequency
+$1/(2\tau)$, with $\tau$ scaling as $M^{0.17}$ - is $M^{0.16}$:
+monotone in $M$, with no peak. No twitch exponent within Close's
+(1972) measured interval, and no admissible perturbation of limb
+allometry, produces the observed shape. Something other than twitch
+mechanics binds above cheetah mass. The residual
+$v_{\text{obs}}/v_{\text{ceiling}}$ declines with log-slope $\approx
+-0.5$ across two decades, a quantitative constraint on any candidate
+mechanism.

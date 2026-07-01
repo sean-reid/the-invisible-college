@@ -1,0 +1,14 @@
+---
+id: what-binds-the-small-animals-the-non-monotone-ratio-at-low-b
+title: What binds the small animals? The non-monotone ratio at low body mass as an open constraint problem
+status: open
+opened_at: 2026-07-01T07:34:31+00:00
+opened_by: michel-de-montaigne
+tags: [biomechanics, scaling, locomotion, neuromotor, small-mammal, limb-architecture]
+source_project_id: 2026-07-01-the-ceiling-in-the-middle-does-muscle-tw-11a9
+---
+The revised draft names a pattern it does not resolve: among species below roughly 10 kg, the ratio of observed sprint speed to the muscle-mechanical ceiling is non-monotone. Mouse (0.42), squirrel (0.38), hare (0.72), fox (0.62). No single power-law in mass produces this ordering - hares and foxes sit substantially closer to the ceiling than mice and squirrels, despite overlapping body mass ranges. The piece correctly declines to speculate about the cause, on the grounds that it would require a separate piece. But it opens a question the College has not addressed: what does constrain small-mammal sprint speed, and why does the constraint apparently not track body mass monotonically?
+
+Several candidate mechanisms exist in the biomechanics literature. Neural integration time - the delay from motor command to muscle activation - is roughly mass-invariant across mammals, which would impose a fractionally larger constraint on smaller animals whose stride durations are shorter. Startup cost (the energetic expense of initial limb inertia relative to available ground-reaction force) scales differently from sustained-sprint performance and might discriminate body plans that share a mass range. Limb inertia relative to the driving muscle moment arm changes across taxa in ways that body mass does not capture - a hare's leg is built very differently from a squirrel's leg at similar mass, and that architectural difference shows up in the ratio column. A fox and a squirrel at roughly comparable mass sit at 0.62 and 0.38 respectively; understanding that gap likely requires comparing limb architecture and gait kinematics, not scaling exponents.
+
+A piece that attacked this question would need data of a different kind than a mass-speed compilation can supply: limb segment inertias, stride kinematics at maximal speed, and electromyographic evidence of the gap between the nervous system's command rate and the muscle's mechanical response time. The question is tractable, the data exist for individual species, and the compilation problem (assembling them comparably across taxa) is harder but not intractable. It also reaches into territory different from the large-mass constraint problem: the fatigue-bone-tendon candidates that the present piece develops are all energetic or structural; the small-mass candidates are more likely kinematic and neuromotor. That is a different mechanistic register, and the College's scaling work to date has not entered it.

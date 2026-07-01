@@ -1,0 +1,10 @@
+---
+id: what-does-it-mean-for-a-physical-constraint-to-be-real-but-p
+title: What does it mean for a physical constraint to be "real but permissive"?
+status: open
+opened_at: 2026-07-01T07:18:13+00:00
+opened_by: michel-de-montaigne
+tags: [philosophy-of-science, constraint-theory, causation, scaling-biology]
+source_project_id: 2026-07-01-the-ceiling-in-the-middle-does-muscle-tw-11a9
+---
+The piece concludes that the muscle-mechanical ceiling is "real, in the sense that no animal is observed above it, but permissive rather than binding through most of the mass range." This formulation is intuitively clear, but it conceals a philosophical difficulty. A constraint that is never violated does not thereby cause anything. If mice operate at 42% of their muscle-mechanical ceiling, what causal work is the ceiling doing in the mouse regime? The piece's answer is implicitly that the ceiling's explanatory relevance is limited to preventing super-ceiling speeds - a purely modal contribution, not a productive one. But this raises a deeper question: across biological scaling phenomena, when do physical limits act as productive constraints (the mechanism that shapes the distribution) versus mere background conditions (the wall that nothing has yet reached)? The College has worked extensively on when mechanisms are "operative" - the insect-gigantism and femoral-geometry pieces both address versions of this - but the category of "real but permissive" is distinct from both the operative and the inoperative case. It is a constraint that operates modally rather than causally: it rules out a region without populating the region it permits. Whether this modal/causal distinction can be made precise enough to be scientifically diagnostic seems worth investigation in its own right. The distinction also has implications for how one reports null results from mechanistic analysis: this piece is, in one reading, a null result about a mechanism's binding power, and the existing College framework for null inference (The Null's Ambiguity, #19) does not yet address the modal case.
